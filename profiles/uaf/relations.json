@@ -1,0 +1,72 @@
+{
+  "IsCapableToPerform": {
+    "rule": {
+      "style": "realization",
+      "pairs": [
+        { "from": ["OperationalAgent"], "to": ["OperationalActivity"] },
+        { "from": ["ServiceSpecification"], "to": ["ServiceFunction"] },
+        { "from": ["ResourcePerformer"], "to": ["Function"], "toExclude": ["ProjectActivity"] },
+        { "from": ["Project"], "to": ["ProjectActivity"] }
+      ]
+    },
+    "note": "Conditional client/supplier combinations in the normative IsCapableOfPerforming constraints; ProjectActivity is explicitly excluded from the general ResourcePerformer branch."
+  },
+  "PerformsInContext": {
+    "rule": {
+      "style": "realization",
+      "pairs": [
+        { "from": ["OperationalRole"], "to": ["OperationalActivityAction"] },
+        { "from": ["ServiceSpecificationRole"], "to": ["ServiceFunctionAction"] },
+        { "from": ["ResourceRole"], "to": ["FunctionAction"], "toExclude": ["ProjectActivityAction"] },
+        { "from": ["ProjectRole"], "to": ["ProjectActivityAction"] }
+      ]
+    },
+    "note": "Conditional role/action pairings from the normative client and supplier constraints."
+  },
+  "Implements": {
+    "rule": {
+      "style": "realization",
+      "pairs": [
+        { "from": ["ResourcePerformer"], "to": ["OperationalAgent"] },
+        { "from": ["Function"], "to": ["OperationalActivity", "ServiceFunction"] },
+        { "from": ["ResourceInterface"], "to": ["ServiceInterface", "OperationalInterface"] },
+        { "from": ["ResourceConnector"], "to": ["OperationalConnector", "ResourceConnector"] },
+        { "from": ["ResourceExchange"], "to": ["OperationalExchange"] },
+        { "from": ["ResourceRole"], "to": ["OperationalRole"] },
+        { "from": ["OperationalActivity"], "to": ["ActualEnduringTask"] },
+        { "from": ["DataElement"], "to": ["InformationElement"] }
+      ]
+    },
+    "note": "Client (implementation) points to supplier (specification). Cross-domain combinations are checked as pairs, never as an unconstrained Cartesian product."
+  },
+  "CapabilityGeneralization": {
+    "rule": { "from": ["Capability"], "to": ["Capability"], "style": "generalization", "allowSelf": false, "acyclic": true },
+    "origin": "UML Generalization adapter named in NATO guideline C1",
+    "note": "Specific capability points to generic capability; this is not a native stereotype in the UAFP XML."
+  },
+  "CapabilityDependency": {
+    "rule": { "from": ["Capability"], "to": ["Capability"], "style": "dependency" },
+    "origin": "NATO guideline C3 CapabilityDependency DMM tuple adapter",
+    "note": "Dependent capability points to independent capability. Not a native stereotype in the UAFP XML."
+  },
+  "ServiceGeneralization": {
+    "rule": { "from": ["ServiceSpecification"], "to": ["ServiceSpecification"], "style": "generalization", "allowSelf": false, "acyclic": true },
+    "origin": "UML Generalization adapter for NATO guideline S1",
+    "note": "Specific service specification points to generic service specification."
+  },
+  "OperationalGeneralization": {
+    "rule": { "from": ["OperationalAgent"], "to": ["OperationalAgent"], "style": "generalization", "allowSelf": false, "acyclic": true },
+    "origin": "UML Generalization adapter for NATO guideline L1",
+    "note": "Generalization between logical agent types."
+  },
+  "ResourceGeneralization": {
+    "rule": { "from": ["ResourcePerformer"], "to": ["ResourcePerformer"], "style": "generalization", "allowSelf": false, "acyclic": true },
+    "origin": "UML Generalization adapter for NATO guideline P1",
+    "note": "Generalization between resource performer types."
+  },
+  "Refine": {
+    "rule": { "from": ["UAFElement"], "to": ["Requirement"], "style": "dependency" },
+    "origin": "SysML Refine adapter used in NATO guideline C8",
+    "note": "Requirement is an external SysML concept; it is an explicit adapter type, not a native UAF stereotype."
+  }
+}

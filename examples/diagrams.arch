@@ -1,0 +1,116 @@
+architecture "Seven diagram renderers" {
+  description "One shared model: interactions, behavior, traceability, capability assessment, delivery, and class details."
+  config {
+    type item {
+      template component
+      attribute owner { type reference targets item }
+      attribute signature { type string }
+      attribute maturity { type number min 0 max 5 }
+      attribute parentCapability { type reference targets item }
+      attribute start { type string format date }
+      attribute end { type string format date }
+    }
+    relation link { style flow }
+    defaultRelation link
+  }
+  model {
+    item client "Rescue operator"
+    item api "Coordination API"
+    item store "Mission store"
+    relation request client -> api "Create mission"
+    relation save api -> store "Persist mission"
+    relation ack store -> api "Mission ID"
+    relation response api -> client "Mission accepted"
+    relation audit api -> api "Record audit event"
+
+    item ready "Ready"
+    item active "Coordinating"
+    item closed "Closed"
+    relation activate ready -> active "Dispatch requested"
+    relation finish active -> closed "Rescue completed"
+    relation retry active -> active "Update position"
+
+    item ops "Operations team"
+    item crew "Rescue crew"
+    item start "Start" { owner ops }
+    item assess "Assess incident" { owner ops }
+    item decision "Deploy?" { owner ops }
+    item dispatch "Dispatch team" { owner crew }
+    item cancel "Close incident" { owner ops }
+    item end "End" { owner crew }
+    relation begin start -> assess ""
+    relation evaluate assess -> decision ""
+    relation approved decision -> dispatch "Approved"
+    relation rejected decision -> cancel "Rejected"
+    relation complete dispatch -> end ""
+    relation cancelled cancel -> end ""
+
+    item rescue "Search & Rescue" { maturity 3 }
+    item maritime "Maritime rescue" { parentCapability rescue maturity 4 }
+    item airborne "Airborne rescue" { parentCapability rescue maturity 2 }
+    item tracking "Tracking" { maturity 5 }
+    item planning "Mission planning"
+    relation enables api -> rescue "Enables"
+    relation tracks store -> tracking "Supports"
+    relation plans api -> planning "Supports"
+
+    item phase1 "Pilot deployment" { start "2026-01-01" end "2026-04-01" }
+    item phase2 "Fleet rollout" { start "2026-04-01" end "2026-10-01" }
+    item milestone "Operational readiness" { start "2026-10-01" end "2026-10-01" }
+    relation rollout phase1 -> phase2 "Precedes"
+    relation operational phase2 -> milestone "Delivers"
+
+    item mission "Mission"
+    item repository "Mission repository"
+    item identifier "id" { owner mission signature "id: UUID" }
+    item status "status" { owner mission signature "status: MissionStatus" }
+    item launch "launch" { owner mission signature "launch(): MissionId" }
+    item target "target" { owner launch signature "target: Location" }
+    item allocate "Allocate assets" { owner mission }
+    item contract "Mission access" { owner repository signature "IMissionStore" }
+    item port "Persistence" { owner repository signature "store: IMissionStore" }
+    relation uses mission -> repository "Uses"
+  }
+  view interaction "Sequence · Mission creation" {
+    include client, api, store
+    diagram sequence {
+      participants [client, api, store]
+      messages [request, save, ack, audit, response]
+      returns [ack, response]
+      asyncMessages [audit]
+    }
+  }
+  view states "State · Mission lifecycle" {
+    include ready, active, closed
+    diagram state { initial ready finals [closed] }
+  }
+  view workflow "Swimlanes · Rescue workflow" {
+    include ops, crew, start, assess, decision, dispatch, cancel, end
+    diagram activity { lanes [ops, crew] laneAttribute owner initial start finals [end] decisions [decision] }
+  }
+  view mapping "Matrix · Services to capabilities" {
+    include api, store, rescue, tracking, planning
+    diagram matrix { rows [api, store] columns [rescue, tracking, planning] relations [link] }
+  }
+  view assessment "Heatmap · Capability maturity" {
+    include rescue, maritime, airborne, tracking, planning
+    diagram heatmap { valueAttribute maturity parentAttribute parentCapability min 0 max 5 }
+  }
+  view delivery "Timeline · Deployment roadmap" {
+    include phase1, phase2, milestone
+    diagram timeline { startAttribute start endAttribute end }
+  }
+  view details "Class · Mission structure" {
+    include mission, repository, identifier, status, launch, target, allocate, contract, port
+    diagram class {
+      attributes [identifier, status]
+      methods [launch]
+      functions [allocate]
+      interfaces [contract]
+      ports [port]
+      parameters [target]
+      ownerAttribute owner
+      signatureAttribute signature
+    }
+  }
+}

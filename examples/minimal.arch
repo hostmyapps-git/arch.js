@@ -1,0 +1,12 @@
+architecture "Hello, architecture" {
+  model {
+    person user "User"
+    application app "Your application" {
+      description "A small idea, clearly connected."
+      technology "Browser · No dependencies"
+    }
+    database data "Your data"
+    relation uses user -> app "Uses"
+    relation reads app -> data "Reads / writes" { type access }
+  }
+}

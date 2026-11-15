@@ -1,0 +1,44 @@
+architecture "Event-driven checkout" {
+  description "Precise composition with ports, waypoints, and a custom feedback path."
+  model {
+    application checkout "Checkout" {
+      description "Captures a customer's intent."
+      technology "Web application"
+    }
+    service orders "Order service" {
+      description "Validates and confirms orders."
+      technology "Node.js"
+    }
+    queue events "Order events" {
+      description "Decouples producers and consumers."
+      technology "Kafka"
+    }
+    service fulfilment "Fulfilment" {
+      description "Picks, packs, and dispatches."
+    }
+    database store "Order store" {
+      description "Durable order history."
+      technology "PostgreSQL"
+    }
+    relation submit checkout -> orders "Submit order"
+    relation publish orders -> events "Publish"
+    relation consume events -> fulfilment "Subscribe" { type dependency }
+    relation write orders -> store "Persist" { type access }
+    relation feedback fulfilment -> checkout "Delivery updates"
+  }
+  view precise "Designed flow" {
+    place checkout at (0, 0)
+    place orders at (340, 0)
+    place events at (680, 0)
+    place fulfilment at (1020, 0)
+    place store at (340, 300) size (240, 180)
+    route submit { from right; to left; curve straight }
+    route publish { from right; to left; curve rounded }
+    route consume { from right; to left; curve straight }
+    route write { from bottom; to top; via (450, 245), (460, 245); curve rounded; label (485, 245) }
+    route feedback {
+      path "M 1130 0 C 1130 -130 110 -130 110 0"
+      label (620, -94)
+    }
+  }
+}

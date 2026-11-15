@@ -1,0 +1,18 @@
+{
+  "OperationalActivityAction": { "behavior": { "type": "reference", "targets": ["OperationalActivity"], "required": true }, "activity": { "type": "reference", "targets": ["OperationalActivity"] } },
+  "ServiceFunctionAction": { "behavior": { "type": "reference", "targets": ["ServiceFunction"], "required": true }, "activity": { "type": "reference", "targets": ["ServiceFunction"] } },
+  "FunctionAction": { "behavior": { "type": "reference", "targets": ["Function"], "required": true }, "activity": { "type": "reference", "targets": ["Function"] } },
+  "ProjectActivityAction": { "behavior": { "type": "reference", "targets": ["ProjectActivity"], "required": true } },
+  "SecurityProcessAction": { "behavior": { "type": "reference", "targets": ["SecurityProcess"], "required": true }, "activity": { "type": "reference", "targets": ["SecurityProcess"] } },
+  "OperationalPort": { "owner": { "type": "reference", "targets": ["OperationalPerformer"] }, "interfaceType": { "type": "reference", "targets": ["OperationalInterface"] } },
+  "ServicePort": { "owner": { "type": "reference", "targets": ["ServiceSpecification"] }, "interfaceType": { "type": "reference", "targets": ["ServiceInterface"] } },
+  "ResourcePort": { "owner": { "type": "reference", "targets": ["ResourcePerformer"] }, "interfaceType": { "type": "reference", "targets": ["ResourceInterface"] } },
+  "OperationalRole": { "classifier": { "type": "reference", "targets": ["OperationalAgent"] } },
+  "ServiceSpecificationRole": { "classifier": { "type": "reference", "targets": ["ServiceSpecification"] } },
+  "ResourceRole": { "classifier": { "type": "reference", "targets": ["ResourcePerformer"] } },
+  "OperationalConnector": { "ends": { "type": "reference", "targets": ["OperationalRole", "OperationalPort"], "many": true, "minItems": 2, "uniqueItems": true, "required": true } },
+  "ServiceConnector": { "ends": { "type": "reference", "targets": ["ServiceSpecificationRole", "ServicePort"], "many": true, "minItems": 2, "uniqueItems": true, "required": true } },
+  "ResourceConnector": { "ends": { "type": "reference", "targets": ["ResourceRole", "ResourcePort"], "many": true, "minItems": 2, "uniqueItems": true, "required": true } },
+  "OperationalExchange": { "conveyed": { "type": "reference", "targets": ["OperationalExchangeItem"], "many": true, "minItems": 1, "uniqueItems": true, "required": true } },
+  "ResourceExchange": { "conveyed": { "type": "reference", "targets": ["ResourceExchangeItem"], "many": true, "minItems": 1, "uniqueItems": true, "required": true } }
+}

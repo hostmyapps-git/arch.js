@@ -1,0 +1,107 @@
+architecture "Search & Rescue · UAF" {
+  description "From mission capabilities to operational activities, service functions, and resource implementation."
+  config { profile naf4-uaf }
+
+  model {
+    Capability sar "Search & Rescue"
+    Capability maritime "Maritime rescue"
+    Capability search "Search coordination"
+    relation specialize maritime -> sar "Specializes" { type CapabilityGeneralization }
+    relation requires maritime -> search "Depends on" { type CapabilityDependency }
+
+    OperationalPerformer coordination "Rescue coordination centre"
+    OperationalPerformer crew "Rescue team"
+    OperationalActivity assess "Assess distress report"
+    OperationalActivity dispatch "Coordinate rescue"
+    relation assignAssess coordination -> assess "Can perform" { type IsCapableToPerform }
+    relation assignDispatch coordination -> dispatch "Can perform" { type IsCapableToPerform }
+    relation activityCapability dispatch -> maritime "Supports capability" { type MapsToCapability }
+
+    ServiceSpecification rescueService "Rescue coordination service"
+    ServiceFunction coordinate "Coordinate rescue assets"
+    relation serviceCapability rescueService -> maritime "Exhibits" { type Exhibits }
+    relation serviceFunction rescueService -> coordinate "Can perform" { type IsCapableToPerform }
+    relation consumes dispatch -> rescueService "Consumes" { type Consumes }
+
+    Software platform "Rescue coordination platform" {
+      technology "Web · Mission network"
+      isStandardConfiguration false
+    }
+    Function dispatchFunction "Dispatch rescue asset"
+    relation resourceFunction platform -> dispatchFunction "Can perform" { type IsCapableToPerform }
+    relation implementsActivity dispatchFunction -> dispatch "Implements activity" { type Implements }
+    relation implementsService dispatchFunction -> coordinate "Implements service function" { type Implements }
+    relation implementsActor platform -> coordination "Implements logical node" { type Implements }
+
+    InformationElement distress "Distress report"
+    Standard standard "Architecture standard"
+    Requirement notes "Neutral adapter"
+    relation report coordination -> crew "Shares distress report" {
+      type OperationalExchange
+      conveyed [distress]
+      trustlevel 0.9
+    }
+  }
+
+  view overview "Mission to implementation" {
+    viewpoint L2-L3
+    include maritime, rescueService, coordinate, dispatch, dispatchFunction, platform
+    place maritime at (0, 0)
+    place rescueService at (350, 0)
+    place coordinate at (700, 0)
+    place dispatch at (0, 320)
+    place dispatchFunction at (350, 320)
+    place platform at (700, 320)
+    route serviceCapability { from left to right curve rounded }
+    route activityCapability { from top to bottom curve straight }
+    route consumes { from right to bottom via (275, 380), (275, 220), (460, 220) curve rounded label (370, 220) }
+    route implementsActivity { from left to right curve straight }
+    route implementsService { from top to bottom via (460, 200), (810, 200) curve rounded label (650, 200) }
+  }
+  view capabilities "C1 · Capability taxonomy" {
+    viewpoint C1
+    include sar, maritime
+  }
+  view services "C1–S1 · Service contribution" {
+    viewpoint C1-S1
+    include maritime, rescueService
+    direction down
+  }
+  view serviceFunctions "S4 · Service functions" {
+    viewpoint S4
+    include rescueService, coordinate
+  }
+  view activities "L4 · Logical activities" {
+    viewpoint L4
+    include coordination, assess, dispatch
+    route assignAssess { curve rounded }
+    route assignDispatch { curve rounded }
+  }
+  view interactions "L3 · Operational exchange" {
+    viewpoint L3
+    include coordination, crew, distress
+  }
+  view resources "P4 · Resource functions" {
+    viewpoint P4
+    include platform, dispatchFunction
+  }
+  view colors "Semantic background colors" {
+    viewpoint L2-L3
+    include sar, rescueService, assess, platform, standard, notes
+    place sar at (0, 0)
+    place rescueService at (300, 0)
+    place assess at (600, 0)
+    place platform at (0, 220)
+    place standard at (300, 220)
+    place notes at (600, 220)
+  }
+  view traceability "L4–P4 · Realization trace" {
+    viewpoint L4-P4
+    include dispatch, coordinate, dispatchFunction
+    place dispatchFunction at (0, 140)
+    place dispatch at (430, 0)
+    place coordinate at (430, 280)
+    route implementsActivity { from right to left via (320, 188), (320, 48) curve rounded label (320, 100) }
+    route implementsService { from right to left via (290, 188), (290, 328) curve rounded label (290, 280) }
+  }
+}

@@ -1,0 +1,71 @@
+architecture "Customer platform" {
+  description "A connected experience, from first visit to fulfilled order."
+
+  model {
+    person customer "Customer" {
+      description "Discovers, orders, and returns."
+    }
+    package experience "Experience layer" {
+      application storefront "Storefront" {
+        description "One place to discover and shop."
+        technology "Next.js · Web"
+      }
+      service gateway "API gateway" {
+        description "A secure front door to the platform."
+        technology "REST · OAuth 2.0"
+        icon core.shield
+      }
+    }
+    package commerce "Commerce core" {
+      service orders "Order service" {
+        description "Owns the order lifecycle."
+        technology "Node.js · Events"
+      }
+      database data "Order database" {
+        description "The source of truth for orders."
+        technology "PostgreSQL"
+      }
+    }
+    system payment "Payment provider" {
+      description "External payment processing."
+      technology "Partner API"
+      icon core.globe
+    }
+    relation browse customer -> storefront "Browses & orders"
+    relation request storefront -> gateway "HTTPS"
+    relation create gateway -> orders "Creates order"
+    relation persist orders -> data "Reads / writes" { type access }
+    relation charge orders -> payment "Authorizes payment" { type dependency }
+  }
+
+  view landscape "Platform landscape" {
+    direction right
+    spacing 90
+    place customer at (0, 182)
+    place experience at (330, 0)
+    place commerce at (1000, 0)
+    place payment at (1028, 360)
+    style storefront { accent "#6366f1" }
+    style orders { accent "#0d9488" }
+    route browse { from right; to left; curve rounded }
+    route create { from right; to left; curve rounded }
+    route charge { from bottom; to top; curve rounded }
+  }
+
+  view journey "Customer journey" {
+    include customer, storefront, gateway
+    direction right
+    spacing 100
+    route browse { curve bezier }
+    route request { curve rounded }
+  }
+
+  view services "Commerce detail" {
+    include commerce, payment
+    direction down
+    spacing 90
+    style orders { template component; accent "#8b5cf6" }
+    route persist { curve rounded }
+    route charge { curve bezier }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "repository": "https://github.com/iconify/icon-sets",
+  "revision": "d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5",
+  "packs": [
+    {
+      "name": "bootstrap",
+      "prefix": "bi",
+      "licenseUrl": "https://raw.githubusercontent.com/twbs/icons/70407d811eda8aadf8d7a83f278dc6cfb7d746a6/LICENSE",
+      "url": "https://raw.githubusercontent.com/iconify/icon-sets/d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5/json/bi.json",
+      "file": "icons/upstream/bootstrap.json",
+      "sha256": "c8500368e5848ec5958d15e38fd33f61a9d3c7a00dbc516b78a0703c629e35d7",
+      "licenseFile": "icons/licenses/bootstrap.txt",
+      "licenseSha256": "0fb3e11bd57e896c5a512afd64864d28a37de45d19835016c87ca1ad19ead969",
+      "title": "Bootstrap Icons",
+      "version": "1.13.2",
+      "iconCount": 2084,
+      "aliasCount": 6,
+      "license": "MIT"
+    },
+    {
+      "name": "lucide",
+      "prefix": "lucide",
+      "licenseUrl": "https://raw.githubusercontent.com/lucide-icons/lucide/e715245d62667c800e7f54c94b1b023692e900a3/LICENSE",
+      "url": "https://raw.githubusercontent.com/iconify/icon-sets/d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5/json/lucide.json",
+      "file": "icons/upstream/lucide.json",
+      "sha256": "673b557c59883a5b122f463ab7b25685181c7abdf8952c86ecc3ac2bae047b8a",
+      "licenseFile": "icons/licenses/lucide.txt",
+      "licenseSha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+      "title": "Lucide",
+      "version": null,
+      "iconCount": 2132,
+      "aliasCount": 245,
+      "license": "ISC"
+    },
+    {
+      "name": "tabler",
+      "prefix": "tabler",
+      "licenseUrl": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.51.0/LICENSE",
+      "url": "https://raw.githubusercontent.com/iconify/icon-sets/d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5/json/tabler.json",
+      "file": "icons/upstream/tabler.json",
+      "sha256": "16e6b3a805cb1804e35de933d0eedc24f23c2f7952424c0ad1539dd3c98c26c3",
+      "licenseFile": "icons/licenses/tabler.txt",
+      "licenseSha256": "b740a1d46122672da62833e97f7e7c8a13fa85cbc7445b584b297cc00dde93db",
+      "title": "Tabler Icons",
+      "version": "3.51.0",
+      "iconCount": 6594,
+      "aliasCount": 194,
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+architecture "Three icon libraries" {
+  description "The same architecture vocabulary, illustrated with Bootstrap, Lucide, and Tabler."
+  model {
+    package bootstrap "Bootstrap Icons" {
+      person bi_user "Customer" { icon bootstrap.person technology "bootstrap.person" }
+      application bi_app "Application" { icon bootstrap.window technology "bootstrap.window" }
+      database bi_data "Database" { icon bootstrap.database technology "bootstrap.database" }
+      service bi_cloud "Cloud service" { icon bootstrap.cloud technology "bootstrap.cloud" }
+    }
+    package lucide "Lucide" {
+      person lu_user "Customer" { icon lucide.user technology "lucide.user" }
+      application lu_app "Application" { icon lucide.app-window technology "lucide.app-window" }
+      database lu_data "Database" { icon lucide.database technology "lucide.database" }
+      service lu_cloud "Cloud service" { icon lucide.cloud technology "lucide.cloud" }
+    }
+    package tabler "Tabler Icons" {
+      person ta_user "Customer" { icon tabler.user technology "tabler.user" }
+      application ta_app "Application" { icon tabler.app-window technology "tabler.app-window" }
+      database ta_data "Database" { icon tabler.database technology "tabler.database" }
+      service ta_cloud "Cloud service" { icon tabler.cloud technology "tabler.cloud" }
+    }
+  }
+  view compare "Iconpack comparison" {
+    place bootstrap at (0, 0)
+    place lucide at (0, 260)
+    place tabler at (0, 520)
+    place bi_user at (0, 0)
+    place bi_app at (260, 0)
+    place bi_data at (520, 0)
+    place bi_cloud at (780, 0)
+    place lu_user at (0, 0)
+    place lu_app at (260, 0)
+    place lu_data at (520, 0)
+    place lu_cloud at (780, 0)
+    place ta_user at (0, 0)
+    place ta_app at (260, 0)
+    place ta_data at (520, 0)
+    place ta_cloud at (780, 0)
+    style bootstrap { icon bootstrap.bootstrap accent "#7952b3" }
+    style lucide { icon lucide.feather accent "#ef4444" }
+    style tabler { icon tabler.brand-tabler accent "#206bc4" }
+  }
+  view bootstrap_detail "Bootstrap detail" { include bootstrap }
+  view lucide_detail "Lucide detail" { include lucide }
+  view tabler_detail "Tabler detail" { include tabler }
+}

@@ -1,0 +1,32 @@
+architecture "A profile, reused." {
+  description "Types and validation rules come from profiles/enterprise.json."
+  config { profile enterprise-demo }
+  model {
+    actor user "Account manager" { owner "Sales" }
+    domain operations "Operations" {
+      product crm "Customer relationship platform" {
+        owner "Customer systems team"
+        criticality high
+        replicas 2
+        technology "Managed application"
+      }
+      record customers "Customer records" {
+        owner "Data governance"
+        technology "Encrypted storage"
+      }
+    }
+    relation operates user -> crm "Operates" { channel web }
+    relation saves crm -> customers "Stores" { type persists encrypted true }
+  }
+  view overview "Validated landscape" {
+    viewpoint landscape
+    route operates { curve rounded }
+    route saves { curve rounded }
+  }
+  view data "Data ownership" {
+    viewpoint data
+    include crm, customers
+    direction down
+    route saves { curve rounded }
+  }
+}

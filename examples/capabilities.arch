@@ -1,0 +1,38 @@
+architecture "From strategy to delivery" {
+  description "Capabilities, processes, applications, and technology in one shared model."
+  model {
+    package business "Business architecture" {
+      capability sales "Digital sales" { description "Turn interest into lasting customer value." }
+      process checkout "Order to cash" { description "A traceable end-to-end business process." }
+    }
+    package applications "Application architecture" {
+      application shop "Commerce platform" { technology "Web · Mobile" }
+      component pricing "Pricing engine" { technology "Rules service" }
+      interface api "Partner interface" { technology "OpenAPI 3.1" }
+    }
+    package technology "Technology architecture" {
+      node runtime "Container runtime" { technology "Kubernetes" }
+      database records "Operational data" { technology "PostgreSQL" }
+      artifact contract "API contract" { technology "Versioned specification" }
+    }
+    relation enables sales -> checkout "Enables" { type association }
+    relation supports shop -> checkout "Realizes" { type realization }
+    relation composes shop -> pricing "Contains" { type composition }
+    relation exposes shop -> api "Exposes"
+    relation deployed shop -> runtime "Deploys on" { type dependency }
+    relation access pricing -> records "Reads rules" { type access }
+    relation defines contract -> api "Defines" { type realization }
+  }
+  view layers "Architecture layers" {
+    direction down
+    spacing 90
+    route supports { from top; to bottom; curve bezier }
+    route deployed { curve rounded }
+    route access { curve rounded }
+  }
+  view dark "Night view" {
+    direction right
+    theme dark
+    spacing 80
+  }
+}

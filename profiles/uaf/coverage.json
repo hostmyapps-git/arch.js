@@ -1,0 +1,4171 @@
+{
+  "sources": {
+    "metamodel": {
+      "file": "ReferenceDocs/uaf/UAFP-1.0.xmi",
+      "version": "1.0"
+    },
+    "sources": [
+      {
+        "file": "ReferenceDocs/uaf/UAFP-1.0.xmi",
+        "url": "https://www.omg.org/spec/UAF/20170501/UAFP_Profile.xmi",
+        "version": "UAF 1.0, dtc/17-05-15",
+        "sha256": "91808de61074fc5774b2c5eb0234fc0d111365090d8218dde1f0668601b46135"
+      },
+      {
+        "file": "ReferenceDocs/nafv4/20190404_AC_322-N-201-0046_ENG-UAF-Guidelines1.pdf",
+        "url": "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/20190404_AC_322-N-201-0046_ENG-UAF-Guidelines1.pdf",
+        "version": "NAFv4 UAF modeling guideline 1.0.0, March 2019",
+        "sha256": "d0a072dc5a2cbb7ed68f657d98ab81716d6e717fca410b91924924be89f02fbc"
+      },
+      {
+        "file": "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf",
+        "url": "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-v4-1-en.pdf",
+        "version": "NAFv4.1, 2026.03 (context and differences only)",
+        "sha256": "ec8e5628c7b609f43adcf667accc6f7a75fa2a098ac34f10afb270e11b1f9c50"
+      }
+    ]
+  },
+  "nativeStereotypes": 211,
+  "nativeAbstractTypes": 33,
+  "nodeTypes": 213,
+  "relationTypes": 43,
+  "adapterTypes": [
+    "Package",
+    "Requirement"
+  ],
+  "presentationAssignments": [
+    {
+      "name": "OperationalAgent",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalRole",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalArchitecture",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "KnownResource",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalPerformer",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "ProblemDomain",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalPort",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalMethod",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalParameter",
+      "package": "Operational/Structure",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "ArbitraryConnector",
+      "package": "Operational/Taxonomy",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "ConceptItem",
+      "package": "Operational/Taxonomy",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "ConceptRole",
+      "package": "Operational/Taxonomy",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "HighLevelOperationalConcept",
+      "package": "Operational/Taxonomy",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalConnector",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalInterface",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalExchange",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalExchangeItem",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalSignal",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalSignalProperty",
+      "package": "Operational/Connectivity",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalConstraint",
+      "package": "Operational/Constraints",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "SubjectOfOperationalConstraint",
+      "package": "Operational/Constraints",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "InformationElement",
+      "package": "Operational/Information",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalMessage",
+      "package": "Operational/Interaction Scenarios",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalActivity",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalActivityAction",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalActivityEdge",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalControlFlow",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalObjectFlow",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "StandardOperationalActivity",
+      "package": "Operational/Processes",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "OperationalStateDescription",
+      "package": "Operational/States",
+      "styleGroup": "logical"
+    },
+    {
+      "name": "ActualState",
+      "package": "Metadata/Taxonomy",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ISO8601DateTime",
+      "package": "Metadata/Taxonomy",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Exchange",
+      "package": "Metadata/Connectivity",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Resource",
+      "package": "Metadata/Connectivity",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Rule",
+      "package": "Metadata/Constraints",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Information",
+      "package": "Metadata/Information",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Metadata",
+      "package": "Metadata/Information",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ArchitectureMetadata",
+      "package": "Metadata/Information",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Activity",
+      "package": "Metadata/Processes",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "CapableElement",
+      "package": "Metadata/Processes",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "IsCapableToPerform",
+      "package": "Metadata/Processes",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "PerformsInContext",
+      "package": "Metadata/Processes",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Implements",
+      "package": "Metadata/Traceability",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ArchitecturalReference",
+      "package": "Metadata/Traceability",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ServicePort",
+      "package": "Services/Structure",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceSpecificationRole",
+      "package": "Services/Structure",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceMethod",
+      "package": "Services/Structure",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceParameter",
+      "package": "Services/Structure",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceSpecification",
+      "package": "Services/Taxonomy",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceConnector",
+      "package": "Services/Connectivity",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceInterface",
+      "package": "Services/Connectivity",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServicePolicy",
+      "package": "Services/Constraints",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceMessage",
+      "package": "Services/Interaction Scenarios",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceFunction",
+      "package": "Services/Processes",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceFunctionAction",
+      "package": "Services/Processes",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ServiceStateDescription",
+      "package": "Services/States",
+      "styleGroup": "service"
+    },
+    {
+      "name": "Consumes",
+      "package": "Services/Traceability",
+      "styleGroup": "service"
+    },
+    {
+      "name": "ResourceRole",
+      "package": "Resources/Structure",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourcePort",
+      "package": "Resources/Structure",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceMethod",
+      "package": "Resources/Structure",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceParameter",
+      "package": "Resources/Structure",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "CapabilityConfiguration",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "NaturalResource",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "PhysicalResource",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceArchitecture",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceArtifact",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "Software",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourcePerformer",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "System",
+      "package": "Resources/Taxonomy",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceExchange",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceInterface",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceConnector",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceExchangeItem",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceSignal",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceSignalProperty",
+      "package": "Resources/Connectivity",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceConstraint",
+      "package": "Resources/Constraints",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "SubjectOfResourceConstraint",
+      "package": "Resources/Constraints",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "DataModel",
+      "package": "Resources/Information",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "DataElement",
+      "package": "Resources/Information",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceMessage",
+      "package": "Resources/Interaction Scenarios",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "Function",
+      "package": "Resources/Processes",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "FunctionAction",
+      "package": "Resources/Processes",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "FunctionControlFlow",
+      "package": "Resources/Processes",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "FunctionEdge",
+      "package": "Resources/Processes",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "FunctionObjectFlow",
+      "package": "Resources/Processes",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "VersionedElement",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "Forecast",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "SubjectOfForecast",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "Technology",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "VersionOfConfiguration",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "VersionSuccession",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "WholeLifeConfiguration",
+      "package": "Resources/Roadmap",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ResourceStateDescription",
+      "package": "Resources/States",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "ProtocolImplementation",
+      "package": "Resources/Traceability",
+      "styleGroup": "physical"
+    },
+    {
+      "name": "StructuralPart",
+      "package": "Strategic/Structure",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "CapabilityProperty",
+      "package": "Strategic/Structure",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "TemporalPart",
+      "package": "Strategic/Structure",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "ActualEnterprisePhase",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "Capability",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "EnterpriseGoal",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "EnterprisePhase",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "EnterpriseVision",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "VisionStatement",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "WholeLifeEnterprise",
+      "package": "Strategic/Taxonomy",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "ActualEnduringTask",
+      "package": "Strategic/Processes",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "CapabilityForTask",
+      "package": "Strategic/Processes",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "EnduringTask",
+      "package": "Strategic/Processes",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "AchievedEffect",
+      "package": "Strategic/States",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "Achiever",
+      "package": "Strategic/States",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "DesiredEffect",
+      "package": "Strategic/States",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "Desirer",
+      "package": "Strategic/States",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "Exhibits",
+      "package": "Strategic/Traceability",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "MapsToCapability",
+      "package": "Strategic/Traceability",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "OrganizationInEnterprise",
+      "package": "Strategic/Traceability",
+      "styleGroup": "capability"
+    },
+    {
+      "name": "ActualResponsibility",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualPost",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "FieldedCapability",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualOrganizationalResource",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualOrganization",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualResource",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualPerson",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualResponsibleResource",
+      "package": "Actual Resources/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualResourceRole",
+      "package": "Actual Resources/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualOrganizationRole",
+      "package": "Actual Resources/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualResourceRelationship",
+      "package": "Actual Resources/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "FillsPost",
+      "package": "Actual Resources/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualService",
+      "package": "Actual Resources/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProvidedServiceLevel",
+      "package": "Actual Resources/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "RequiredServiceLevel",
+      "package": "Actual Resources/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProvidesCompetence",
+      "package": "Actual Resources/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "OwnsProcess",
+      "package": "Actual Resources/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Competence",
+      "package": "Personnel/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "CompetenceForRole",
+      "package": "Personnel/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "RequiresCompetence",
+      "package": "Personnel/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "CompetenceToConduct",
+      "package": "Personnel/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Organization",
+      "package": "Personnel/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "OrganizationalResource",
+      "package": "Personnel/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Person",
+      "package": "Personnel/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Post",
+      "package": "Personnel/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Responsibility",
+      "package": "Personnel/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Control",
+      "package": "Personnel/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Command",
+      "package": "Personnel/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ResponsibleFor",
+      "package": "Personnel/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Asset",
+      "package": "Security/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "OperationalMitigation",
+      "package": "Security/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ResourceMitigation",
+      "package": "Security/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityEnclave",
+      "package": "Security/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SubjectOfSecurityConstraint",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityConstraint",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Risk",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualRisk",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityControl",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityControlFamily",
+      "package": "Security/Constraints",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "EnhancedSecurityControl",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityProcessAction",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityProcess",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Enhances",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Protects",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProtectsInContext",
+      "package": "Security/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "SecurityProperty",
+      "package": "Security/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "AssetRole",
+      "package": "Security/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Affects",
+      "package": "Security/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Mitigates",
+      "package": "Security/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "OwnsRisk",
+      "package": "Security/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "OwnsRiskInContext",
+      "package": "Security/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "AffectsInContext",
+      "package": "Security/Traceability",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Protocol",
+      "package": "Standards/Taxonomy",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ProtocolStack",
+      "package": "Standards/Taxonomy",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Standard",
+      "package": "Standards/Taxonomy",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ProtocolLayer",
+      "package": "Standards/Structure",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Project",
+      "package": "Project/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectMilestone",
+      "package": "Project/Taxonomy",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectSequence",
+      "package": "Project/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "MilestoneDependency",
+      "package": "Project/Connectivity",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectActivityAction",
+      "package": "Project/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectActivity",
+      "package": "Project/Processes",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualProjectMilestoneRole",
+      "package": "Project/Roadmap",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualProjectRole",
+      "package": "Project/Roadmap",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualProject",
+      "package": "Project/Roadmap",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ActualProjectMilestone",
+      "package": "Project/Roadmap",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectRole",
+      "package": "Project/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectMilestoneRole",
+      "package": "Project/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectTheme",
+      "package": "Project/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "StatusIndicators",
+      "package": "Project/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "ProjectStatus",
+      "package": "Project/Structure",
+      "styleGroup": "neutral"
+    },
+    {
+      "name": "Architecture",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Stakeholder",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "UAFElement",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Concern",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ArchitecturalDescription",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "View",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Viewpoint",
+      "package": "Summary and Overview",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Alias",
+      "package": "Dictionary",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Definition",
+      "package": "Dictionary",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "SameAs",
+      "package": "Dictionary",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "MeasurementSet",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "EnvironmentProperty",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "MeasurableElement",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualCondition",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Measurement",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "GeoPoliticalExtentType",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualMeasurement",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualEnvironment",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Location",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Condition",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "PropertySet",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualMeasurementSet",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualPropertySet",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "LocationHolder",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "ActualLocation",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    },
+    {
+      "name": "Environment",
+      "package": "Parameters",
+      "styleGroup": "foundation"
+    }
+  ],
+  "normalizations": [
+    {
+      "owner": "UAFElement",
+      "originalName": "URI ",
+      "name": "URI",
+      "reason": "trim trailing whitespace in normative XML"
+    }
+  ],
+  "attributes": [
+    {
+      "owner": "OperationalExchange",
+      "attribute": "exchangeKind",
+      "sourceId": "32cf2fe1-fbef-11e1-a364-456a62c2a10f",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "OperationalExchange",
+      "attribute": "trustlevel",
+      "sourceId": "_18_0_2_90d02a1_1416214157897_163860_31015",
+      "status": "enforced",
+      "schema": {
+        "type": "number",
+        "required": false
+      }
+    },
+    {
+      "owner": "OperationalExchangeItem",
+      "attribute": "activity",
+      "sourceId": "_18_1_8f40297_1442845268398_412836_39662",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "OperationalActivity",
+      "attribute": "affectedResource",
+      "sourceId": "_18_1_8f40297_1442845268398_136032_39661",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "ActualState",
+      "attribute": "endDate",
+      "sourceId": "32420b59-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "ActualState",
+      "attribute": "startDate",
+      "sourceId": "34260dbe-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "Rule",
+      "attribute": "ruleKind",
+      "sourceId": "2ffe35f0-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "StructuralAssertion",
+          "ActionAssertion",
+          "Derivation",
+          "Contract",
+          "Constraint",
+          "Guidance",
+          "SecurityPolicy",
+          "Caveat"
+        ]
+      }
+    },
+    {
+      "owner": "Information",
+      "attribute": "informationKind",
+      "sourceId": "2f2b5590-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Information",
+          "DomainInformation",
+          "PositionReferenceFrame",
+          "PedigreeInformation",
+          "Data"
+        ]
+      }
+    },
+    {
+      "owner": "Metadata",
+      "attribute": "dublinCoreElement",
+      "sourceId": "33f2ef67-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Metadata",
+      "attribute": "metaDataScheme",
+      "sourceId": "30f20bcd-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Metadata",
+      "attribute": "name",
+      "sourceId": "31c9316c-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Metadata",
+      "attribute": "category",
+      "sourceId": "_18_0_2_90d02a1_1415265914172_358096_31522",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Activity",
+      "attribute": "activityPerformableUnderCondition",
+      "sourceId": "2fdbe10c-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Condition"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ResourceRole",
+      "attribute": "RoleKind",
+      "sourceId": "35b3b245-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Part",
+          "Component",
+          "UsedConfiguration",
+          "HumanResource",
+          "Platform",
+          "System",
+          "SubOrganization",
+          "PostRole",
+          "ResponsibilityRole",
+          "Equipment",
+          "SubSystemPart",
+          "UsedPhysicalArchitecture",
+          "HostedSoftware",
+          "ArtifactComponent",
+          "NaturalResourceComponent",
+          "Other"
+        ]
+      }
+    },
+    {
+      "owner": "CapabilityConfiguration",
+      "attribute": "doctrine",
+      "sourceId": "33ce0214-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "StandardOperationalActivity"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ResourcePerformer",
+      "attribute": "milestone",
+      "sourceId": "_18_0_2_7d40257_1418154132726_39205_60039",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ProjectMilestone"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ResourcePerformer",
+      "attribute": "isStandardConfiguration",
+      "sourceId": "_18_0_3_8f40297_1432634932447_306861_55466",
+      "status": "enforced",
+      "schema": {
+        "type": "boolean",
+        "required": true
+      }
+    },
+    {
+      "owner": "ResourceExchange",
+      "attribute": "exchangeKind",
+      "sourceId": "_18_0_2_90d02a1_1417011476875_280333_44612",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "ResourceConnector",
+      "attribute": "boundaryCondition",
+      "sourceId": "_18_0_2_8f40297_1425649124315_387034_42286",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Environment"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ResourceExchangeItem",
+      "attribute": "function",
+      "sourceId": "30eadf77-fbef-11e1-a364-456a62c2a10f",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "DataModel",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_8f40297_1427315083315_201624_33751",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Conceptual",
+          "Logical",
+          "Physical"
+        ]
+      }
+    },
+    {
+      "owner": "Function",
+      "attribute": "affectedResource",
+      "sourceId": "33574bfd-fbef-11e1-a364-456a62c2a10f",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "VersionedElement",
+      "attribute": "versionReleasedAtMilestone",
+      "sourceId": "_18_0_2_90d02a1_1417162364052_733864_31670",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualProjectMilestone"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "VersionedElement",
+      "attribute": "versionWithdrawnAtMilestone",
+      "sourceId": "_18_0_2_90d02a1_1417162390914_565448_31707",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualProjectMilestone"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Forecast",
+      "attribute": "forecastPeriod",
+      "sourceId": "_18_0_2_90d02a1_1416986933832_961756_31457",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualEnterprisePhase"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "WholeLifeConfiguration",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_7d40257_1418150877378_472602_56144",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Service",
+          "ResourcePerformer",
+          "OrganizationalResource"
+        ]
+      }
+    },
+    {
+      "owner": "ProtocolImplementation",
+      "attribute": "implements",
+      "sourceId": "35c05c2c-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Protocol"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "attribute": "resourceArchitectureOfEnterprisePhase",
+      "sourceId": "_18_0_2_90d02a1_1415803922973_296310_37980",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ResourceArchitecture"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "attribute": "operationalArchitectureOfEnterprisePhase",
+      "sourceId": "_18_0_2_90d02a1_1415803943293_742026_38007",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "OperationalArchitecture"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "attribute": "vision",
+      "sourceId": "3283a7c2-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "EnterpriseVision"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "attribute": "goal",
+      "sourceId": "334830f6-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "EnterpriseGoal"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "attribute": "statementTask",
+      "sourceId": "_18_0_2_90d02a1_1416900986919_66461_31261",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualEnduringTask"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "EnterpriseGoal",
+      "attribute": "benefits",
+      "sourceId": "34a1a60b-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "EnterpriseGoal",
+      "attribute": "enterprisePhase",
+      "sourceId": "30c57d1d-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualEnterprisePhase"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "EnterpriseVision",
+      "attribute": "statement",
+      "sourceId": "312eee08-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "VisionStatement"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "EnterpriseVision",
+      "attribute": "enterprisePhase",
+      "sourceId": "3387aa73-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualEnterprisePhase"
+        ]
+      }
+    },
+    {
+      "owner": "AchievedEffect",
+      "attribute": "desiredEffect",
+      "sourceId": "_18_0_2_8f40297_1421407942824_471186_30674",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "DesiredEffect"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "DesiredEffect",
+      "attribute": "achievedEffect",
+      "sourceId": "_18_0_2_8f40297_1421407942824_94663_30675",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "AchievedEffect"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Exhibits",
+      "attribute": "environmentalConditions",
+      "sourceId": "326c9e18-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Environment"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualOrganization",
+      "attribute": "ratifiedStandards",
+      "sourceId": "322fe2e6-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Standard"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualOrganization",
+      "attribute": "shortName",
+      "sourceId": "3278d2b6-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "ActualOrganization",
+      "attribute": "serviceType",
+      "sourceId": "3009ce45-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "ActualResource",
+      "attribute": "milestone",
+      "sourceId": "336ea4d4-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualProjectMilestone"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualResource",
+      "attribute": "actualCondition",
+      "sourceId": "_18_0_2_7d40257_1418060188419_196184_43153",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualCondition"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "FillsPost",
+      "attribute": "startDate",
+      "sourceId": "334b3e63-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "FillsPost",
+      "attribute": "endDate",
+      "sourceId": "30557d48-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "ResponsibleFor",
+      "attribute": "ResponsibleRoleKind",
+      "sourceId": "_18_0_2_90d02a1_1414741375604_871289_29964",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Manager",
+          "ResponsibleOwner"
+        ]
+      }
+    },
+    {
+      "owner": "ResponsibleFor",
+      "attribute": "startDate",
+      "sourceId": "_18_1_8f40297_1434376602145_396324_40615",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "ResponsibleFor",
+      "attribute": "endDate",
+      "sourceId": "_18_1_8f40297_1434376602145_447990_40616",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "Asset",
+      "attribute": "categoryCategorizesAsset",
+      "sourceId": "_18_0_2_90d02a1_1417421228628_934465_32675",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "MeasurementSet"
+        ]
+      }
+    },
+    {
+      "owner": "ActualRisk",
+      "attribute": "actualRiskOwner",
+      "sourceId": "_18_2_8f40297_1458160546024_934436_49913",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualResponsibleResource"
+        ]
+      }
+    },
+    {
+      "owner": "ActualRisk",
+      "attribute": "affectedActualResource",
+      "sourceId": "_18_2_8f40297_1458224681650_398961_55240",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualResource"
+        ]
+      }
+    },
+    {
+      "owner": "SecurityControl",
+      "attribute": "mitigatingActualResource",
+      "sourceId": "_18_2_8f40297_1458224687376_151178_55261",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualResource"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Standard",
+      "attribute": "ratifiedBy",
+      "sourceId": "34ec91be-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualOrganization"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Standard",
+      "attribute": "mandatedDate",
+      "sourceId": "2f8a8c87-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "Standard",
+      "attribute": "retiredDate",
+      "sourceId": "32f7035c-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "ProjectMilestone",
+      "attribute": "resource",
+      "sourceId": "_18_0_2_7d40257_1418154132726_409511_60038",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ResourcePerformer"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualProject",
+      "attribute": "ownedMilestone",
+      "sourceId": "3041a716-fbef-11e1-a364-456a62c2a10f",
+      "status": "derived-not-writable"
+    },
+    {
+      "owner": "ActualProject",
+      "attribute": "projectKind",
+      "sourceId": "_18_0_2_90d02a1_1414671536585_218898_37171",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Programme",
+          "Portfolio",
+          "Project",
+          "PersonnelDevelopment"
+        ]
+      }
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "attribute": "actualResource",
+      "sourceId": "3352b7de-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualResource"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "attribute": "endDate",
+      "sourceId": "_18_0_2_90d02a1_1414763585222_559459_31079",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "date-time"
+      }
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "attribute": "versionReleased",
+      "sourceId": "_18_0_2_90d02a1_1417162364052_872355_31671",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "VersionedElement"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "attribute": "versionWithdrawn",
+      "sourceId": "_18_0_2_90d02a1_1417162390914_461431_31708",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "VersionedElement"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_90d02a1_1416905689971_674462_33001",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "InService",
+          "Deployed",
+          "NoLongerUsed",
+          "OutOfService",
+          "Other"
+        ]
+      }
+    },
+    {
+      "owner": "Architecture",
+      "attribute": "describedBy",
+      "sourceId": "30ad88f7-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ArchitecturalDescription"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Stakeholder",
+      "attribute": "stakeholderConcern",
+      "sourceId": "_18_0_2_90d02a1_1415796770236_597366_30871",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Concern"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "UAFElement",
+      "attribute": "conformsTo",
+      "sourceId": "35595d53-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Standard"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "UAFElement",
+      "attribute": "URI",
+      "sourceId": "31871fe3-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "format": "uri"
+      }
+    },
+    {
+      "owner": "Concern",
+      "attribute": "systemConcern",
+      "sourceId": "_18_0_2_90d02a1_1415798565710_153339_34225",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualEnterprisePhase"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "approvalAuthority",
+      "sourceId": "331c8cad-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "architect",
+      "sourceId": "358fd693-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "assumptionAndConstraint",
+      "sourceId": "305f8ff6-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "creatingOrganization",
+      "sourceId": "34c1d803-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "dateCompleted",
+      "sourceId": "30ae4c53-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "purpose",
+      "sourceId": "319b6b31-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "recommendations",
+      "sourceId": "32218b38-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "summaryOfFindings",
+      "sourceId": "330ed14a-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "toolsUsed",
+      "sourceId": "2f32cf08-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "toBe",
+      "sourceId": "34d1693d-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "boolean",
+        "required": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "architectureFramework",
+      "sourceId": "2f434a97-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "view",
+      "sourceId": "31cd9e79-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "View"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ArchitecturalDescription",
+      "attribute": "viewPoint",
+      "sourceId": "_18_0_2_90d02a1_1415260494221_846106_30123",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": true,
+        "targets": [
+          "Viewpoint"
+        ]
+      }
+    },
+    {
+      "owner": "View",
+      "attribute": "viewpoint",
+      "sourceId": "2fd1ce5e-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": true,
+        "targets": [
+          "Viewpoint"
+        ]
+      }
+    },
+    {
+      "owner": "Viewpoint",
+      "attribute": "languages",
+      "sourceId": "31048259-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Viewpoint",
+      "attribute": "methods",
+      "sourceId": "3475daca-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Viewpoint",
+      "attribute": "purpose",
+      "sourceId": "2f1e3682-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Viewpoint",
+      "attribute": "stakeholder",
+      "sourceId": "_18_0_2_90d02a1_1415796539340_719678_30804",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Stakeholder"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Viewpoint",
+      "attribute": "concern",
+      "sourceId": "_18_0_2_90d02a1_1415796694931_844131_30835",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Concern"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Alias",
+      "attribute": "nameOwner",
+      "sourceId": "344e0843-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Definition",
+      "attribute": "author",
+      "sourceId": "34d3b24d-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false,
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "MeasurementSet",
+      "attribute": "appliesFor",
+      "sourceId": "_18_0_2_90d02a1_1415869456484_236818_34065",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "MeasurableElement"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "MeasurableElement",
+      "attribute": "measurementSet",
+      "sourceId": "_18_0_2_90d02a1_1415869456484_987357_34066",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "MeasurementSet"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "MeasurableElement",
+      "attribute": "actualMeasurementSet",
+      "sourceId": "_18_0_2_90d02a1_1415871041516_35912_35344",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualMeasurementSet"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "Measurement",
+      "attribute": "environmentalContext",
+      "sourceId": "_18_0_2_90d02a1_1415889472196_939256_31965",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Condition"
+        ]
+      }
+    },
+    {
+      "owner": "GeoPoliticalExtentType",
+      "attribute": "customKind",
+      "sourceId": "33ddba1c-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "GeoPoliticalExtentType",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_90d02a1_1415976734731_723571_41242",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "GeoFeatureType",
+          "RegionOfCountryType",
+          "CountryType",
+          "RegionOfWorldType",
+          "FacilityType",
+          "SiteType",
+          "InstallationType",
+          "OtherType"
+        ]
+      }
+    },
+    {
+      "owner": "ActualMeasurement",
+      "attribute": "intention",
+      "sourceId": "_18_0_2_90d02a1_1415949056948_470398_30268",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "Actual",
+          "Required",
+          "Estimate"
+        ]
+      }
+    },
+    {
+      "owner": "Location",
+      "attribute": "customKind",
+      "sourceId": "2fb25fd1-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "Location",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_90d02a1_1415973542750_827070_41007",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "OtherType",
+          "SolidVolumeType",
+          "SurfaceType",
+          "LineType",
+          "PointType",
+          "GeoStationaryPointType",
+          "PlanarSurfaceType",
+          "PolygonAreaType",
+          "RectangularAreaType",
+          "ElipticalAreaType",
+          "CircularAreaType"
+        ]
+      }
+    },
+    {
+      "owner": "ActualMeasurementSet",
+      "attribute": "appliesFor",
+      "sourceId": "_18_0_2_90d02a1_1415871041515_278094_35343",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "MeasurableElement"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "LocationHolder",
+      "attribute": "physicalLocation",
+      "sourceId": "330e0df1-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "ActualLocation"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "LocationHolder",
+      "attribute": "requiredEnvironment",
+      "sourceId": "331c659b-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "reference",
+        "required": false,
+        "targets": [
+          "Environment"
+        ],
+        "many": true,
+        "minItems": 0,
+        "uniqueItems": true
+      }
+    },
+    {
+      "owner": "ActualLocation",
+      "attribute": "address",
+      "sourceId": "312a0bc2-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "ActualLocation",
+      "attribute": "locationKind",
+      "sourceId": "32685823-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "SolidVolume",
+          "Surface",
+          "Line",
+          "Point",
+          "GeoStationaryPoint",
+          "PlanarSurface",
+          "PolygonArea",
+          "RectangularArea",
+          "ElipticalArea",
+          "CircularArea",
+          "Other"
+        ]
+      }
+    },
+    {
+      "owner": "ActualLocation",
+      "attribute": "customKind",
+      "sourceId": "32b16f11-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": false
+      }
+    },
+    {
+      "owner": "ActualLocation",
+      "attribute": "locationNamedByAddress",
+      "sourceId": "31fd6169-fbef-11e1-a364-456a62c2a10f",
+      "status": "enforced",
+      "schema": {
+        "type": "boolean",
+        "required": true
+      }
+    },
+    {
+      "owner": "Environment",
+      "attribute": "kind",
+      "sourceId": "_18_0_2_90d02a1_1415975958680_718127_41171",
+      "status": "enforced",
+      "schema": {
+        "type": "string",
+        "required": true,
+        "enum": [
+          "TerrainType",
+          "WeatherConditions",
+          "LightConditions",
+          "CBRNEnvironment",
+          "SituationType"
+        ]
+      }
+    },
+    {
+      "owner": "OperationalActivityAction",
+      "attribute": "behavior",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalActivity"
+        ],
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "32f15dbc-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "OperationalActivityAction",
+      "attribute": "activity",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalActivity"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "33c4dad3-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "ServiceFunctionAction",
+      "attribute": "behavior",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceFunction"
+        ],
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "303ff94e-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "ServiceFunctionAction",
+      "attribute": "activity",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceFunction"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "35861303-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "FunctionAction",
+      "attribute": "behavior",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "Function"
+        ],
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "341bfb0e-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "FunctionAction",
+      "attribute": "activity",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "Function"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "3574fc1a-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "ProjectActivityAction",
+      "attribute": "behavior",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ProjectActivity"
+        ],
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_4_1_8f40297_1491206112000_613591_37623"
+      ]
+    },
+    {
+      "owner": "SecurityProcessAction",
+      "attribute": "behavior",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "SecurityProcess"
+        ],
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444293549161_45350_39474"
+      ]
+    },
+    {
+      "owner": "SecurityProcessAction",
+      "attribute": "activity",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "SecurityProcess"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": []
+    },
+    {
+      "owner": "OperationalPort",
+      "attribute": "owner",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalPerformer"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_1_8f40297_1443703723504_653976_38953"
+      ]
+    },
+    {
+      "owner": "OperationalPort",
+      "attribute": "interfaceType",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalInterface"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_1_8f40297_1443703723505_422575_38954"
+      ]
+    },
+    {
+      "owner": "ServicePort",
+      "attribute": "owner",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceSpecification"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444375711655_733241_35225"
+      ]
+    },
+    {
+      "owner": "ServicePort",
+      "attribute": "interfaceType",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceInterface"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444375711654_73439_35224"
+      ]
+    },
+    {
+      "owner": "ResourcePort",
+      "attribute": "owner",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ResourcePerformer"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444292353277_31196_37668"
+      ]
+    },
+    {
+      "owner": "ResourcePort",
+      "attribute": "interfaceType",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ResourceInterface"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444292353276_599066_37667"
+      ]
+    },
+    {
+      "owner": "OperationalRole",
+      "attribute": "classifier",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalAgent"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "33cffe02-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "ServiceSpecificationRole",
+      "attribute": "classifier",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceSpecification"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444375818055_640877_35404"
+      ]
+    },
+    {
+      "owner": "ResourceRole",
+      "attribute": "classifier",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ResourcePerformer"
+        ]
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "35ba4252-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "OperationalConnector",
+      "attribute": "ends",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalRole",
+          "OperationalPort"
+        ],
+        "many": true,
+        "minItems": 2,
+        "uniqueItems": true,
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "2f8004a4-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "ServiceConnector",
+      "attribute": "ends",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ServiceSpecificationRole",
+          "ServicePort"
+        ],
+        "many": true,
+        "minItems": 2,
+        "uniqueItems": true,
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "_18_2_8f40297_1444294530099_370830_40522"
+      ]
+    },
+    {
+      "owner": "ResourceConnector",
+      "attribute": "ends",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ResourceRole",
+          "ResourcePort"
+        ],
+        "many": true,
+        "minItems": 2,
+        "uniqueItems": true,
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": [
+        "31921bf7-fbef-11e1-a364-456a62c2a10f"
+      ]
+    },
+    {
+      "owner": "OperationalExchange",
+      "attribute": "conveyed",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "OperationalExchangeItem"
+        ],
+        "many": true,
+        "minItems": 1,
+        "uniqueItems": true,
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": []
+    },
+    {
+      "owner": "ResourceExchange",
+      "attribute": "conveyed",
+      "schema": {
+        "type": "reference",
+        "targets": [
+          "ResourceExchangeItem"
+        ],
+        "many": true,
+        "minItems": 1,
+        "uniqueItems": true,
+        "required": true
+      },
+      "status": "explicit-UML-adapter",
+      "sourceConstraintIds": []
+    }
+  ],
+  "relations": [
+    {
+      "name": "ArbitraryConnector",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "3417dd24-fbef-11e1-a364-456a62c2a10f",
+        "34c581b8-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OperationalExchange",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "320243ad-fbef-11e1-a364-456a62c2a10f",
+        "34d8e2ae-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OperationalControlFlow",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_1_8f40297_1443703289418_795291_37991",
+        "_18_1_8f40297_1443703211076_357505_37987"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "IsCapableToPerform",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "3159cdd6-fbef-11e1-a364-456a62c2a10f",
+        "2faf5269-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "authored-endpoint-pairs",
+      "note": "Conditional client/supplier combinations in the normative IsCapableOfPerforming constraints; ProjectActivity is explicitly excluded from the general ResourcePerformer branch."
+    },
+    {
+      "name": "PerformsInContext",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444034569564_890947_34847",
+        "_18_2_8f40297_1444034569570_504334_34848"
+      ],
+      "mode": "authored-endpoint-pairs",
+      "note": "Conditional role/action pairings from the normative client and supplier constraints."
+    },
+    {
+      "name": "Implements",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "30ea1c1e-fbef-11e1-a364-456a62c2a10f",
+        "30f7d87b-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "authored-endpoint-pairs",
+      "note": "Client (implementation) points to supplier (specification). Cross-domain combinations are checked as pairs, never as an unconstrained Cartesian product."
+    },
+    {
+      "name": "ArchitecturalReference",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "312cf21b-fbef-11e1-a364-456a62c2a10f",
+        "327501f0-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Consumes",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444376805561_179828_35449",
+        "_18_2_8f40297_1444376805563_738943_35450"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "ResourceExchange",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "2fae8f10-fbef-11e1-a364-456a62c2a10f",
+        "2fdc2f2f-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "FunctionControlFlow",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444208063232_477051_36494",
+        "_18_2_8f40297_1444208063233_621907_36495"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Forecast",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "328d4539-fbef-11e1-a364-456a62c2a10f",
+        "327d66d8-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "VersionSuccession",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444213510929_307908_37103",
+        "_18_2_8f40297_1444213510932_615497_37104"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "CapabilityForTask",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444378350171_837961_35753",
+        "_18_2_8f40297_1444378350175_278320_35754"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "AchievedEffect",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444378486585_532512_36092",
+        "_18_2_8f40297_1444378486587_555570_36093"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "DesiredEffect",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "3587e7de-fbef-11e1-a364-456a62c2a10f",
+        "34859316-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Exhibits",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "2f61f5ca-fbef-11e1-a364-456a62c2a10f",
+        "34e3918d-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "MapsToCapability",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "30d3aeb3-fbef-11e1-a364-456a62c2a10f",
+        "356543de-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OrganizationInEnterprise",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444379411679_933230_36793",
+        "_18_2_8f40297_1444379411676_414529_36792"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "ActualResourceRelationship",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "2f3f52be-fbef-11e1-a364-456a62c2a10f",
+        "32807443-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "FillsPost",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "348e6c35-fbef-11e1-a364-456a62c2a10f",
+        "2f7dbb96-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "ProvidesCompetence",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "318fd1eb-fbef-11e1-a364-456a62c2a10f",
+        "2f8eab6f-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OwnsProcess",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "31c190e1-fbef-11e1-a364-456a62c2a10f",
+        "3093e629-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "CompetenceForRole",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444119915735_517954_39784",
+        "_18_2_8f40297_1444119915737_493093_39785"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "RequiresCompetence",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "346698b1-fbef-11e1-a364-456a62c2a10f",
+        "2fd21c83-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "CompetenceToConduct",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444121304772_334953_42119",
+        "_18_2_8f40297_1444121304775_406625_42120"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Control",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "33e4982a-fbef-11e1-a364-456a62c2a10f",
+        "3129968c-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Command",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "33f0a56c-fbef-11e1-a364-456a62c2a10f",
+        "3090d8c1-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "ResponsibleFor",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "30176379-fbef-11e1-a364-456a62c2a10f",
+        "35017977-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Enhances",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444293062073_569098_39052",
+        "_18_2_8f40297_1444293062076_661177_39053"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Protects",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_2_8f40297_1444293178796_230049_39197",
+        "_18_2_8f40297_1444293178799_641044_39198"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Affects",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_4_1_8f40297_1491995858498_790191_35553",
+        "_18_4_1_8f40297_1491995858500_551068_35554"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "Mitigates",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_4_1_8f40297_1491995862601_210553_35561",
+        "_18_4_1_8f40297_1491995862602_760630_35562"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OwnsRisk",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_4_1_8f40297_1491995864050_616571_35565",
+        "_18_4_1_8f40297_1491995864051_2709_35566"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "OwnsRiskInContext",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_4_1_8f40297_1491995865323_845206_35569",
+        "_18_4_1_8f40297_1491995865324_20380_35570"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "AffectsInContext",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "_18_4_1_8f40297_1491995860821_296669_35557",
+        "_18_4_1_8f40297_1491995860821_48465_35558"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "ProjectSequence",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "2f312241-fbef-11e1-a364-456a62c2a10f",
+        "3142eb34-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "MilestoneDependency",
+      "origin": "UAF stereotype",
+      "sourceIds": [
+        "31eb8743-fbef-11e1-a364-456a62c2a10f",
+        "2f465800-fbef-11e1-a364-456a62c2a10f"
+      ],
+      "mode": "literal-endpoint-constraints"
+    },
+    {
+      "name": "CapabilityGeneralization",
+      "origin": "UML Generalization adapter named in NATO guideline C1",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Specific capability points to generic capability; this is not a native stereotype in the UAFP XML."
+    },
+    {
+      "name": "CapabilityDependency",
+      "origin": "NATO guideline C3 CapabilityDependency DMM tuple adapter",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Dependent capability points to independent capability. Not a native stereotype in the UAFP XML."
+    },
+    {
+      "name": "ServiceGeneralization",
+      "origin": "UML Generalization adapter for NATO guideline S1",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Specific service specification points to generic service specification."
+    },
+    {
+      "name": "OperationalGeneralization",
+      "origin": "UML Generalization adapter for NATO guideline L1",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Generalization between logical agent types."
+    },
+    {
+      "name": "ResourceGeneralization",
+      "origin": "UML Generalization adapter for NATO guideline P1",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Generalization between resource performer types."
+    },
+    {
+      "name": "Refine",
+      "origin": "SysML Refine adapter used in NATO guideline C8",
+      "sourceIds": [],
+      "mode": "explicit-adapter",
+      "note": "Requirement is an external SysML concept; it is an explicit adapter type, not a native UAF stereotype."
+    }
+  ],
+  "deferredEndpointMappings": [
+    {
+      "name": "ProtectsInContext",
+      "reason": "endpoint constraint references types outside this normative vocabulary",
+      "referencedTypes": [
+        "SecurityControlAction",
+        "OperationalRole",
+        "ResourceRole",
+        "OperationalConnector",
+        "ResourceConnector",
+        "SecurityProperty"
+      ]
+    },
+    {
+      "name": "SameAs",
+      "reason": "endpoint constraint references types outside this normative vocabulary",
+      "referencedTypes": [
+        "UPDMElement",
+        "UPDMElement"
+      ]
+    }
+  ],
+  "unimplementedNativeConstraints": [
+    {
+      "owner": "OperationalRole",
+      "name": "OperationalRole.class",
+      "sourceId": "30de5ca9-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalPerformer",
+      "name": "OperationalPerformer.isCapableOfPerforming",
+      "sourceId": "31d05dbc-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalPerformer",
+      "name": "OperationalPerformer.ownedPort",
+      "sourceId": "3038cdfc-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalPerformer",
+      "name": "OperationalPerformer.ownedOperation",
+      "sourceId": "30fedcbb-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProblemDomain",
+      "name": "ProblemDomain.class",
+      "sourceId": "32b7b0f7-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProblemDomain",
+      "name": "ProblemDomain.type",
+      "sourceId": "33487f1a-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalMethod",
+      "name": "OperationalMethod.ownedParameter",
+      "sourceId": "34664a8c-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalMethod",
+      "name": "OperationalMethod.method",
+      "sourceId": "_18_2_8f40297_1444292196151_653557_37665"
+    },
+    {
+      "owner": "OperationalParameter",
+      "name": "OperationalParameter.type",
+      "sourceId": "2ffcaf3b-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ConceptRole",
+      "name": "ConceptRole.type",
+      "sourceId": "2f15aa8f-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ConceptRole",
+      "name": "ConceptRole.class",
+      "sourceId": "_18_1_8f40297_1443704227406_82704_39870"
+    },
+    {
+      "owner": "OperationalInterface",
+      "name": "OperationalInterface.ownedOperation",
+      "sourceId": "_18_1_8f40297_1443702517191_57744_36502"
+    },
+    {
+      "owner": "OperationalExchange",
+      "name": "OperationalExchange.realizingConnector",
+      "sourceId": "30e588fe-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalExchange",
+      "name": "OperationalExchange.realizingActivityEdge",
+      "sourceId": "304773c6-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalExchange",
+      "name": "OperationalExchange.realizingMessage",
+      "sourceId": "32303109-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalExchange",
+      "name": "OperationalExchange.conveyed",
+      "sourceId": "32e290e0-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalSignalProperty",
+      "name": "OperationalSignalProperty.class",
+      "sourceId": "_18_4_1_8f40297_1492003813095_754834_36689"
+    },
+    {
+      "owner": "OperationalSignalProperty",
+      "name": "OperationalSignalProperty.type",
+      "sourceId": "_18_4_1_8f40297_1492003813096_741691_36690"
+    },
+    {
+      "owner": "OperationalConstraint",
+      "name": "OperationalConstraint.constrainedElement",
+      "sourceId": "33c9e429-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "InformationElement",
+      "name": "InformationElement.owner",
+      "sourceId": "_18_1_8f40297_1443702688481_163172_36863"
+    },
+    {
+      "owner": "OperationalMessage",
+      "name": "OperationalMessage.receiveEvent.event.operation",
+      "sourceId": "3118a6ae-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalActivity",
+      "name": "OperationalActivity.ownedParameter",
+      "sourceId": "3094d098-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalActivityEdge",
+      "name": "OperationalActivityEdge.owner",
+      "sourceId": "317da97e-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "OperationalStateDescription",
+      "name": "OperationalStateDescription.owner",
+      "sourceId": "2f9d784e-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Information",
+      "name": "Information.annotatedElement",
+      "sourceId": "35b8e2b0-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Metadata",
+      "name": "Metadata.annotatedElement",
+      "sourceId": "_18_1_8f40297_1444027137455_53169_33632"
+    },
+    {
+      "owner": "ArchitectureMetadata",
+      "name": "ArchitectureMetadata.annotatedElement",
+      "sourceId": "32628b71-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceSpecificationRole",
+      "name": "ServiceSpecificationRole.class",
+      "sourceId": "_18_2_8f40297_1444375818056_581620_35405"
+    },
+    {
+      "owner": "ServiceMethod",
+      "name": "ServiceMethod.ownedParameter",
+      "sourceId": "336a5edd-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceMethod",
+      "name": "ServiceMethod.method",
+      "sourceId": "_18_2_8f40297_1444375544105_182596_34102"
+    },
+    {
+      "owner": "ServiceMethod",
+      "name": "ServiceMethod.owner",
+      "sourceId": "_18_2_8f40297_1458149433788_5913_41451"
+    },
+    {
+      "owner": "ServiceParameter",
+      "name": "ServiceParameter.type",
+      "sourceId": "33dea483-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceInterface",
+      "name": "ServiceInterface.ownedOperation",
+      "sourceId": "_18_2_8f40297_1444296163281_758618_34584"
+    },
+    {
+      "owner": "ServicePolicy",
+      "name": "ServicePolicy.constrainedElement",
+      "sourceId": "3574d507-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceMessage",
+      "name": "ServiceMessage.receiveEvent.event.operation",
+      "sourceId": "33580f58-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceFunction",
+      "name": "ServiceFunction.ownedParameter",
+      "sourceId": "35418f45-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ServiceStateDescription",
+      "name": "ServiceStateMachine.owner",
+      "sourceId": "30372035-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceRole",
+      "name": "ResourceRole.class",
+      "sourceId": "33e44a07-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceMethod",
+      "name": "ResourceMethod.method",
+      "sourceId": "34ab91a3-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceMethod",
+      "name": "ResourceMethod.ownedParameter",
+      "sourceId": "_18_2_8f40297_1444292096716_68451_37663"
+    },
+    {
+      "owner": "ResourceParameter",
+      "name": "ResourceParameter.type",
+      "sourceId": "33c8f9bb-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourcePerformer",
+      "name": "ResourcePerformer.ownedOperation",
+      "sourceId": "_18_2_8f40297_1458049797957_45939_34236"
+    },
+    {
+      "owner": "ResourcePerformer",
+      "name": "ResourcePerformer.ownedPort",
+      "sourceId": "_18_2_8f40297_1458049889312_810439_34238"
+    },
+    {
+      "owner": "ResourcePerformer",
+      "name": "ResourcePerformer.isCapableOfPerforming",
+      "sourceId": "_18_2_8f40297_1458050033303_651379_34290"
+    },
+    {
+      "owner": "ResourceExchange",
+      "name": "ResourceExchange.conveyed",
+      "sourceId": "351f3a51-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceExchange",
+      "name": "ResourceInteraction.realizingActivityEdge",
+      "sourceId": "307d29b4-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceExchange",
+      "name": "ResourceInteraction.realizingConnector",
+      "sourceId": "352a105b-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceExchange",
+      "name": "ResourceInteraction.realizingMessage",
+      "sourceId": "_18_2_8f40297_1444207656964_850145_35733"
+    },
+    {
+      "owner": "ResourceInterface",
+      "name": "ResourceInterface.ownedOperation",
+      "sourceId": "_18_0_2_8f40297_1425564395036_541795_32274"
+    },
+    {
+      "owner": "ResourceSignalProperty",
+      "name": "ResourceSignalProperty.class",
+      "sourceId": "_18_4_1_8f40297_1492071470956_902150_35444"
+    },
+    {
+      "owner": "ResourceSignalProperty",
+      "name": "ResourceSignalProperty.type",
+      "sourceId": "_18_4_1_8f40297_1492071470960_123032_35445"
+    },
+    {
+      "owner": "ResourceConstraint",
+      "name": "ResourceConstraint.constrainedElement",
+      "sourceId": "309b60a5-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "DataElement",
+      "name": "DataElement.owner",
+      "sourceId": "_18_2_8f40297_1444207867692_381556_36472"
+    },
+    {
+      "owner": "ResourceMessage",
+      "name": "ResourceMessage.receiveEvent.event.operation",
+      "sourceId": "32f94d6d-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Function",
+      "name": "Function.ownedParameter",
+      "sourceId": "2f57e41e-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "FunctionEdge",
+      "name": "FunctionEdge.owner",
+      "sourceId": "30304205-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Forecast",
+      "name": "Forecast.pair",
+      "sourceId": "3247b0fa-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "VersionOfConfiguration",
+      "name": "VersionOfConfiguration.class",
+      "sourceId": "31e03c05-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "VersionOfConfiguration",
+      "name": "VersionOfConfiguration.type",
+      "sourceId": "3355ec59-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ResourceStateDescription",
+      "name": "ResourceStateDescription.owner",
+      "sourceId": "31e4f736-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "StructuralPart",
+      "name": "StructuralPart.class",
+      "sourceId": "2fb14e54-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "StructuralPart",
+      "name": "StructuralPart.type",
+      "sourceId": "337d238e-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "CapabilityProperty",
+      "name": "CapabilityProperty.class",
+      "sourceId": "_18_2_8f40297_1444379035117_909110_36739"
+    },
+    {
+      "owner": "CapabilityProperty",
+      "name": "CapabilityProperty.type",
+      "sourceId": "_18_2_8f40297_1444379035120_31444_36740"
+    },
+    {
+      "owner": "TemporalPart",
+      "name": "TemporalPart.class",
+      "sourceId": "_18_2_8f40297_1444378861211_371956_36665"
+    },
+    {
+      "owner": "TemporalPart",
+      "name": "TemporalPart.type",
+      "sourceId": "_18_2_8f40297_1444378861213_701583_36666"
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "name": "ActualEnterprisePhase.classifier",
+      "sourceId": "_18_2_8f40297_1444379152638_49929_36778"
+    },
+    {
+      "owner": "ActualEnterprisePhase",
+      "name": "ActualEnterprisePhase.start/endDate",
+      "sourceId": "3195c5ac-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "VisionStatement",
+      "name": "VisionStatement.ownedAttribute",
+      "sourceId": "_18_2_8f40297_1444379260800_394301_36780"
+    },
+    {
+      "owner": "ActualEnduringTask",
+      "name": "ActualEnduringTask.classifier",
+      "sourceId": "_18_2_8f40297_1444378271187_624205_35751"
+    },
+    {
+      "owner": "ActualResponsibility",
+      "name": "ActualResponsibility.classifier",
+      "sourceId": "_18_1_8f40297_1443701562563_836936_35611"
+    },
+    {
+      "owner": "ActualPost",
+      "name": "ActualPost.classifier",
+      "sourceId": "3103e611-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "FieldedCapability",
+      "name": "FieldedCapability.classifier",
+      "sourceId": "327fff0e-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualOrganization",
+      "name": "ActualOrganization.classifier",
+      "sourceId": "325433c6-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualOrganization",
+      "name": "ActualOrganization.slot",
+      "sourceId": "311bdb2d-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualResource",
+      "name": "ActualResource.classifier",
+      "sourceId": "_18_1_8f40297_1443701461103_560782_34821"
+    },
+    {
+      "owner": "ActualPerson",
+      "name": "ActualPerson.classifier",
+      "sourceId": "317e1eb4-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualResourceRole",
+      "name": "ActualResourceRole.definingFeature",
+      "sourceId": "_18_1_8f40297_1443700882951_450139_34173"
+    },
+    {
+      "owner": "ActualResourceRole",
+      "name": "ActualResourceRole.owningInstance",
+      "sourceId": "_18_1_8f40297_1443700882953_831077_34174"
+    },
+    {
+      "owner": "ActualOrganizationRole",
+      "name": "ActualOrganizationRole.owningInstance",
+      "sourceId": "31787a16-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualResourceRelationship",
+      "name": "ActualResourceRelationship.realizes",
+      "sourceId": "3278d2b5-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualService",
+      "name": "ActualService.classifier",
+      "sourceId": "_18_1_8f40297_1443700582711_610904_33886"
+    },
+    {
+      "owner": "Control",
+      "name": "Control.conveyed",
+      "sourceId": "338c3e95-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Command",
+      "name": "Command.conveyed",
+      "sourceId": "308eb5c4-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "SecurityConstraint",
+      "name": "Security.constrainedElement",
+      "sourceId": "_18_2_8f40297_1444292951728_170681_38881"
+    },
+    {
+      "owner": "SecurityControlFamily",
+      "name": "SecurityControlFamily.annotatedElement",
+      "sourceId": "_18_2_8f40297_1444293993299_311976_40223"
+    },
+    {
+      "owner": "ProtectsInContext",
+      "name": "ProtectsInContext.client",
+      "sourceId": "_18_2_8f40297_1444293220310_306237_39201"
+    },
+    {
+      "owner": "ProtectsInContext",
+      "name": "ProtectsInContext.supplier",
+      "sourceId": "_18_2_8f40297_1444293220311_469370_39202"
+    },
+    {
+      "owner": "SecurityProperty",
+      "name": "SecurityProperty.type",
+      "sourceId": "_18_2_8f40297_1444294116780_440546_40344"
+    },
+    {
+      "owner": "SecurityProperty",
+      "name": "SecurityProperty.class",
+      "sourceId": "_18_2_8f40297_1444294116783_659107_40345"
+    },
+    {
+      "owner": "ProtocolLayer",
+      "name": "ProtocolLayer.class",
+      "sourceId": "3433c925-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProtocolLayer",
+      "name": "ProtocolLayer.type",
+      "sourceId": "31b02bd1-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectMilestone",
+      "name": "ProjectMilestone.ownedAttribute",
+      "sourceId": "34555aab-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectActivityAction",
+      "name": "ProjectActivityAction.activity",
+      "sourceId": "_18_4_1_8f40297_1491206111999_645171_37622"
+    },
+    {
+      "owner": "ActualProjectMilestoneRole",
+      "name": "ActualProjectMilestoneRole.definingFeature",
+      "sourceId": "30e11bef-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualProjectMilestoneRole",
+      "name": "ActualProjectMilestoneRole.owningInstance",
+      "sourceId": "3453fb07-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualProjectMilestoneRole",
+      "name": "ActualProjectMilestoneRole.value.instance",
+      "sourceId": "_18_2_8f40297_1444146185838_559412_42850"
+    },
+    {
+      "owner": "ActualProjectRole",
+      "name": "ActualProjectRole.definingFeature",
+      "sourceId": "_18_2_8f40297_1444146268469_443190_42852"
+    },
+    {
+      "owner": "ActualProjectRole",
+      "name": "ActualProjectRole.owningInstance",
+      "sourceId": "_18_2_8f40297_1444146268473_501701_42853"
+    },
+    {
+      "owner": "ActualProjectRole",
+      "name": "ActualProjectRole.value.instance",
+      "sourceId": "_18_2_8f40297_1444146268476_762589_42854"
+    },
+    {
+      "owner": "ActualProject",
+      "name": "ActualProject.classifier",
+      "sourceId": "2f1e84a8-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualProject",
+      "name": "ActualProject.slot",
+      "sourceId": "_18_2_8f40297_1458053052841_830134_38168"
+    },
+    {
+      "owner": "ActualProjectMilestone",
+      "name": "ActualProjectMilestone.classifier",
+      "sourceId": "33d9743c-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectRole",
+      "name": "ProjectRole.class",
+      "sourceId": "_18_2_8f40297_1444203598828_798662_43386"
+    },
+    {
+      "owner": "ProjectRole",
+      "name": "ProjectRole.type",
+      "sourceId": "_18_2_8f40297_1444203598830_917196_43387"
+    },
+    {
+      "owner": "ProjectMilestoneRole",
+      "name": "ProjectMilestoneRole.class",
+      "sourceId": "31767e2b-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectMilestoneRole",
+      "name": "ProjectMilestoneRole.type",
+      "sourceId": "34114d17-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectTheme",
+      "name": "ProjecTheme.type",
+      "sourceId": "317ac425-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ProjectTheme",
+      "name": "ProjecTheme.class",
+      "sourceId": "_18_2_8f40297_1444205817725_674593_34502"
+    },
+    {
+      "owner": "ProjectStatus",
+      "name": "ProjectStatus.definingFeature",
+      "sourceId": "314841ae-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Alias",
+      "name": "Alias.annotatedElement",
+      "sourceId": "321aad07-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "Definition",
+      "name": "Definition.annotatedElement",
+      "sourceId": "30951ebc-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "SameAs",
+      "name": "SameAs.client",
+      "sourceId": "314fe33c-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "SameAs",
+      "name": "SameAs.supplier",
+      "sourceId": "30695380-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "EnvironmentProperty",
+      "name": "EnvironmentalProperty.class",
+      "sourceId": "2fccc607-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "EnvironmentProperty",
+      "name": "EnvironmentalProperty.type",
+      "sourceId": "32c98b46-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualCondition",
+      "name": "ActualCondition.classifier",
+      "sourceId": "_18_2_8f40297_1444112414408_294957_37314"
+    },
+    {
+      "owner": "Measurement",
+      "name": "Measurement.class",
+      "sourceId": "_18_2_8f40297_1444113629819_443602_37341"
+    },
+    {
+      "owner": "ActualMeasurement",
+      "name": "ActualMeasurement.definingFeature",
+      "sourceId": "33ada90a-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualMeasurement",
+      "name": "ActualMeasurement.owningInstance",
+      "sourceId": "_18_2_8f40297_1458056229091_303448_40372"
+    },
+    {
+      "owner": "ActualEnvironment",
+      "name": "ActualEnvironment.classifier",
+      "sourceId": "_18_2_8f40297_1444112416395_677787_37316"
+    },
+    {
+      "owner": "ActualMeasurementSet",
+      "name": "ActualMeasurementSet.classifier",
+      "sourceId": "_18_2_8f40297_1444112750979_219146_37330"
+    },
+    {
+      "owner": "ActualMeasurementSet",
+      "name": "ActualMeasurementSet.slot",
+      "sourceId": "_18_2_8f40297_1444113016763_332731_37332"
+    },
+    {
+      "owner": "ActualPropertySet",
+      "name": "ActualPropertySet.classifier",
+      "sourceId": "31aa380c-fbef-11e1-a364-456a62c2a10f"
+    },
+    {
+      "owner": "ActualLocation",
+      "name": "ActualLocation.classifier",
+      "sourceId": "344f19c1-fbef-11e1-a364-456a62c2a10f"
+    }
+  ],
+  "viewpoints": [
+    {
+      "id": "C1",
+      "title": "Capability Taxonomy",
+      "pages": [
+        11,
+        12
+      ],
+      "representation": "hierarchical connected shapes",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C2",
+      "title": "Enterprise Vision",
+      "pages": [
+        13,
+        14
+      ],
+      "representation": "connected shapes and typed references",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C3",
+      "title": "Capability Dependencies",
+      "pages": [
+        15
+      ],
+      "representation": "connected shapes",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C4",
+      "title": "Standard Processes",
+      "pages": [
+        16,
+        17
+      ],
+      "representation": "activity definitions and allocation",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C7",
+      "title": "Performance Parameters",
+      "pages": [
+        20
+      ],
+      "representation": "typed measurement definitions",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C8",
+      "title": "Capability Assumptions",
+      "pages": [
+        21
+      ],
+      "representation": "requirements traceability",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "S1",
+      "title": "Service Taxonomy",
+      "pages": [
+        26,
+        27
+      ],
+      "representation": "hierarchical connected shapes",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "S3",
+      "title": "Service Interfaces",
+      "pages": [
+        28,
+        29
+      ],
+      "representation": "interface and port references",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "S4",
+      "title": "Service Functions",
+      "pages": [
+        30
+      ],
+      "representation": "function allocation",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "C1-S1",
+      "title": "Capability to Service Mapping",
+      "pages": [
+        40
+      ],
+      "representation": "connected-shapes mapping",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "L1",
+      "title": "Node Types",
+      "pages": [
+        44,
+        45
+      ],
+      "representation": "hierarchical connected shapes",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "L2-L3",
+      "title": "High-level Operational Concept",
+      "pages": [
+        48
+      ],
+      "representation": "connected-shapes overview, not a rich-picture editor",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "L3",
+      "title": "Node Interactions",
+      "pages": [
+        49,
+        50,
+        51
+      ],
+      "representation": "typed flows and conveyed references",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "L4",
+      "title": "Logical Activities",
+      "pages": [
+        52,
+        53
+      ],
+      "representation": "allocation and action flows, not a BPMN/swimlane renderer",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "P1",
+      "title": "Resource Types",
+      "pages": [
+        69,
+        70
+      ],
+      "representation": "hierarchical connected shapes",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "P2",
+      "title": "Resource Structure",
+      "pages": [
+        71,
+        72
+      ],
+      "representation": "resource, role and connector references",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "P3",
+      "title": "Resource Connectivity",
+      "pages": [
+        73,
+        74
+      ],
+      "representation": "typed resource exchanges",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "P4",
+      "title": "Resource Functions",
+      "pages": [
+        75,
+        76
+      ],
+      "representation": "function allocation and action flows",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "L4-P4",
+      "title": "Activity to Function Mapping",
+      "pages": [
+        87,
+        88
+      ],
+      "representation": "cross-domain traceability",
+      "status": "declared-structural-rules"
+    },
+    {
+      "id": "A8",
+      "title": "Standards",
+      "pages": [
+        104,
+        105
+      ],
+      "representation": "typed standard references and metadata",
+      "status": "declared-structural-rules"
+    }
+  ],
+  "unsupportedGuidelineViewpoints": [
+    "C5",
+    "Cr",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "Sr",
+    "L2",
+    "L5",
+    "L6",
+    "L7",
+    "L8",
+    "Lr",
+    "P5",
+    "P6",
+    "P7",
+    "P8",
+    "Pr",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "Ar"
+  ],
+  "limits": [
+    "No UML/SysML editor or lossless XMI import/export",
+    "No execution of English/OCL constraints",
+    "Derived fields are not writable or calculated",
+    "Only declared binary endpoint constraints are enforced",
+    "Specialist renderers need explicit view configuration; no complete UML/BPMN behavior semantics",
+    "NAFv4 guideline March 2019; no claim of complete NAFv4.1, UAF 1.3 or tool certification"
+  ]
+}

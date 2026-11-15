@@ -1,0 +1,26 @@
+{
+  "styleGroups": {
+    "capability": { "backgroundColor": "#00FF00" },
+    "service": { "backgroundColor": "#EE82EE" },
+    "logical": { "backgroundColor": "#6A5ACD" },
+    "physical": { "backgroundColor": "#FF8C00" },
+    "foundation": { "backgroundColor": "#FFD700" },
+    "neutral": {}
+  },
+  "packages": {
+    "Strategic": "capability",
+    "Services": "service",
+    "Operational": "logical",
+    "Resources": "physical",
+    "Metadata": "foundation",
+    "Standards": "foundation",
+    "Summary and Overview": "foundation",
+    "Dictionary": "foundation",
+    "Parameters": "foundation",
+    "Personnel": "neutral",
+    "Security": "neutral",
+    "Project": "neutral",
+    "Actual Resources": "neutral"
+  },
+  "types": { "Package": "neutral", "Requirement": "neutral" }
+}

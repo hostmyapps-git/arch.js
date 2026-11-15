@@ -1,0 +1,409 @@
+{
+  "id": "naf4-uaf",
+  "title": "NAFv4 using UAF 1.0 — structural viewpoints",
+  "version": "1.0.0-arch.1",
+  "extends": "uaf",
+  "requireViewpoint": true,
+  "viewpoints": {
+    "C1": {
+      "nodes": [
+        "Package",
+        "Capability",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "CapabilityGeneralization"
+      ],
+      "requiredNodes": [
+        "Capability"
+      ]
+    },
+    "C2": {
+      "nodes": [
+        "Package",
+        "EnterpriseVision",
+        "VisionStatement",
+        "EnterpriseGoal",
+        "EnterprisePhase",
+        "ActualEnterprisePhase",
+        "Capability",
+        "EnduringTask",
+        "ActualEnduringTask",
+        "WholeLifeEnterprise"
+      ],
+      "relations": [
+        "CapabilityForTask",
+        "Exhibits"
+      ],
+      "requiredNodes": [
+        "EnterpriseVision",
+        "Capability"
+      ]
+    },
+    "C3": {
+      "nodes": [
+        "Package",
+        "Capability"
+      ],
+      "relations": [
+        "CapabilityDependency",
+        "CapabilityGeneralization"
+      ],
+      "requiredNodes": [
+        "Capability"
+      ]
+    },
+    "C4": {
+      "nodes": [
+        "Package",
+        "StandardOperationalActivity",
+        "Capability",
+        "OperationalActivityAction"
+      ],
+      "relations": [
+        "MapsToCapability",
+        "OperationalControlFlow"
+      ],
+      "requiredNodes": [
+        "StandardOperationalActivity"
+      ]
+    },
+    "C7": {
+      "nodes": [
+        "Package",
+        "Capability",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [],
+      "requiredNodes": [
+        "Capability",
+        "Measurement"
+      ]
+    },
+    "C8": {
+      "nodes": [
+        "Package",
+        "Capability",
+        "Requirement"
+      ],
+      "relations": [
+        "Refine"
+      ],
+      "requiredNodes": [
+        "Capability",
+        "Requirement"
+      ],
+      "requiredRelations": [
+        "Refine"
+      ]
+    },
+    "S1": {
+      "nodes": [
+        "Package",
+        "ServiceSpecification",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "ServiceGeneralization"
+      ],
+      "requiredNodes": [
+        "ServiceSpecification"
+      ]
+    },
+    "S3": {
+      "nodes": [
+        "Package",
+        "ServiceSpecification",
+        "ServiceInterface",
+        "ServicePort",
+        "ServiceConnector",
+        "ServiceSpecificationRole",
+        "ServiceParameter",
+        "ServiceMethod",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [],
+      "requiredNodes": [
+        "ServiceSpecification",
+        "ServiceInterface"
+      ]
+    },
+    "S4": {
+      "nodes": [
+        "Package",
+        "ServiceSpecification",
+        "ServiceFunction",
+        "ServiceFunctionAction"
+      ],
+      "relations": [
+        "IsCapableToPerform"
+      ],
+      "requiredNodes": [
+        "ServiceSpecification",
+        "ServiceFunction"
+      ],
+      "requiredRelations": [
+        "IsCapableToPerform"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ServiceFunction"
+          ],
+          "relations": [
+            "IsCapableToPerform"
+          ],
+          "direction": "incoming",
+          "min": 1
+        }
+      ]
+    },
+    "C1-S1": {
+      "nodes": [
+        "Package",
+        "Capability",
+        "ServiceSpecification"
+      ],
+      "relations": [
+        "Exhibits"
+      ],
+      "requiredNodes": [
+        "Capability",
+        "ServiceSpecification"
+      ],
+      "requiredRelations": [
+        "Exhibits"
+      ]
+    },
+    "L1": {
+      "nodes": [
+        "Package",
+        "OperationalAgent",
+        "OperationalInterface",
+        "OperationalPort",
+        "OperationalRole",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "OperationalGeneralization"
+      ],
+      "requiredNodes": [
+        "OperationalAgent"
+      ]
+    },
+    "L2-L3": {
+      "nodes": [
+        "Package",
+        "UAFElement",
+        "Requirement"
+      ],
+      "relations": [
+        "*"
+      ]
+    },
+    "L3": {
+      "nodes": [
+        "Package",
+        "OperationalAgent",
+        "OperationalRole",
+        "OperationalPort",
+        "OperationalInterface",
+        "OperationalConnector",
+        "OperationalExchangeItem",
+        "OperationalActivity",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "OperationalExchange",
+        "IsCapableToPerform"
+      ],
+      "requiredNodes": [
+        "OperationalPerformer"
+      ],
+      "requiredRelations": [
+        "OperationalExchange"
+      ]
+    },
+    "L4": {
+      "nodes": [
+        "Package",
+        "OperationalAgent",
+        "OperationalActivity",
+        "OperationalActivityAction",
+        "OperationalRole",
+        "Capability",
+        "ServiceSpecification"
+      ],
+      "relations": [
+        "IsCapableToPerform",
+        "PerformsInContext",
+        "OperationalControlFlow",
+        "Consumes",
+        "MapsToCapability"
+      ],
+      "requiredNodes": [
+        "OperationalAgent",
+        "OperationalActivity"
+      ],
+      "requiredRelations": [
+        "IsCapableToPerform"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "OperationalActivity"
+          ],
+          "relations": [
+            "IsCapableToPerform"
+          ],
+          "direction": "incoming",
+          "min": 1
+        }
+      ]
+    },
+    "P1": {
+      "nodes": [
+        "Package",
+        "ResourcePerformer",
+        "ResourceInterface",
+        "ResourcePort",
+        "ResourceRole",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "ResourceGeneralization"
+      ],
+      "requiredNodes": [
+        "ResourcePerformer"
+      ]
+    },
+    "P2": {
+      "nodes": [
+        "Package",
+        "ResourcePerformer",
+        "ResourceRole",
+        "ResourceConnector",
+        "ResourceInterface",
+        "ResourcePort"
+      ],
+      "relations": [
+        "ResourceGeneralization"
+      ],
+      "requiredNodes": [
+        "ResourcePerformer"
+      ]
+    },
+    "P3": {
+      "nodes": [
+        "Package",
+        "ResourcePerformer",
+        "ResourceRole",
+        "ResourcePort",
+        "ResourceInterface",
+        "ResourceConnector",
+        "ResourceExchangeItem",
+        "Function",
+        "Measurement",
+        "MeasurementSet"
+      ],
+      "relations": [
+        "ResourceExchange",
+        "Control",
+        "Command",
+        "IsCapableToPerform"
+      ],
+      "requiredNodes": [
+        "ResourcePerformer"
+      ],
+      "requiredRelations": [
+        "ResourceExchange"
+      ]
+    },
+    "P4": {
+      "nodes": [
+        "Package",
+        "ResourcePerformer",
+        "ResourceRole",
+        "Function",
+        "FunctionAction"
+      ],
+      "relations": [
+        "IsCapableToPerform",
+        "PerformsInContext",
+        "FunctionControlFlow"
+      ],
+      "requiredNodes": [
+        "ResourcePerformer",
+        "Function"
+      ],
+      "requiredRelations": [
+        "IsCapableToPerform"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "Function"
+          ],
+          "relations": [
+            "IsCapableToPerform"
+          ],
+          "direction": "incoming",
+          "min": 1
+        }
+      ]
+    },
+    "L4-P4": {
+      "nodes": [
+        "Package",
+        "Function",
+        "OperationalActivity",
+        "ServiceFunction",
+        "ResourcePerformer",
+        "OperationalAgent",
+        "ServiceSpecification"
+      ],
+      "relations": [
+        "Implements",
+        "IsCapableToPerform"
+      ],
+      "requiredNodes": [
+        "Function"
+      ],
+      "requiredRelations": [
+        "Implements"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "Function"
+          ],
+          "relations": [
+            "Implements"
+          ],
+          "direction": "outgoing",
+          "min": 1
+        }
+      ]
+    },
+    "A8": {
+      "nodes": [
+        "Package",
+        "UAFElement"
+      ],
+      "relations": [
+        "Forecast",
+        "Implements"
+      ],
+      "requiredNodes": [
+        "Standard"
+      ]
+    }
+  }
+}

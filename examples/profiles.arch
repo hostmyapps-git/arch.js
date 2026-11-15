@@ -1,0 +1,74 @@
+architecture "Your vocabulary. Your rules." {
+  description "An inline profile defines meaning; the renderer supplies the drawing templates."
+  config {
+    id workshop
+    title "A small custom framework"
+    version "1.0"
+    defaultRelation uses
+    type actor {
+      template person
+      attribute owner { type string required true minLength 1 }
+    }
+    type product {
+      template application
+      accent "#6366f1"
+      attribute owner { required true }
+      attribute criticality { required true enum low, medium, high }
+      attribute replicas { type integer min 1 max 20 }
+    }
+    type record {
+      template database
+      attribute owner { required true }
+    }
+    type domain { template package contains actor, product, record }
+    relation uses { from actor to product style flow }
+    relation persists {
+      from product
+      to record
+      style access
+      outgoing { min 1 max 1 }
+      attribute encrypted { type boolean required true }
+    }
+    viewpoint landscape {
+      nodes actor, product, record, domain
+      relations uses, persists
+      requiredNodes actor, product, record
+      requiredRelations uses, persists
+    }
+    viewpoint data {
+      nodes product, record, domain
+      relations persists
+      requiredNodes product, record
+      requiredRelations persists
+    }
+  }
+  model {
+    actor customer "Customer" { owner "Experience team" }
+    domain commerce "Commerce domain" {
+      product portal "Customer portal" {
+        owner "Commerce team"
+        criticality high
+        replicas 3
+        technology "Web application"
+        description "Try removing owner or using an invalid criticality."
+      }
+      record orders "Order data" {
+        owner "Data team"
+        technology "PostgreSQL"
+      }
+    }
+    relation visits customer -> portal "Uses"
+    relation writes portal -> orders "Persists" { type persists encrypted true }
+  }
+  view overview "Custom framework" {
+    viewpoint landscape
+    direction right
+    route visits { curve rounded }
+    route writes { curve rounded }
+  }
+  view data "Data perspective" {
+    viewpoint data
+    include portal, orders
+    style portal { template component }
+  }
+}
