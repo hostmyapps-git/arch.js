@@ -471,6 +471,18 @@ try {
         const tile=document.createElement('div');tile.style.cssText='width:110px;text-align:center;font:12px sans-serif;color:black';tile.innerHTML=generated;const label=document.createElement('div');label.textContent=`affinity.${id}`;tile.append(label);gallery.append(tile);
       }
     }
+    const backgroundBodies={
+      attribute:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" enable-background="new 0 0 24 24"><rect width="24" height="24" fill="#facc15"/><circle cx="12" cy="12" r="8" fill="#2563eb"/></svg>',
+      style:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" enable-background="new" style="enable-background:accumulate"><g style="enable-background:new 0 0 24 24;fill:#ef4444"><path d="M0 0h24v24H0Z"/></g></svg>'
+    };
+    arch.registerIconPack('background-export',{icons:Object.fromEntries(Object.entries(backgroundBodies).map(([name,body])=>[name,{body}]))});
+    for(const [name,body]of Object.entries(backgroundBodies)) {
+      const generated=arch.renderIconToString(`background-export.${name}`,{size:64});
+      if(!generated.includes('enable-background='))issues.push(`enable-background missing: ${name}`);
+      const raster=async svg=>{const img=new Image();img.src='data:image/svg+xml,'+encodeURIComponent(svg);await img.decode();const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,64,64);return ctx.getImageData(0,0,64,64).data;};
+      const a=await raster(body.replace('<svg ','<svg width="64" height="64" ')),b=await raster(generated);
+      const error=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i]),0)/a.length;if(error>1)issues.push({name:`enable-background ${name}`,error});
+    }
     const alias={width:20,height:10,icons:{a:{body:'<path fill="red" d="M0 0h5v10H0Z"/>'}},aliases:{turned:{parent:'a',rotate:1},flipped:{parent:'a',hFlip:true}}};
     arch.registerIconPack('alias-render',alias);
     const raw=arch.renderIconToString('alias-render.turned',{size:64});

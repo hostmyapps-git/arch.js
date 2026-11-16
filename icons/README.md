@@ -52,6 +52,15 @@ Absolute SVG-Größen beziehungsweise die `viewBox` liefern fehlende Dimensionen
 berücksichtigt. Ein eigener SVG-Viewport pro Icon hält Prozentangaben auch
 innerhalb größerer Architekturdiagramme korrekt.
 
+`enable-background` wird als SVG-Attribut und in Inline-Stilen geprüft und
+erhalten: `accumulate`, `inherit`, `new` sowie `new x y width height` mit vier
+endlichen Zahlen und nichtnegativer Breite/Höhe. Inline-Stile haben auch hier
+Vorrang vor dem Attribut. Grundlage ist die
+[SVG-1.1-Definition](https://www.w3.org/TR/SVG11/filters.html#EnableBackgroundProperty).
+Die Library implementiert keine eigene Hintergrundpuffer-/Filtersemantik;
+deren Darstellung übernimmt der Browser. Externe Referenzen und unbekannte
+Stile werden durch diese Unterstützung nicht freigeschaltet.
+
 Script, Eventhandler, `foreignObject`, Bilder, `feImage`, Animationen,
 Stylesheets und externe Referenzen sind nicht erlaubt. Andere nicht unterstützte
 Elemente/Attribute lösen einen Fehler aus; es wird kein ungeprüftes Markup

@@ -48,6 +48,37 @@ test('Iconify paint and shapes support colors, gradients, lines, polygons and in
   arch.registerIconPack('fixed',{icons:{a:{paths:[{d:'M0 0h10v10Z',fill:'DarkOrange',stroke:'none'}]}}});assert.match(arch.renderIconToString('fixed.a'),/fill="#ff8c00"/);
 });
 
+test('enable-background exports register as SVG attributes and inline styles without losing valid values',async()=>{
+  for(const [index,value] of ['new','accumulate','inherit','new 0 0 24 24',' new -2 -3 0 12 ','new 0,0,24,24','new 0 0 2.4e1 24','new 0\t0\n24 24'].entries()) {
+    const pack={icons:{sample:{body:`<svg viewBox="0 0 24 24" enable-background="${value}"><g style="enable-background: ${value};fill:Gold"><path d="M0 0h24v24H0Z"/></g></svg>`}}};
+    const before=JSON.stringify(pack),name=`background-${index}`;arch.registerIconPack(name,pack);
+    const svg=arch.renderIconToString(`${name}.sample`,{idPrefix:'background'});
+    assert.equal((svg.match(/enable-background=/g)??[]).length,2);
+    assert.match(svg,/fill="#ffd700"/);assert.equal(JSON.stringify(pack),before);
+  }
+  arch.registerIconPack('background-override',{icons:{sample:{body:'<svg enable-background="new 0 0 24 24" style="enable-background:accumulate"><path d="M0 0h24v24H0Z"/></svg>'}}});
+  const svg=arch.renderIconToString('background-override.sample');
+  assert.match(svg,/enable-background="accumulate"/);assert.doesNotMatch(svg,/enable-background="new/);
+  const pack={icons:{sample:{body:'<svg viewBox="0 0 24 24" enable-background="new 0 0 24 24"><g style="enable-background:accumulate;fill:Gold"><path d="M0 0h24v24H0Z"/></g></svg>'}}};
+  arch.registerIconPack('background-bundle',pack);const expected=arch.renderIconToString('background-bundle.sample',{idPrefix:'same'});
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('background-bundle',pack);
+    assert.equal(context.arch.renderIconToString('background-bundle.sample',{idPrefix:'same'}),expected);
+  }
+});
+
+test('invalid enable-background values fail atomically and do not permit unrelated SVG attributes/styles',()=>{
+  arch.registerIconPack('background-safe',gradient);const before=arch.renderIconToString('background-safe.sample',{idPrefix:'same'});
+  for(const value of ['url(https://example.com/x)','new 0 0 -1 24','new 0 0 24 -1','new 0 0 24','new 0 0 NaN 24','new 0 0 1e309 24','new 0 0 24px 24','new 0 0 24% 24','accumulate new','new 0 0 24 24 extra']) {
+    for(const body of [`<svg enable-background="${value}"/>`,`<g style="enable-background:${value}"/>`]) {
+      assert.throws(()=>arch.registerIconPack('background-safe',{icons:{sample:{body}}}),arch.ArchError,value);
+      assert.equal(arch.renderIconToString('background-safe.sample',{idPrefix:'same'}),before);
+    }
+  }
+  for(const body of ['<g enable-background="new" onload="alert(1)"/>','<g style="enable-background:new;background:url(https://example.com/x)"/>'])
+    assert.throws(()=>arch.registerIconPack('background-safe',{icons:{sample:{body}}}),arch.ArchError);
+});
+
 test('unsafe/external SVG, reference cycles, malformed XML, excessive expansion and invalid dimensions fail atomically',()=>{
   arch.registerIconPack('safe',gradient);const before=arch.renderIconToString('safe.sample',{idPrefix:'test'});
   const bad=['<script>alert(1)</script>','<path d="M0 0" onload="x"/>','<image href="data:x"/>','<foreignObject/>','<animate/>',

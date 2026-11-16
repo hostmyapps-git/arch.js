@@ -33,6 +33,17 @@ function numbers(value) {
   if(!parts.length||parts.length>20000||parts.some(p=>!number.test(p)||!Number.isFinite(Number(p))||Math.abs(Number(p))>1e15)) throw Error('Invalid SVG numbers');
   return parts;
 }
+// SVG 1.1 export hint; retain it without interpreting background-filter support.
+// https://www.w3.org/TR/SVG11/filters.html#EnableBackgroundProperty
+function enableBackground(value) {
+  value=value.trim();
+  if(['accumulate','inherit','new'].includes(value))return value;
+  const match=value.match(/^new\s+([\s\S]+)$/);
+  if(!match)throw Error('Invalid SVG enable-background');
+  const rect=numbers(match[1]);
+  if(rect.length!==4||Number(rect[2])<0||Number(rect[3])<0)throw Error('Invalid SVG enable-background');
+  return `new ${rect.join(' ')}`;
+}
 function transform(value) {
   const pattern=/\s*(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^()]*)\)\s*,?/g;
   let end=0,count=0;
@@ -88,6 +99,7 @@ function parseBody(body) {
       else if(numeric.has(key)) {const v=value.trim().replace(lengths.has(key)?/(?:px|%)$/:/%$/,'');numbers(v);if(numbers(v).length!==1)throw Error(`Invalid ${key}`);}
       else if(vectors.has(key)) {const n=numbers(value);if(key==='viewBox'&&n.length!==4)throw Error('Invalid viewBox');if(key==='points'&&(n.length<4||n.length%2))throw Error('Invalid points');}
       else if(transforms.has(key)) transform(value);
+      else if(key==='enable-background') value=enableBackground(value);
       else if(own(enums,key)) {if(!enums[key].includes(value))throw Error(`Invalid SVG ${key}`);}
       else if(key==='preserveAspectRatio') {if(!/^(none|x(?:Min|Mid|Max)Y(?:Min|Mid|Max)(?:\s+(?:meet|slice))?)$/.test(value))throw Error('Invalid preserveAspectRatio');}
       else if(['in','in2','result'].includes(key)) {if(!/^[\w.-]+$/.test(value))throw Error('Invalid filter input');}
@@ -103,7 +115,7 @@ function parseBody(body) {
     for(const attribute of Array.from(element.attributes)) if(attribute.name!=='style') apply(attribute.name,attribute.value);
     if(element.hasAttribute('style')) for(const declaration of element.getAttribute('style').split(';').filter(s=>s.trim())) {
       const match=declaration.match(/^\s*([a-z-]+)\s*:\s*([^:]+?)\s*$/);
-      if(!match||(!paints.has(match[1])&&!numeric.has(match[1])&&!own(enums,match[1]))) throw Error('Unsupported SVG style');
+      if(!match||(!paints.has(match[1])&&!numeric.has(match[1])&&!own(enums,match[1])&&match[1]!=='enable-background')) throw Error('Unsupported SVG style');
       apply(match[1],match[2],true);
     }
     for(const child of Array.from(element.childNodes)) {

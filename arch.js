@@ -10952,6 +10952,15 @@ var arch = (() => {
     if (!parts.length || parts.length > 2e4 || parts.some((p) => !number.test(p) || !Number.isFinite(Number(p)) || Math.abs(Number(p)) > 1e15)) throw Error("Invalid SVG numbers");
     return parts;
   }
+  function enableBackground(value2) {
+    value2 = value2.trim();
+    if (["accumulate", "inherit", "new"].includes(value2)) return value2;
+    const match = value2.match(/^new\s+([\s\S]+)$/);
+    if (!match) throw Error("Invalid SVG enable-background");
+    const rect = numbers(match[1]);
+    if (rect.length !== 4 || Number(rect[2]) < 0 || Number(rect[3]) < 0) throw Error("Invalid SVG enable-background");
+    return `new ${rect.join(" ")}`;
+  }
   function transform(value2) {
     const pattern = /\s*(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^()]*)\)\s*,?/g;
     let end = 0, count = 0;
@@ -11033,6 +11042,7 @@ var arch = (() => {
           if (key === "viewBox" && n.length !== 4) throw Error("Invalid viewBox");
           if (key === "points" && (n.length < 4 || n.length % 2)) throw Error("Invalid points");
         } else if (transforms.has(key)) transform(value2);
+        else if (key === "enable-background") value2 = enableBackground(value2);
         else if (own4(enums, key)) {
           if (!enums[key].includes(value2)) throw Error(`Invalid SVG ${key}`);
         } else if (key === "preserveAspectRatio") {
@@ -11055,7 +11065,7 @@ var arch = (() => {
       for (const attribute of Array.from(element.attributes)) if (attribute.name !== "style") apply(attribute.name, attribute.value);
       if (element.hasAttribute("style")) for (const declaration of element.getAttribute("style").split(";").filter((s) => s.trim())) {
         const match = declaration.match(/^\s*([a-z-]+)\s*:\s*([^:]+?)\s*$/);
-        if (!match || !paints.has(match[1]) && !numeric.has(match[1]) && !own4(enums, match[1])) throw Error("Unsupported SVG style");
+        if (!match || !paints.has(match[1]) && !numeric.has(match[1]) && !own4(enums, match[1]) && match[1] !== "enable-background") throw Error("Unsupported SVG style");
         apply(match[1], match[2], true);
       }
       for (const child2 of Array.from(element.childNodes)) {

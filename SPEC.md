@@ -764,7 +764,7 @@ Die beschriebene Version ist implementiert. Prüfung am 16.11.2026 mit Node.js
 Chromium auf macOS/ARM64. Browserbundles ohne externe Laufzeitscripts; der Node-Quellimport verwendet
 @xmldom/xmldom und svgpath als gepinnte npm-Abhängigkeiten.
 
-- 188 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
+- 190 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
   deterministischer/isolierter Layouts, Routing, Iconpacks, Unicode, Escaping,
   Markdown und Vergleich beider Bundles.
 - Alle zwölf Modellbeispiele mit 46 Ansichten sowie die eingebaute Hilfe im
@@ -859,6 +859,12 @@ unverändert; es werden keine URLs automatisch geladen. Das bisherige
 `paths`-Format bleibt kompatibel. Feste Farben sind nun auch in strukturierten
 Pfadobjekten erlaubt, lokale Paint-Server dagegen nur innerhalb validierter
 Iconify-SVG-Bäume.
+
+`enable-background` wird als Attribut und Inline-Präsentationsstil validiert
+und erhalten (`accumulate`, `inherit`, `new` oder `new` mit vier endlichen
+Koordinaten/Dimensionen; Breite/Höhe nichtnegativ). Inline-Stile überschreiben
+Attribute. Hintergrundpuffer und Filter werden nicht von arch.js emuliert;
+die vorhandene Browserdarstellung bleibt maßgeblich. [SVG-Umfang](icons/README.md).
 
 `src/iconify.js` prüft XML mit dem mitgelieferten @xmldom/xmldom 0.9.12,
 normalisiert Pfade mit svgpath 2.6.0 und rekonstruiert eine eingefrorene sichere

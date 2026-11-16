@@ -1,5 +1,27 @@
 # Umsetzungsfortschritt
 
+## Fehlerkorrektur: enable-background in SVG-Iconpacks (16.11.2026)
+
+- Die SVG-Allowlist wies `enable-background` bislang als unbekannt zurück und
+  verhinderte dadurch die atomare Registrierung ansonsten nutzbarer Packs.
+- Attribut und gleichnamigen Inline-Präsentationsstil ergänzt. Geprüfte Werte:
+  `accumulate`, `inherit`, `new` sowie `new x y width height` mit vier endlichen
+  Zahlen, nichtnegativer Breite/Höhe und den bestehenden numerischen Limits.
+  Whitespace, Kommas und Exponentialzahlen werden verarbeitet. Inline-Stile
+  überschreiben das Präsentationsattribut wie bei den übrigen Zeichenattributen.
+- Das Attribut bleibt im rekonstruierten SVG erhalten; arch.js implementiert
+  keine eigene Hintergrundpuffer-/Filtersemantik. Andere unbekannte Attribute,
+  aktive Inhalte und externe Referenzen werden dadurch nicht zugelassen.
+- Positive/negative Regressionstests einschließlich unveränderter Eingaben,
+  Atomarität und beider Browserbundles ergänzt. Chromium vergleicht Original-
+  SVGs mit Attribut-/Stylevarianten rasterisiert mit der rekonstruierten Ausgabe.
+- `icons/README.md` und SPEC um Werteumfang und SVG-1.1-Quellenverweis ergänzt;
+  beide Browserbundles neu gebaut.
+
+Verifikation: **190 Node-Testgruppen** und die vollständige Chromium-Suite
+erfolgreich. Attribut-/Stylevarianten stimmen im Pixelvergleich mit den
+Original-SVGs überein. `git diff --check` ohne Beanstandungen.
+
 ## Abgeschlossener Folgeauftrag: @meta als Architektur-View (16.11.2026)
 
 - `view ID "Title" { @meta json }` und `@meta dsl` ergänzt; Alias `meta json`
