@@ -11011,6 +11011,7 @@ var arch = (() => {
       links.set(node, refs);
       const apply = (key, value2, override = false) => {
         if (key === "xlink:href") key = "href";
+        if (key.startsWith("data-")) return;
         if (override) {
           delete node.attrs[key];
           for (let i = refs.length - 1; i >= 0; i--) if (refs[i].key === key) refs.splice(i, 1);

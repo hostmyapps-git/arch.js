@@ -47,6 +47,9 @@ Vollständige SVG-Exporte innerhalb von `body` werden ebenfalls unterstützt.
 Ein XML-Kopf und ausschließlich der bekannte öffentliche SVG-1.1-DOCTYPE
 werden vor dem Parsen entfernt; eine DTD wird niemals geladen. Editor-Metadaten
 wie `version`, `xml:space` und unbenutzte Namespace-Deklarationen werden gefiltert.
+`data-*`-Attribute wie `data-name` werden ebenfalls als Metadaten akzeptiert und
+beim Import weggelassen; ihre Werte beeinflussen weder Zeichnung noch Referenzen.
+Sie sind keine erlaubten Inline-CSS-Eigenschaften.
 Absolute SVG-Größen beziehungsweise die `viewBox` liefern fehlende Dimensionen;
 `width="100%"` / `height="100%"`, `px`-Längen und Präsentationsstile werden
 berücksichtigt. Ein eigener SVG-Viewport pro Icon hält Prozentangaben auch

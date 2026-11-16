@@ -83,6 +83,7 @@ function parseBody(body) {
     const node={tag,attrs:Object.create(null),children:[]},refs=[];links.set(node,refs);
     const apply=(key,value,override=false)=>{
       if(key==='xlink:href')key='href';
+      if(key.startsWith('data-'))return; // Non-rendering editor metadata; do not import it into the host DOM.
       if(override){delete node.attrs[key];for(let i=refs.length-1;i>=0;i--)if(refs[i].key===key)refs.splice(i,1);}
       // CSS closes a local url() at EOF; normalize this harmless source form.
       if(/^url\(#[^\s\"'()<>]+$/.test(value))value+=')';

@@ -79,6 +79,29 @@ test('invalid enable-background values fail atomically and do not permit unrelat
     assert.throws(()=>arch.registerIconPack('background-safe',{icons:{sample:{body}}}),arch.ArchError);
 });
 
+test('data-name and other data-* export metadata are accepted and omitted without changing rendered SVG',async()=>{
+  const plain='<svg viewBox="0 0 24 24"><g fill="Gold"><path d="M0 0h24v24H0Z"/></g></svg>';
+  const metadata='<svg viewBox="0 0 24 24" data-name="Layer 1" data-build="2026"><g fill="Gold" data-name="Shapes &amp; layers" data-url="https://example.com/metadata"><path data-name="&quot;&lt;shape&gt;&quot;" data-onload="alert(1)" data-ref="url(#missing)" d="M0 0h24v24H0Z"/></g></svg>';
+  const pack={icons:{plain:{body:plain},metadata:{body:metadata}}},before=JSON.stringify(pack);
+  arch.registerIconPack('data-metadata',pack);
+  const expected=arch.renderIconToString('data-metadata.plain',{title:'Same icon',idPrefix:'same'})
+    .replace('data-icon="data-metadata.plain"','data-icon="data-metadata.metadata"');
+  const actual=arch.renderIconToString('data-metadata.metadata',{title:'Same icon',idPrefix:'same'});
+  assert.equal(actual,expected);assert.doesNotMatch(actual,/data-(?:name|url|onload|ref|build)=/);assert.equal(JSON.stringify(pack),before);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('data-metadata',pack);
+    assert.equal(context.arch.renderIconToString('data-metadata.metadata',{title:'Same icon',idPrefix:'same'}),expected);
+  }
+});
+
+test('ignored data-* metadata does not bypass unknown attributes, active contents or inline-style validation',()=>{
+  arch.registerIconPack('metadata-safe',gradient);const before=arch.renderIconToString('metadata-safe.sample',{idPrefix:'same'});
+  for(const body of ['<g data-name="Layer" onload="alert(1)"/>','<g data-name="Layer" unsupported="x"/>','<g style="data-name:Layer"/>','<g data-name="Layer"><script>alert(1)</script></g>','<g data-name="Layer"><use href="https://example.com/external.svg"/></g>']) {
+    assert.throws(()=>arch.registerIconPack('metadata-safe',{icons:{sample:{body}}}),arch.ArchError);
+    assert.equal(arch.renderIconToString('metadata-safe.sample',{idPrefix:'same'}),before);
+  }
+});
+
 test('unsafe/external SVG, reference cycles, malformed XML, excessive expansion and invalid dimensions fail atomically',()=>{
   arch.registerIconPack('safe',gradient);const before=arch.renderIconToString('safe.sample',{idPrefix:'test'});
   const bad=['<script>alert(1)</script>','<path d="M0 0" onload="x"/>','<image href="data:x"/>','<foreignObject/>','<animate/>',

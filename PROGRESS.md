@@ -1,5 +1,24 @@
 # Umsetzungsfortschritt
 
+## Fehlerkorrektur: data-name und data-* in SVG-Iconpacks (16.11.2026)
+
+Verifikation: **192 Node-Testgruppen** und die vollständige Chromium-Suite
+erfolgreich. Die Metadatenvariante stimmt rasterisiert mit dem Original überein.
+
+- `data-*`-Attribute wie `data-name`, `data-export` oder `data-build` werden
+  als nicht zeichnende Export-/Editor-Metadaten akzeptiert und beim SVG-Import
+  verworfen. Keine Interpretation als Referenz oder Zeichenattribut und keine
+  Übernahme dieser Quellmetadaten in den Host-DOM.
+- Die Eingabepacks bleiben unverändert. Unbekannte Zeichenattribute, aktive
+  Inhalte, externe Referenzen und `data-*` als Inline-CSS bleiben Fehler;
+  fehlgeschlagene Registrierung ersetzt kein gültiges Pack.
+- Regressionstests vergleichen SVG-Ausgaben mit/ohne Metadaten exakt, prüfen
+  beide Bundles und negative Fälle mit Atomarität. Chromium vergleicht einen
+  Originalexport mit `data-name` rasterisiert mit der rekonstruierten Ausgabe
+  und prüft, dass Metadaten nicht im Ausgabe-SVG stehen.
+- SVG-Umfang in `icons/README.md` und SPEC dokumentiert; beide Browserbundles
+  neu gebaut.
+
 ## Fehlerkorrektur: enable-background in SVG-Iconpacks (16.11.2026)
 
 - Die SVG-Allowlist wies `enable-background` bislang als unbekannt zurück und
