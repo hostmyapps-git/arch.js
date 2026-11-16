@@ -1,0 +1,26 @@
+architecture "Node icons and visible fields" {
+  model {
+    system topNode "Icon above the text" {description "Details about this element." technology "Application"}
+    database leftNode "Icon on the left" {description "Details about this element." technology "Database"}
+    person bottomNode "Icon below the text" {description "Details about this element." technology "User"}
+    component rightNode "Icon on the right" {description "Details about this element." technology "Component"}
+    relation flow topNode -> leftNode "Transfers data"
+  }
+  view positions "Icon positions" {
+    place topNode at (0, 0) place leftNode at (380, 0)
+    place bottomNode at (0, 340) place rightNode at (380, 340)
+    style topNode {iconPosition top width 300 height 240}
+    style leftNode {iconPosition left width 300 height 240}
+    style bottomNode {iconPosition bottom width 300 height 240}
+    style rightNode {iconPosition right width 300 height 240}
+  }
+  view fields "Choose visible fields" {
+    place topNode at (0, 0) place leftNode at (380, 0)
+    place bottomNode at (0, 340) place rightNode at (380, 340)
+    style topNode {iconPosition top width 300 height 240 showStereotype false showLabel false showDescription false showTechnology false}
+    style leftNode {width 300 height 240 showIcon false showStereotype false showDescription false showTechnology false}
+    style bottomNode {width 300 height 240 showIcon false showStereotype false showLabel false showDescription false showTechnology false}
+    style rightNode {iconPosition right width 300 height 240 showStereotype false showDescription false showTechnology false}
+    routes {icon core.cloud showLabel false showIcon true}
+  }
+}

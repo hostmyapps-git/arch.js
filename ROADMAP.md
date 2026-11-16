@@ -1,9 +1,80 @@
 # Roadmap
 
-Stand: 14.11.2026. Dies ist ein priorisierter Ausblick, keine Liste bereits
-implementierter Funktionen und keine Terminzusage.
+Stand: 16.11.2026. Der erste Abschnitt hält den implementierten Ausgangspunkt
+fest; die folgenden Abschnitte sind ein priorisierter Ausblick ohne Terminzusage.
+Einsatzschwerpunkt und Grenzen gegenüber anderen Werkzeugen:
+[COMPARISON.md](COMPARISON.md). arch.js konzentriert sich auf gemeinsame
+Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
+
+- Deklarierte Quellenviews mit `@meta json`/`@meta dsl`, einzeln oder zusammen
+  mit Diagrammen als SVG exportierbar; Architektur-Kurzform und JSON-Syntax.
+  Zeilennummern, Einrückung, visueller Umbruch, Themes und keine rekursive
+  Expansion. [META.md](META.md).
+
+- Meta-View für DSL-/JSON-Quellübersetzung mit Kopie/Download, markierten
+  Fehlerstellen und Korrekturkandidaten. Typkandidaten aus dem geladenen Profil,
+  Tippfehlerhilfe und API `translate`/`inspectSource`. [META.md](META.md).
+
+- Äquivalente Architektur-JSON-Eingabe mit `architecture`-Hülle, originalen
+  View-/Routing-Schlüsseln, verschachtelten Elementen, Inline-Profilen und
+  ID-Listen. Gemeinsame Grammatik/Validierung und JSON-Pfad-Diagnosen; in API,
+  Editor, Markdown und DOM-Rendering verfügbar. [JSON.md](JSON.md).
+
+- Renderauswahl über `config { views all }`, eine View-ID oder geordnete
+  ID-Liste; passende API-Optionen und Dropdown-Auswahl. Mehrere Views erscheinen
+  mit Überschriften in einem gemeinsamen SVG, einschließlich Spezialrenderern,
+  Themes, eigenständigem Download und eindeutigen Marker-/Icon-IDs.
+
+- Node-Styles mit `iconPosition top|left|bottom|right` sowie unabhängigen
+  Sichtbarkeitsschaltern für Icon, Titel, Stereotyp, Beschreibung und Technologie.
+  Package-Köpfe, Logo-Modus und Referenzkarten berücksichtigt. Fachliche
+  Relationslabels besitzen getrennte Schalter `showIcon` und `showLabel`.
+
+- `label none` für fachliche Kanten, lokal oder als Routing-Vorgabe. Blendet
+  Text, Rahmen und Icon aus; konkrete Labelpositionen überschreiben die Vorgabe.
+  Modelltexte, Tooltips und grafische Referenzen bleiben erhalten.
+
+- Icons an Connected-Relationslabels über `route`/`routes` mit `icon` und
+  `iconPosition top|left|bottom|right`; lokale Overrides, `icon none`,
+  Seitenverhältnis, Farben, mehrzeilige Labels und Exportgrenzen berücksichtigt.
+
+- Viewweite Routing-Vorgaben über `routes { ... }` für Kanten und
+  Zuordnungspfeile. Konkrete `route`-Eigenschaften haben feldweise Vorrang;
+  die Validierung prüft die zusammengeführten Kurven/Kontrollpunkte.
+
+- Eigene Routen für Zuordnungspfeile: `route ELEMENT -> RELATION`
+  mit Kartenport, Ankerposition entlang des Relationspfads, Wegpunkten,
+  Kurven und freiem SVG-Pfad. Für gemeinsame und getrennte Referenzkarten.
+
+- Viewlokale Schrift- und Mindestgrößen mit `fontSize`, `width`, `height` in
+  Connected-Styles; skalierte Textgeometrie und einzeilige Typ-/Stereotypzeilen
+  mit Auslassungspunkten und vollständigem Tooltip. Beispiele für NAF-Cluster
+  sowie Datenübergabe durch einen Walker ergänzt.
+
+- Grafische Referenzkarten an Connected-Kanten: gemeinsame Karte je Element
+  als Standard, optional `referenceOccurrences perEdge` mit sichtbaren IDs.
+  Unterstützung von Pfeilankern auf Kurven und View-`referenceDisplay nodes|labels|both`.
+  Viewlokale Logo-Rechtecke über `style ID {display logo icon PACK.NAME}`;
+  ursprüngliche Templates und zugängliche Modellinformationen bleiben erhalten.
+
+- Separates `naf41-uaf` mit allen 47 aktuellen NAFv4.1-Viewpoint-IDs,
+  strukturellen Pflicht-/Verknüpfungs-/Referenzprüfungen und englischer Hilfe.
+  Versions-/Quellenbindung auf NATO 2026.03; ADMBw 2026.05 als Vergleichsquelle.
+  Explizite Anwendungsadapter und verbleibende Prüfgrenzen sind unter
+  [profiles/naf41/COVERAGE.md](profiles/naf41/COVERAGE.md) dokumentiert.
+
+- Eingebaute `@help`-Referenz als eigenständiger Block oder Direktive innerhalb
+  von `architecture`, mit registrierten Profilen/Iconpacks, Regeln, Suche/Seiten
+  und SVG-/Textausgabe. Befehle: [HELP.md](HELP.md).
+- Englischsprachige Bibliothekstexte und Diagnosen. Abstrakte Knoten-/Relationstypen
+  erhalten generisch ermittelte konkrete Untertypen in Fehlermeldungen und Hilfe.
+- `@help connections PROFILE TYPE` zeigt gerichtete Relationsmöglichkeiten je
+  Knotentyp mit konkreten Gegenstellen, geerbten Endpunktregeln und Ausschlüssen.
+
+- Direkte Iconify-Registrierung über die bestehende API, inklusive fester Farben,
+  Gradienten/Masken/Filtern, Alias-Transformationen und isolierten lokalen IDs.
 
 - Konfigurierbare semantische Stilgruppen und Hintergrundfarben in Profilen,
   Inline-Konfiguration und View-Overrides. Fünf UAF-Bereichsfarben mit neutraler
@@ -39,10 +110,10 @@ oder NAF-Konformitätsimplementierung.
 
 | Priorität | Feature | Nutzen / prüfbares Ergebnis |
 | --- | --- | --- |
-| Hoch | Hindernisvermeidende Kantenführung | Automatische Kanten umgehen sichtbare Knoten und Package-Titel. |
+| Hoch | Hindernisvermeidende Führung allgemeiner Modellkanten | Automatische Modellkanten umgehen sichtbare Knoten und Package-Titel; bisher besteht nur eine gesonderte Heuristik für Referenzpfeile. |
 | Hoch | Weniger Kantenkreuzungen, Ports und Labelkollisionen | Größere Architekturansichten bleiben ohne manuelle Wegpunkte lesbar. |
 | Hoch | Layout-Strategien pro Package und Ansicht | Raster-, Baum- und Layer-Layouts gezielt kombinieren. |
-| Mittel | Zoom/Pan und Fokus auf einzelne Elemente | Größere Modelle bequem erkunden, navigieren und durchsuchen. |
+| Mittel | Pan, Elementfokus und Suche zusätzlich zum vorhandenen Zoom/Fit | Größere Modelle bequem erkunden, navigieren und durchsuchen. |
 | Mittel | Drag-and-drop mit Rückschreiben in die View | Verschieben erzeugt reproduzierbare `place`-/`route`-Anweisungen. |
 | Mittel | Konfigurierbare Templates und Design-Tokens | Eigene Organisationstemplates definieren, ohne Renderer-Code zu ändern. |
 
@@ -76,10 +147,13 @@ Die ersten Versionen sind implementiert. Weitere Ausbauschritte:
 - UAF-/NAF-Abdeckung anhand der offenen Quellregeln ausbauen: Eigentum,
   UML-/SysML-Kompatibilität, abgeleitete Werte, Aggregationen und komplexe
   Konsistenzregeln. Offene Regeln einzeln mit Gegenbeispielen abnehmen.
-- Weitere NAF-Viewpoints und ihre Spezialdarstellungen nachziehen; Kriterien
-  aus der jeweiligen Quellversion festlegen. Ein Typname allein genügt nicht.
-- UAF 1.3 / NAFv4.1 als getrennte, versionierte Profile prüfen und migrierbar
-  machen; bestehende UAF-1.0-Modelle reproduzierbar erhalten.
+- Die strukturelle NAFv4.1-Abdeckung um vollständige spezialisierte Semantik
+  ergänzen: Zustands-/Sequenzkonsistenz, genaue Protokollabgleiche, Produkt-/
+  Versionskonsistenz und kontrollierte Textkriterien. Quellenkriterien einzeln
+  prüfen; ein vorhandener Viewpointname bescheinigt keine normative Vollständigkeit.
+- UAF 1.3 als separates, versioniertes Profil prüfen und Migration anbieten;
+  bestehende UAF-1.0-Modelle und das darauf basierende NAFv4.1-Anwendungsprofil
+  reproduzierbar erhalten.
 - ArchiMate und weitere Frameworkprofile mit eigenen Quellen-/Abdeckungsnachweisen.
 - UML-/SysML-XMI-Import/-Export mit explizitem Nachweis möglicher Informationsverluste.
 

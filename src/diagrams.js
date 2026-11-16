@@ -1,96 +1,109 @@
 import { ArchError } from './errors.js';
 import { visibleNodeIds, matches } from './profiles.js';
-import { composite, contrast, foreground } from './colors.js';
+import { composite, contrast, foreground, normalizeColor } from './colors.js';
+import { validateMetaView } from './meta-syntax.js';
 
 export const DIAGRAMS = ['connected', 'sequence', 'state', 'activity', 'matrix', 'heatmap', 'timeline', 'class'];
-const fields = {
+export const DIAGRAM_OPTIONS = {
   connected: [], sequence: ['participants','messages','asyncMessages','returns'],
   state: ['initial','finals'], activity: ['lanes','laneAttribute','initial','finals','decisions','forks','joins'],
   matrix: ['rows','columns','relations'], heatmap: ['valueAttribute','parentAttribute','min','max','colorLow','colorHigh'],
   timeline: ['startAttribute','endAttribute'],
-  class: ['attributes','methods','functions','interfaces','ports','parameters','ownerAttribute','signatureAttribute']
+  class: ['attributes','methods','functions','interfaces','ports','parameters','ownerAttribute','signatureAttribute','propertyFields']
 };
+const fields = DIAGRAM_OPTIONS;
 const lists = new Set(['participants','messages','asyncMessages','returns','finals','lanes','decisions','forks','joins','rows','columns','relations','attributes','methods','functions','interfaces','ports','parameters']);
 const members = ['attributes','methods','functions','interfaces','ports','parameters'];
 const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
-const fail = (message, view) => { throw new ArchError(`Ansicht ${view.id}: ${message}`, view.loc, 'ARCH_VALIDATION'); };
+const fail = (message, view) => { throw new ArchError(`View ${view.id}: ${message}`, view.loc, 'ARCH_VALIDATION'); };
 const value = (node, name) => node.attributes?.[name] ?? node[name];
 function selected(model, view) {
   const ids=visibleNodeIds(model,view), nodes=model.nodes.filter(n=>ids.has(n.id));
   return {nodes, edges:model.edges.filter(e=>ids.has(e.source)&&ids.has(e.target))};
 }
 export function validateDiagramView(model, profile, view) {
+  if(validateMetaView(view))return;
   const c=view.diagram ?? {type:'connected'}, type=c.type;
-  if(!DIAGRAMS.includes(type)) fail(`Unbekannter Diagrammtyp ${type}`,view);
+  if(!DIAGRAMS.includes(type)) fail(`Unknown diagram type ${type}`,view);
   const {nodes,edges}=selected(model,view), ids=new Set(nodes.map(n=>n.id)), edgeIds=new Set(edges.map(e=>e.id));
+  if(type!=='connected' && (view.referenceDisplay==='nodes'||view.referenceDisplay==='both')) fail('graphical referenceDisplay requires the connected renderer',view);
+  if(type!=='connected' && view.routeDefaults!==undefined) fail('routes defaults require the connected renderer',view);
+  if(type!=='connected' && view.referenceOccurrences!==undefined) fail('referenceOccurrences requires the connected renderer',view);
+  if(type!=='connected' && Object.values(view.styles).some(style=>['showIcon','showLabel','showStereotype','showDescription','showTechnology'].some(key=>style[key]!==undefined))) fail('node visibility style overrides require the connected renderer',view);
+  if(type!=='connected' && Object.values(view.styles).some(style=>style.iconPosition!==undefined)) fail('iconPosition style overrides require the connected renderer',view);
+  if(type!=='connected' && Object.values(view.styles).some(style=>style.display==='logo')) fail('logo display requires the connected renderer',view);
+  if(type!=='connected' && Object.values(view.styles).some(style=>['fontSize','width','height'].some(field=>style[field]!==undefined))) fail('fontSize/width/height style overrides require the connected renderer',view);
   for(const [key,v] of Object.entries(c)) {
     if(key==='type') continue;
-    if(!fields[type].includes(key)) fail(`Einstellung ${key} gilt nicht für ${type}`,view);
-    if(lists.has(key)) {
-      if(!Array.isArray(v)||v.some(x=>typeof x!=='string')||new Set(v).size!==v.length) fail(`${key} benötigt eine eindeutige Liste`,view);
+    if(!fields[type].includes(key)) fail(`Option ${key} does not apply to ${type}`,view);
+    if(key==='propertyFields') {
+      const allowed=new Set(['id','type','title','description','technology','stereotype','tags',...nodes.flatMap(n=>Object.keys(profile.nodeTypes[n.type]?.attributes??{}))]);
+      if(!Array.isArray(v)||v.length>128||v.some(x=>typeof x!=='string'||!allowed.has(x))||new Set(v).size!==v.length) fail('propertyFields requires unique declared attribute or public property names',view);
+    } else if(lists.has(key)) {
+      if(!Array.isArray(v)||v.some(x=>typeof x!=='string')||new Set(v).size!==v.length) fail(`${key} requires a list of unique values`,view);
       const allowed=['messages','asyncMessages','returns'].includes(key)?edgeIds:key==='relations'?new Set(Object.keys(profile.relationTypes)):ids;
-      for(const id of v) if(!allowed.has(id)) fail(`${key}: unbekannte oder unsichtbare Referenz ${id}`,view);
-    } else if(['min','max'].includes(key)) { if(!Number.isFinite(v)) fail(`${key} muss endlich sein`,view); }
-    else if(typeof v!=='string') fail(`${key} muss ein String sein`,view);
-    if(key.startsWith('color')&&!/^#(?:[a-f0-9]{3}|[a-f0-9]{6})$/i.test(v)) fail(`Ungültige Farbe ${key}`,view);
+      for(const id of v) if(!allowed.has(id)) fail(`${key}: unknown or invisible reference ${id}`,view);
+    } else if(['min','max'].includes(key)) { if(!Number.isFinite(v)) fail(`${key} must be finite`,view); }
+    else if(typeof v!=='string') fail(`${key} must be a string`,view);
+    if(key.startsWith('color')&&!normalizeColor(v)) fail(`Invalid color ${key}`,view);
   }
-  if(Object.keys(view.places).length||Object.keys(view.routes).length) if(type!=='connected') fail('place/route sind nur für connected vorgesehen; dieser Renderer bestimmt das Layout',view);
-  if(c.initial&&!ids.has(c.initial)) fail('initial ist nicht sichtbar',view);
+  if(Object.keys(view.places).length||Object.keys(view.routes).length||view.referenceRoutes?.length) if(type!=='connected') fail('place/route are only supported for connected; this renderer determines the layout',view);
+  if(c.initial&&!ids.has(c.initial)) fail('initial is not visible',view);
   if(type==='sequence') {
     const participants=new Set(c.participants??nodes.map(n=>n.id)), messages=c.messages??edges.map(e=>e.id);
-    for(const id of messages) { const e=edges.find(e=>e.id===id); if(!participants.has(e.source)||!participants.has(e.target)) fail(`Nachricht ${id} benötigt beide Teilnehmer`,view); }
-    for(const id of [...(c.returns??[]),...(c.asyncMessages??[])]) if(!messages.includes(id)) fail(`Nachricht ${id} ist nicht in messages enthalten`,view);
-    if((c.returns??[]).some(id=>(c.asyncMessages??[]).includes(id))) fail('Nachricht kann nicht zugleich return und async sein',view);
+    for(const id of messages) { const e=edges.find(e=>e.id===id); if(!participants.has(e.source)||!participants.has(e.target)) fail(`Message ${id} requires both participants`,view); }
+    for(const id of [...(c.returns??[]),...(c.asyncMessages??[])]) if(!messages.includes(id)) fail(`Message ${id} is not included in messages`,view);
+    if((c.returns??[]).some(id=>(c.asyncMessages??[]).includes(id))) fail('A message cannot be both return and async',view);
   }
-  if(type==='matrix'&&((c.rows??nodes).length>100||(c.columns??nodes).length>100)) fail('Matrix maximal 100 Zeilen/Spalten',view);
+  if(type==='matrix'&&((c.rows??nodes).length>100||(c.columns??nodes).length>100)) fail('Matrix supports at most 100 rows/columns',view);
   if(type==='activity') {
     const lanes=new Set(c.lanes??[]), tasks=nodes.filter(n=>!lanes.has(n.id));
-    for(const n of tasks) if(lanes.size&&!lanes.has(value(n,c.laneAttribute??'owner'))) fail(`${n.id}: gültige Lane-Zuordnung fehlt`,view);
+    for(const n of tasks) if(lanes.size&&!lanes.has(value(n,c.laneAttribute??'owner'))) fail(`${n.id}: Missing valid lane assignment`,view);
     const kinds=[...(c.decisions??[]),...(c.forks??[]),...(c.joins??[])];
-    if(new Set(kinds).size!==kinds.length) fail('Aktivität hat mehrere Kontrollknotenarten',view);
-    for(const id of c.decisions??[]) if(edges.filter(e=>e.source===id).length<2) fail(`${id}: Entscheidung benötigt mindestens zwei Ausgänge`,view);
-    for(const id of c.forks??[]) if(edges.filter(e=>e.source===id).length<2) fail(`${id}: Fork benötigt mindestens zwei Ausgänge`,view);
-    for(const id of c.joins??[]) if(edges.filter(e=>e.target===id).length<2) fail(`${id}: Join benötigt mindestens zwei Eingänge`,view);
-    for(const e of edges) if(lanes.has(e.source)||lanes.has(e.target)) fail('Lane-Elemente sind keine Ablaufknoten',view);
+    if(new Set(kinds).size!==kinds.length) fail('Activity has multiple control node kinds',view);
+    for(const id of c.decisions??[]) if(edges.filter(e=>e.source===id).length<2) fail(`${id}: Decision requires at least two outgoing edges`,view);
+    for(const id of c.forks??[]) if(edges.filter(e=>e.source===id).length<2) fail(`${id}: Fork requires at least two outgoing edges`,view);
+    for(const id of c.joins??[]) if(edges.filter(e=>e.target===id).length<2) fail(`${id}: Join requires at least two incoming edges`,view);
+    for(const e of edges) if(lanes.has(e.source)||lanes.has(e.target)) fail('Lane elements cannot be flow nodes',view);
   }
   if(['state','activity'].includes(type)) {
-    if(c.initial&&(c.finals??[]).includes(c.initial)) fail('Initial- und Endknoten müssen verschieden sein',view);
-    if(c.initial&&edges.some(e=>e.target===c.initial)) fail('Initialknoten darf keine eingehenden Übergänge haben',view);
-    if(edges.some(e=>(c.finals??[]).includes(e.source))) fail('Endknoten darf keine ausgehenden Übergänge haben',view);
+    if(c.initial&&(c.finals??[]).includes(c.initial)) fail('Initial and final nodes must be different',view);
+    if(c.initial&&edges.some(e=>e.target===c.initial)) fail('Initial node cannot have incoming transitions',view);
+    if(edges.some(e=>(c.finals??[]).includes(e.source))) fail('Final nodes cannot have outgoing transitions',view);
   }
   if(type==='heatmap') {
-    const min=c.min??0,max=c.max??5; if(min>=max) fail('Heatmap benötigt min < max',view);
-    if(!c.valueAttribute) fail('valueAttribute fehlt',view);
+    const min=c.min??0,max=c.max??5; if(min>=max) fail('Heatmap requires min < max',view);
+    if(!c.valueAttribute) fail('Missing valueAttribute',view);
     const parents=new Map();
     for(const n of nodes) {
-      const v=value(n,c.valueAttribute); if(v!==undefined&&(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)) fail(`${n.id}: Heatmap-Wert außerhalb ${min}–${max}`,view);
+      const v=value(n,c.valueAttribute); if(v!==undefined&&(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)) fail(`${n.id}: Heatmap value outside ${min}–${max}`,view);
       const parent=c.parentAttribute?value(n,c.parentAttribute):n.parent;
-      if(parent!==undefined&&parent!==null) { if(!ids.has(parent)) fail(`${n.id}: Heatmap-Elternteil ist nicht sichtbar`,view); parents.set(n.id,parent); }
+      if(parent!==undefined&&parent!==null) { if(!ids.has(parent)) fail(`${n.id}: Heatmap parent is not visible`,view); parents.set(n.id,parent); }
     }
-    for(const n of nodes) { const seen=new Set(); let p=n.id; while(parents.has(p)) { if(seen.has(p)||seen.size>=32) fail('Heatmap-Hierarchie zyklisch oder zu tief',view); seen.add(p);p=parents.get(p); } }
+    for(const n of nodes) { const seen=new Set(); let p=n.id; while(parents.has(p)) { if(seen.has(p)||seen.size>=32) fail('Heatmap hierarchy is cyclic or too deep',view); seen.add(p);p=parents.get(p); } }
   }
   if(type==='timeline') for(const n of nodes) {
     const start=value(n,c.startAttribute??'start'), end=value(n,c.endAttribute??'end');
     for(const v of [start,end]) {
       const match=typeof v==='string'&&v.match(/^(\d{4}-\d{2}-\d{2})(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/);
-      if(!match||!Number.isFinite(Date.parse(v))||new Date(Date.parse(match[1])).toISOString().slice(0,10)!==match[1]) fail(`${n.id}: gültige ISO-start/end-Werte benötigt`,view);
+      if(!match||!Number.isFinite(Date.parse(v))||new Date(Date.parse(match[1])).toISOString().slice(0,10)!==match[1]) fail(`${n.id}: Valid ISO start/end values are required`,view);
     }
-    if(Date.parse(start)>Date.parse(end)) fail(`${n.id}: start liegt nach end`,view);
+    if(Date.parse(start)>Date.parse(end)) fail(`${n.id}: start is after end`,view);
   }
   if(type==='class') {
     const all=members.flatMap(k=>c[k]??[]), memberIds=new Set(all), byId=new Map(nodes.map(n=>[n.id,n]));
-    if(memberIds.size!==all.length) fail('Detail gehört zu mehreren Bereichen',view);
+    if(memberIds.size!==all.length) fail('A detail belongs to multiple compartments',view);
     for(const id of all) {
       const owner=value(byId.get(id),c.ownerAttribute??'owner');
-      if(!byId.has(owner)||id===owner||memberIds.has(owner)&&!(c.parameters??[]).includes(id)) fail(`${id}: gültiger Eigentümer fehlt`,view);
-      if((c.parameters??[]).includes(id)&&![...(c.methods??[]),...(c.functions??[])].includes(owner)) fail(`${id}: Parameter benötigt Methode/Funktion als Eigentümer`,view);
+      if(!byId.has(owner)||id===owner||memberIds.has(owner)&&!(c.parameters??[]).includes(id)) fail(`${id}: Missing valid owner`,view);
+      if((c.parameters??[]).includes(id)&&![...(c.methods??[]),...(c.functions??[])].includes(owner)) fail(`${id}: Parameter requires a method/function as its owner`,view);
     }
   }
 }
 
 // Independent layouts and SVG primitives; no DOM, CSS dependency or executable profile rules.
 function scene(graph, theme, prefix) {
-  const {nodes,edges,view,profileRules}=graph, c=view.diagram, type=c.type;
+  const {nodes,edges,view,profileRules}=graph, c={...view.diagram,colorLow:normalizeColor(view.diagram.colorLow),colorHigh:normalizeColor(view.diagram.colorHigh)}, type=c.type;
   const dark=theme==='dark', bg=dark?'#111827':'#fafbfe', text=dark?'#f1f5f9':'#1e293b', border=dark?'#8b9ab2':'#64748b', muted=dark?'#b4bfd0':'#52627a';
   const byId=new Map(nodes.map(n=>[n.id,n])), out=[]; let width=900,height=300;
   const wrap=(s,limit)=> {
@@ -106,7 +119,7 @@ function scene(graph, theme, prefix) {
   const path=(d,arrow=false,dashed=false)=>out.push(`<path d="${d}" fill="none" stroke="${border}" stroke-width="1.5"${arrow?` marker-end="url(#${prefix}-${typeof arrow==='string'?arrow:'arrow'})"`:''}${dashed?' stroke-dasharray="6 5"':''}/>`);
   const card=(n,x,y,w=220,h=90,body)=> {
     Object.assign(n,{x,y,width:w,height:h});
-    const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.backgroundColor?0.2:1, fg=foreground(composite(fill,bg,opacity));
+    const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.opacity??(n.backgroundColor?0.2:1), fg=foreground(composite(fill,bg,opacity));
     out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" transform="translate(${x} ${y})"><title>${esc(n.title)}</title>`);
     rect(0,0,w,h,fill,opacity);label(n.type,14,22,w-28,10,fg);label(n.title,14,45,w-28,14,fg); if(body) body(fg); out.push('</g>');
     return {x,y,width:w,height:h};
@@ -135,7 +148,7 @@ function scene(graph, theme, prefix) {
     const levels=n=>1+Math.max(0,...children(n.id).map(levels));
     const roots=children(null);width=Math.max(600,roots.reduce((sum,n)=>sum+leaves(n)*250,0)+40);height=Math.max(270,...roots.map(n=>levels(n)*110+140));
     const mix=(a,b,t)=>composite(b,a,t),min=c.min??0,max=c.max??5;
-    const tile=(n,x,y,w,h,backdrop=bg)=>{const v=value(n,c.valueAttribute),fill=v===undefined?(dark?'#64748b':'#94a3b8'):mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',(v-min)/(max-min)),fg=foreground(composite(fill,backdrop,0.2));out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v??'No value')}</title>`);rect(x,y,w,h,fill,0.2);label(`${n.title} · ${v??'—'}`,x+12,y+25,w-24,13,fg);out.push('</g>');let cx=x+12;for(const k of children(n.id)){const kw=(w-24)*leaves(k)/leaves(n);tile(k,cx,y+45,kw-8,h-57,composite(fill,backdrop,0.2));cx+=kw;}};
+    const tile=(n,x,y,w,h,backdrop=bg)=>{const v=value(n,c.valueAttribute),fill=v===undefined?(dark?'#64748b':'#94a3b8'):mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',(v-min)/(max-min)),fg=foreground(composite(fill,backdrop,n.opacity??0.2));out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v??'No value')}</title>`);rect(x,y,w,h,fill,n.opacity??0.2);label(`${n.title} · ${v??'—'}`,x+12,y+25,w-24,13,fg);out.push('</g>');let cx=x+12;for(const k of children(n.id)){const kw=(w-24)*leaves(k)/leaves(n);tile(k,cx,y+45,kw-8,h-57,composite(fill,backdrop,n.opacity??0.2));cx+=kw;}};
     let x=20;for(const n of roots){const w=leaves(n)*250;tile(n,x,20,w-15,height-105);x+=w;}
     for(let i=0;i<=10;i++)rect(25+i*28,height-55,28,18,mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',i/10),0.2,0);
     label(`${min} → ${max} · — = no value`,25,height-12,450,12,muted);
@@ -143,7 +156,7 @@ function scene(graph, theme, prefix) {
     const data=nodes.map(n=>({n,start:Date.parse(value(n,c.startAttribute??'start')),end:Date.parse(value(n,c.endAttribute??'end'))}));
     const min=Math.min(...data.map(d=>d.start),0===data.length?0:Infinity),max=Math.max(min+86400000,...data.map(d=>d.end));width=1200;height=130+data.length*90;const scale=t=>260+(t-min)/(max-min)*850,ys=new Map();
     for(let i=0;i<=5;i++){const x=260+i*170;path(`M${x} 65 V${height-25}`,false,true);label(new Date(min+(max-min)*i/5).toISOString().slice(0,10),x,35,140,11,text,'middle');}
-    data.forEach(({n,start,end},i)=>{const y=85+i*90;ys.set(n.id,y+20);label(n.title,10,y+20,230,13);out.push(`<g data-bar="${esc(n.id)}"><title>${esc(n.title)}: ${esc(value(n,c.startAttribute??'start'))} – ${esc(value(n,c.endAttribute??'end'))}</title>`);const x=scale(start),w=scale(end)-x;if(!w)out.push(`<path d="M${x} ${y} l12 20 -12 20 -12 -20Z" fill="${text}"/>`);else rect(x,y,w,40,n.backgroundColor??'#6366f1',0.2);out.push('</g>');label(new Date(start).toISOString().slice(0,10),x,y+60,160,10,muted);});
+    data.forEach(({n,start,end},i)=>{const y=85+i*90;ys.set(n.id,y+20);label(n.title,10,y+20,230,13);out.push(`<g data-bar="${esc(n.id)}"><title>${esc(n.title)}: ${esc(value(n,c.startAttribute??'start'))} – ${esc(value(n,c.endAttribute??'end'))}</title>`);const x=scale(start),w=scale(end)-x;if(!w)out.push(`<path d="M${x} ${y} l12 20 -12 20 -12 -20Z" fill="${text}"/>`);else rect(x,y,w,40,n.backgroundColor??'#6366f1',n.opacity??0.2);out.push('</g>');label(new Date(start).toISOString().slice(0,10),x,y+60,160,10,muted);});
     for(const e of edges){const a=data.find(d=>d.n.id===e.source),b=data.find(d=>d.n.id===e.target);if(a&&b)path(`M${scale(a.end)} ${ys.get(e.source)} H${scale(a.end)+15} V${ys.get(e.target)} H${scale(b.start)}`,true);}
   } else if(type==='class') {
     const memberIds=new Set(members.flatMap(k=>c[k]??[])),classes=nodes.filter(n=>!memberIds.has(n.id)),pos=new Map(),portPositions=new Map();
@@ -151,15 +164,20 @@ function scene(graph, theme, prefix) {
     const memberText=m=>{const params=(c.parameters??[]).map(id=>byId.get(id)).filter(p=>owner(p)===m.id).map(signature).join(', ');const s=String(signature(m));return params?s.includes('()')?s.replace('()',`(${params})`):`${s} (${params})`:s;};
     const cardWidth=380, cardBorder=dark?'#37465d':'#dce3ed';
     const sectionColor=dark?'#a9b6cc':'#66758c';
-    const symbols={attributes:'−',methods:'ƒ',functions:'ƒ',interfaces:'◇',ports:'□'};
+    const symbols={properties:'·',attributes:'−',methods:'ƒ',functions:'ƒ',interfaces:'◇',ports:'□'};
     let x=30; height=220;
     for(const n of classes) {
       const sections=members.filter(k=>k!=='parameters').map(kind=>({kind,items:(c[kind]??[]).map(id=>byId.get(id)).filter(m=>owner(m)===n.id)})).filter(s=>s.items.length);
       const lines=sections.map(s=>({...s,rows:s.items.map(m=>({id:m.id,full:memberText(m),lines:wrap(memberText(m),32)}))}));
+      const properties=(c.propertyFields??[]).filter(key=>value(n,key)!==undefined).map(key=>{
+        const field=value(n,key), full=`${key}: ${Array.isArray(field)?'['+field.join(', ')+']':String(field)}`;
+        return {id:`${n.id}.${key}`,full,lines:wrap(full,32)};
+      });
+      if(properties.length) lines.unshift({kind:'properties',rows:properties});
       const ownPorts=(c.ports??[]).map(id=>byId.get(id)).filter(p=>owner(p)===n.id);
       const h=Math.max(148,90+ownPorts.length*24,110+lines.reduce((sum,s)=>sum+50+s.rows.reduce((count,r)=>count+r.lines.length*21,0),0));
-      const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.backgroundColor?0.2:1;
-      const visible=composite(fill,bg,opacity), fg=n.backgroundColor?foreground(visible):text;
+      const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.opacity??(n.backgroundColor?0.2:1);
+      const visible=composite(fill,bg,opacity), fg=n.backgroundColor||n.opacity!==undefined?foreground(visible):text;
       const subdued=n.backgroundColor?fg:sectionColor;
       const accent=n.accent&&contrast(n.accent,visible)>=4.5?n.accent:(n.backgroundColor?fg:dark?'#a5b4fc':'#6366f1');
       Object.assign(n,{x,y:40,width:cardWidth,height:h});pos.set(n.id,{x,y:40,width:cardWidth,height:h});
@@ -172,11 +190,11 @@ function scene(graph, theme, prefix) {
       label(n.title,20,65,cardWidth-40,18,fg);out.push('</g>');
       let y=116;
       for(const s of lines) {
-        out.push(`<g data-compartment="${s.kind}"><title>${esc(s.items.map(memberText).join('\n'))}</title>`);
+        out.push(`<g data-compartment="${s.kind}"><title>${esc(s.rows.map(row=>row.full).join('\n'))}</title>`);
         out.push(`<path d="M20 ${y-16} H${cardWidth-20}" fill="none" stroke="${cardBorder}" stroke-width="0.8"/>`);
         out.push('<g font-weight="600" letter-spacing="1.2">');label(s.kind.toUpperCase(),22,y,cardWidth-85,9.5,subdued);out.push('</g>');
         out.push(`<rect x="${cardWidth-47}" y="${y-12}" width="25" height="17" rx="8.5" fill="${subdued}" fill-opacity="0.08"/>`);
-        label(s.items.length,cardWidth-34.5,y,22,9,subdued,'middle');y+=30;
+        label(s.rows.length,cardWidth-34.5,y,22,9,subdued,'middle');y+=30;
         for(const row of s.rows) {
           out.push(`<g data-member="${esc(row.id)}"><title>${esc(row.full)}</title>`);
           label(symbols[s.kind],24,y,16,12,accent);

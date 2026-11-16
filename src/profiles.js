@@ -1,4 +1,5 @@
 import { ArchError } from './errors.js';
+import { normalizeColor } from './colors.js';
 
 // These are drawing primitives, not framework/metamodel types.
 export const TEMPLATES = Object.freeze(['person', 'system', 'application', 'service', 'component', 'database',
@@ -14,18 +15,31 @@ const reservedAttributes = new Set(['id', 'type', 'title', 'parent', 'loc', 'att
 const fail = message => { throw new ArchError(message, {}, 'ARCH_PROFILE'); };
 const own = (object, key) => Object.hasOwn(object, key);
 const record = value => value && typeof value === 'object' && !Array.isArray(value);
+const documentationKeys = ['title', 'description', 'sources', 'limitations'];
+function documentation(raw, label) {
+  const result = {};
+  for (const key of ['title', 'description']) if (raw[key] !== undefined) {
+    if (typeof raw[key] !== 'string' || raw[key].length > 16000) fail(`${label}.${key}: expected text (at most 16000 characters)`);
+    result[key] = raw[key];
+  }
+  for (const key of ['sources', 'limitations']) if (raw[key] !== undefined) {
+    if (!Array.isArray(raw[key]) || raw[key].length > 128 || raw[key].some(s => typeof s !== 'string' || s.length > 4000)) fail(`${label}.${key}: expected a text list`);
+    result[key] = [...raw[key]];
+  }
+  return result;
+}
 const copy = value => JSON.parse(JSON.stringify(value));
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 function keys(value, allowed, label) {
-  if (!record(value)) fail(`${label} muss ein Objekt sein`);
-  for (const key of Object.keys(value)) if (!allowed.includes(key)) fail(`${label}: unbekannte Einstellung ${key}`);
+  if (!record(value)) fail(`${label} must be an object`);
+  for (const key of Object.keys(value)) if (!allowed.includes(key)) fail(`${label}: unknown option ${key}`);
 }
 function identifier(value, label) {
-  if (typeof value !== 'string' || !idPattern.test(value)) fail(`${label}: ungültiger Bezeichner ${value}`);
+  if (typeof value !== 'string' || !idPattern.test(value)) fail(`${label}: invalid identifier ${value}`);
 }
 function names(value, label, fallback = ['*'], allowEmpty = false) {
   const array = value === undefined ? fallback : typeof value === 'string' ? [value] : value;
-  if (!Array.isArray(array) || !allowEmpty && !array.length || array.length > 512) fail(`${label}: ungültige Namensliste`);
+  if (!Array.isArray(array) || !allowEmpty && !array.length || array.length > 512) fail(`${label}: invalid name list`);
   for (const item of array) if (item !== '*') identifier(item, label);
   return [...new Set(array)];
 }
@@ -34,50 +48,50 @@ function cardinality(value, label) {
   keys(value, ['min', 'max'], label);
   const result = { min: value.min ?? 0, max: value.max ?? null };
   if (!Number.isInteger(result.min) || result.min < 0 || result.min > 4000 ||
-      (result.max !== null && (!Number.isInteger(result.max) || result.max < result.min || result.max > 4000))) fail(`${label}: ungültige Kardinalität`);
+      (result.max !== null && (!Number.isInteger(result.max) || result.max < result.min || result.max > 4000))) fail(`${label}: invalid cardinality`);
   return result;
 }
 function attributes(value = {}, label) {
-  if (!record(value) || Object.keys(value).length > 128) fail(`${label}: ungültige Attributdefinitionen`);
+  if (!record(value) || Object.keys(value).length > 128) fail(`${label}: invalid attribute definitions`);
   const result = Object.create(null);
   for (const [name, rule] of Object.entries(value)) {
     identifier(name, label);
-    if (reservedAttributes.has(name)) fail(`${label}: reserviertes Attribut ${name}`);
+    if (reservedAttributes.has(name)) fail(`${label}: reserved attribute ${name}`);
     keys(rule, ['type', 'required', 'enum', 'min', 'max', 'minLength', 'maxLength', 'many', 'minItems', 'maxItems', 'uniqueItems', 'targets', 'format'], `${label}.${name}`);
     const type = rule.type ?? 'string';
-    if (!['string', 'number', 'integer', 'boolean', 'reference'].includes(type)) fail(`${label}.${name}: unbekannter Datentyp ${type}`);
-    if (rule.required !== undefined && typeof rule.required !== 'boolean') fail(`${label}.${name}: required muss boolean sein`);
+    if (!['string', 'number', 'integer', 'boolean', 'reference'].includes(type)) fail(`${label}.${name}: unknown data type ${type}`);
+    if (rule.required !== undefined && typeof rule.required !== 'boolean') fail(`${label}.${name}: required must be boolean`);
     const normalized = { type, required: rule.required ?? false };
-    if (rule.many !== undefined && typeof rule.many !== 'boolean') fail(`${label}.${name}: many muss boolean sein`);
+    if (rule.many !== undefined && typeof rule.many !== 'boolean') fail(`${label}.${name}: many must be boolean`);
     if (rule.many) normalized.many = true;
     if (rule.uniqueItems !== undefined) {
-      if (!rule.many || typeof rule.uniqueItems !== 'boolean') fail(`${label}.${name}: uniqueItems benötigt many`);
+      if (!rule.many || typeof rule.uniqueItems !== 'boolean') fail(`${label}.${name}: uniqueItems requires many`);
       normalized.uniqueItems = rule.uniqueItems;
     }
     for (const bound of ['minItems', 'maxItems']) if (rule[bound] !== undefined) {
-      if (!rule.many || !Number.isInteger(rule[bound]) || rule[bound] < 0 || rule[bound] > 4000) fail(`${label}.${name}: ungültige Grenze ${bound}`);
+      if (!rule.many || !Number.isInteger(rule[bound]) || rule[bound] < 0 || rule[bound] > 4000) fail(`${label}.${name}: invalid bound ${bound}`);
       normalized[bound] = rule[bound];
     }
-    if ((normalized.minItems ?? 0) > (normalized.maxItems ?? 4000)) fail(`${label}.${name}: widersprüchliche Listengrenzen`);
+    if ((normalized.minItems ?? 0) > (normalized.maxItems ?? 4000)) fail(`${label}.${name}: inconsistent list bounds`);
     if (type === 'reference') normalized.targets = names(rule.targets, `${label}.${name}.targets`);
-    else if (rule.targets !== undefined) fail(`${label}.${name}: targets benötigt type reference`);
+    else if (rule.targets !== undefined) fail(`${label}.${name}: targets requires type reference`);
     if (rule.format !== undefined) {
-      if (type !== 'string' || !['date', 'date-time', 'uri'].includes(rule.format)) fail(`${label}.${name}: ungültiges format`);
+      if (type !== 'string' || !['date', 'date-time', 'uri'].includes(rule.format)) fail(`${label}.${name}: invalid format`);
       normalized.format = rule.format;
     }
     for (const bound of ['min', 'max', 'minLength', 'maxLength']) if (rule[bound] !== undefined) {
       if (!Number.isFinite(rule[bound]) || (bound.includes('Length') ? type !== 'string' || !Number.isInteger(rule[bound]) || rule[bound] < 0 : !['number', 'integer'].includes(type)))
-        fail(`${label}.${name}: ungültige Grenze ${bound}`);
+        fail(`${label}.${name}: invalid bound ${bound}`);
       normalized[bound] = rule[bound];
     }
     if ((normalized.min !== undefined && normalized.max !== undefined && normalized.min > normalized.max) ||
-        (normalized.minLength !== undefined && normalized.maxLength !== undefined && normalized.minLength > normalized.maxLength)) fail(`${label}.${name}: widersprüchliche Grenzen`);
+        (normalized.minLength !== undefined && normalized.maxLength !== undefined && normalized.minLength > normalized.maxLength)) fail(`${label}.${name}: inconsistent bounds`);
     if (rule.enum !== undefined) {
       if (!Array.isArray(rule.enum) || !rule.enum.length || rule.enum.length > 256 || rule.enum.some(v =>
-        type === 'integer' ? !Number.isInteger(v) : typeof v !== (type === 'reference' ? 'string' : type) || (type === 'number' && !Number.isFinite(v)))) fail(`${label}.${name}: ungültige enum-Werte`);
+        type === 'integer' ? !Number.isInteger(v) : typeof v !== (type === 'reference' ? 'string' : type) || (type === 'number' && !Number.isFinite(v)))) fail(`${label}.${name}: invalid enum values`);
       normalized.enum = [...new Set(rule.enum)];
     }
-    if ([...NODE_PROPERTIES, ...EDGE_PROPERTIES].includes(name) && (type !== 'string' || rule.many)) fail(`${label}.${name}: Standardattribute müssen skalare Strings bleiben`);
+    if ([...NODE_PROPERTIES, ...EDGE_PROPERTIES].includes(name) && (type !== 'string' || rule.many)) fail(`${label}.${name}: Built-in attributes must remain scalar strings`);
     result[name] = normalized;
   }
   return result;
@@ -87,86 +101,88 @@ const bases = rule => typeof rule?.extends === 'string' ? [rule.extends] : rule?
 function parentNames(value, label) {
   if (value === undefined) return [];
   const values = names(value, label, [], true);
-  if (values.includes('*')) fail(`${label}: Wildcard als Basistyp ist nicht erlaubt`);
+  if (values.includes('*')) fail(`${label}: A wildcard cannot be used as a base type`);
   return values;
 }
 function mergeAttributes(parents, local, label) {
   const result = Object.create(null);
   for (const parent of parents) for (const [key, value] of Object.entries(parent.attributes)) {
     if (own(result, key) && JSON.stringify(result[key]) !== JSON.stringify(value) && !own(local ?? {}, key))
-      fail(`${label}.${key}: mehrdeutige geerbte Attributregel; lokale Regel erforderlich`);
+      fail(`${label}.${key}: ambiguous inherited attribute rule; a local override is required`);
     result[key] = value;
   }
   return Object.assign(result, attributes(local, label));
 }
 function comparisons(value = [], label) {
-  if (!Array.isArray(value) || value.length > 128) fail(`${label}: ungültige comparisons`);
+  if (!Array.isArray(value) || value.length > 128) fail(`${label}: invalid comparisons`);
   return value.map(rule => {
     keys(rule, ['left', 'op', 'right'], label);
     identifier(rule.left, label); identifier(rule.right, label);
-    if (!['<', '<=', '=', '!=', '>=', '>'].includes(rule.op)) fail(`${label}: unbekannter Vergleich`);
+    if (!['<', '<=', '=', '!=', '>=', '>'].includes(rule.op)) fail(`${label}: unknown comparison`);
     return { left: rule.left, op: rule.op, right: rule.right };
   });
 }
 
 export function compileProfile(definition, fallbackId) {
   if (compiledProfiles.has(definition)) return definition;
-  keys(definition, ['id', 'title', 'version', 'extends', 'nodeTypes', 'relationTypes', 'viewpoints', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profil');
+  keys(definition, ['id', ...documentationKeys, 'version', 'extends', 'nodeTypes', 'relationTypes', 'viewpoints', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profile');
   const id = definition.id ?? fallbackId;
-  identifier(id, 'Profil-ID');
-  if (definition.extends !== undefined && (typeof definition.extends !== 'string' || !registry.has(definition.extends))) fail(`Unbekanntes Basisprofil: ${definition.extends}`);
+  identifier(id, 'Profile ID');
+  if (definition.extends !== undefined && (typeof definition.extends !== 'string' || !registry.has(definition.extends))) fail(`Unknown base profile: ${definition.extends}`);
   const base = definition.extends ? registry.get(definition.extends) : undefined;
-  for (const key of ['title', 'version']) if (definition[key] !== undefined && typeof definition[key] !== 'string') fail(`Profil.${key} muss ein String sein`);
-  if (definition.requireViewpoint !== undefined && typeof definition.requireViewpoint !== 'boolean') fail('requireViewpoint muss boolean sein');
+  for (const key of ['title', 'version']) if (definition[key] !== undefined && typeof definition[key] !== 'string') fail(`Profile.${key} must be a string`);
+  if (definition.requireViewpoint !== undefined && typeof definition.requireViewpoint !== 'boolean') fail('requireViewpoint must be boolean');
   const merged = key => {
     const values = definition[key] ?? {};
-    if (!record(values)) fail(`Profil.${key} muss ein Objekt sein`);
+    if (!record(values)) fail(`Profile.${key} must be an object`);
     return Object.assign(Object.create(null), base?.[key] ?? {}, values);
   };
   const rawNodes = merged('nodeTypes'), rawEdges = merged('relationTypes'), rawViews = merged('viewpoints');
   const styleGroups = merged('styleGroups');
-  if (Object.keys(styleGroups).length > 512) fail('Zu viele Stilgruppen');
+  if (Object.keys(styleGroups).length > 512) fail('Too many style groups');
   for (const [name, group] of Object.entries(styleGroups)) {
-    identifier(name, 'Stilgruppe'); keys(group, ['backgroundColor'], `Stilgruppe ${name}`);
-    if (group.backgroundColor !== undefined && !/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(group.backgroundColor)) fail(`${name}: ungültige backgroundColor`);
+    identifier(name, 'Style group'); keys(group, ['backgroundColor'], `Style group ${name}`);
+    if (group.backgroundColor !== undefined && !normalizeColor(group.backgroundColor)) fail(`${name}: invalid backgroundColor`);
+    styleGroups[name] = group.backgroundColor === undefined ? { ...group } : { backgroundColor: normalizeColor(group.backgroundColor) };
   }
-  if (!Object.keys(rawNodes).length || Object.keys(rawNodes).length > 512 || Object.keys(rawEdges).length > 512 || Object.keys(rawViews).length > 128) fail('Profil benötigt 1–512 Knotentypen; maximal 512 Relationstypen und 128 Viewpoints');
+  if (!Object.keys(rawNodes).length || Object.keys(rawNodes).length > 512 || Object.keys(rawEdges).length > 512 || Object.keys(rawViews).length > 128) fail('Profile requires 1–512 node types; at most 512 relation types and 128 viewpoints');
   const nodeTypes = Object.create(null), relationTypes = Object.create(null), viewpoints = Object.create(null);
   const compiling = new Set();
   const node = name => {
     if (own(nodeTypes, name)) return nodeTypes[name];
-    if (!own(rawNodes, name) || compiling.has(`n:${name}`)) fail(`Unbekannter oder zyklischer Knotentyp: ${name}`);
-    identifier(name, 'Knotentyp');
-    if (reservedTypes.has(name)) fail(`Reservierter Knotentyp: ${name}`);
+    if (!own(rawNodes, name) || compiling.has(`n:${name}`)) fail(`Unknown or cyclic node type: ${name}`);
+    identifier(name, 'node type');
+    if (reservedTypes.has(name)) fail(`Reserved node type: ${name}`);
     const raw = rawNodes[name];
-    keys(raw, ['extends', 'template', 'container', 'contains', 'abstract', 'attributes', 'icon', 'accent', 'backgroundColor', 'styleGroup', 'comparisons'], `Knotentyp ${name}`);
+    keys(raw, ['extends', 'template', 'container', 'contains', 'abstract', 'attributes', 'icon', 'accent', 'backgroundColor', 'styleGroup', 'comparisons', ...documentationKeys], `node type ${name}`);
     compiling.add(`n:${name}`);
-    const baseNames = parentNames(raw.extends, `Basistyp von ${name}`), parents = baseNames.map(node), parent = parents[0];
-    const result = { template: raw.template ?? parent?.template ?? 'node', container: raw.container,
+    const baseNames = parentNames(raw.extends, `Base type of ${name}`), parents = baseNames.map(node), parent = parents[0];
+    const result = { ...documentation(raw, name), template: raw.template ?? parent?.template ?? 'node', container: raw.container,
       abstract: raw.abstract ?? false, attributes: mergeAttributes(parents, raw.attributes, name) };
     for (const key of ['icon', 'accent']) if (raw[key] !== undefined || parent?.[key] !== undefined) result[key] = raw[key] ?? parent[key];
     for (const key of ['styleGroup', 'backgroundColor']) if (raw[key] !== undefined || parent?.[key] !== undefined) result[key] = raw[key] ?? parent[key];
-    if (result.styleGroup !== undefined && !own(styleGroups, result.styleGroup)) fail(`${name}: unbekannte Stilgruppe ${result.styleGroup}`);
-    if (result.backgroundColor !== undefined && !/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(result.backgroundColor)) fail(`${name}: ungültige backgroundColor`);
+    if (result.styleGroup !== undefined && !own(styleGroups, result.styleGroup)) fail(`${name}: unknown style group ${result.styleGroup}`);
+    if (result.backgroundColor !== undefined && !normalizeColor(result.backgroundColor)) fail(`${name}: invalid backgroundColor`);
     if (raw.extends !== undefined) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
     const checks = [...parents.flatMap(p => p.comparisons ?? []), ...comparisons(raw.comparisons, name)];
     if (checks.length) result.comparisons = [...new Map(checks.map(check => [JSON.stringify(check), check])).values()];
     for (const check of result.comparisons ?? []) {
       const a = result.attributes[check.left], b = result.attributes[check.right];
       if (!a || !b || a.many || b.many || a.type !== b.type || !['number', 'integer', 'string'].includes(a.type) || a.format !== b.format)
-        fail(`${name}: Vergleich benötigt zwei kompatible skalare Attribute`);
+        fail(`${name}: Comparison requires two compatible scalar attributes`);
     }
-    if (!TEMPLATES.includes(result.template)) fail(`Unbekanntes Template für ${name}: ${result.template}`);
+    if (!TEMPLATES.includes(result.template)) fail(`Unknown template for ${name}: ${result.template}`);
     result.container ??= result.template === 'package';
-    if (typeof result.abstract !== 'boolean' || typeof result.container !== 'boolean' || result.container !== (result.template === 'package')) fail(`${name}: Container benötigen template package`);
-    if (raw.contains !== undefined && !result.container) fail(`${name}: contains ist nur für Container erlaubt`);
+    if (typeof result.abstract !== 'boolean' || typeof result.container !== 'boolean' || result.container !== (result.template === 'package')) fail(`${name}: Containers require template package`);
+    if (raw.contains !== undefined && !result.container) fail(`${name}: contains is only allowed for containers`);
     if (result.container) result.contains = names(raw.contains ?? parent?.contains, `${name}.contains`, ['*'], true);
-    if (result.icon !== undefined && (typeof result.icon !== 'string' || !/^[A-Za-z_][A-Za-z0-9_-]*\.[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(result.icon))) fail(`${name}: ungültige Iconreferenz`);
-    if (result.accent !== undefined && !/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(result.accent)) fail(`${name}: ungültige Akzentfarbe`);
+    if (result.icon !== undefined && (typeof result.icon !== 'string' || !/^[A-Za-z_][A-Za-z0-9_-]*\.[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(result.icon))) fail(`${name}: invalid icon reference`);
+    if (result.accent !== undefined && !normalizeColor(result.accent)) fail(`${name}: invalid accent color`);
+    for (const key of ['accent', 'backgroundColor']) if (result[key] !== undefined) result[key] = normalizeColor(result[key]);
     nodeTypes[name] = result; compiling.delete(`n:${name}`); return result;
   };
   for (const name of Object.keys(rawNodes)) node(name);
-  const knownNodes = (list, label) => { for (const name of list) if (name !== '*' && !own(nodeTypes, name)) fail(`${label}: unbekannter Knotentyp ${name}`); };
+  const knownNodes = (list, label) => { for (const name of list) if (name !== '*' && !own(nodeTypes, name)) fail(`${label}: unknown node type ${name}`); };
   const checkReferences = (rule, label) => { for (const [key, attr] of Object.entries(rule.attributes)) if (attr.type === 'reference') knownNodes(attr.targets, `${label}.${key}`); };
   for (const [name, rule] of Object.entries(nodeTypes)) {
     if (rule.container) knownNodes(rule.contains, `${name}.contains`);
@@ -174,21 +190,39 @@ export function compileProfile(definition, fallbackId) {
   }
   const relation = name => {
     if (own(relationTypes, name)) return relationTypes[name];
-    if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail(`Unbekannter oder zyklischer Relationstyp: ${name}`);
-    identifier(name, 'Relationstyp');
+    if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail(`Unknown or cyclic relation type: ${name}`);
+    identifier(name, 'relation type');
     const raw = rawEdges[name];
-    keys(raw, ['extends', 'from', 'to', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic'], `Relationstyp ${name}`);
+    keys(raw, ['extends', 'from', 'to', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic', 'referenceLabels', 'referenceDisplay', 'referenceOccurrences', ...documentationKeys], `relation type ${name}`);
     compiling.add(`e:${name}`);
-    const baseNames = parentNames(raw.extends, `Basisrelation von ${name}`), parents = baseNames.map(relation), parent = parents[0];
-    const result = { from: names(raw.from ?? parent?.from, `${name}.from`), to: names(raw.to ?? parent?.to, `${name}.to`),
+    const baseNames = parentNames(raw.extends, `Base relationship of ${name}`), parents = baseNames.map(relation), parent = parents[0];
+    const result = { ...documentation(raw, name), from: names(raw.from ?? parent?.from, `${name}.from`), to: names(raw.to ?? parent?.to, `${name}.to`),
       style: raw.style ?? parent?.style ?? 'flow', abstract: raw.abstract ?? false, allowSelf: raw.allowSelf ?? parent?.allowSelf ?? true,
       attributes: mergeAttributes(parents, raw.attributes, name) };
     if (raw.extends !== undefined) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
-    if (raw.acyclic !== undefined && typeof raw.acyclic !== 'boolean') fail(`${name}.acyclic muss boolean sein`);
+    const referenceLabels = raw.referenceLabels ?? parent?.referenceLabels;
+    if (raw.referenceDisplay !== undefined || parent?.referenceDisplay !== undefined) {
+      result.referenceDisplay = raw.referenceDisplay ?? parent.referenceDisplay;
+      if (!['labels', 'nodes', 'both'].includes(result.referenceDisplay)) fail(`${name}.referenceDisplay must be labels, nodes or both`);
+    }
+    if (raw.referenceOccurrences !== undefined || parent?.referenceOccurrences !== undefined) {
+      result.referenceOccurrences = raw.referenceOccurrences ?? parent.referenceOccurrences;
+      if (!['shared', 'perEdge'].includes(result.referenceOccurrences)) fail(`${name}.referenceOccurrences must be shared or perEdge`);
+    }
+    if (referenceLabels !== undefined) {
+      if (!record(referenceLabels) || Object.keys(referenceLabels).length > 128) fail(`${name}.referenceLabels: expected an attribute-to-label map`);
+      result.referenceLabels = Object.create(null);
+      for (const [attribute, label] of Object.entries(referenceLabels)) {
+        if (!own(result.attributes, attribute) || result.attributes[attribute].type !== 'reference') fail(`${name}.referenceLabels: ${attribute} must be a reference attribute`);
+        if (typeof label !== 'string' || !label.trim() || label.length > 80) fail(`${name}.referenceLabels: expected a nonempty label of at most 80 characters`);
+        result.referenceLabels[attribute] = label;
+      }
+    }
+    if (raw.acyclic !== undefined && typeof raw.acyclic !== 'boolean') fail(`${name}.acyclic must be boolean`);
     if (raw.acyclic ?? parent?.acyclic) result.acyclic = true;
     const pairs = raw.pairs ?? parent?.pairs;
     if (pairs !== undefined) {
-      if (!Array.isArray(pairs) || !pairs.length || pairs.length > 512) fail(`${name}: ungültige pairs`);
+      if (!Array.isArray(pairs) || !pairs.length || pairs.length > 512) fail(`${name}: invalid pairs`);
       result.pairs = pairs.map(pair => {
         keys(pair, ['from', 'to', 'fromExclude', 'toExclude'], `${name}.pairs`);
         const normalized = { from: names(pair.from, name), to: names(pair.to, name) };
@@ -197,8 +231,8 @@ export function compileProfile(definition, fallbackId) {
         return normalized;
       });
     }
-    if (!EDGE_STYLES.includes(result.style)) fail(`Unbekannter Kantenstil für ${name}: ${result.style}`);
-    if (typeof result.abstract !== 'boolean' || typeof result.allowSelf !== 'boolean') fail(`${name}: abstract/allowSelf müssen boolean sein`);
+    if (!EDGE_STYLES.includes(result.style)) fail(`Unknown edge style for ${name}: ${result.style}`);
+    if (typeof result.abstract !== 'boolean' || typeof result.allowSelf !== 'boolean') fail(`${name}: abstract/allowSelf must be boolean`);
     for (const key of ['outgoing', 'incoming']) {
       const value = cardinality(raw[key] ?? parent?.[key], `${name}.${key}`);
       if (value) result[key] = value;
@@ -208,45 +242,59 @@ export function compileProfile(definition, fallbackId) {
     relationTypes[name] = result; compiling.delete(`e:${name}`); return result;
   };
   for (const name of Object.keys(rawEdges)) relation(name);
-  const knownEdges = (list, label) => { for (const name of list) if (name !== '*' && !own(relationTypes, name)) fail(`${label}: unbekannter Relationstyp ${name}`); };
+  const knownEdges = (list, label) => { for (const name of list) if (name !== '*' && !own(relationTypes, name)) fail(`${label}: unknown relation type ${name}`); };
   for (const [name, raw] of Object.entries(rawViews)) {
     identifier(name, 'Viewpoint');
-    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'connections'], `Viewpoint ${name}`);
-    const result = { nodes: names(raw.nodes, `${name}.nodes`, ['*'], true), relations: names(raw.relations, `${name}.relations`, ['*'], true),
+    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'connections', 'references', ...documentationKeys], `Viewpoint ${name}`);
+    const result = { ...documentation(raw, name), nodes: names(raw.nodes, `${name}.nodes`, ['*'], true), relations: names(raw.relations, `${name}.relations`, ['*'], true),
       requiredNodes: raw.requiredNodes === undefined ? [] : names(raw.requiredNodes, `${name}.requiredNodes`, [], true),
       requiredRelations: raw.requiredRelations === undefined ? [] : names(raw.requiredRelations, `${name}.requiredRelations`, [], true) };
     knownNodes(result.nodes, name); knownNodes(result.requiredNodes, name); knownEdges(result.relations, name); knownEdges(result.requiredRelations, name);
-    if (result.requiredNodes.includes('*') || result.requiredRelations.includes('*')) fail(`${name}: Pflichtlisten erlauben keinen Wildcard`);
+    if (result.requiredNodes.includes('*') || result.requiredRelations.includes('*')) fail(`${name}: Required type lists cannot contain a wildcard`);
     if (raw.connections !== undefined) {
-      if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: ungültige connections`);
+      if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: invalid connections`);
       result.connections = raw.connections.map(check => {
-        keys(check, ['nodes', 'relations', 'direction', 'min', 'max'], `${name}.connections`);
+        keys(check, ['nodes', 'relations', 'counterparts', 'direction', 'min', 'max'], `${name}.connections`);
         const value = { nodes: names(check.nodes, name), relations: names(check.relations, name), direction: check.direction ?? 'either',
           ...cardinality({ min: check.min ?? 1, max: check.max }, `${name}.connections`) };
-        if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: ungültige Verbindungsrichtung`);
+        if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: invalid connection direction`);
+        if (check.counterparts !== undefined) { value.counterparts = names(check.counterparts, name); knownNodes(value.counterparts, name); }
         knownNodes(value.nodes, name); knownEdges(value.relations, name); return value;
+      });
+    }
+    if (raw.references !== undefined) {
+      if (!Array.isArray(raw.references) || raw.references.length > 128) fail(`${name}: invalid references`);
+      result.references = raw.references.map(check => {
+        keys(check, ['nodes', 'relations', 'attributes'], `${name}.references`);
+        if ((check.nodes === undefined) === (check.relations === undefined)) fail(`${name}: reference checks require nodes or relations`);
+        const key = check.nodes === undefined ? 'relations' : 'nodes';
+        const value = { [key]: names(check[key], name), attributes: names(check.attributes, name) };
+        (key === 'nodes' ? knownNodes : knownEdges)(value[key], name);
+        if (value[key].includes('*') || value.attributes.includes('*')) fail(`${name}: reference checks require explicit names`);
+        for (const type of value[key]) for (const attr of value.attributes) if ((key === 'nodes' ? nodeTypes : relationTypes)[type].attributes[attr]?.type !== 'reference') fail(`${name}: ${type}.${attr} is not a reference attribute`);
+        return value;
       });
     }
     viewpoints[name] = result;
   }
   const defaultRelation = own(definition, 'defaultRelation') ? definition.defaultRelation : base ? base.defaultRelation : (own(relationTypes, 'flow') ? 'flow' : null);
-  if (defaultRelation !== null && (!own(relationTypes, defaultRelation) || relationTypes[defaultRelation].abstract)) fail(`Ungültige Standardrelation: ${defaultRelation}`);
-  const compiled = freeze({ id, title: definition.title ?? base?.title ?? id, version: definition.version ?? base?.version ?? '1',
+  if (defaultRelation !== null && (!own(relationTypes, defaultRelation) || relationTypes[defaultRelation].abstract)) fail(`Invalid default relationship type: ${defaultRelation}`);
+  const compiled = freeze({ ...documentation(definition, 'Profile'), id, title: definition.title ?? base?.title ?? id, version: definition.version ?? base?.version ?? '1',
     nodeTypes, relationTypes, viewpoints, styleGroups: copy(styleGroups), defaultRelation, requireViewpoint: definition.requireViewpoint ?? base?.requireViewpoint ?? false });
   compiledProfiles.add(compiled);
   return compiled;
 }
 
 export function registerProfile(name, definition) {
-  identifier(name, 'Profilname');
-  if (definition?.id !== undefined && definition.id !== name) fail('Profilname und Profil-ID müssen übereinstimmen');
+  identifier(name, 'Profile name');
+  if (definition?.id !== undefined && definition.id !== name) fail('Profile name and profile ID must match');
   const profile = compileProfile(definition, name);
   registry.set(name, profile);
   return copy(profile);
 }
 export function getProfiles() { return [...registry.keys()]; }
 export function getProfile(name) {
-  if (!registry.has(name)) fail(`Unbekanntes Profil: ${name}`);
+  if (!registry.has(name)) fail(`Unknown profile: ${name}`);
   return copy(registry.get(name));
 }
 
@@ -256,7 +304,7 @@ export function resolveProfile(model, options = {}) {
   if (selection === undefined) selection = model.config?.profile;
   if (selection !== undefined) {
     if (typeof selection === 'string') {
-      if (!registry.has(selection)) throw new ArchError(`Unbekanntes Profil: ${selection}`, model.config?.loc, 'ARCH_PROFILE');
+      if (!registry.has(selection)) throw new ArchError(`Unknown profile: ${selection}`, model.config?.loc, 'ARCH_PROFILE');
       return registry.get(selection);
     }
     return compileProfile(selection, 'parameter');
@@ -280,17 +328,56 @@ export function matches(type, allowed, definitions) {
   return false;
 }
 
+// Inheritance and abstract flags are part of every compiled profile. This is
+// independent of framework names and includes indirect/multiple inheritance.
+export function concreteSubtypes(type, definitions) {
+  return Object.keys(definitions).filter(name => name !== type && !definitions[name].abstract && matches(name, [type], definitions)).sort();
+}
+
+function matchesPair(source, target, pair, definitions) {
+  return matches(source, pair.from, definitions) && matches(target, pair.to, definitions) &&
+    !matches(source, pair.fromExclude ?? [], definitions) && !matches(target, pair.toExclude ?? [], definitions);
+}
+
+// Type compatibility only: self-links, attributes, cardinalities, cycles and
+// view-local rules still need a concrete model. Counterparts are instantiable.
+export function typeConnections(type, profile) {
+  if (!own(profile.nodeTypes, type)) fail(`Unknown node type in profile ${profile.id}: ${type}`);
+  const concrete = Object.keys(profile.nodeTypes).filter(name => !profile.nodeTypes[name].abstract).sort();
+  const outgoing = [], incoming = [];
+  for (const name of Object.keys(profile.relationTypes).sort()) {
+    const rule = profile.relationTypes[name];
+    if (rule.abstract) continue;
+    const accepts = (source, target) => matches(source, rule.from, profile.nodeTypes) && matches(target, rule.to, profile.nodeTypes) &&
+      (!rule.pairs || rule.pairs.some(pair => matchesPair(source, target, pair, profile.nodeTypes)));
+    const targets = concrete.filter(other => accepts(type, other)), sources = concrete.filter(other => accepts(other, type));
+    const summary = { type: name, allowSelf: rule.allowSelf, acyclic: !!rule.acyclic };
+    if (targets.length) outgoing.push({ ...summary, counterparts: targets });
+    if (sources.length) incoming.push({ ...summary, counterparts: sources });
+  }
+  return { type, abstract: profile.nodeTypes[type].abstract, outgoing, incoming };
+}
+
 export function visibleNodeIds(model, view) {
-  const nodes = new Map(model.nodes.map(node => [node.id, node])), visible = new Set(view.include ?? nodes.keys());
-  if (view.include) {
-    const children = new Map();
-    for (const node of model.nodes) { if (!children.has(node.parent)) children.set(node.parent, []); children.get(node.parent).push(node.id); }
-    const add = id => { for (const child of children.get(id) ?? []) { if (!visible.has(child)) { visible.add(child); add(child); } } };
-    for (const id of view.include) add(id);
-    for (const id of [...visible]) {
-      const seen = new Set(); let parent = nodes.get(id)?.parent;
-      while (parent && !seen.has(parent)) { seen.add(parent); visible.add(parent); parent = nodes.get(parent)?.parent; }
-    }
+  const nodes = new Map(model.nodes.map(node => [node.id, node]));
+  const children = new Map();
+  for (const node of model.nodes) {
+    if (!children.has(node.parent)) children.set(node.parent, []);
+    children.get(node.parent).push(node.id);
+  }
+  const descendants = roots => {
+    const ids = new Set(roots), pending = [...ids];
+    while (pending.length) for (const child of children.get(pending.pop()) ?? [])
+      if (!ids.has(child)) { ids.add(child); pending.push(child); }
+    return ids;
+  };
+  const visible = view.include ? descendants(view.include) : new Set(nodes.keys());
+  // Exclusions always win, including when a descendant was explicitly included.
+  for (const id of descendants(view.exclude ?? [])) visible.delete(id);
+  // Add only the ancestors needed by surviving selections, avoiding empty ghosts.
+  if (view.include) for (const id of [...visible]) {
+    const seen = new Set(); let parent = nodes.get(id)?.parent;
+    while (parent && !seen.has(parent)) { seen.add(parent); visible.add(parent); parent = nodes.get(parent)?.parent; }
   }
   return visible;
 }
@@ -312,36 +399,43 @@ function validFormat(value, format) {
 export function profileDiagnostics(model, profile) {
   const result = [], nodes = new Map(model.nodes.map(node => [node.id, node]));
   const add = (message, item, extra = {}) => result.push({ severity: 'error', code: profile.id === 'default' ? 'ARCH_VALIDATION' : 'ARCH_SEMANTIC', message,
-    line: item?.loc?.line ?? null, column: item?.loc?.column ?? null, ...extra });
+    line: item?.loc?.line ?? null, column: item?.loc?.column ?? null, ...(item?.loc?.path !== undefined ? {path: item.loc.path} : {}), ...extra });
+  const abstractType = (type, kind, definitions, item) => {
+    const candidates = concreteSubtypes(type, definitions), topic = kind === 'node' ? 'types' : 'relations';
+    const help = `@help ${topic} ${registry.get(profile.id) === profile ? profile.id : '.'} ${type}`;
+    const detail = candidates.length ? `Concrete subtypes: ${candidates.slice(0, 12).join(', ')}${candidates.length > 12 ? ` (+${candidates.length - 12} more)` : ''}.`
+      : `No concrete subtypes are defined in profile ${profile.id}.`;
+    add(`Abstract ${kind} type cannot be instantiated: ${type}. ${detail} See ${help}`, item, { elementId: item.id, candidates, help });
+  };
   const checkAttributes = (item, rule, builtins) => {
     const values = { ...Object.fromEntries(builtins.filter(key => own(item, key)).map(key => [key, item[key]])), ...item.attributes };
     for (const [name, value] of Object.entries(values)) {
       const schema = rule.attributes[name];
       const location = { loc: item.attributeLocs?.[name] ?? item.loc };
       const extra = { elementId: item.id, attribute: name };
-      if (!schema && !builtins.includes(name)) { add(`Unbekanntes Attribut für ${item.type}: ${name}`, location, extra); continue; }
+      if (!schema && !builtins.includes(name)) { add(`Unknown attribute for ${item.type}: ${name}`, location, extra); continue; }
       const type = schema?.type ?? 'string', many = !!schema?.many;
-      if (many !== Array.isArray(value)) { add(`${item.id}.${name}: erwartet ${many ? 'Liste' : type}`, location, extra); continue; }
+      if (many !== Array.isArray(value)) { add(`${item.id}.${name}: expected ${many ? 'list' : type}`, location, extra); continue; }
       const entries = many ? value : [value];
-      if (many && (entries.length < (schema.minItems ?? 0) || entries.length > (schema.maxItems ?? 4000))) add(`${item.id}.${name}: ungültige Listenlänge`, location, extra);
-      if (many && schema.uniqueItems && new Set(entries).size !== entries.length) add(`${item.id}.${name}: doppelte Listeneinträge sind nicht erlaubt`, location, extra);
+      if (many && (entries.length < (schema.minItems ?? 0) || entries.length > (schema.maxItems ?? 4000))) add(`${item.id}.${name}: invalid list length`, location, extra);
+      if (many && schema.uniqueItems && new Set(entries).size !== entries.length) add(`${item.id}.${name}: Duplicate list entries are not allowed`, location, extra);
       for (const entry of entries) {
         if (type === 'integer' ? !Number.isInteger(entry) : typeof entry !== (type === 'reference' ? 'string' : type) || (type === 'number' && !Number.isFinite(entry))) {
-          add(`${item.id}.${name}: erwartet ${type}`, location, extra); continue;
+          add(`${item.id}.${name}: expected ${type}`, location, extra); continue;
         }
         if (!schema) continue;
-        if (schema.enum && !schema.enum.includes(entry)) add(`${item.id}.${name}: Wert muss aus ${schema.enum.map(v => JSON.stringify(v)).join(', ')} stammen`, location, extra);
-        if ((schema.min !== undefined && entry < schema.min) || (schema.max !== undefined && entry > schema.max)) add(`${item.id}.${name}: Zahl außerhalb des erlaubten Bereichs`, location, extra);
-        if ((schema.minLength !== undefined && [...entry].length < schema.minLength) || (schema.maxLength !== undefined && [...entry].length > schema.maxLength)) add(`${item.id}.${name}: ungültige Textlänge`, location, extra);
-        if (schema.format && !validFormat(entry, schema.format)) add(`${item.id}.${name}: ungültiges Format ${schema.format}`, location, extra);
+        if (schema.enum && !schema.enum.includes(entry)) add(`${item.id}.${name}: Value must be one of ${schema.enum.map(v => JSON.stringify(v)).join(', ')}`, location, extra);
+        if ((schema.min !== undefined && entry < schema.min) || (schema.max !== undefined && entry > schema.max)) add(`${item.id}.${name}: Number outside the allowed range`, location, extra);
+        if ((schema.minLength !== undefined && [...entry].length < schema.minLength) || (schema.maxLength !== undefined && [...entry].length > schema.maxLength)) add(`${item.id}.${name}: invalid text length`, location, extra);
+        if (schema.format && !validFormat(entry, schema.format)) add(`${item.id}.${name}: invalid format ${schema.format}`, location, extra);
         if (type === 'reference') {
           const target = nodes.get(entry);
-          if (!target) add(`${item.id}.${name}: unbekannte Referenz ${entry}`, location, extra);
-          else if (!matches(target.type, schema.targets, profile.nodeTypes)) add(`${item.id}.${name}: Referenztyp ${target.type} ist nicht erlaubt`, location, extra);
+          if (!target) add(`${item.id}.${name}: unknown reference ${entry}`, location, extra);
+          else if (!matches(target.type, schema.targets, profile.nodeTypes)) add(`${item.id}.${name}: Reference type ${target.type} is not allowed`, location, extra);
         }
       }
     }
-    for (const [name, schema] of Object.entries(rule.attributes)) if (schema.required && !own(values, name)) add(`${item.id}: Pflichtattribut ${name} fehlt`, item, { elementId: item.id, attribute: name });
+    for (const [name, schema] of Object.entries(rule.attributes)) if (schema.required && !own(values, name)) add(`${item.id}: Missing required attribute ${name}`, item, { elementId: item.id, attribute: name });
     for (const check of rule.comparisons ?? []) {
       const a = rule.attributes[check.left], b = rule.attributes[check.right];
       let left = values[check.left], right = values[check.right];
@@ -349,34 +443,33 @@ export function profileDiagnostics(model, profile) {
       if (a.format && (!validFormat(left, a.format) || !validFormat(right, b.format))) continue;
       if (a.format === 'date' || a.format === 'date-time') { left = Date.parse(left); right = Date.parse(right); }
       const ok = { '<': left < right, '<=': left <= right, '=': left === right, '!=': left !== right, '>=': left >= right, '>': left > right }[check.op];
-      if (!ok) add(`${item.id}: ${check.left} ${check.op} ${check.right} ist nicht erfüllt`, item, { elementId: item.id });
+      if (!ok) add(`${item.id}: ${check.left} ${check.op} ${check.right} is not satisfied`, item, { elementId: item.id });
     }
   };
   for (const node of model.nodes) {
     const rule = profile.nodeTypes[node.type];
-    if (!rule) { add(`Unbekannter Elementtyp im Profil ${profile.id}: ${node.type}`, node, { elementId: node.id }); continue; }
-    if (rule.abstract) add(`Abstrakter Knotentyp darf nicht instanziiert werden: ${node.type}`, node, { elementId: node.id });
+    if (!rule) { add(`Unknown element type in profile ${profile.id}: ${node.type}`, node, { elementId: node.id }); continue; }
+    if (rule.abstract) abstractType(node.type, 'node', profile.nodeTypes, node);
     if (node.parent) {
       const parent = nodes.get(node.parent), parentRule = profile.nodeTypes[parent?.type];
-      if (parentRule && !parentRule.container) add(`${node.parent} ist kein Container`, node, { elementId: node.id });
-      else if (parentRule && !matches(node.type, parentRule.contains, profile.nodeTypes)) add(`${node.type} ist in ${parent.type} nicht erlaubt`, node, { elementId: node.id });
+      if (parentRule && !parentRule.container) add(`${node.parent} is not a container`, node, { elementId: node.id });
+      else if (parentRule && !matches(node.type, parentRule.contains, profile.nodeTypes)) add(`${node.type} is not allowed in ${parent.type}`, node, { elementId: node.id });
     }
     checkAttributes(node, rule, NODE_PROPERTIES);
   }
   for (const edge of model.edges) {
     const type = edge.type ?? profile.defaultRelation, rule = profile.relationTypes[type];
-    if (!rule) { add(type ? `Unbekannter Beziehungstyp im Profil ${profile.id}: ${type}` : `Beziehung ${edge.id} benötigt einen expliziten type`, edge, { elementId: edge.id }); continue; }
-    if (rule.abstract) add(`Abstrakter Beziehungstyp darf nicht instanziiert werden: ${type}`, edge, { elementId: edge.id });
-    if (!rule.allowSelf && edge.source === edge.target) add(`${type}: Selbstbeziehung ist nicht erlaubt`, edge, { elementId: edge.id });
+    if (!rule) { add(type ? `Unknown relationship type in profile ${profile.id}: ${type}` : `Relationship ${edge.id} requires an explicit type`, edge, { elementId: edge.id }); continue; }
+    if (rule.abstract) abstractType(type, 'relationship', profile.relationTypes, edge);
+    if (!rule.allowSelf && edge.source === edge.target) add(`${type}: Self-relationships are not allowed`, edge, { elementId: edge.id });
     for (const [endpoint, types] of [['source', rule.from], ['target', rule.to]]) {
       const node = nodes.get(edge[endpoint]);
-      if (node && !matches(node.type, types, profile.nodeTypes)) add(`${edge.id}: ${endpoint} vom Typ ${node.type} ist für ${type} nicht erlaubt`, edge, { elementId: edge.id });
+      if (node && !matches(node.type, types, profile.nodeTypes)) add(`${edge.id}: ${endpoint} of type ${node.type} is not allowed for ${type}`, edge, { elementId: edge.id });
     }
     if (rule.pairs && !rule.pairs.some(pair => {
       const source = nodes.get(edge.source), target = nodes.get(edge.target);
-      return source && target && matches(source.type, pair.from, profile.nodeTypes) && matches(target.type, pair.to, profile.nodeTypes) &&
-        !matches(source.type, pair.fromExclude ?? [], profile.nodeTypes) && !matches(target.type, pair.toExclude ?? [], profile.nodeTypes);
-    })) add(`${edge.id}: Typkombination ${nodes.get(edge.source)?.type} → ${nodes.get(edge.target)?.type} ist für ${type} nicht erlaubt`, edge, { elementId: edge.id });
+      return source && target && matchesPair(source.type, target.type, pair, profile.nodeTypes);
+    })) add(`${edge.id}: Type combination ${nodes.get(edge.source)?.type} → ${nodes.get(edge.target)?.type} is not allowed for ${type}`, edge, { elementId: edge.id });
     checkAttributes({ ...edge, type }, rule, EDGE_PROPERTIES);
   }
   const counts = new Map();
@@ -411,29 +504,35 @@ export function profileDiagnostics(model, profile) {
       state.set(id, 2);
     };
     for (const id of adjacency.keys()) { if (!state.has(id)) visit(id); if (cycle) break; }
-    if (cycle) add(`${type}: Zyklus ist nicht erlaubt`, cycle, { elementId: cycle.id });
+    if (cycle) add(`${type}: Cycles are not allowed`, cycle, { elementId: cycle.id });
   }
   for (const [name, rule] of Object.entries(profile.relationTypes)) for (const key of ['outgoing', 'incoming']) if (rule[key]) {
     const endpoint = key === 'outgoing' ? 'source' : 'target', applicable = key === 'outgoing' ? rule.from : rule.to;
     for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes)) {
       const count = counts.get(name)?.[endpoint].get(node.id) ?? 0;
-      if (count < rule[key].min || (rule[key].max !== null && count > rule[key].max)) add(`${node.id}: ${name}.${key} erwartet ${rule[key].min}–${rule[key].max ?? '∞'} Beziehungen, gefunden ${count}`, node, { elementId: node.id });
+      if (count < rule[key].min || (rule[key].max !== null && count > rule[key].max)) add(`${node.id}: ${name}.${key} expected ${rule[key].min}–${rule[key].max ?? '∞'} relationships, found ${count}`, node, { elementId: node.id });
     }
   }
   for (const view of model.views) {
-    if (!view.viewpoint) { if (profile.requireViewpoint) add(`Ansicht ${view.id} benötigt einen viewpoint`, view, { viewId: view.id }); continue; }
+    if(view.meta!==undefined)continue; // Source views do not project domain elements into a viewpoint.
+    if (!view.viewpoint) { if (profile.requireViewpoint) add(`View ${view.id} requires a viewpoint`, view, { viewId: view.id }); continue; }
     const rule = profile.viewpoints[view.viewpoint];
-    if (!rule) { add(`Unbekannter Viewpoint: ${view.viewpoint}`, view, { viewId: view.id }); continue; }
+    if (!rule) { add(`Unknown viewpoint: ${view.viewpoint}`, view, { viewId: view.id }); continue; }
     const visible = visibleNodeIds(model, view), selectedNodes = model.nodes.filter(node => visible.has(node.id));
     const selectedEdges = model.edges.filter(edge => visible.has(edge.source) && visible.has(edge.target));
-    for (const node of selectedNodes) if (!matches(node.type, rule.nodes, profile.nodeTypes)) add(`${view.id}: Knotentyp ${node.type} ist für Viewpoint ${view.viewpoint} nicht erlaubt`, node, { elementId: node.id, viewId: view.id });
-    for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Beziehungstyp ${edge.type ?? profile.defaultRelation} ist nicht erlaubt`, edge, { elementId: edge.id, viewId: view.id });
-    for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Pflicht-Knotentyp ${type} fehlt`, view, { viewId: view.id });
-    for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Pflicht-Beziehungstyp ${type} fehlt`, view, { viewId: view.id });
+    for (const node of selectedNodes) if (!matches(node.type, rule.nodes, profile.nodeTypes)) add(`${view.id}: node type ${node.type} is not allowed in viewpoint ${view.viewpoint}`, node, { elementId: node.id, viewId: view.id });
+    for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Relationship type ${edge.type ?? profile.defaultRelation} is not allowed`, edge, { elementId: edge.id, viewId: view.id });
+    for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id });
+    for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id });
     for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)) {
       const count = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
-        (check.direction !== 'incoming' && edge.source === node.id || check.direction !== 'outgoing' && edge.target === node.id)).length;
-      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} benötigt ${check.min}–${check.max ?? '∞'} ${check.direction}-Verbindungen`, node, { elementId: node.id, viewId: view.id });
+        ((check.direction !== 'incoming' && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
+         (check.direction !== 'outgoing' && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))))).length;
+      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id });
+    }
+    for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
+      for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter(v => typeof v === 'string')) if (!visible.has(id))
+        add(`${view.id}: ${item.id}.${attr} references ${id}, which must be visible in viewpoint ${view.viewpoint}`, item, { elementId: item.id, attribute: attr, viewId: view.id });
     }
   }
   return result;

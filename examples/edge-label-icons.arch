@@ -1,0 +1,24 @@
+architecture "Icons on relationship labels" {
+  model {
+    system senderTop "Sender" system receiverTop "Receiver"
+    system senderLeft "Sender" system receiverLeft "Receiver"
+    system senderBottom "Sender" system receiverBottom "Receiver"
+    system senderRight "Sender" system receiverRight "Receiver"
+    relation above senderTop -> receiverTop "Transfers a signed manufacturing dataset"
+    relation before senderLeft -> receiverLeft "Collects data"
+    relation below senderBottom -> receiverBottom "Delivers data"
+    relation after senderRight -> receiverRight "Acknowledges delivery"
+  }
+  view positions "Top · Left · Bottom · Right" {
+    routes { curve straight icon core.cloud iconPosition left }
+    place senderTop at (0, 0) place receiverTop at (680, 0)
+    place senderLeft at (0, 170) place receiverLeft at (680, 170)
+    place senderBottom at (0, 340) place receiverBottom at (680, 340)
+    place senderRight at (0, 510) place receiverRight at (680, 510)
+    route above { icon core.shield iconPosition top }
+    // This route uses the shared cloud icon and the default left position.
+    route before { label (450, 218) }
+    route below { iconPosition bottom }
+    route after { iconPosition right }
+  }
+}

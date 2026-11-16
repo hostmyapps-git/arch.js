@@ -2996,6 +2996,9 @@
             "OperationalExchangeItem"
           ]
         }
+      },
+      "referenceLabels": {
+        "conveyed": "Conveys"
       }
     },
     "OperationalControlFlow": {
@@ -3453,6 +3456,9 @@
             "ResourceExchangeItem"
           ]
         }
+      },
+      "referenceLabels": {
+        "conveyed": "Conveys"
       }
     },
     "FunctionControlFlow": {
@@ -4276,7 +4282,10 @@
           ]
         }
       },
-      "extends": "ResourceExchange"
+      "extends": "ResourceExchange",
+      "referenceLabels": {
+        "conveyed": "Conveys"
+      }
     },
     "Command": {
       "from": [
@@ -4333,7 +4342,10 @@
           ]
         }
       },
-      "extends": "ResourceExchange"
+      "extends": "ResourceExchange",
+      "referenceLabels": {
+        "conveyed": "Conveys"
+      }
     },
     "ResponsibleFor": {
       "from": [
@@ -4880,19 +4892,19 @@
   "defaultRelation": null,
   "styleGroups": {
     "capability": {
-      "backgroundColor": "#00FF00"
+      "backgroundColor": "lime"
     },
     "service": {
-      "backgroundColor": "#EE82EE"
+      "backgroundColor": "violet"
     },
     "logical": {
-      "backgroundColor": "#6A5ACD"
+      "backgroundColor": "slateblue"
     },
     "physical": {
-      "backgroundColor": "#FF8C00"
+      "backgroundColor": "darkorange"
     },
     "foundation": {
-      "backgroundColor": "#FFD700"
+      "backgroundColor": "gold"
     },
     "neutral": {}
   }

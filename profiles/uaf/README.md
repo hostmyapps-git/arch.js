@@ -13,6 +13,9 @@ und die [NATO-UAF-Modellierungsleitlinie, März 2019, Version 1.0.0](https://www
 Die neuere NAFv4.1-Datei im Repository dient zur Abgrenzung. Diese Profile
 beanspruchen keine vollständige NAFv4.1-/UAF-1.3-Konformität. Der genaue Stand
 ist im generierten [Abdeckungsnachweis](COVERAGE.md) dokumentiert.
+Für die 47 NAFv4.1-Viewpoints gibt es zusätzlich das separate strukturelle
+Anwendungsprofil [naf41-uaf](../naf41/README.md), das auf `uaf` aufbaut.
+Es ersetzt keine vollständige normative Konformitätsprüfung.
 
 ## Direkt ausprobieren
 
@@ -115,7 +118,9 @@ const svg = renderToString(model, { view: 'traceability' });
 | Metadata, Standards, Summary and Overview, Dictionary, Parameters | foundation | Gold `#FFD700` |
 | Personnel, Security, Project, Actual Resources | neutral | Theme-Hintergrund |
 
-Die farbigen Füllungen verwenden `fill-opacity="0.2"`. Text und Icons bleiben
+Die farbigen Füllungen verwenden standardmäßig `fill-opacity="0.2"`;
+`style ID { opacity 0.5 }` überschreibt dies je View. Die Gruppenfarben können
+auch als CSS3-Namen wie `lime`, `violet` oder `gold` konfiguriert werden. Text und Icons bleiben
 deckend und werden gegen den sichtbaren Hintergrund auf Kontrast geprüft.
 Auch `Package` und `Requirement` sind zunächst neutral. Die Quellpakete
 entscheiden unabhängig von Vererbung und Viewpoint; jeder native Typ erhält

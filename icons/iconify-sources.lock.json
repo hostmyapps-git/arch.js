@@ -1,0 +1,39 @@
+{
+  "revision": "d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5",
+  "sources": [
+    {
+      "name": "fa6-solid",
+      "file": "icons/upstream/fa6-solid.json",
+      "url": "https://raw.githubusercontent.com/iconify/icon-sets/d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5/json/fa6-solid.json",
+      "sha256": "61a114ab51362bfe3852bf2cf265375a9a72df62296a8962ce7fc9fb2e9a48fd",
+      "icons": 1407,
+      "aliases": 1,
+      "author": {
+        "name": "Dave Gandy",
+        "url": "https://github.com/FortAwesome/Font-Awesome"
+      },
+      "license": {
+        "title": "CC BY 4.0",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    },
+    {
+      "name": "logos",
+      "file": "icons/upstream/logos.json",
+      "url": "https://raw.githubusercontent.com/iconify/icon-sets/d0290276f8f74436ebcfa5f8ff38a8dcc91a0ef5/json/logos.json",
+      "sha256": "0f5f663aab95bd24d3008596498aa9692212a1328afa547eb6190a0f5b940812",
+      "icons": 2305,
+      "aliases": 9,
+      "author": {
+        "name": "Gil Barbara",
+        "url": "https://github.com/gilbarbara/logos"
+      },
+      "license": {
+        "title": "CC0",
+        "spdx": "CC0-1.0",
+        "url": "https://raw.githubusercontent.com/gilbarbara/logos/master/LICENSE.txt"
+      }
+    }
+  ]
+}

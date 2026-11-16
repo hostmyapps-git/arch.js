@@ -1,0 +1,122 @@
+architecture "Search & Rescue · NAFv4.1" {
+  description "A typed operational model with measurable capability criteria, service support and physical realization."
+  config { profile naf41-uaf }
+  model {
+    Capability rescue "Search and rescue"
+    Capability maritime "Maritime rescue"
+    relation specializes maritime -> rescue "Specializes" { type CapabilityGeneralization }
+
+    AssessmentCriterion response "Time to dispatch" {
+      expression "Dispatch a rescue asset within ten minutes after a validated alert."
+    }
+    Measure minutes "Elapsed dispatch time" { unit "minutes" value 8 }
+    relation criterion response -> maritime "Characterizes" { type CharacterizesCapability }
+    relation evaluation minutes -> response "Evaluates" { type EvaluatesCriterion }
+
+    OperationalArchitecture commandNode "Coordination node"
+    LogicalNode rescueNode "Rescue team node"
+    Needline coordinationNeed "Rescue coordination need" {
+      source commandNode
+      target rescueNode
+      conveyed [distress]
+    }
+    OperationalPerformer command "Rescue coordination centre"
+    OperationalPerformer crew "Rescue team"
+    InformationElement distress "Distress report"
+    relation groupsCommand commandNode -> command "Groups active resource" { type GroupsLogicalResource }
+    relation groupsCrew rescueNode -> crew "Groups active resource" { type GroupsLogicalResource }
+    relation alert command -> crew "Validated alert" {
+      type LogicalInteraction
+      conveyed [distress]
+      needline coordinationNeed
+    }
+
+    OperationalActivity assess "Assess distress report"
+    OperationalActivity dispatch "Dispatch rescue team"
+    relation assignment1 command -> assess "Can perform" { type IsCapableToPerform }
+    relation assignment2 command -> dispatch "Can perform" { type IsCapableToPerform }
+    relation nextStep assess -> dispatch "Validated distress" { type LogicalControlFlow }
+    relation capabilityTrace dispatch -> maritime "Supports" { type MapsToCapability }
+
+    ServiceSpecification coordinationService "Rescue coordination service"
+    ServiceFunction coordinate "Coordinate rescue assets"
+    relation supports coordinationService -> maritime "Contributes" { type Exhibits }
+    relation serviceFunction coordinationService -> coordinate "Enables" { type IsCapableToPerform }
+
+    Software platform "Rescue coordination platform" {
+      isStandardConfiguration false
+      technology "Mission network"
+    }
+    Function validateReport "Validate report"
+    Function transmitDispatch "Transmit dispatch"
+    DataEntity reportData "Dispatch data"
+    relation assignment3 platform -> validateReport "Can perform" { type IsCapableToPerform }
+    relation assignment4 platform -> transmitDispatch "Can perform" { type IsCapableToPerform }
+    relation input validateReport -> reportData "Uses" { type UsesPhysicalResource }
+    relation output transmitDispatch -> reportData "Delivers" { type DeliversPhysicalResource }
+    relation functionFlow validateReport -> transmitDispatch "Validated report" { type FunctionalFlow }
+    relation dataFlow validateReport -> transmitDispatch "Dispatch payload" {
+      type ResourceFlow
+      conveyed [reportData]
+    }
+    relation realization1 validateReport -> assess "Implements" { type Implements }
+    relation realization2 transmitDispatch -> dispatch "Implements" { type Implements }
+    relation realization3 transmitDispatch -> coordinate "Implements service function" { type Implements }
+
+    CapabilityMilestone firstRelease "Initial readiness · January 2027" { date "2027-01-15" }
+    CapabilityIncrement initial "Initial rescue capability"
+    relation readiness firstRelease -> initial "Defines increment" { type DefinesIncrement }
+    relation capabilityDelivery initial -> maritime "Delivers" { type DeliversCapability }
+  }
+
+  view criteria "C7 · Measurable performance" {
+    viewpoint C7
+    include maritime, response, minutes
+    direction right
+  }
+  view taxonomy "C1 · Capability taxonomy" {
+    viewpoint C1
+    include rescue, maritime
+  }
+  view structure "L2 · Nodes and needline details" {
+    viewpoint L2
+    include commandNode, rescueNode, coordinationNeed, distress
+    diagram class { propertyFields [source, target, conveyed] }
+  }
+  view interactions "L3 · Logical interactions" {
+    viewpoint L3
+    include command, crew, distress
+    direction right
+  }
+  view activities "L4 · Logical activities" {
+    viewpoint L4
+    include command, assess, dispatch
+  }
+  view functions "S4 · Service functions" {
+    viewpoint S4
+    include coordinationService, coordinate
+  }
+  view physical "P4 · Resource functions and flows" {
+    viewpoint P4
+    include platform, validateReport, transmitDispatch, reportData
+    place platform at (250, 0)
+    place validateReport at (0, 230)
+    place transmitDispatch at (500, 230)
+    place reportData at (250, 460)
+    route assignment3 { from left to top curve rounded }
+    route assignment4 { from right to top curve rounded }
+    route input { from bottom to left curve rounded }
+    route output { from bottom to right curve rounded }
+    route functionFlow { from right to left curve rounded }
+    route dataFlow { from bottom to bottom via (110, 430), (610, 430) curve rounded label (360, 430) }
+  }
+  view trace "L4-P4 · Activity implementation" {
+    viewpoint L4-P4
+    include assess, dispatch, validateReport, transmitDispatch, coordinate
+  }
+  view roadmap "Cr · Capability roadmap" {
+    viewpoint Cr
+    include firstRelease, initial, maritime
+    direction right
+  }
+}

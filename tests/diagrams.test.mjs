@@ -27,6 +27,21 @@ test('seven independent diagram layouts export safe SVG in both themes and retai
   }
 });
 
+test('class property fields display real scalar/list/reference values, preserve zero/false and escape text',()=>{
+  const profile={nodeTypes:{item:{attributes:{count:{type:'integer'},enabled:{type:'boolean'},note:{},links:{type:'reference',many:true,targets:['item']}}}}};
+  const source='architecture "Values" {model {item a "A" {count 0 enabled false note "<script>&" links [b]} item b "B"} view v "V" {diagram class {propertyFields [count, enabled, note, links]}}}';
+  for(const theme of ['light','dark']) {
+    const svg=arch.renderToString(source,{profile,theme});
+    const d=xml(svg), text=d.documentElement.textContent;
+    for(const value of ['count: 0','enabled: false','note: <script>&','links: [b]']) assert.ok(text.includes(value),value);
+    assert.equal(d.getElementsByTagName('script').length,0);
+    const cards=[...d.getElementsByTagName('g')].filter(g=>g.hasAttribute('data-class-card'));
+    assert.equal(cards.length,2);
+    assert.ok(!cards[1].textContent.includes('PROPERTIES'),'missing optional values do not produce empty rows');
+  }
+  for(const fields of ['count, count','missing','loc']) assert.equal(arch.validate(source.replace('count, enabled, note, links',fields),{profile}).valid,false);
+});
+
 test('sequence honors ordered messages, explicit participants, return/async styles and self messages',()=>{
   const doc=xml(arch.renderToString(model,{view:'interaction'}));
   const messages=[...doc.getElementsByTagName('g')].filter(g=>g.hasAttribute('data-message'));

@@ -37,8 +37,8 @@ test('style groups support profile inheritance, snapshots, direct colors, view o
   assert.equal(arch.layout(JSON.parse(JSON.stringify(model))).nodes[0].backgroundColor,'#ee82ee');
   const inline='architecture "Inline" {config {styleGroup group {backgroundColor "#00FF00"} type item {styleGroup group}} model {item c "C"}}';
   assert.equal(arch.layout(arch.parse(inline)).nodes[0].backgroundColor,'#00FF00');
-  for(const backgroundColor of ['red','url(x)','#abcd','"/><script>']) assert.throws(()=>arch.registerProfile('bad-color',{...schema,id:'bad-color',styleGroups:{group:{backgroundColor}}}),/backgroundColor/);
-  assert.throws(()=>arch.registerProfile('bad-group',{nodeTypes:{a:{styleGroup:'missing'}}}),/Stilgruppe/);
+  for(const backgroundColor of ['notacolor','url(x)','#abcd','"/><script>']) assert.throws(()=>arch.registerProfile('bad-color',{...schema,id:'bad-color',styleGroups:{group:{backgroundColor}}}),/backgroundColor/);
+  assert.throws(()=>arch.registerProfile('bad-group',{nodeTypes:{a:{styleGroup:'missing'}}}),/style group/);
   assert.equal(arch.validate(source.replace('#123456','url(x)'),{profile:schema}).valid,false);
 });
 
@@ -68,4 +68,52 @@ test('all templates export exact backgrounds and readable foregrounds in either 
   }
   const profile={styleGroups:{neutral:{}},nodeTypes:{item:{styleGroup:'neutral'}}};
   for(const [theme,color] of [['light','#ffffff'],['dark','#1e293b']]) assert.ok(arch.renderToString('architecture "A" {model {item x "X"}}',{profile,theme}).includes(`fill="${color}"`));
+});
+
+test('all 147 CSS3 names and mixed-case aliases work without a DOM in profiles, inline rules and views', async () => {
+  const { CSS3_COLORS }=await import('../src/css3-colors.js');
+  const { normalizeColor }=await import('../src/colors.js');
+  assert.equal(Object.keys(CSS3_COLORS).length,147);
+  for(const [name,hex] of Object.entries(CSS3_COLORS)) {
+    assert.equal(normalizeColor(name.toUpperCase()),hex);
+    const profile={styleGroups:{g:{backgroundColor:name}},nodeTypes:{item:{template:'package',styleGroup:'g',accent:name.toUpperCase()}}};
+    const model=arch.parse('architecture "Named" {model {item x "X"}}',{profile});
+    assert.equal(model.profile.styleGroups.g.backgroundColor,hex);
+    assert.equal(arch.layout(model).nodes[0].accent,hex);
+    for(const theme of ['light','dark']) assert.ok(arch.renderToString(model,{theme}).includes(`fill="${hex}" fill-opacity="0.2"`));
+  }
+  assert.equal(normalizeColor('darkgrey'),normalizeColor('DarkGray'));
+  assert.equal(normalizeColor('magenta'),normalizeColor('fuchsia'));
+  const inline='architecture "Colors" {config {styleGroup g {backgroundColor lime} type item {styleGroup g accent slateblue}} model {item x "X"} view v "V" {style x {backgroundColor "DarkOrange" accent "Gold"}}}';
+  const graph=arch.layout(arch.parse(inline));
+  assert.equal(graph.nodes[0].backgroundColor,'#ff8c00');assert.equal(graph.nodes[0].accent,'#ffd700');
+  for(const bad of ['transparent','currentColor','rebeccapurple','rgb(1,2,3)','url(x)','__proto__','constructor','red;stroke:black',null,{},'#ffff']) assert.equal(normalizeColor(bad),undefined);
+});
+
+test('heatmap named scale colors produce exactly the same SVG as their hexadecimal equivalents', async()=>{
+  const source=await readFile('examples/diagrams.arch','utf8');
+  const named=source.replace('parentAttribute parentCapability min 0 max 5','parentAttribute parentCapability min 0 max 5 colorLow Gold colorHigh Lime');
+  const hex=named.replace('colorLow Gold colorHigh Lime','colorLow "#ffd700" colorHigh "#00ff00"');
+  assert.equal(arch.renderToString(named,{view:'assessment',idPrefix:'colors'}),arch.renderToString(hex,{view:'assessment',idPrefix:'colors'}));
+});
+
+test('style opacity accepts 0–1, changes only fills, and preserves readable text over nested translucent packages',async()=>{
+  const source='architecture "Opacity" {model {package p "P" {service s "S"}} view v "V" {style p {backgroundColor Gold opacity 0.7} style s {backgroundColor SlateBlue opacity 0}}}';
+  for(const theme of ['light','dark']) {
+    const svg=arch.renderToString(source,{theme});
+    assert.ok(svg.includes('fill="#ffd700" fill-opacity="0.7"'));
+    assert.ok(svg.includes('fill="#6a5acd" fill-opacity="0"'));
+    const doc=new DOMParser().parseFromString(svg,'image/svg+xml');
+    const child=[...doc.getElementsByTagName('g')].find(e=>e.getAttribute('data-node')==='s');
+    const backdrop=composite('#ffd700',theme==='dark'?'#111827':'#fafbfe',0.7);
+    for(const t of child.getElementsByTagName('text')) {assert.ok(contrast(t.getAttribute('fill'),backdrop)>=4.5);assert.equal(t.hasAttribute('opacity'),false);}
+  }
+  for(const opacity of ['-0.1','1.1','"0.5"','true']) assert.equal(arch.validate(source.replace('opacity 0.7',`opacity ${opacity}`)).valid,false);
+  assert.ok(arch.renderToString(source.replace('opacity 0.7','opacity 1')).includes('fill-opacity="1"'));
+  const neutral=source.replace('backgroundColor Gold opacity 0.7','opacity 0.4');assert.ok(arch.renderToString(neutral).includes('fill-opacity="0.4"'));
+  const examples=await readFile('examples/diagrams.arch','utf8');
+  for(const [view,node] of [['details','mission'],['assessment','rescue'],['delivery','phase1'],['interaction','client']]) {
+    const modified=examples.replace(`view ${view} `,`view ${view} `).replace(new RegExp(`(view ${view} [^{]+\\{)`),`$1 style ${node} {opacity 0.7}`);
+    assert.ok(arch.renderToString(modified,{view}).includes('fill-opacity="0.7"'),view);
+  }
 });

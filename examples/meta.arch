@@ -1,0 +1,19 @@
+architecture "Architecture and its source" {
+  config { views all }
+  model {
+    person user "User"
+    service api "API" {technology "REST"}
+    relation calls user -> api "Calls"
+  }
+  view overview "System overview" {
+    place user at (0,0)
+    place api at (400,0)
+    routes {curve straight}
+  }
+  view jsonSource "Architecture as JSON" {
+    @meta json
+  }
+  view dslSource "Architecture as DSL" {
+    @meta dsl
+  }
+}

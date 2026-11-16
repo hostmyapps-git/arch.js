@@ -1,0 +1,39 @@
+{
+  "architecture": {
+    "name": "JSON architecture",
+    "description": "One model, two views, the same rules as the text syntax.",
+    "config": { "views": "all" },
+    "model": {
+      "elements": {
+        "user": { "type": "person", "name": "User" },
+        "platform": {
+          "type": "package",
+          "name": "Platform",
+          "elements": {
+            "api": { "type": "service", "name": "API", "technology": "REST" },
+            "data": { "type": "database", "name": "Data" }
+          }
+        }
+      },
+      "relations": {
+        "calls": { "from": "user", "to": "api", "name": "Calls" },
+        "reads": { "from": "api", "to": "data", "name": "Reads", "type": "access" }
+      }
+    },
+    "views": {
+      "overview": {
+        "name": "Overview",
+        "direction": "right",
+        "place": { "user": { "at": [0, 100] }, "platform": { "at": [350, 0] } },
+        "style": { "api": { "iconPosition": "right", "showStereotype": false } },
+        "routes": { "curve": "straight", "icon": "core.cloud", "iconPosition": "top" },
+        "route": { "reads": { "showLabel": false } }
+      },
+      "matrix": {
+        "name": "Relationships",
+        "include": ["user", "api", "data"],
+        "diagram": { "type": "matrix", "rows": ["user", "api"], "columns": ["api", "data"] }
+      }
+    }
+  }
+}

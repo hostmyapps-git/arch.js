@@ -54,7 +54,7 @@ test('IsCapableToPerform checks the conditional source-target pairs and rejects 
   for (const [a,b] of [['op','activity'],['service','serviceFunction'],['sw','fn'],['project','task']])
     assert.equal(report(`${declarations} relation e ${a} -> ${b} "" { type IsCapableToPerform }`).valid, true, `${a}->${b}`);
   for (const [a,b] of [['op','fn'],['service','activity'],['sw','serviceFunction'],['sw','task'],['fn','op']])
-    assert.match(errors(`${declarations} relation e ${a} -> ${b} "" { type IsCapableToPerform }`), /Typkombination/);
+    assert.match(errors(`${declarations} relation e ${a} -> ${b} "" { type IsCapableToPerform }`), /Type combination/);
 });
 
 test('Implements is directed from physical implementation to specification with domain-specific endpoint pairs', () => {
@@ -64,16 +64,16 @@ test('Implements is directed from physical implementation to specification with 
   for (const [a,b] of [['sw','op'],['fn','activity'],['fn','sf'],['data','info']])
     assert.equal(report(`${declarations} relation r ${a} -> ${b} "" { type Implements }`).valid, true);
   for (const [a,b] of [['op','sw'],['fn','service'],['data','activity']])
-    assert.match(errors(`${declarations} relation r ${a} -> ${b} "" { type Implements }`), /Typkombination/);
+    assert.match(errors(`${declarations} relation r ${a} -> ${b} "" { type Implements }`), /Type combination/);
 });
 
 test('capability/service traceability and service consumption enforce actual UAF directions', () => {
   const declarations = 'Capability cap "Capability" ServiceSpecification svc "Service" OperationalActivity task "Task"';
   assert.equal(report(`${declarations} relation e svc -> cap "" { type Exhibits }`).valid, true);
-  assert.match(errors(`${declarations} relation e cap -> svc "" { type Exhibits }`), /source vom Typ Capability/);
+  assert.match(errors(`${declarations} relation e cap -> svc "" { type Exhibits }`), /source of type Capability/);
   assert.equal(report(`${declarations} relation e task -> svc "" { type Consumes }`).valid, true);
-  assert.match(errors(`${declarations} relation e svc -> task "" { type Consumes }`), /source vom Typ ServiceSpecification/);
-  assert.match(errors('OperationalAgent abstract "Must fail"'), /Abstrakter Knotentyp/);
+  assert.match(errors(`${declarations} relation e svc -> task "" { type Consumes }`), /source of type ServiceSpecification/);
+  assert.match(errors('OperationalAgent abstract "Must fail"'), /Abstract node type/);
 });
 
 test('taxonomy generalizations draw solid triangles and reject self loops, cycles and wrong domains', () => {
@@ -83,39 +83,39 @@ test('taxonomy generalizations draw solid triangles and reject self loops, cycle
   const svg = arch.renderToString(source(nodes + edge, 'C1'));
   const path = svg.match(/class="arch-edge"[\s\S]*?<\/g>/)[0];
   assert.match(path, /triangle/); assert.ok(!path.includes('stroke-dasharray'));
-  assert.match(errors(nodes + edge + ' relation back b -> a "" { type CapabilityGeneralization }'), /Zyklus/);
-  assert.match(errors(nodes + ' relation self a -> a "" { type CapabilityGeneralization }'), /Selbstbeziehung/);
-  assert.match(errors(nodes + ' ServiceSpecification svc "S" relation bad svc -> a "" { type CapabilityGeneralization }'), /source vom Typ ServiceSpecification/);
+  assert.match(errors(nodes + edge + ' relation back b -> a "" { type CapabilityGeneralization }'), /Cycles/);
+  assert.match(errors(nodes + ' relation self a -> a "" { type CapabilityGeneralization }'), /Self-relationships/);
+  assert.match(errors(nodes + ' ServiceSpecification svc "S" relation bad svc -> a "" { type CapabilityGeneralization }'), /source of type ServiceSpecification/);
 });
 
 test('exchange payload references are required, typed, unique and checked independently of visual inclusion', () => {
   const nodes = 'OperationalPerformer a "A" OperationalPerformer b "B" InformationElement info "Report"';
   const edge = 'relation e a -> b "Report" { type OperationalExchange conveyed [info] trustlevel 0.8 }';
   assert.equal(report(nodes + edge, 'L3').valid, true);
-  assert.match(errors(nodes + edge.replace('conveyed [info]', '')), /Pflichtattribut conveyed/);
-  assert.match(errors(nodes + edge.replace('[info]', '[missing]')), /unbekannte Referenz missing/);
-  assert.match(errors(nodes + edge.replace('[info]', '[a]')), /Referenztyp OperationalPerformer/);
-  assert.match(errors(nodes + edge.replace('[info]', '[info, info]')), /doppelte/);
-  assert.match(errors(nodes + edge.replace('[info]', '[]')), /Listenlänge/);
+  assert.match(errors(nodes + edge.replace('conveyed [info]', '')), /Missing required attribute conveyed/);
+  assert.match(errors(nodes + edge.replace('[info]', '[missing]')), /unknown reference missing/);
+  assert.match(errors(nodes + edge.replace('[info]', '[a]')), /Reference type OperationalPerformer/);
+  assert.match(errors(nodes + edge.replace('[info]', '[info, info]')), /Duplicate/);
+  assert.match(errors(nodes + edge.replace('[info]', '[]')), /list length/);
   assert.equal(report(nodes + edge, 'L3', 'include a, b').valid, true);
 });
 
 test('UML action/port adapters validate behavior and interface types and preserve the catalog separation', () => {
   const body = 'OperationalActivity activity "Activity" ServiceFunction sf "Wrong domain" OperationalActivityAction action "Action" { behavior activity }';
   assert.equal(report(body).valid, true);
-  assert.match(errors(body.replace('behavior activity', 'behavior sf')), /Referenztyp ServiceFunction/);
-  assert.match(errors(body.replace('behavior activity', '')), /Pflichtattribut behavior/);
+  assert.match(errors(body.replace('behavior activity', 'behavior sf')), /Reference type ServiceFunction/);
+  assert.match(errors(body.replace('behavior activity', '')), /Missing required attribute behavior/);
   assert.equal(report('ServiceSpecification svc "S" ServiceInterface api "API" ServicePort p "P" { owner svc interfaceType api }').valid, true);
-  assert.match(errors('OperationalPerformer op "Op" ServiceInterface api "API" OperationalPort p "P" { interfaceType api }'), /Referenztyp ServiceInterface/);
+  assert.match(errors('OperationalPerformer op "Op" ServiceInterface api "API" OperationalPort p "P" { interfaceType api }'), /Reference type ServiceInterface/);
 });
 
 test('NAF views enforce mandatory membership, no undeclared viewpoint bypass, and per-element allocations', () => {
   assert.equal(report('Capability c "C"', 'C1').valid, true);
-  assert.match(errors('ServiceSpecification s "S"', 'C1'), /Knotentyp ServiceSpecification/);
-  assert.match(errors('Capability c "C"', 'notImplemented'), /Unbekannter Viewpoint/);
+  assert.match(errors('ServiceSpecification s "S"', 'C1'), /node type ServiceSpecification/);
+  assert.match(errors('Capability c "C"', 'notImplemented'), /Unknown viewpoint/);
   assert.equal(arch.validate('architecture "No view" {config {profile naf4-uaf} model {Capability c "C"}}').valid, false);
   const allocations = 'OperationalPerformer op "Op" OperationalActivity a "A" OperationalActivity b "B" relation r op -> a "" {type IsCapableToPerform}';
-  assert.match(errors(allocations, 'L4'), /b benötigt/);
+  assert.match(errors(allocations, 'L4'), /b requires/);
   assert.equal(report(allocations + ' relation r2 op -> b "" {type IsCapableToPerform}', 'L4').valid, true);
   assert.equal(report(allocations, 'L4', 'include op, a').valid, true);
 });
@@ -147,12 +147,12 @@ test('all 20 supported NAF viewpoints have independent positive architecture fix
 test('native enum, required boolean, URI and temporal attributes are validated and invalid dates cannot crash reports', () => {
   assert.match(errors('Software s "S"'), /isStandardConfiguration/);
   assert.equal(report('DataModel d "D" {kind Logical}').valid, true);
-  assert.match(errors('DataModel d "D" {kind logical}'), /Wert muss aus/);
-  assert.match(errors('Capability c "C" { URI "not-a-uri" }'), /ungültiges Format uri/);
+  assert.match(errors('DataModel d "D" {kind logical}'), /Value must be one of/);
+  assert.match(errors('Capability c "C" { URI "not-a-uri" }'), /invalid format uri/);
   const period = 'ActualProject p "P" {projectKind Project startDate "2026-01-01T00:00:00Z" endDate "2027-01-01T00:00:00Z"}';
   assert.equal(report(period).valid, true);
   assert.match(errors(period.replace('2027-01-01', '2025-01-01')), /startDate <= endDate/);
-  assert.match(errors(period.replace('2026-01-01', '2026-02-30')), /ungültiges Format/);
+  assert.match(errors(period.replace('2026-01-01', '2026-02-30')), /invalid format/);
   assert.doesNotThrow(() => report('ActualProject p "P" {projectKind Project startDate 1 endDate 2}'));
   assert.equal(report('ActualProject p "P" {projectKind Project startDate 1 endDate 2}').valid, false);
 });

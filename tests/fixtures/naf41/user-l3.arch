@@ -1,0 +1,15 @@
+architecture "Test"{
+    config{
+        profile naf41-uaf
+        }
+    model {
+        OperationalPerformer f "fighter"
+        OperationalPerformer c "controller"
+        InformationElement i "Controll"
+        relation control c -> f "controlls" {type LogicalInteraction conveyed [i]}
+    }
+    view v "c17"{
+        viewpoint L3
+        place f at (400,0)
+    }
+}

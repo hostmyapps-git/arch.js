@@ -1,4 +1,12 @@
-// Colors enter the renderer only after hexadecimal schema validation.
+import { CSS3_COLORS } from './css3-colors.js';
+
+// Fixed, DOM-independent resolution shared by validation and rendering.
+export function normalizeColor(value) {
+  if (typeof value !== 'string') return undefined;
+  if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) return value;
+  const name = value.toLowerCase();
+  return Object.hasOwn(CSS3_COLORS, name) ? CSS3_COLORS[name] : undefined;
+}
 export function luminance(hex) {
   const value = hex.slice(1);
   const channels = (value.length === 3 ? [...value].map(c => c + c).join('') : value).match(/../g).map(c => {

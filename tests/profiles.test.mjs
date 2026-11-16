@@ -49,16 +49,16 @@ test('profiles register atomically, return detached data, and parsed models reta
 test('typed attributes, inherited requirements, enum values and numeric/text boundaries are enforced', () => {
   const p = profile();
   assert.equal(arch.validate(document(pair, view), { profile: p }).valid, true);
-  assert.match(errors(document(pair.replace('owner "People"', '')), { profile: p }), /Pflichtattribut owner/);
-  assert.match(errors(document(pair.replace('owner "People"', 'owner ""')), { profile: p }), /Textlänge/);
-  assert.match(errors(document(pair.replace('level 2', 'level 4')), { profile: p }), /Zahl außerhalb/);
-  assert.match(errors(document(pair.replace('level 2', 'level 1.5')), { profile: p }), /erwartet integer/);
-  assert.match(errors(document(pair.replace('active true', 'active "true"')), { profile: p }), /erwartet boolean/);
-  assert.match(errors(document(pair.replace('status live', 'status invalid')), { profile: p }), /Wert muss aus/);
-  assert.match(errors(document(pair.replace('secure true', '')), { profile: p }), /Pflichtattribut secure/);
-  assert.match(errors(document(pair.replace('level 2', 'undefinedField 2')), { profile: p }), /Unbekanntes Attribut/);
-  assert.match(errors(document('entity a "Abstract" { owner "A" }'), { profile: p }), /Abstrakter Knotentyp/);
-  assert.match(errors(document(pair.replace('owner "Apps"', 'owner 4')), { profile: p }), /erwartet string/);
+  assert.match(errors(document(pair.replace('owner "People"', '')), { profile: p }), /Missing required attribute owner/);
+  assert.match(errors(document(pair.replace('owner "People"', 'owner ""')), { profile: p }), /text length/);
+  assert.match(errors(document(pair.replace('level 2', 'level 4')), { profile: p }), /Number outside/);
+  assert.match(errors(document(pair.replace('level 2', 'level 1.5')), { profile: p }), /expected integer/);
+  assert.match(errors(document(pair.replace('active true', 'active "true"')), { profile: p }), /expected boolean/);
+  assert.match(errors(document(pair.replace('status live', 'status invalid')), { profile: p }), /Value must be one of/);
+  assert.match(errors(document(pair.replace('secure true', '')), { profile: p }), /Missing required attribute secure/);
+  assert.match(errors(document(pair.replace('level 2', 'undefinedField 2')), { profile: p }), /Unknown attribute/);
+  assert.match(errors(document('entity a "Abstract" { owner "A" }'), { profile: p }), /Abstract node type/);
+  assert.match(errors(document(pair.replace('owner "Apps"', 'owner 4')), { profile: p }), /expected string/);
 });
 
 test('endpoint rules use type inheritance; relationship inheritance preserves styles and attributes', () => {
@@ -66,11 +66,11 @@ test('endpoint rules use type inheritance; relationship inheritance preserves st
   p.nodeTypes.specialActor = { extends: 'actor' };
   p.relationTypes.secureUse = { extends: 'uses', style: 'realization' };
   assert.equal(arch.validate(document(pair.replace('actor u', 'specialActor u').replace('secure true', 'type secureUse secure true')), { profile: p }).valid, true);
-  assert.match(errors(document(pair.replace('u -> s', 's -> u')), { profile: p }), /source vom Typ system/);
-  assert.match(errors(document(pair.replace('u -> s', 'u -> u')), { profile: p }), /Selbstbeziehung/);
+  assert.match(errors(document(pair.replace('u -> s', 's -> u')), { profile: p }), /source of type system/);
+  assert.match(errors(document(pair.replace('u -> s', 'u -> u')), { profile: p }), /Self-relationships/);
   p.relationTypes.uses.abstract = true;
   p.defaultRelation = 'secureUse';
-  assert.match(errors(document(pair.replace('secure true', 'type uses secure true')), { profile: p }), /Abstrakter Beziehungstyp/);
+  assert.match(errors(document(pair.replace('secure true', 'type uses secure true')), { profile: p }), /Abstract relationship type/);
   assert.equal(arch.validate(document(pair.replace('secure true', 'type secureUse secure true')), { profile: p }).valid, true);
 });
 
@@ -92,40 +92,40 @@ test('custom containers support nesting and coordinates while child whitelists r
   assert.equal(graph.nodes[0].type, 'group'); assert.equal(graph.nodes[0].container, true);
   assert.match(arch.renderToString(m), /class="arch-package"/);
   p.nodeTypes.group.contains = ['system'];
-  assert.match(errors(document('group g "G" { actor u "U" { owner "A" } }'), { profile: p }), /actor ist in group nicht erlaubt/);
-  assert.match(errors(document('actor a "A" { owner "A" actor b "B" { owner "B" } }'), { profile: p }), /a ist kein Container/);
+  assert.match(errors(document('group g "G" { actor u "U" { owner "A" } }'), { profile: p }), /actor is not allowed in group/);
+  assert.match(errors(document('actor a "A" { owner "A" actor b "B" { owner "B" } }'), { profile: p }), /a is not a container/);
 });
 
 test('viewpoints enforce visible type whitelists, required types and optional mandatory selection', () => {
   const p = profile();
   assert.equal(arch.validate(document(pair, view), { profile: p }).valid, true);
-  assert.match(errors(document(pair, 'view v "V" { viewpoint context include u }'), { profile: p }), /Pflicht-Knotentyp system/);
+  assert.match(errors(document(pair, 'view v "V" { viewpoint context include u }'), { profile: p }), /Missing required node type system/);
   p.viewpoints.context.nodes = ['actor'];
-  assert.match(errors(document(pair, view), { profile: p }), /Knotentyp system ist für Viewpoint/);
+  assert.match(errors(document(pair, view), { profile: p }), /node type system is not allowed in viewpoint/);
   delete p.viewpoints.context.nodes;
   p.relationTypes.other = { from: ['actor'], to: ['system'] };
-  assert.match(errors(document(pair.replace('secure true', 'type other'), view), { profile: p }), /Beziehungstyp other/);
+  assert.match(errors(document(pair.replace('secure true', 'type other'), view), { profile: p }), /Relationship type other/);
   assert.equal(arch.validate(document(pair.replace('secure true', 'type other')), { profile: p }).valid, true);
   p.viewpoints.context.relations = [];
-  assert.match(errors(document(pair, view), { profile: p }), /Beziehungstyp uses ist nicht erlaubt/);
+  assert.match(errors(document(pair, view), { profile: p }), /Relationship type uses is not allowed/);
 });
 
 test('unknown and missing viewpoints report view IDs; required relations honor visible endpoints', () => {
   const p = profile(); p.requireViewpoint = true;
-  assert.match(errors(document(pair), { profile: p }), /benötigt einen viewpoint/);
-  assert.match(errors(document(pair, 'view x "X" { viewpoint missing }'), { profile: p }), /Unbekannter Viewpoint/);
+  assert.match(errors(document(pair), { profile: p }), /requires a viewpoint/);
+  assert.match(errors(document(pair, 'view x "X" { viewpoint missing }'), { profile: p }), /Unknown viewpoint/);
   const report = arch.validate(document(pair, 'view x "X" { viewpoint context include u }'), { profile: p });
-  assert.ok(report.diagnostics.some(d => d.viewId === 'x' && d.message.includes('Pflicht-Beziehungstyp uses')));
+  assert.ok(report.diagnostics.some(d => d.viewId === 'x' && d.message.includes('Missing required relationship type uses')));
 });
 
 test('API selection takes precedence over document selection and inline rules without weakening it', () => {
   arch.registerProfile('parameter', profile('parameter'));
   const inline = 'config { type anything { template database } }';
   assert.equal(arch.parse(document('anything a "A"', '', inline)).profile.id, 'inline');
-  assert.match(errors(document('anything a "A"', '', inline), { profile: 'parameter' }), /Unbekannter Elementtyp/);
+  assert.match(errors(document('anything a "A"', '', inline), { profile: 'parameter' }), /Unknown element type/);
   assert.equal(arch.parse(document(pair, view, 'config { profile parameter }')).profile.id, 'parameter');
   assert.equal(arch.parse(document(pair, view, 'config { profile does-not-exist }'), { profile: 'parameter' }).profile.id, 'parameter');
-  assert.match(errors(document(pair), { profile: 'does-not-exist' }), /Unbekanntes Profil/);
+  assert.match(errors(document(pair), { profile: 'does-not-exist' }), /Unknown profile/);
   assert.equal(arch.parse(document('service a "A"')).profile.id, 'default');
 });
 
@@ -140,15 +140,15 @@ test('inline config uses the same rules, allows forward declarations and profile
   assert.match(arch.renderToString(model), /data-style="dependency"/);
   const extension = arch.parse(document('custom c "C" service s "S"', '', 'config { extends default type custom { template artifact } }'));
   assert.equal(extension.profile.nodeTypes.custom.template, 'artifact'); assert.ok(extension.profile.nodeTypes.service);
-  assert.throws(() => arch.parse(document('', '', 'config { type a {} type a {} }')), /Doppelte/);
-  assert.throws(() => arch.parse(document('', '', 'config { profile default type a {} }')), /Alternativen/);
-  assert.throws(() => arch.parse(document('', '', 'config {} config {}')), /Nur ein config/);
-  assert.throws(() => arch.parse(document('', '', 'config { type a { nonsense true } }')), /Unbekannte Profilregel/);
+  assert.throws(() => arch.parse(document('', '', 'config { type a {} type a {} }')), /Duplicate/);
+  assert.throws(() => arch.parse(document('', '', 'config { profile default type a {} }')), /Choose either/);
+  assert.throws(() => arch.parse(document('', '', 'config {} config {}')), /Only one config/);
+  assert.throws(() => arch.parse(document('', '', 'config { type a { nonsense true } }')), /Unknown profile rule/);
   const base = { nodeTypes: { service: { template: 'service' } }, relationTypes: { flow: {} }, defaultRelation: null };
   arch.registerProfile('no-default', base);
   arch.registerProfile('no-default-child', { extends: 'no-default' });
   assert.equal(arch.getProfile('no-default-child').defaultRelation, null);
-  assert.match(errors(document('service a "A" relation e a -> a ""'), { profile: 'no-default-child' }), /expliziten type/);
+  assert.match(errors(document('service a "A" relation e a -> a ""'), { profile: 'no-default-child' }), /explicit type/);
 });
 
 test('runtime diagnostics include all semantic errors and source locations without executing rules', () => {
@@ -165,8 +165,8 @@ test('generic numeric metadata supports large finite values while drawing coordi
   const p = { nodeTypes: { initiative: { attributes: { budget: { type: 'number', min: 0 }, year: { type: 'integer' } } } } };
   const model = arch.parse(document('initiative a "A" { budget 1.2e12 year 2026 }'), { profile: p });
   assert.equal(model.nodes[0].attributes.budget, 1.2e12);
-  assert.throws(() => arch.parse(document('initiative a "A"', 'view v "V" { place a at (1e12,0) }'), { profile: p }), /Koordinate/);
-  assert.throws(() => arch.parse(document('initiative a "A" { budget 1e999 }'), { profile: p }), /endlich/);
+  assert.throws(() => arch.parse(document('initiative a "A"', 'view v "V" { place a at (1e12,0) }'), { profile: p }), /Coordinate/);
+  assert.throws(() => arch.parse(document('initiative a "A" { budget 1e999 }'), { profile: p }), /finite/);
 });
 
 test('schema validation rejects unknown settings, unsafe presentation, broken references and cycles atomically', () => {
@@ -184,8 +184,8 @@ test('schema validation rejects unknown settings, unsafe presentation, broken re
     { nodeTypes: { a: {} }, validate: 'eval()' },
   ]) assert.throws(() => arch.registerProfile('bad-schema', bad), arch.ArchError);
   assert.ok(!arch.getProfiles().includes('bad-schema'));
-  assert.throws(() => arch.registerProfile('a', { id: 'b', nodeTypes: { x: {} } }), /übereinstimmen/);
-  assert.throws(() => arch.getProfile('missing'), /Unbekanntes Profil/);
+  assert.throws(() => arch.registerProfile('a', { id: 'b', nodeTypes: { x: {} } }), /match/);
+  assert.throws(() => arch.getProfile('missing'), /Unknown profile/);
 });
 
 test('prototype-like names work as data across profiles, attributes, types and views', () => {
@@ -202,7 +202,7 @@ test('profile selection propagates through layout, SVG and Markdown without muta
   assert.match(arch.renderMarkdown('```arch\n' + source + '\n```', { profile: p }), /data-type="actor"/);
   arch.renderToString(model); assert.equal(JSON.stringify(model), snapshot);
   const modified = JSON.parse(snapshot); modified.nodes[1].attributes.level = 100;
-  assert.throws(() => arch.renderToString(modified), /Zahl außerhalb/);
+  assert.throws(() => arch.renderToString(modified), /Number outside/);
 });
 
 test('all shipped inline and registered-profile examples validate and render every view', async () => {

@@ -13,7 +13,7 @@
     <a class="brand" href="index.html" aria-label="arch.js home"><span class="brand-symbol">a<span>•</span></span>arch<span class="brand-dot">.js</span><span class="version">0.1</span></a>
     <div class="space-label">YOUR WORKSPACE</div>
     <div class="workspace-link"><span class="workspace-icon">▧</span> Architecture studio <span class="live-dot"></span></div>
-    <div class="space-label examples-label">EXAMPLE MODELS <span id="example-count">09</span></div>
+    <div class="space-label examples-label">EXAMPLE MODELS <span id="example-count">11</span></div>
     <nav id="examples" aria-label="Example models"></nav>
     <div class="sidebar-note"><span class="note-icon">↗</span><strong>From text to clarity.</strong><p>Describe the system.<br>Let the architecture speak.</p><button class="text-button" id="open-guide">Explore the language <span>→</span></button></div>
     <div class="sidebar-footer"><span class="live-dot"></span> Runs entirely in your browser <a href="README.md" title="Read the documentation" aria-label="Read the documentation">↗</a></div>
@@ -24,17 +24,22 @@
     <section class="page-heading"><div><div class="eyebrow"><span></span> THE BIG PICTURE, IN PLAIN TEXT</div><h1>Architecture, made clear.</h1><p>A small language for the systems that connect everything.</p></div><button class="primary-button" id="export-svg"><span>↓</span> Export SVG</button></section>
 
     <section class="studio" aria-label="Architecture editor">
-      <div class="studio-topline"><div class="file-title"><span class="file-icon">◈</span><strong id="model-title">Customer platform</strong><span class="file-extension">.arch</span><span class="unsaved" id="unsaved" hidden>edited</span></div><div class="studio-top-actions"><label class="profile-picker"><span>PROFILE</span><select id="profile-select" aria-label="Validation profile"></select></label><span class="local-badge" id="profile-info"><span class="live-dot"></span> default</span><button class="icon-button" id="download-source" title="Download source" aria-label="Download source">↓</button></div></div>
+      <div class="studio-topline"><div class="file-title"><span class="file-icon">◈</span><strong id="model-title">Customer platform</strong><span class="file-extension" id="source-extension">.arch</span><span class="unsaved" id="unsaved" hidden>edited</span></div><div class="studio-top-actions"><label class="profile-picker"><span>PROFILE</span><select id="profile-select" aria-label="Validation profile"></select></label><span class="local-badge" id="profile-info"><span class="live-dot"></span> default</span><button class="icon-button" id="download-source" title="Download source" aria-label="Download source">↓</button></div></div>
       <div class="studio-body">
         <section class="source-panel" aria-label="Source editor">
           <div class="panel-toolbar"><div><span class="small-square"></span> SOURCE</div><button class="run-button" id="render-button" title="Render (Ctrl/Cmd+Enter)">Run <kbd>⌘ ↵</kbd></button></div>
           <div class="editor-wrap"><div class="line-numbers" id="line-numbers" aria-hidden="true"></div><div class="code-wrap"><pre id="highlight" aria-hidden="true"></pre><textarea id="source" aria-label="Architecture source" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div>
-          <div class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span>arch <span class="separator-dot">·</span> UTF-8</span></div>
+          <div class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span><span id="source-format">arch</span> <span class="separator-dot">·</span> UTF-8</span></div>
         </section>
         <section class="preview-panel" aria-label="Diagram preview">
           <div class="panel-toolbar preview-toolbar"><div class="view-picker"><span>VIEW</span><select id="view-select" aria-label="Diagram view"></select></div><div class="preview-actions"><button class="icon-button" id="toggle-theme" title="Toggle diagram theme" aria-label="Toggle diagram theme">☾</button><span class="toolbar-divider"></span><button class="icon-button" id="zoom-out" aria-label="Zoom out">−</button><button class="zoom-value" id="fit" title="Fit diagram to canvas">100%</button><button class="icon-button" id="zoom-in" aria-label="Zoom in">+</button></div></div>
           <div id="canvas" class="canvas"><div id="diagram"></div></div>
-          <div class="preview-footer"><span id="render-status" role="status"><span class="live-dot"></span> Ready to render</span><span>INLINE SVG <span class="separator-dot">·</span> <span id="element-count">0 elements</span></span></div>
+          <section id="source-meta" class="source-meta" aria-label="Source translation" hidden>
+            <div class="meta-toolbar"><strong id="meta-title">Source translation</strong><div><button id="meta-copy" type="button">Copy</button><button id="meta-download" type="button">Download</button></div></div>
+            <div id="meta-diagnostics" aria-live="polite"></div>
+            <pre id="meta-output" tabindex="0" aria-label="Translated source"></pre>
+          </section>
+          <div class="preview-footer"><span id="render-status" role="status"><span class="live-dot"></span> Ready to render</span><span><span id="preview-kind">INLINE SVG</span> <span class="separator-dot">·</span> <span id="element-count">0 elements</span></span></div>
           <div id="error" role="alert" hidden></div>
         </section>
       </div>
@@ -57,7 +62,7 @@
     place api at (340, 0)
     route calls { curve rounded }
   }
-}</pre><div class="guide-grid"><p><strong>Types</strong><br>person, system, application, service, component, database, queue, interface, capability, process, artifact, node, package</p><p><strong>Make it yours</strong><br>Use description, technology and icon attributes. Add style overrides, ports, waypoints and SVG paths in a view.</p></div><a class="primary-button" href="SPEC.md">Read the full specification ↗</a></dialog>
+}</pre><div class="guide-grid"><p><strong>Types</strong><br>person, system, application, service, component, database, queue, interface, capability, process, artifact, node, package</p><p><strong>Make it yours</strong><br>Use description, technology and icon attributes. Add style overrides, ports, waypoints and SVG paths in a view.</p></div><p>For the built-in reference, open <strong>Language reference</strong> or write <code>@help</code> in the editor. Try <code>@help profiles</code> or <code>@help iconpacks lucide cloud</code>.</p><a class="primary-button" href="SPEC.md">Read the full specification ↗</a></dialog>
   <div id="toast" role="status" hidden></div>
   <script src="arch.min.js"></script>
   <script src="icons/iconpacks.js"></script>

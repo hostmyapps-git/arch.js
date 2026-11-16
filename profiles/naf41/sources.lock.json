@@ -1,0 +1,7 @@
+{
+  "sources": [
+    { "role": "viewpoint authority", "file": "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf", "version": "NAFv4.1 2026.03", "sha256": "ec8e5628c7b609f43adcf667accc6f7a75fa2a098ac34f10afb270e11b1f9c50" },
+    { "role": "inherited catalog", "file": "ReferenceDocs/uaf/UAFP-1.0.xmi", "version": "UAF 1.0", "sha256": "91808de61074fc5774b2c5eb0234fc0d111365090d8218dde1f0668601b46135" },
+    { "role": "supporting comparison; not NAFv4.1 authority", "file": "ReferenceDocs/nafv4/NAFv4-ADMBw-MDG-2026.05.xml", "version": "2026.05", "sha256": "c014ceda600b5bb9e42c2a8e58f02bf9655e8fe9b6a5e8df6a28693b3b701c84" }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "architecture": {
+    "name": "Logical control",
+    "config": { "profile": "naf41-uaf", "views": "all" },
+    "model": {
+      "elements": {
+        "fighter": { "type": "OperationalPerformer", "name": "Fighter" },
+        "controller": { "type": "OperationalPerformer", "name": "Controller" },
+        "information": { "type": "InformationElement", "name": "Control information" }
+      },
+      "relations": {
+        "control": {
+          "type": "LogicalInteraction",
+          "from": "controller",
+          "to": "fighter",
+          "name": "Controls",
+          "conveyed": ["information"]
+        }
+      }
+    },
+    "views": {
+      "logical": {
+        "name": "L3 · Logical interactions",
+        "viewpoint": "L3",
+        "place": { "controller": { "at": [0, 0] }, "fighter": { "at": [600, 0] } },
+        "routes": { "curve": "straight" },
+        "route": { "information -> control": { "from": "bottom", "to": 0.5, "via": [[300, 260]], "curve": "rounded" } }
+      }
+    }
+  }
+}

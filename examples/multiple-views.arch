@@ -1,0 +1,27 @@
+architecture "One architecture · Multiple views" {
+  config { views all }
+  model {
+    person operator "Operator"
+    system datacenter "Datacenter"
+    system factory "Factory"
+    relation pickup datacenter -> operator "Collects data"
+    relation delivery operator -> factory "Delivers data"
+  }
+  view overview "Overview · All participants" {
+    place datacenter at (0, 0)
+    place operator at (360, 0)
+    place factory at (720, 0)
+    routes {curve straight}
+  }
+  view detail "Detail · Factory delivery" {
+    include operator, factory
+    place operator at (0, 0)
+    place factory at (600, 0)
+    routes {curve straight icon core.cloud iconPosition top}
+    style operator {iconPosition top showStereotype false}
+    style factory {iconPosition right showStereotype false}
+  }
+  view matrix "Matrix · Transfers" {
+    diagram matrix {rows [datacenter, operator] columns [operator, factory]}
+  }
+}

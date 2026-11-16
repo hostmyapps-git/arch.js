@@ -1,0 +1,40 @@
+{
+  "description": "User-provided reference files, not automatically bundled or downloaded",
+  "sources": [
+    {
+      "file": "ReferenceDocs/iconpacks/affinity.json",
+      "name": "affinity",
+      "sha256": "1b5e827520eb57993bba9bfdcd92834e5755896eca46fefbd559d5f50aae1ccb",
+      "icons": 43,
+      "aliases": 0
+    },
+    {
+      "file": "ReferenceDocs/iconpacks/fa6-solid.json",
+      "name": "fa6-solid",
+      "sha256": "0943b4b81864b12d85012a1b9b72ea68376e31acea24dea5075e032353347126",
+      "icons": 1407,
+      "aliases": 1
+    },
+    {
+      "file": "ReferenceDocs/iconpacks/logos.json",
+      "name": "logos",
+      "sha256": "318ec92512431158879843ad2469f2ccafa274374aaa70f761ca1a9a5fd10586",
+      "icons": 2303,
+      "aliases": 9
+    },
+    {
+      "file": "ReferenceDocs/iconpacks/lucide.json",
+      "name": "lucide",
+      "sha256": "6124e880db7f562a7fcec4ad18b541003d1c2eb2f66007e7c57b9209f3ec5abe",
+      "icons": 2109,
+      "aliases": 237
+    },
+    {
+      "file": "ReferenceDocs/iconpacks/tabler.json",
+      "name": "tabler",
+      "sha256": "9d3d098f2acb8930ab717f4211b3be7bc8a3392673951a8d57c33ad510562fad",
+      "icons": 6305,
+      "aliases": 194
+    }
+  ]
+}

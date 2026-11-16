@@ -1,0 +1,38 @@
+architecture "Datacenter to Factory · Walker transfer" {
+  config { profile naf41-uaf }
+  model {
+    Package dcZone "Datacenter" {
+      OperationalPerformer dc "Datacenter export"
+    }
+    OperationalPerformer walker "User / Walker" {
+      description "Carries the data from the datacenter to the factory."
+    }
+    Package factoryZone "Factory" {
+      OperationalPerformer factory "Factory import"
+    }
+    InformationElement data "Transfer dataset"
+
+    relation pickup dc -> walker "1. Collect data" {
+      type LogicalInteraction
+      conveyed [data]
+    }
+    relation delivery walker -> factory "2. Deliver data" {
+      type LogicalInteraction
+      conveyed [data]
+    }
+  }
+  view transfer "L3 · Transfer through a walker" {
+    viewpoint L3
+    referenceDisplay nodes
+    // One shared dataset card; use referenceOccurrences perEdge for copies with IDs.
+    place dcZone at (0, 0)
+    place walker at (470, 72)
+    place factoryZone at (940, 0)
+    style dcZone { backgroundColor LightBlue width 320 height 240 }
+    style factoryZone { backgroundColor HoneyDew width 320 height 240 }
+    style dc { template database fontSize 14 width 240 height 120 }
+    style walker { fontSize 14 width 240 height 120 }
+    style factory { template system fontSize 14 width 240 height 120 }
+    style data { fontSize 12 width 240 height 110 }
+  }
+}

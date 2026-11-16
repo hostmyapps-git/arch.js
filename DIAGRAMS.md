@@ -2,13 +2,26 @@
 
 `index.html` öffnen und **Seven diagram renderers** auswählen. Das editierbare
 [Beispiel](examples/diagrams.arch) enthält sieben Ansichten desselben Modells.
-Alle Renderer sind in `arch.js` / `arch.min.js` enthalten, benötigen keine
-Laufzeitabhängigkeiten und funktionieren auch über `file://`.
+Alle Renderer sind in `arch.js` / `arch.min.js` enthalten. Diese Browserbundles
+benötigen keine zusätzlichen Laufzeitscripts und funktionieren auch über
+`file://`. Direkte Node-Quellimporte verwenden die npm-Abhängigkeiten aus
+`package.json`.
 
 Eine View wählt ihren Renderer mit `diagram TYPE { … }`. Ohne diese Angabe
 bleibt die bisherige Darstellung `connected` aktiv. Modell, Profil und
 Viewpoint-Validierung bleiben für alle Renderer wirksam. Die Diagrammwahl
 ersetzt keine fachliche Profildefinition.
+
+Dieselben Einstellungen sind in der [JSON-Syntax](JSON.md) verfügbar, etwa
+`"diagram": { "type": "sequence", "participants": ["operator", "api"] }`.
+Rendererabhängige Einschränkungen gelten für beide Eingabeformen identisch.
+
+Zusätzlich kann eine View die Architekturquelle statt eines Diagramms anzeigen:
+`view source "JSON" { @meta json }` oder `@meta dsl`. Quellenviews sind Teil
+derselben Renderauswahl und des gemeinsamen SVG-Exports, aber keine fachliche
+Diagrammnotation. Nur Format und Theme gelten; keine Filter, Viewpoints oder
+Layout-/Styleoptionen. Beispiel und Regeln: [META.md](META.md),
+[meta.arch](examples/meta.arch).
 
 ```arch
 architecture "Mission request" {
@@ -42,6 +55,15 @@ arch.render('#diagram', model, { view: 'interaction' });
 `d`-/Routing-Vertrag des Connected-Layouts. Interne Hilfsdaten im Layoutobjekt
 sind keine zusätzliche öffentliche Schnittstelle. SVG ist das Exportformat.
 Markdown-/DOM-Adapter verwenden dieselben Renderer.
+
+Mit `config { views all }` können Connected- und Spezialviews gemeinsam
+untereinander erscheinen; `views [interaction, overview]` bestimmt eine
+Teilmenge und Reihenfolge. API-Priorität und vollständiges Beispiel:
+[HELP.md](HELP.md#eine-mehrere-oder-alle-views-rendern),
+[multiple-views.arch](examples/multiple-views.arch).
+Bei mehreren Views liefert `layout()` einen Verbund mit `kind: 'views'`;
+die einzelnen Layouts stehen in `layouts`, ihre Positionen in `sections`.
+Die vereinigten `nodes`/`edges` ersetzen nicht die viewlokale Geometrie.
 
 ## Sequenz: `sequence`
 
@@ -144,7 +166,7 @@ diagram heatmap {
 Der Wertebereich ist standardmäßig 0–5; `min < max` muss gelten. Vorhandene Werte
 müssen endlich sein und im Bereich liegen. Fehlende Werte werden neutral mit
 `—` dargestellt. Die Legende zeigt die Skala. Niedrige/hohe Farben sind als
-Hexwerte konfigurierbar; Zwischenfarben werden linear interpoliert.
+Hexwerte oder CSS3-Farbnamen konfigurierbar; Zwischenfarben werden linear interpoliert.
 
 `parentAttribute` referenziert einen sichtbaren Elternknoten. Ohne diese Option
 wird die vorhandene Containerhierarchie genutzt. Eltern werden als übergeordnete
@@ -152,7 +174,8 @@ Kacheln mit eingebetteten Kindern dargestellt; der Platz richtet sich nach der
 Anzahl der Blätter. Zyklen, unsichtbare Eltern und mehr als 32 Verknüpfungen in
 einer Elternkette sind Fehler. Elternwerte werden nicht aus Kindern berechnet.
 Die Wertfarbe ersetzt in dieser Ansicht die semantische Bereichsfarbe;
-Füllungen bleiben bei `fill-opacity="0.2"`. Größenkodierung nach Geschäftswert
+Füllungen verwenden standardmäßig `fill-opacity="0.2"`; ein View-`style` mit
+`opacity` kann dies pro Kachel überschreiben. Größenkodierung nach Geschäftswert
 und mehrere Bewertungsdimensionen sind noch nicht enthalten.
 
 ## Zeitachse / Gantt / Migrationsroadmap: `timeline`
@@ -198,6 +221,20 @@ ohne dieses Attribut gilt der Titel. Zugeordnete Parameter werden in leere
 Klammern der Signatur eingesetzt oder angehängt. Eine Signatur ist
 Darstellungstext, kein ausführbarer Ausdruck oder geparster Programmiertyp.
 
+Für vorhandene Eigenschaftswerte am Hauptelement dient die getrennte Option
+`propertyFields`. Hier werden Attributnamen statt Modellelement-IDs angegeben:
+
+```arch
+diagram class { propertyFields [source, target, conveyed] }
+```
+
+Das zeigt beispielsweise die Referenz-IDs einer Needline als eigene
+Eigenschaftenzeilen. Skalare Werte und Listen werden dargestellt; fehlende
+optionale Werte erzeugen keine Zeile, `0` und `false` bleiben sichtbar.
+Unbekannte Namen und Duplikate werden zurückgewiesen. Eigenschaftsnamen müssen
+zu einem sichtbaren Knotenschema gehören oder öffentliche Felder wie `title`
+und `description` sein. Die Darstellung erzeugt keine zusätzlichen Beziehungen.
+
 Die Karten verwenden abgerundete Ecken, dezente Schatten, einen abgesetzten
 Kopfbereich sowie Monospace-Signaturen. Detailbereiche besitzen feine Trennlinien
 und Anzahl-Badges. Die Gestaltung passt sich beiden Themes und semantischen
@@ -215,7 +252,35 @@ Konformität.
 
 ## Gemeinsame Regeln und Grenzen
 
-- `include` und fachliche Viewpoints wirken wie bisher. Referenzen der
+Connected-Views können über `referenceDisplay nodes` referenzierte Elemente
+als Karten mit Pfeilen zur tragenden Beziehung darstellen. `labels` verwendet
+Referenztext, `both` kombiniert beides; ohne View-Override gilt die
+Relationsvorgabe. `style ID { display logo icon "lucide.plane" }` reduziert
+ein Nicht-Container-Element auf Rechteck und Logo.
+
+Die Darstellungsoptionen sind nicht zwischen allen Renderern austauschbar:
+
+| Funktion | Connected | Spezialrenderer |
+| --- | --- | --- |
+| Gemeinsames Modell, Profil-/Viewpoint-Regeln, `include`/`exclude` | Ja | Ja, zusätzlich diagrammspezifische Strukturprüfungen |
+| Theme, SVG und Auswahl mehrerer Views | Ja | Ja |
+| `place`, `route`, `routes` | Ja | Abgewiesen; Diagrammtyp und Listen/Reihenfolgen bestimmen das Layout |
+| `referenceDisplay nodes/both`, `referenceOccurrences`, Zuordnungsrouten | Ja | Abgewiesen; keine grafischen Referenzkarten |
+| `display logo`, Node-`iconPosition`, `showIcon`/`showLabel` und weitere Feldschalter | Ja | Abgewiesen |
+| Node-`fontSize`, `width`, `height` im Style | Ja, Größen sind Mindestwerte | Abgewiesen; eigene Maße je Renderer |
+| Template-/Iconwahl | Vorhandene Templates und registrierte Icons | Nicht als Connected-Templates/Icons dargestellt; die Spezialnotation bestimmt die Form |
+| Hintergrund-/Akzentfarben und `opacity` | Im Node-/Package-Style | Je nach gezeichnetem Primitive: Karten und Timeline-Balken verwenden Hintergrund/Fülltransparenz; Heatmap verwendet ihre Wertskala, Klasse zusätzlich Akzente. Keine allgemeine Übertragung aller Styles. |
+
+`showLabel` bedeutet bei einem Connected-Node nur den Titel, bei einer Route
+deren Labeltext. Stereotyp, Beschreibung, Technologie und Icon haben eigene
+Schalter. `label none` an einer Route entfernt dagegen den gesamten Labelrahmen
+mit Text und Icon. Syntaxbeispiele stehen in [HELP.md](HELP.md).
+
+- `include` wählt aus; `exclude` entfernt Elemente einschließlich ihrer
+  Nachkommen und hat immer Vorrang. Beziehungen mit ausgeblendeten Endpunkten
+  verschwinden. Container-Vorfahren werden nur für überlebende Auswahlen ergänzt.
+  Fachliche Viewpoint-Pflichten werden auf die verbleibende Ansicht angewendet.
+  Referenzen der
   Diagrammkonfiguration müssen in der View sichtbar sein. Die Wahl eines
   Renderers fügt keine Elemente automatisch hinzu.
 - Jeder Diagrammtyp hat eigene erlaubte Einstellungen. Unbekannte Felder,
@@ -225,7 +290,8 @@ Konformität.
   nicht zulässig. Deren Layout ist durch Diagrammtyp und Reihenfolgen bestimmt.
 - Fachliche Typen bleiben unverändert. Die Spezialnotation bestimmt die Form;
   die bisherigen grafischen Templates und Iconwahl werden dort nicht verwendet.
-  Profil-/View-Hintergrundfarben gelten für Karten und Timeline-Balken; die
+  Profil-/View-Hintergrundfarben gelten für Karten und Timeline-Balken;
+  `style ID { opacity 0.5 }` steuert deren Fülltransparenz zwischen 0 und 1. Die
   Heatmap verwendet ihre Wertskala. Themes und SVG-Ausgabe sind eigenständig.
 - Lange Beschriftungen werden umgebrochen; allgemeine Labels zeigen höchstens
   zwei Zeilen mit Ellipse. Tooltips enthalten den vollständigen Text.
@@ -234,6 +300,12 @@ Konformität.
 - Die Renderer verbessern die Darstellung und enthalten die genannten lokalen
   Strukturprüfungen. Sie schließen die offenen UAF-/NAF-Metamodellregeln nicht
   automatisch und ändern die dokumentierte Fachprofil-Teilabdeckung nicht.
+
+Für detaillierte UML-Interaktionen, ausführbare Prozessmodelle oder automatische
+Layoutoptimierung gelten die hier beschriebenen Grenzen. Die Einordnung
+gegenüber Mermaid, PlantUML, Graphviz und D2 steht in
+[COMPARISON.md](COMPARISON.md); noch nicht implementierte Funktionen stehen in
+[ROADMAP.md](ROADMAP.md).
 
 ## Verifizieren
 

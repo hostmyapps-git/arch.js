@@ -1,6 +1,11 @@
 import { ArchError, validateModel } from './parser.js';
 import { resolveProfile, visibleNodeIds } from './profiles.js';
 import { layoutDiagram } from './diagrams.js';
+import { relationshipLabel, relationshipReferences } from './relationship-labels.js';
+import { routingOptions } from './routing-options.js';
+import { attachReferenceNodes } from './reference-nodes.js';
+import { layoutMeta } from './meta.js';
+import { normalizeColor } from './colors.js';
 
 export const num = (n) => String(Math.round(n * 1000) / 1000);
 const pt = (p) => `${num(p.x)} ${num(p.y)}`;
@@ -9,29 +14,29 @@ const fail = (message, loc) => { throw new ArchError(message, loc, 'ARCH_VALIDAT
 // Validate path command arity and retain conservative bounds (control-point hulls).
 // Arc bounds deliberately overestimate using corrected ellipse radii.
 export function inspectPath(path, loc) {
-  if (typeof path !== 'string' || !path.trim() || path.length > 100_000) fail('Ungültiger SVG-Pfad', loc);
+  if (typeof path !== 'string' || !path.trim() || path.length > 100_000) fail('Invalid SVG path', loc);
   const pattern = /[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
   const tokens = path.match(pattern) ?? [];
-  if (path.replace(pattern, '').replace(/[\s,]/g, '') || !/^[Mm]$/.test(tokens[0] ?? '')) fail('SVG-Pfad muss mit M beginnen und gültige Pfaddaten enthalten', loc);
+  if (path.replace(pattern, '').replace(/[\s,]/g, '') || !/^[Mm]$/.test(tokens[0] ?? '')) fail('SVG path must start with M and contain valid path data', loc);
   const arities = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7 };
   const points = [];
   let index = 0, command, current = { x: 0, y: 0 }, start = current, previousControl = null, previousCommand = '';
   while (index < tokens.length) {
     if (/^[A-Za-z]$/.test(tokens[index])) command = tokens[index++];
-    else if (!command) fail('Fehlender SVG-Pfadbefehl', loc);
+    else if (!command) fail('Missing SVG path command', loc);
     const upper = command.toUpperCase(), relative = command !== upper;
     if (upper === 'Z') {
       current = start; points.push(current); previousControl = null; previousCommand = upper; command = null; continue;
     }
     const count = arities[upper], args = tokens.slice(index, index + count).map(Number);
-    if (args.length !== count || args.some(n => !Number.isFinite(n) || Math.abs(n) > 1e7)) fail('Ungültige Anzahl oder Größe von SVG-Pfadparametern', loc);
+    if (args.length !== count || args.some(n => !Number.isFinite(n) || Math.abs(n) > 1e7)) fail('Invalid number or size of SVG path parameters', loc);
     index += count;
     const origin = current;
     const pair = (offset) => ({ x: args[offset] + (relative ? origin.x : 0), y: args[offset + 1] + (relative ? origin.y : 0) });
     if (upper === 'H') current = { x: args[0] + (relative ? origin.x : 0), y: origin.y };
     else if (upper === 'V') current = { x: origin.x, y: args[0] + (relative ? origin.y : 0) };
     else if (upper === 'A') {
-      if (args[0] < 0 || args[1] < 0 || ![0, 1].includes(args[3]) || ![0, 1].includes(args[4])) fail('Ungültige SVG-Bogenparameter', loc);
+      if (args[0] < 0 || args[1] < 0 || ![0, 1].includes(args[3]) || ![0, 1].includes(args[4])) fail('Invalid SVG arc parameters', loc);
       current = pair(5);
       // SVG endpoint-to-center radius correction, including rotated ellipses.
       // Every point is within two corrected maximum radii of an endpoint.
@@ -41,7 +46,7 @@ export function inspectPath(path, loc) {
       const yp = -Math.sin(angle) * dx + Math.cos(angle) * dy;
       const correction = args[0] && args[1] ? Math.max(1, Math.hypot(xp / args[0], yp / args[1])) : 0;
       const radius = correction * Math.max(args[0], args[1]) * 2;
-      if (!Number.isFinite(radius) || radius > 1e10) fail('SVG-Bogen überschreitet den unterstützten Koordinatenbereich', loc);
+      if (!Number.isFinite(radius) || radius > 1e10) fail('SVG arc exceeds the supported coordinate range', loc);
       for (const p of [origin, current]) points.push({ x: p.x - radius, y: p.y - radius }, { x: p.x + radius, y: p.y + radius });
     } else {
       for (let j = 0; j < count; j += 2) points.push(pair(j));
@@ -82,6 +87,15 @@ export function wrap(text, width, fontSize = 13) {
     result.push(line.trimEnd());
   }
   return result.map(line => line.trim());
+}
+
+export function singleLine(text, width, fontSize) {
+  const full=String(text??'').replace(/\s+/gu,' ').trim();
+  if(textLength(full)*fontSize<=width)return full;
+  const budget=Math.max(0,width/fontSize-textLength('…'));
+  let result='',used=0;
+  for(const char of full) {const units=textLength(char);if(used+units>budget)break;result+=char;used+=units;}
+  return result.trimEnd()+'…';
 }
 
 const intersects = (a, b, margin = 24) => a.x < b.x + b.width + margin && a.x + a.width + margin > b.x &&
@@ -232,32 +246,58 @@ export function layout(model, options = {}) {
   validateModel(model, options);
   const profile = resolveProfile(model, options);
   const view = options.view ? model.views.find(v => v.id === options.view) : model.views[0];
-  if (!view) fail(`Unbekannte Ansicht: ${options.view}`);
+  if (!view) fail(`Unknown view: ${options.view}`);
+  if(view.meta!==undefined)return layoutMeta(model,profile,view);
   const visible = visibleNodeIds(model, view);
   const nodes = model.nodes.filter(n => visible.has(n.id)).map(n => {
     const definition = profile.nodeTypes[n.type], style = view.styles[n.id] ?? {};
     const template = style.template ?? definition.template;
-    const width = view.places[n.id]?.size?.x ?? 220;
-    const titleLines = wrap(n.title, width - 40, 15), descLines = wrap(n.description, width - 40, 12);
-    const badgeLines = wrap(String(n.stereotype ?? n.type).toUpperCase(), width - 74, 9);
-    const technologyLines = wrap(n.technology, width - 40, 10);
-    const height = Math.max(view.places[n.id]?.size?.y ?? 0, 96,
-      (template === 'database' ? 78 : 62) + (titleLines.length - 1) * 20 +
-      Math.max(0, badgeLines.length - 1) * 12 +
-      (descLines.length ? 25 + (descLines.length - 1) * 17 : 0) +
-      (technologyLines.length ? 26 + (technologyLines.length - 1) * 13 : 0) + 22);
-    return { ...n, icon: n.icon ?? definition.icon, accent: n.accent ?? definition.accent,
-      backgroundColor: definition.backgroundColor ?? profile.styleGroups?.[definition.styleGroup]?.backgroundColor,
-      ...style, container: definition.container, template, width, height, titleLines, badgeLines, descLines, technologyLines, x: 0, y: 0 };
+    const width = style.width ?? view.places[n.id]?.size?.x ?? 220;
+    const fontSize=style.fontSize??15,scale=fontSize/15;
+    const textStyle={title:fontSize,badge:9*scale,description:12*scale,technology:10*scale,titleLeading:20*scale,descriptionLeading:17*scale,technologyLeading:13*scale};
+    const position=style.iconPosition??'left',top=template==='database'?34:18;
+    const sideInset=['component','queue','node','artifact','process'].includes(template)?34:18;
+    const iconBox={x:position==='left'?18:position==='right'?width-sideInset-27:(width-27)/2,y:top,size:27};
+    const showIcon=style.showIcon!==false;
+    const badgeX=position==='left'&&showIcon?54:20;
+    const badgeWidth=position==='left'&&showIcon?width-82:position==='right'&&showIcon?iconBox.x-badgeX-9:width-40;
+    const titleLines = style.showLabel===false?[]:wrap(n.title, width - 40, textStyle.title), descLines = style.showDescription===false?[]:wrap(n.description, width - 40, textStyle.description);
+    const badgeText=String(n.stereotype??n.type),badgeLines=style.showStereotype!==false&&badgeText.trim()?[singleLine(badgeText.toUpperCase(),badgeWidth,textStyle.badge)]:[];
+    const technologyLines = style.showTechnology===false?[]:wrap(n.technology, width - 40, textStyle.technology);
+    const textTop=top+(position==='top'&&showIcon?35:0),bottomReserve=position==='bottom'&&showIcon?39:0;
+    textStyle.badgeX=badgeX;
+    textStyle.badgeY=textTop+Math.max(18,textStyle.badge);
+    const headerEnd=Math.max(badgeLines.length?textStyle.badgeY:top,showIcon?iconBox.y+iconBox.size:top);
+    textStyle.titleY=badgeLines.length?Math.max(textTop+44,textStyle.badgeY+textStyle.title+11):Math.max(textTop+textStyle.title,headerEnd+textStyle.title+8);
+    const titleEnd=titleLines.length?textStyle.titleY+(titleLines.length-1)*textStyle.titleLeading:headerEnd;
+    textStyle.descriptionY=titleLines.length?titleEnd+25*scale:headerEnd+textStyle.description+12;
+    const bodyEnd=descLines.length?textStyle.descriptionY+(descLines.length-1)*textStyle.descriptionLeading:titleEnd;
+    const minHeight=style.height??view.places[n.id]?.size?.y??0;
+    const height = style.display === 'logo' ? Math.max(minHeight,96) : Math.max(minHeight,96,
+      bodyEnd+(technologyLines.length?26*scale+(technologyLines.length-1)*textStyle.technologyLeading:0)+22+bottomReserve);
+    if(position==='bottom')iconBox.y=height-18-iconBox.size;
+    textStyle.technologyY=height-18-bottomReserve-(technologyLines.length-1)*textStyle.technologyLeading;
+    return { ...n, icon: n.icon ?? definition.icon, ...style,
+      accent: normalizeColor(style.accent ?? n.accent ?? definition.accent),
+      backgroundColor: normalizeColor(style.backgroundColor ?? definition.backgroundColor ?? profile.styleGroups?.[definition.styleGroup]?.backgroundColor),
+      container: definition.container, template, width, height, textStyle, iconBox, titleLines, badgeText, badgeLines, descLines, technologyLines, x: 0, y: 0 };
   });
   const byId = new Map(nodes.map(n => [n.id, n]));
+  const modelNodes = new Map(model.nodes.map(n => [n.id, n]));
   const edges = model.edges.filter(e => visible.has(e.source) && visible.has(e.target)).map(edge => {
     const type = edge.type ?? profile.defaultRelation;
-    return { ...edge, type, style: profile.relationTypes[type].style };
+    const rule = profile.relationTypes[type];
+    const referenceDisplay = view.referenceDisplay ?? rule.referenceDisplay ?? 'labels';
+    const referenceItems = referenceDisplay === 'labels' ? [] : relationshipReferences(edge, rule).filter(item => byId.has(item.id) && !byId.get(item.id).container);
+    const referenceOccurrences = view.referenceOccurrences ?? rule.referenceOccurrences ?? 'shared';
+    return { ...edge, type, style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
   });
   if (view.diagram && view.diagram.type !== 'connected') return layoutDiagram(model, profile, view, nodes, edges);
+  const referenced = new Set(edges.flatMap(e => e.referenceItems.map(item => item.id)));
+  const endpoints = new Set(edges.flatMap(e => [e.source, e.target]));
+  for (const node of nodes) if (referenced.has(node.id) && !endpoints.has(node.id) && !node.parent && !node.container && !view.places[node.id]) node.referenceOnly = true;
   const process = (parent) => {
-    const children = nodes.filter(n => n.parent === parent);
+    const children = nodes.filter(n => n.parent === parent && !n.referenceOnly);
     for (const child of children) if (child.container) process(child.id);
     arrange(children, edges, view.direction, view.spacing, view.places, byId);
     if (parent) {
@@ -265,8 +305,20 @@ export function layout(model, options = {}) {
       // Shift automatic children if necessary; explicit negative positions remain meaningful.
       const minX = Math.min(0, ...children.map(n => n.x)), minY = Math.min(0, ...children.map(n => n.y));
       box.width = Math.max(box.width, ...children.map(n => n.x + 28 - minX + n.width + 28));
-      box.titleLines = wrap(box.title, box.width - 140, 14);
-      box.headerHeight = Math.max(56, 28 + box.titleLines.length * 20);
+      const scale=box.textStyle.title/15;
+      box.packageBadge=box.showStereotype===false?'':singleLine(box.type==='package'?'PACKAGE':'CONTAINER',Math.max(20,box.width*0.4),box.textStyle.badge);
+      const badgeWidth=textLength(box.packageBadge)*box.textStyle.badge;
+      box.packageTitleSize=14*scale;
+      const position=box.iconPosition??'left';
+      const showIcon=box.showIcon!==false,offset=position==='top'&&showIcon?35:0;
+      box.packageTitleX=position==='left'&&showIcon?53:20;
+      box.packageBadgeX=box.width-(position==='right'&&showIcon?53:18);
+      box.packageTitleY=Math.max(32,17+box.packageTitleSize)+offset;
+      box.packageBadgeY=Math.max(32,17+box.textStyle.badge)+offset;
+      box.titleLines=box.showLabel===false?[]:wrap(box.title,Math.max(10,box.packageBadgeX-badgeWidth-12-box.packageTitleX),box.packageTitleSize);
+      const textEnd=Math.max(17,box.packageBadge?box.packageBadgeY:0,box.titleLines.length?box.packageTitleY+(box.titleLines.length-1)*box.textStyle.titleLeading:0);
+      box.iconBox={x:position==='left'?20:position==='right'?box.width-42:(box.width-22)/2,y:position==='bottom'?textEnd+12:17,size:22};
+      box.headerHeight=Math.max(56,textEnd+24,showIcon?box.iconBox.y+box.iconBox.size+17:0);
       box.contentOffset = { x: 28 - minX, y: box.headerHeight + 16 - minY };
       box.width = Math.max(box.width, ...children.map(n => n.x + box.contentOffset.x + n.width + 28));
       box.height = Math.max(box.height, ...children.map(n => n.y + box.contentOffset.y + n.height + 28));
@@ -284,20 +336,46 @@ export function layout(model, options = {}) {
   const routedEdges = edges.map(edge => {
     const key = [edge.source, edge.target].sort().join('\0'), count = parallel.get(key) ?? 0;
     parallel.set(key, count + 1);
-    const result = routeEdge(edge, byId.get(edge.source), byId.get(edge.target), view.routes[edge.id] ?? {}, count);
-    result.labelLines = wrap(edge.title, 160, 11);
-    result.labelWidth = Math.max(28, ...result.labelLines.map(line => textLength(line) * 11 + 18));
-    result.labelHeight = result.labelLines.length * 15 + 8;
+    const route = routingOptions(view, view.routes[edge.id]) ?? {};
+    const labelHidden = route.label === 'none';
+    const result = routeEdge(edge, byId.get(edge.source), byId.get(edge.target), {...route, label: labelHidden ? undefined : route.label}, count);
+    result.labelHidden = labelHidden;
+    result.labelExplicit = route.label !== undefined;
+    const omit = edge.referenceDisplay === 'nodes' ? new Set(edge.referenceItems.map(item => `${item.attribute}\0${item.id}`)) : new Set();
+    const displayText = relationshipLabel(edge, profile.relationTypes[edge.type], modelNodes, omit);
+    result.labelLines = labelHidden || route.showLabel===false ? [] : wrap(displayText, displayText === edge.title ? 160 : 200, 11);
+    result.labelWidth = labelHidden ? 0 : Math.max(28, ...result.labelLines.map(line => textLength(line) * 11 + 18));
+    result.labelHeight = labelHidden ? 0 : result.labelLines.length * 15 + 8;
+    result.labelTextOffset = {x: 0, y: 0};
+    if (!labelHidden && route.showIcon!==false && route.icon && route.icon !== 'none') {
+      result.labelIcon = route.icon; result.labelIconPosition = route.iconPosition ?? 'left'; result.labelIconLoc = route.loc;
+      const size = 16, hasText = result.labelLines.length > 0, gap = hasText ? 6 : 0;
+      const textWidth = hasText ? result.labelWidth - 18 : 0, textHeight = result.labelLines.length * 15;
+      const horizontal = ['left', 'right'].includes(result.labelIconPosition);
+      const before = ['left', 'top'].includes(result.labelIconPosition), sign = before ? 1 : -1;
+      const width = horizontal ? textWidth + size + gap : Math.max(textWidth, size);
+      const height = horizontal ? Math.max(textHeight, size) : textHeight + size + gap;
+      result.labelWidth = width + 18; result.labelHeight = height + 8;
+      result.labelTextOffset = horizontal ? {x: sign * (size + gap) / 2, y: 0} : {x: 0, y: sign * (size + gap) / 2};
+      result.labelIconBox = {x: horizontal ? (before ? -width / 2 : width / 2 - size) : -size / 2,
+        y: horizontal ? -size / 2 : (before ? -height / 2 : height / 2 - size), size};
+    }
+    if (!result.labelLines.length && !result.labelIcon) { result.labelWidth=0; result.labelHeight=0; }
     return result;
   });
+  const referenceNodes = attachReferenceNodes(nodes, routedEdges, view, wrap, (card, anchor, route) =>
+    routeEdge({}, card, {id: null, ...anchor, width: 0, height: 0}, {...route, to: {x: anchor.x, y: anchor.y}}, 0));
   const extents = nodes.flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
+  for (const occurrence of referenceNodes) {
+    extents.push({x:occurrence.node.x,y:occurrence.node.y},{x:occurrence.node.x+occurrence.node.width,y:occurrence.node.y+occurrence.node.height},...occurrence.points);
+  }
   for (const edge of routedEdges) {
     extents.push(...edge.points);
-    if (edge.title) extents.push({ x: edge.label.x - edge.labelWidth / 2, y: edge.label.y - edge.labelHeight / 2 },
+    if (edge.labelLines.length || edge.labelIcon) extents.push({ x: edge.label.x - edge.labelWidth / 2, y: edge.label.y - edge.labelHeight / 2 },
       { x: edge.label.x + edge.labelWidth / 2, y: edge.label.y + edge.labelHeight / 2 });
   }
   const minX = Math.min(0, ...extents.map(p => p.x)) - 48, minY = Math.min(0, ...extents.map(p => p.y)) - 48;
   const maxX = Math.max(160, ...extents.map(p => p.x)) + 48, maxY = Math.max(96, ...extents.map(p => p.y)) + 48;
   return { title: model.title, description: model.description, profile: { id: profile.id, version: profile.version }, view, nodes, edges: routedEdges,
-    bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY } };
+    referenceNodes, bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY } };
 }

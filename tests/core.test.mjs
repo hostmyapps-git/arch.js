@@ -66,7 +66,7 @@ test('views isolate filters, placement, templates, and themes from the model', (
   assert.equal(box(graph, 'a').template, 'component'); assert.equal(m.nodes.find(n => n.id === 'a').type, 'service');
   assert.equal(arch.layout(m, { view: 'subtree' }).nodes.length, 3);
   assert.match(arch.renderToString(m, { view: 'subtree' }), /data-arch-svg="dark"/);
-  assert.throws(() => arch.layout(m, { view: 'missing' }), /Unbekannte Ansicht/);
+  assert.throws(() => arch.layout(m, { view: 'missing' }), /Unknown view/);
 });
 
 test('auto layout follows relationships, respects sizes, and avoids fixed nodes', () => {
@@ -113,7 +113,7 @@ test('path grammar accepts SVG curves, relative commands, arcs and rejects injec
     assert.ok(inspectPath(d).length);
   for (const d of ['', 'L0 0', 'M0', 'M0 0L', 'M0 0Lfoo', 'M0 0Z1 2', 'M0 0A-1 3 0 0 0 1 1', 'M0 0A1 3 0 2 0 1 1', 'M0 0"/><script>evil()</script>', 'M0 0L1e999 0'])
     assert.throws(() => inspectPath(d), arch.ArchError, d);
-  assert.throws(() => arch.renderToString(source(pair, 'view v "V" { route e { path "" } }')), /SVG-Pfad/);
+  assert.throws(() => arch.renderToString(source(pair, 'view v "V" { route e { path "" } }')), /SVG path/);
 });
 
 test('iconpacks are validated atomically, copied, and safe against prototype identifiers', () => {
@@ -126,7 +126,7 @@ test('iconpacks are validated atomically, copied, and safe against prototype ide
   assert.doesNotThrow(() => arch.renderToString(s));
   for (const bad of [null, {}, { icons: {} }, { width: 0, icons: { x: { paths: ['M0 0'] } } }, { icons: { x: { paths: [] } } }])
     assert.throws(() => arch.registerIconPack('bad', bad), arch.ArchError);
-  assert.throws(() => arch.renderToString(source('service a "A" { icon missing.cloud }')), /Unbekanntes Icon/);
+  assert.throws(() => arch.renderToString(source('service a "A" { icon missing.cloud }')), /Unknown icon/);
   assert.doesNotThrow(() => arch.renderToString(source('service __proto__ "Safe" service constructor "Also safe"', 'view v "V" { style __proto__ { accent "#123456" } }')));
 });
 
@@ -144,7 +144,7 @@ test('Markdown fences render SVG, raw HTML remains text, and other languages rem
   const html = arch.renderMarkdown(md);
   assert.match(html, /<h1>Title<\/h1>/); assert.match(html, /<figure class="arch-diagram"><svg/);
   assert.ok(!html.includes('<script>')); assert.match(html, /language-js/); assert.match(html, /&lt;x&gt;/);
-  assert.throws(() => arch.renderMarkdown('```arch\n' + source(pair)), /Nicht abgeschlossener/);
+  assert.throws(() => arch.renderMarkdown('```arch\n' + source(pair)), /Unclosed/);
 });
 
 test('shipped Markdown fixture contains working arch fences', async () => {
@@ -164,8 +164,8 @@ test('both distributable bundles expose identical public API and render identica
 
 test('empty models produce usable SVG and API errors are readable outside the browser', () => {
   assert.match(arch.renderToString(source('')), /viewBox=/);
-  assert.throws(() => arch.parse(null), /String/); assert.throws(() => arch.render(null, source('')), /DOM/);
-  assert.throws(() => arch.renderAll(), /DOM/); assert.throws(() => arch.renderMarkdown(null), /String/);
+  assert.throws(() => arch.parse(null), /string/); assert.throws(() => arch.render(null, source('')), /DOM/);
+  assert.throws(() => arch.renderAll(), /DOM/); assert.throws(() => arch.renderMarkdown(null), /string/);
   const cyclic = arch.parse(source('package p "P" { package q "Q" }'));
-  cyclic.nodes[0].parent = 'q'; assert.throws(() => arch.layout(cyclic), /Zyklische/);
+  cyclic.nodes[0].parent = 'q'; assert.throws(() => arch.layout(cyclic), /Cyclic/);
 });

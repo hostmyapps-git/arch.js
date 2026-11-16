@@ -18,9 +18,11 @@
     "check": "npm run build && npm test && npm run test:browser"
   },
   "devDependencies": {
-    "@xmldom/xmldom": "0.9.12",
     "esbuild": "0.28.2",
-    "playwright": "1.65.1",
+    "playwright": "1.65.1"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
     "svgpath": "2.6.0"
   }
 }

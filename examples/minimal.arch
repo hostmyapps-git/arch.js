@@ -9,4 +9,10 @@ architecture "Hello, architecture" {
     relation uses user -> app "Uses"
     relation reads app -> data "Reads / writes" { type access }
   }
+  view default "Complete overview" {}
+  view public "Public view · exclude wins" {
+    include user, app, data
+    exclude data
+    style app { backgroundColor AliceBlue accent SlateBlue opacity 0.55 }
+  }
 }

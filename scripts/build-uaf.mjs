@@ -123,6 +123,8 @@ export async function buildUafProfiles() {
     const native = nodeTypes[name], parents = typeof native?.extends === 'string' ? [native.extends] : native?.extends ?? [];
     const edgeParents = parents.filter(parent => relationTypes[parent]);
     if (edgeParents.length) rule.extends = edgeParents.length === 1 ? edgeParents[0] : edgeParents;
+    // Authored presentation metadata, separate from the native semantic constraints.
+    if (rule.attributes?.conveyed?.type === 'reference') rule.referenceLabels = { conveyed: 'Conveys' };
   }
   raw.relationTypes = relationTypes;
   compileProfile(raw);

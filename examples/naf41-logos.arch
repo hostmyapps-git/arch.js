@@ -1,0 +1,20 @@
+# The demo loads icons/iconpacks.js, including lucide.
+architecture "Fighter control · Logo view" {
+  config { profile naf41-uaf }
+  model {
+    OperationalPerformer f "fighter"
+    OperationalPerformer c "controller"
+    InformationElement i "Control information"
+    relation control c -> f "Controls" {
+      type LogicalInteraction
+      conveyed [i]
+    }
+  }
+  view v "L3 · Logos and carried information" {
+    viewpoint L3
+    referenceDisplay nodes
+    place f at (400, 0)
+    style f { display logo icon "lucide.plane" }
+    style c { display logo icon "lucide.radio" }
+  }
+}

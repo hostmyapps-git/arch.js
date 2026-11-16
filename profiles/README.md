@@ -6,6 +6,15 @@ Frameworks fest. Ein Typ wie `product` verwendet beispielsweise das vorhandene
 SVG-Template `application`. Der Kern enthält keine Sonderbehandlung für NAF,
 UAF, ArchiMate oder ein organisationsspezifisches Framework.
 
+Diese Anleitung beschreibt das generische Profilschema. Sprach-/API-Vertrag:
+[SPEC.md](../SPEC.md); Einsatzschwerpunkt, Vorteile und Grenzen:
+[COMPARISON.md](../COMPARISON.md).
+
+Architekturquellen können zusätzlich zur DSL als [JSON](../JSON.md) beschrieben
+werden. Deren Inline-`config` verwendet die DSL-Schlüssel `type`, `relation`,
+`viewpoint` und `attribute`. Das hier beschriebene vollständige Profilformat mit
+`nodeTypes`/`relationTypes` für `registerProfile()` bleibt unverändert.
+
 ## Variante 1: Profil als Parameter
 
 Ein Profilobjekt kann direkt pro Aufruf übergeben werden:
@@ -63,6 +72,10 @@ Beispielprofil, kein standardkonformes NAF-/UAF-/ArchiMate-Profil.
 Die separaten Profile `uaf` und `naf4-uaf` enthalten den UAF-1.0-Typkatalog und
 ausgewählte NAF-Regeln. Umfang, Einzelscripts und Versionsbindung:
 [uaf/README.md](uaf/README.md).
+Das separate `naf41-uaf` ergänzt alle 47 Viewpoint-IDs der NAFv4.1-Ausgabe
+2026.03 als strukturelles Anwendungsprofil auf Basis von `uaf`:
+[Anleitung](naf41/README.md), [Abdeckung und offene Prüfungen](naf41/COVERAGE.md).
+Diese Abdeckung ist keine vollständige normative Konformitätsprüfung.
 
 ## Variante 2: Eigenes Profil im config-Block
 
@@ -141,8 +154,11 @@ Profil. Es gibt keinen globalen „aktiven“ Profilzustand.
 | --- | --- |
 | Profil | `styleGroups`, `id`, `title`, `version`, `extends`, `defaultRelation`, `requireViewpoint` |
 | `nodeTypes.NAME` | `extends`, `template`, `abstract`, `container`, `contains`, `attributes`, `icon`, `accent`, `styleGroup`, `backgroundColor`, `comparisons` |
-| `relationTypes.NAME` | `extends`, `from`, `to`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic` |
-| `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections` |
+| `relationTypes.NAME` | `extends`, `from`, `to`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic`, `referenceLabels`, `referenceDisplay`, `referenceOccurrences` |
+| `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections`, `references` |
+
+Profile, Typen und Viewpoints können außerdem `title`, `description`, `sources`
+und `limitations` für Registry und englische Laufzeithilfe enthalten.
 
 - Profil-/Typ-/Viewpoint-Namen verwenden die DSL-Bezeichnergrammatik.
 - Ohne ID erhält ein als Parameter übergebenes Objekt die ID `parameter`, ein
@@ -247,7 +263,9 @@ Die vorhandenen Templates zeichnen weiterhin Titel/Beschreibung/Technologie;
 beliebige zusätzliche Felder werden gespeichert/validiert. Der Connected-Renderer
 zeichnet sie nicht automatisch als weitere Kartenzeilen. Die explizite
 [Klassenansicht](../DIAGRAMS.md#klassen-detailansicht-class) unterstützt zugeordnete
-Detailbereiche.
+Detailbereiche. `propertyFields [NAME, NAME]` zeigt dort zusätzlich die Werte
+deklarierter Attribute oder öffentlicher Node-Eigenschaften; es erzeugt keine
+zusätzlichen Modellelemente.
 
 ### Container und Darstellung
 
@@ -259,7 +277,7 @@ benannt sein; das Schlüsselwort `package` hat im Engine-Kern keine privilegiert
 Containersemantik mehr.
 
 Bei Knoten gilt: View-Style > explizite Modell-Iconreferenz > Profildarstellung >
-Template-Standard. `accent` im Profil ist eine Hexfarbe. Die strukturelle
+Template-Standard. `accent` im Profil akzeptiert Hexwerte und CSS3-Farbnamen. Die strukturelle
 Container-Eigenschaft kann eine View nicht durch einen Templatewechsel ändern.
 Eigene Relationstypen wählen über `style` einen der sieben Kantenstile:
 `flow`, `dependency`, `association`, `access`, `composition`, `realization`,
@@ -310,6 +328,48 @@ Whitelists und Pflichttypen. Die zusätzlichen JSON-Felder `pairs`,
 `comparisons`, `connections` lassen sich über ein registriertes Profil auch
 mit `config { profile ID }` auswählen.
 
+`connections` unterstützt außerdem `counterparts` zur Filterung des
+Gegenstellentyps einschließlich Untertypen. `references` verlangt für ausgewählte
+Referenzattribute sichtbare Zielknoten:
+
+```json
+{
+  "references": [
+    { "relations": ["interaction"], "attributes": ["conveyed"] }
+  ]
+}
+```
+
+Alternativ wählt `nodes` statt `relations` die zu prüfenden Knotentypen.
+Fehlende optionale Referenzen sind erlaubt; die Attributdefinition bestimmt
+Pflichtwerte. Sichtbarkeit bedeutet hier Mitgliedschaft in der Viewauswahl;
+eine automatisch gezeichnete Referenzkarte ersetzt diese Anforderung nicht.
+Diese Regeln werden wie `connections` im JSON-Profil definiert.
+
+### Referenzen an Beziehungen darstellen
+
+Ein Relationstyp kann seine typisierten Referenzen zusätzlich sichtbar machen:
+
+```json
+{
+  "attributes": {
+    "conveyed": { "type": "reference", "targets": ["information"], "many": true }
+  },
+  "referenceLabels": { "conveyed": "Conveys" },
+  "referenceDisplay": "nodes",
+  "referenceOccurrences": "shared"
+}
+```
+
+Dies ist ein Ausschnitt einer Relationstypdefinition; `information` muss ein
+deklarierter Knotentyp sein. `referenceLabels` ordnet Referenzattributen die
+Beschriftung zu. `referenceDisplay` wählt `labels`, `nodes` oder `both`;
+`referenceOccurrences` wählt `shared` (Standard) oder `perEdge`. Darstellungsvorgaben
+werden vom ersten Elternrelationstyp geerbt und können in einer View überschrieben
+werden. Karten und Zuordnungspfeile sind Präsentation, keine neuen Modellobjekte
+oder Modellbeziehungen. Grafische Referenzkarten gibt es nur im Connected-Renderer.
+Routing und Beispiele: [HELP.md](../HELP.md#zuordnungspfeile-routen).
+
 ## Stilgruppen und Hintergrundfarben
 
 Profile können `styleGroups` deklarieren. Jeder Knotentyp kann eine Gruppe über
@@ -322,7 +382,7 @@ Profile können `styleGroups` deklarieren. Jeder Knotentyp kann eine Gruppe übe
 }
 ```
 
-Die Farben müssen Hexwerte mit drei oder sechs Stellen sein. Eine leere Gruppe
+Die Farben können Hexwerte mit drei oder sechs Stellen oder CSS3-Farbnamen sein. Eine leere Gruppe
 verwendet den Theme-Hintergrund. Unbekannte Gruppen und ungültige Farben sind
 Profilfehler. Profilvererbung übernimmt Gruppen; gleichnamige Gruppen werden
 vollständig ersetzt. Typvererbung übernimmt `styleGroup` und direkte
@@ -339,8 +399,9 @@ config {
 }
 ```
 
-Hintergrundfarben werden mit `fill-opacity="0.2"` in beiden Themes und im
-SVG-Export ausgegeben. Text und Rahmen bleiben vollständig deckend.
+Explizite Hintergrundfarben verwenden standardmäßig `fill-opacity="0.2"` in
+beiden Themes und im SVG-Export. `style ID { opacity 0.5 }` überschreibt die
+Fülltransparenz viewlokal (0–1). Text und Rahmen bleiben vollständig deckend.
 Text/Rahmen werden schwarz oder weiß nach größtem Kontrast zur sichtbaren
 Mischfarbe aus Füllung und Untergrund gewählt, auch bei verschachtelten
 Containern. Akzentfarben
@@ -375,7 +436,7 @@ sondern liefert:
   "diagnostics": [{
     "severity": "error",
     "code": "ARCH_SEMANTIC",
-    "message": "portal: Pflichtattribut owner fehlt",
+    "message": "portal: Missing required attribute owner",
     "line": 4,
     "column": 5,
     "elementId": "portal",
@@ -390,6 +451,17 @@ gesammelt; optional enthalten sie `elementId`, `attribute` und `viewId`.
 Fehlercodes: `ARCH_SYNTAX`, `ARCH_PROFILE`, `ARCH_SEMANTIC`; das Standardprofil
 erhält aus Kompatibilität `ARCH_VALIDATION`. Keine Regeln werden als JavaScript
 oder `eval` ausgeführt, unbekannte Schemaeinstellungen werden abgewiesen.
+
+Die Laufzeittexte sind Englisch. `@help types PROFILE TYPE` nennt konkrete
+Kandidaten abstrakter Typen; `@help connections PROFILE TYPE` listet eingehende
+und ausgehende Relationen mit passenden Gegenstellen. Dies ersetzt nicht die
+Prüfung von Pflichtattributen, Kardinalitäten und Viewpoint-Regeln am konkreten
+Modell. Vollständige Befehle: [HELP.md](../HELP.md).
+
+Ein erfolgreiches `validate()` garantiert keine vollständige SVG-Erzeugung:
+Iconreferenzen und freie SVG-Pfade werden erst beim Rendern geprüft. Modell-
+und Viewregeln prüfen auch nicht zum Rendern ausgewählte Views. Details und
+Fehlerisolation: [SPEC.md](../SPEC.md#prüfgrenzen-und-fehlerverhalten).
 
 ## Beispiele, Tests und Grenzen
 
@@ -412,4 +484,19 @@ Diagrammrenderer sind nicht Bestandteil des Profilschemas. Die eingebauten
 Spezialrenderer sind unter [DIAGRAMS.md](../DIAGRAMS.md) beschrieben. Zusätzliche Frameworks können als
 Daten beschrieben werden, soweit ihre Regeln durch diesen Regelsatz ausdrückbar
 sind; weitergehende Anforderungen benötigen eine generische Erweiterung des
-Regelschemas. Künftige Arbeiten stehen in `ROADMAP.md`.
+Regelschemas. Künftige Arbeiten stehen in [ROADMAP.md](../ROADMAP.md).
+
+## Renderauswahl im Architektur-Config
+
+Die View-Auswahl gehört zur Architektur und ist unabhängig vom Profilschema:
+
+```arch
+config { profile naf41-uaf views all }
+```
+
+Alternativ wählt `views [detail, overview]` mehrere Views in dieser Reihenfolge
+oder `views detail` genau eine. Dies funktioniert ebenfalls mit Inline-Profilen
+oder ohne Profilangabe. Mehrere Views werden mit Überschriften untereinander
+in einem eigenständigen SVG gerendert; ohne Auswahl bleibt die erste View der
+Standard. API-Priorität: `view` → `views` → `config.views` → erste View.
+Siehe [HELP.md](../HELP.md#eine-mehrere-oder-alle-views-rendern).

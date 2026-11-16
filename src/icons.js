@@ -1,5 +1,6 @@
 import { ArchError } from './parser.js';
 import { inspectPath } from './geometry.js';
+import { readIconify, iconPaint } from './iconify.js';
 
 const packs = new Map();
 const paintDefaults = Object.freeze({ fill: 'none', stroke: 'currentColor', strokeWidth: 1.6,
@@ -7,39 +8,52 @@ const paintDefaults = Object.freeze({ fill: 'none', stroke: 'currentColor', stro
 const paintKeys = Object.keys(paintDefaults);
 export function registerIconPack(name, pack) {
   const error = (message) => { throw new ArchError(message, {}, 'ARCH_ICON'); };
-  if (typeof name !== 'string' || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name)) error('Ungültiger Iconpack-Name');
-  if (!pack || !pack.icons || typeof pack.icons !== 'object' || Array.isArray(pack.icons)) error('Iconpack benötigt ein icons-Objekt');
+  if (typeof name !== 'string' || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name)) error('Invalid icon pack name');
+  if (!pack || !pack.icons || typeof pack.icons !== 'object' || Array.isArray(pack.icons)) error('icon pack requires an icons object');
+  if (Object.values(pack.icons).some(icon => icon && Object.hasOwn(icon, 'body'))) {
+    try { const converted = readIconify(pack); packs.set(name, converted); return; }
+    catch (cause) { error(`Iconify ${name}: ${cause.message}`); }
+  }
   const result = new Map();
-  if (Object.keys(pack.icons).length > 20000) error('Maximal 20000 Icons pro Pack erlaubt');
+  if (Object.keys(pack.icons).length > 20000) error('At most 20000 icons are allowed per pack');
   for (const [id, icon] of Object.entries(pack.icons)) {
-    if (!/^[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(id) || !icon) error(`Ungültiges Icon: ${id}`);
+    if (!/^[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(id) || !icon) error(`Invalid icon: ${id}`);
     const width = icon.width ?? pack.width ?? 24, height = icon.height ?? pack.height ?? 24;
-    if (![width, height].every(n => Number.isFinite(n) && n > 0 && n <= 4096)) error(`Ungültige Icongröße: ${id}`);
-    if (!Array.isArray(icon.paths) || !icon.paths.length || icon.paths.length > 64) error(`Ungültige paths für Icon: ${id}`);
+    if (![width, height].every(n => Number.isFinite(n) && n > 0 && n <= 4096)) error(`Invalid icon size: ${id}`);
+    if (!Array.isArray(icon.paths) || !icon.paths.length || icon.paths.length > 64) error(`Invalid paths for icon: ${id}`);
     const paths = icon.paths.map(path => {
       const value = typeof path === 'string' ? { d: path } : path;
       if (!value || typeof value !== 'object' || Object.keys(value).some(key => !['d', ...paintKeys].includes(key)))
-        error(`Ungültiges Pfadobjekt: ${id}`);
+        error(`Invalid path object: ${id}`);
       inspectPath(value.d);
       const paint = Object.fromEntries(paintKeys.map(key => [key, value[key] ?? paintDefaults[key]]));
-      for (const key of ['fill', 'stroke']) if (!['none', 'currentColor'].includes(paint[key])) error(`Ungültige Iconfarbe: ${id}.${key}`);
+      for (const key of ['fill', 'stroke']) {
+        const color = iconPaint(paint[key]);
+        if (!color) error(`Invalid icon color: ${id}.${key}`);
+        paint[key] = color;
+      }
       if (!['butt', 'round', 'square'].includes(paint.linecap) || !['miter', 'round', 'bevel'].includes(paint.linejoin) ||
-          !['nonzero', 'evenodd'].includes(paint.fillRule)) error(`Ungültiger Zeichenstil: ${id}`);
+          !['nonzero', 'evenodd'].includes(paint.fillRule)) error(`Invalid paint style: ${id}`);
       if (!Number.isFinite(paint.strokeWidth) || paint.strokeWidth < 0 || paint.strokeWidth > 64 ||
           ['opacity', 'fillOpacity', 'strokeOpacity'].some(key => !Number.isFinite(paint[key]) || paint[key] < 0 || paint[key] > 1))
-        error(`Ungültige Strichstärke oder Deckkraft: ${id}`);
+        error(`Invalid stroke width or opacity: ${id}`);
       return Object.freeze({ d: value.d, ...paint });
     });
     result.set(id, Object.freeze({ width, height, paths: Object.freeze(paths) }));
   }
-  if (!result.size) error('Iconpack ist leer');
+  if (!result.size) error('icon pack is empty');
   packs.set(name, result);
 }
 export function getIconPacks() { return [...packs.keys()]; }
+// Names only: help never exposes the mutable registry or icon geometry.
+export function getIconNames(pack) {
+  if (!packs.has(pack)) throw new ArchError(`Unknown icon pack: ${pack}`, {}, 'ARCH_ICON');
+  return [...packs.get(pack).keys()].sort();
+}
 export function getIcon(name, loc) {
   const [pack, id, ...rest] = String(name).split('.');
   const result = !rest.length && packs.get(pack)?.get(id);
-  if (!result) throw new ArchError(`Unbekanntes Icon: ${name}`, loc, 'ARCH_ICON');
+  if (!result) throw new ArchError(`Unknown icon: ${name}`, loc, 'ARCH_ICON');
   return result;
 }
 

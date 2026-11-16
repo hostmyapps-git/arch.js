@@ -1,10 +1,10 @@
 {
   "styleGroups": {
-    "capability": { "backgroundColor": "#00FF00" },
-    "service": { "backgroundColor": "#EE82EE" },
-    "logical": { "backgroundColor": "#6A5ACD" },
-    "physical": { "backgroundColor": "#FF8C00" },
-    "foundation": { "backgroundColor": "#FFD700" },
+    "capability": { "backgroundColor": "lime" },
+    "service": { "backgroundColor": "violet" },
+    "logical": { "backgroundColor": "slateblue" },
+    "physical": { "backgroundColor": "darkorange" },
+    "foundation": { "backgroundColor": "gold" },
     "neutral": {}
   },
   "packages": {

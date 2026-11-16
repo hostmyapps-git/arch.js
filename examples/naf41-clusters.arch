@@ -1,0 +1,34 @@
+architecture "Fighter control · Clusters and node styles" {
+  config { profile naf41-uaf }
+  model {
+    Package air "Air Operations" {
+      OperationalPerformer f1 "Fighter 1" {
+        stereotype "OperationalPerformerWithAnExceptionallyLongStereotype"
+      }
+      OperationalPerformer f2 "Fighter 2"
+    }
+    Package ground "Ground Control" {
+      OperationalPerformer c "Controller"
+    }
+    InformationElement i "Control information"
+    relation control1 c -> f1 "Controls" { type LogicalInteraction conveyed [i] }
+    relation control2 c -> f2 "Controls" { type LogicalInteraction conveyed [i] }
+  }
+  view v "L3 · Clusters and custom card sizes" {
+    viewpoint L3
+    referenceDisplay nodes
+    place ground at (0, 0)
+    place air at (600, 0)
+    # Child positions are relative to their package content area.
+    place c at (0, 80)
+    place f1 at (0, 0)
+    place f2 at (0, 180)
+    place i at (400, -160)
+    style air { backgroundColor LightBlue width 360 height 240 }
+    style ground { backgroundColor Lavender width 360 height 240 }
+    style f1 { fontSize 14 width 280 height 120 }
+    style f2 { fontSize 14 width 280 height 120 }
+    style c { fontSize 18 width 280 height 140 }
+    style i { fontSize 12 width 300 height 110 }
+  }
+}
