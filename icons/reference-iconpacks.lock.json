@@ -2,6 +2,13 @@
   "description": "User-provided reference files, not automatically bundled or downloaded",
   "sources": [
     {
+      "file": "ReferenceDocs/organizationLogos.json",
+      "name": "organizations",
+      "sha256": "ed970a6b04aaf6e7eda24df3dc276382081a19b7f8638a491e7d2929bce5b9f6",
+      "icons": 45,
+      "aliases": 0
+    },
+    {
       "file": "ReferenceDocs/iconpacks/affinity.json",
       "name": "affinity",
       "sha256": "1b5e827520eb57993bba9bfdcd92834e5755896eca46fefbd559d5f50aae1ccb",

@@ -35,8 +35,19 @@ Lineare/radiale Gradienten, Clip-Pfade, Masken, Patterns und geprüfte Filter
 (`feFlood`, `feBlend`, `feGaussianBlur`, `feOffset`, `feColorMatrix`, `feMerge`,
 `feMergeNode`, `feMorphology`, `feComposite`) werden sicher rekonstruiert.
 Präsentationsstile werden auf erlaubte Attribute begrenzt; Inline-Stile haben
-Vorrang vor entsprechenden Präsentationsattributen. Stylesheet-Klassen werden
-nicht aus dem Dokument übernommen.
+Vorrang vor entsprechenden Präsentationsattributen. Eingebettete Stylesheets
+mit einfachen Klassenselektoren (`.cls-1`, auch kommagetrennte Listen) und
+erlaubten Präsentationsstilen werden lokal in Attribute aufgelöst. Bei mehreren
+Treffern entscheidet die Reihenfolge der Regeln; Inline-Stile haben Vorrang.
+Stylesheet und Quellklassen werden nicht in das Dokument übernommen.
+Andere Selektoren, `@import`, CSS-Variablen und `!important` werden abgewiesen.
+Maximal 512 Regeln mit jeweils 64 Klassenselektoren pro Icon.
+
+`contrast-color(currentColor)` sowie dieselbe Funktion mit festen Hex-/benannten
+Farben werden als Zeichenfarbe akzeptiert, auch in Inline-Stilen. Die Funktion
+bleibt im SVG und wird vom Browser ausgewertet; ältere SVG-Viewer ohne diese
+CSS-Funktion benötigen feste Farben. Grundlage:
+[CSS Color 5](https://www.w3.org/TR/css-color-5/#contrast-color).
 
 Iconify-Dimensionen einschließlich `left`/`top`, Sammlungsdefaults sowie
 Alias-Ketten mit `rotate`, `hFlip`, `vFlip` werden aufgelöst. Interne SVG-IDs

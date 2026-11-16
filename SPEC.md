@@ -764,7 +764,7 @@ Die beschriebene Version ist implementiert. Prüfung am 16.11.2026 mit Node.js
 Chromium auf macOS/ARM64. Browserbundles ohne externe Laufzeitscripts; der Node-Quellimport verwendet
 @xmldom/xmldom und svgpath als gepinnte npm-Abhängigkeiten.
 
-- 192 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
+- 195 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
   deterministischer/isolierter Layouts, Routing, Iconpacks, Unicode, Escaping,
   Markdown und Vergleich beider Bundles.
 - Alle zwölf Modellbeispiele mit 46 Ansichten sowie die eingebaute Hilfe im
@@ -863,6 +863,13 @@ Iconify-SVG-Bäume.
 Editor-Metadaten in `data-*`-Attributen, beispielsweise `data-name`, werden beim
 SVG-Import akzeptiert und verworfen. Sie werden nicht als Zeichenattribute,
 Referenzen oder CSS-Eigenschaften interpretiert und nicht in den Host-DOM kopiert.
+
+Lokale `<style>`-Blöcke mit einfachen Klassenselektoren und erlaubten
+Präsentationsstilen werden in Attribute aufgelöst (Regelreihenfolge, danach
+Inline-Stile). Quellklassen und Stylesheets werden nicht ausgegeben. Komplexe
+Selektoren, Imports, Variablen und `!important` bleiben ausgeschlossen.
+`contrast-color(currentColor)` sowie Hex-/benannte Farbargumente werden validiert
+und im SVG erhalten; ihre Auswertung setzt einen unterstützenden Viewer voraus.
 
 `enable-background` wird als Attribut und Inline-Präsentationsstil validiert
 und erhalten (`accumulate`, `inherit`, `new` oder `new` mit vier endlichen

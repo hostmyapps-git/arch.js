@@ -10977,6 +10977,12 @@ var arch = (() => {
     if (typeof value2 !== "string") return void 0;
     if (/^(none|inherit|transparent)$/i.test(value2)) return value2.toLowerCase();
     if (/^currentcolor$/i.test(value2)) return "currentColor";
+    const contrast2 = value2.match(/^contrast-color\(\s*([^()]+?)\s*\)$/i);
+    if (contrast2) {
+      const color = iconPaint(contrast2[1]);
+      if (color && !["none", "inherit"].includes(color)) return `contrast-color(${color})`;
+      return void 0;
+    }
     const hex = normalizeColor(value2);
     if (hex) return hex;
     if (/^#(?:[a-f\d]{4}|[a-f\d]{8})$/i.test(value2)) return value2;
@@ -11003,6 +11009,37 @@ var arch = (() => {
     } }).parseFromString(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${body}</svg>`, "image/svg+xml");
     const ids = /* @__PURE__ */ new Map(), links = /* @__PURE__ */ new Map();
     let count = 0;
+    const declarations = (value2) => value2.split(";").filter((s) => s.trim()).map((declaration) => {
+      const match = declaration.match(/^\s*([a-z-]+)\s*:\s*([^:]+?)\s*$/);
+      if (!match || !paints.has(match[1]) && !numeric.has(match[1]) && !own4(enums, match[1]) && match[1] !== "enable-background") throw Error("Unsupported SVG style");
+      return [match[1], match[2]];
+    });
+    const rules = [], styles = /* @__PURE__ */ new Set();
+    let scanned = 0;
+    const scan = (element, depth = 0) => {
+      if (depth > 64 || ++scanned > 4096) throw Error("SVG exceeds complexity limit");
+      if (element.tagName === "style") {
+        for (const a of Array.from(element.attributes))
+          if (!(a.name === "type" && a.value === "text/css") && !a.name.startsWith("data-")) throw Error("Unsupported SVG stylesheet attribute");
+        if (Array.from(element.childNodes).some((c) => ![3, 4, 8].includes(c.nodeType))) throw Error("Unsupported SVG stylesheet node");
+        const css = Array.from(element.childNodes).filter((c) => c.nodeType !== 8).map((c) => c.nodeValue).join("").replace(/\/\*[\s\S]*?\*\//g, "");
+        const pattern = /\s*([^{}]+)\{([^{}]*)\}/g;
+        let end = 0;
+        for (const m of css.matchAll(pattern)) {
+          if (m.index !== end) throw Error("Unsupported SVG stylesheet");
+          const selectors = m[1].trim().split(/\s*,\s*/);
+          if (selectors.some((s) => !/^\.[A-Za-z_][A-Za-z0-9_-]*$/.test(s))) throw Error("Unsupported SVG stylesheet selector");
+          if (rules.length >= 512 || selectors.length > 64) throw Error("SVG stylesheet exceeds complexity limit");
+          rules.push({ classes: selectors.map((s) => s.slice(1)), declarations: declarations(m[2]) });
+          end = m.index + m[0].length;
+        }
+        if (css.slice(end).trim()) throw Error("Unsupported SVG stylesheet");
+        styles.add(element);
+        return;
+      }
+      for (const child2 of Array.from(element.childNodes)) if (child2.nodeType === 1) scan(child2, depth + 1);
+    };
+    scan(doc.documentElement);
     const read = (element, depth = 0) => {
       if (depth > 64 || ++count > 4096) throw Error("SVG exceeds complexity limit");
       const tag = element.tagName;
@@ -11064,14 +11101,13 @@ var arch = (() => {
         node.attrs[key] = value2;
       };
       for (const attribute of Array.from(element.attributes)) if (attribute.name !== "style") apply(attribute.name, attribute.value);
-      if (element.hasAttribute("style")) for (const declaration of element.getAttribute("style").split(";").filter((s) => s.trim())) {
-        const match = declaration.match(/^\s*([a-z-]+)\s*:\s*([^:]+?)\s*$/);
-        if (!match || !paints.has(match[1]) && !numeric.has(match[1]) && !own4(enums, match[1]) && match[1] !== "enable-background") throw Error("Unsupported SVG style");
-        apply(match[1], match[2], true);
-      }
+      const classes = new Set((element.getAttribute("class") ?? "").split(/\s+/));
+      for (const rule of rules) if (rule.classes.some((c) => classes.has(c))) for (const [key, value2] of rule.declarations) apply(key, value2, true);
+      if (element.hasAttribute("style")) for (const [key, value2] of declarations(element.getAttribute("style"))) apply(key, value2, true);
       for (const child2 of Array.from(element.childNodes)) {
-        if (child2.nodeType === 1) node.children.push(read(child2, depth + 1));
-        else if (child2.nodeType === 3 || child2.nodeType === 4) {
+        if (child2.nodeType === 1) {
+          if (!styles.has(child2)) node.children.push(read(child2, depth + 1));
+        } else if (child2.nodeType === 3 || child2.nodeType === 4) {
           if (["title", "desc"].includes(tag)) node.children.push(child2.nodeValue);
           else if (child2.nodeValue.trim()) throw Error("Unexpected SVG text");
         } else if (child2.nodeType !== 8) throw Error("Unsupported SVG node");

@@ -1,5 +1,26 @@
 # Umsetzungsfortschritt
 
+## Fehlerkorrektur: Organisationslogos einschließlich NATO (16.11.2026)
+
+- `ReferenceDocs/organizationLogos.json` enthält 45 Icons. NATO und Rolls-Royce
+  verwenden `contrast-color(currentcolor)`; Siemens Healthineers verwendet einen
+  eingebetteten `<style>`-Block mit `.cls-1`/`.cls-2`. Diese drei Fälle verhinderten
+  bislang die Registrierung des gesamten Packs.
+- Kontrastfarbfunktion für `currentColor`, Hex- und benannte Farben ergänzt;
+  native SVG-/Browserauswertung bleibt erhalten.
+- Einfaches lokales Klassen-CSS wird anhand von Regelreihenfolge und
+  Inline-Priorität in geprüfte Attribute aufgelöst. Keine Stylesheets oder
+  Quellklassen im Host-DOM; komplexe Selektoren und aktive/externe Inhalte
+  bleiben ausgeschlossen.
+- Referenzpack mit Prüfsumme erfasst; Tests für alle 45 Icons, beide Bundles,
+  Prioritäten, lokale Paint-Referenzen und abgewiesene CSS-Konstrukte ergänzt.
+
+Verifikation: **195 Node-Testgruppen** und vollständige Chromium-Suite erfolgreich;
+alle 45 Organisationslogos mit heller/dunkler Iconfarbe gegen die Original-SVGs
+mit denselben monochromen Paint-Defaults rasterisiert verglichen. NATO-Kontrast
+zusätzlich anhand der Pixel geprüft. Beide Bundles neu gebaut; `git diff --check`
+ohne Beanstandungen.
+
 ## Fehlerkorrektur: data-name und data-* in SVG-Iconpacks (16.11.2026)
 
 Verifikation: **192 Node-Testgruppen** und die vollständige Chromium-Suite

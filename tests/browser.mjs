@@ -443,7 +443,8 @@ try {
   assert.equal(Object.keys(JSON.parse(await readFile('test-results/bootstrap.json', 'utf8')).icons).length, 2090);
   console.log('✓ All three packs, visible gallery, example, JSON download and raster comparison with original SVGs');
   const affinityReference=await readFile('ReferenceDocs/iconpacks/affinity.json','utf8').then(JSON.parse).catch(error=>{if(error.code==='ENOENT')return null;throw error;});
-  const rawFidelity=await page.evaluate(async(affinity)=>{
+  const organizationsReference=await readFile('ReferenceDocs/organizationLogos.json','utf8').then(JSON.parse).catch(error=>{if(error.code==='ENOENT')return null;throw error;});
+  const rawFidelity=await page.evaluate(async({affinity,organizations})=>{
     const samples={'fa6-solid':['0','house','cloud'],logos:['google','google-calendar','google-gemini-icon','firefox','vite','million','waffle-icon','react','github-icon']};
     const issues=[],gallery=document.createElement('div');gallery.id='raw-iconify-gallery';gallery.style.cssText='display:flex;flex-wrap:wrap;gap:24px;background:white;padding:32px;margin-left:240px';
     document.body.append(gallery);
@@ -485,6 +486,27 @@ try {
       const a=await raster(body.replace('<svg ','<svg width="64" height="64" ')),b=await raster(generated);
       const error=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i]),0)/a.length;if(error>1)issues.push({name:`enable-background ${name}`,error});
     }
+    if(organizations) {
+      arch.registerIconPack('direct-organizations',organizations);
+      if(!CSS.supports('fill','contrast-color(currentColor)'))issues.push('Browser cannot evaluate contrast-color');
+      const raster=async svg=>{const img=new Image();img.src='data:image/svg+xml,'+encodeURIComponent(svg);await img.decode();const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,64,64);return ctx.getImageData(0,0,64,64).data;};
+      for(const [id,icon]of Object.entries(organizations.icons))for(const color of ['#111111','#eeeeee']) {
+        const w=icon.width??organizations.width??16,h=icon.height??organizations.height??16,max=Math.max(w,h);
+        // Use the same documented monochrome paint defaults as arch's icon viewport.
+        const reference=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${64*w/max}" height="${64*h/max}" viewBox="0 0 ${w} ${h}" color="${color}" fill="currentColor" stroke="none">${icon.body}</svg>`;
+        const generated=arch.renderIconToString(`direct-organizations.${id}`,{size:64}).replace('<svg ','<svg color="'+color+'" ');
+        const a=await raster(reference),b=await raster(generated),error=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i]),0)/a.length;
+        if(error>1)issues.push({name:'organizations',id,color,error});
+        if(id==='nato') {
+          const colors=new Set();for(let i=0;i<b.length;i+=4)if(b[i+3]===255)colors.add(b[i]);
+          if(!colors.has(color==='#111111'?255:0))issues.push(`Missing NATO contrast: ${color}`);
+        }
+        if(['nato','nato_color','rollsroyce','siemenshealthineers_color'].includes(id)) {
+          const tile=document.createElement('div');tile.style.cssText=`width:110px;text-align:center;font:12px sans-serif;background:${color==='#111111'?'white':'#222'};color:${color};padding:8px`;tile.innerHTML=generated;
+          const label=document.createElement('div');label.textContent=id;tile.append(label);gallery.append(tile);
+        }
+      }
+    }
     const alias={width:20,height:10,icons:{a:{body:'<path fill="red" d="M0 0h5v10H0Z"/>'}},aliases:{turned:{parent:'a',rotate:1},flipped:{parent:'a',hFlip:true}}};
     arch.registerIconPack('alias-render',alias);
     const raw=arch.renderIconToString('alias-render.turned',{size:64});
@@ -499,7 +521,7 @@ try {
     gallery.insertAdjacentHTML('beforeend',arch.renderIconToString('direct-logos.vite')+arch.renderIconToString('direct-logos.vite'));
     const all=[...gallery.querySelectorAll('[id]')].map(n=>n.id);if(new Set(all).size!==all.length)issues.push('duplicate local SVG IDs');
     return issues;
-  },affinityReference);
+  },{affinity:affinityReference,organizations:organizationsReference});
   assert.deepEqual(rawFidelity,[],'Original Iconify packs retain their colors, gradients, clips and filters');
   await page.locator('#raw-iconify-gallery').screenshot({path:'test-results/iconify-originals.png'});
   await page.locator('#raw-iconify-gallery').evaluate(e=>e.remove());

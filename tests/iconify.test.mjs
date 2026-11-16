@@ -102,6 +102,42 @@ test('ignored data-* metadata does not bypass unknown attributes, active content
   }
 });
 
+test('contrast-color paints retain currentColor and fixed colors in attributes and inline styles',()=>{
+  arch.registerIconPack('contrast-export',{icons:{sample:{body:'<svg viewBox="0 0 24 24"><path fill="contrast-color(currentcolor)" d="M0 0h24v24H0Z"/><g style="fill:contrast-color( Gold );stroke:contrast-color(#fff)"><circle r="4"/></g></svg>'}}});
+  const svg=arch.renderIconToString('contrast-export.sample');
+  assert.match(svg,/fill="contrast-color\(currentColor\)"/);assert.match(svg,/fill="contrast-color\(#ffd700\)"/);assert.match(svg,/stroke="contrast-color\(#fff\)"/);
+  for(const value of ['contrast-color(none)','contrast-color(inherit)','contrast-color(url(#x))','contrast-color(var(--x))','contrast-color(red, blue)'])
+    assert.throws(()=>arch.registerIconPack('contrast-bad',{icons:{sample:{body:`<path fill="${value}" d="M0 0"/>`}}}),arch.ArchError);
+});
+
+test('local class styles resolve with source order and inline precedence without leaking CSS into the host',()=>{
+  const body='<svg viewBox="0 0 24 24"><style type="text/css"><![CDATA[/* editor classes */ .a, .b { fill:#ec6602;stroke:blue; } .b { fill:#099; }]]></style><g class="a"><path class="a b" fill="red" style="fill:Gold" d="M0 0h12v24H0Z"/><path class="b" fill="red" d="M12 0h12v24H12Z"/></g></svg>';
+  arch.registerIconPack('class-export',{icons:{sample:{body}}});const svg=arch.renderIconToString('class-export.sample');
+  assert.match(svg,/<g fill="#ec6602" stroke="#0000ff">/);
+  assert.match(svg,/<path[^>]*fill="#ffd700"/);assert.match(svg,/<path[^>]*fill="#099"/);
+  assert.doesNotMatch(svg,/<style|class=|CDATA/);
+  arch.registerIconPack('class-reference',{icons:{sample:{body:'<svg><defs><linearGradient id="paint"><stop stop-color="red"/></linearGradient></defs><style>.a{fill:url(#paint)}</style><rect class="a" width="16" height="16"/></svg>'}}});
+  assert.match(arch.renderIconToString('class-reference.sample',{idPrefix:'local-css'}),/fill="url\(#local-css-0\)"/);
+  for(const css of ['@import "https://example.com/x";','.a{fill:url(https://example.com/x)}','.a{onload:alert(1)}','path{fill:red}', '.a path{fill:red}', '.a{fill:red!important}', '.a{fill:var(--x)}','.a{fill:red} trailing']) {
+    assert.throws(()=>arch.registerIconPack('class-export',{icons:{sample:{body:`<svg><style>${css}</style><path class="a" d="M0 0"/></svg>`}}}),arch.ArchError,css);
+    assert.equal(arch.renderIconToString('class-export.sample'),svg);
+  }
+});
+
+test('organization reference pack including NATO, Rolls-Royce and Siemens registers in source and both bundles',async(t)=>{
+  let text;try{text=await readFile('ReferenceDocs/organizationLogos.json','utf8');}catch(error){if(error.code==='ENOENT'){t.skip('Optional reference pack is not present');return;}throw error;}
+  const pack=JSON.parse(text),snapshot=JSON.stringify(pack);arch.registerIconPack('organizations',pack);
+  assert.equal(Object.keys(pack.icons).length,45);
+  for(const id of Object.keys(pack.icons))assert.match(arch.renderIconToString(`organizations.${id}`),/^<svg/);
+  assert.match(arch.renderIconToString('organizations.nato'),/contrast-color\(currentColor\)/);
+  assert.match(arch.renderIconToString('organizations.siemenshealthineers_color'),/fill="#ec6602"/);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('organizations',pack);
+    for(const id of Object.keys(pack.icons))assert.equal(context.arch.renderIconToString(`organizations.${id}`,{idPrefix:'same'}),arch.renderIconToString(`organizations.${id}`,{idPrefix:'same'}));
+  }
+  assert.equal(JSON.stringify(pack),snapshot);
+});
+
 test('unsafe/external SVG, reference cycles, malformed XML, excessive expansion and invalid dimensions fail atomically',()=>{
   arch.registerIconPack('safe',gradient);const before=arch.renderIconToString('safe.sample',{idPrefix:'test'});
   const bad=['<script>alert(1)</script>','<path d="M0 0" onload="x"/>','<image href="data:x"/>','<foreignObject/>','<animate/>',
