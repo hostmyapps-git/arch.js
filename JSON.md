@@ -309,3 +309,10 @@ verwenden JSON-Codeblöcke im DOM `language-arch` oder `data-arch`. Gewöhnliche
 `json`-Fences bleiben Code und werden nicht automatisch als Architektur gerendert.
 Fehlerisolation und Mehrfachview-Verhalten entsprechen dem
 [API-Vertrag](SPEC.md#prüfgrenzen-und-fehlerverhalten).
+
+`"routes": {"sharePath": "stereotypes"}` aktiviert gemeinsame Abschnitte für
+exakt gleiche Relationstypen in Connected-Views; `"all"` erlaubt verschiedene
+Typen mit kompatibler Darstellung, `"none"` ist der Standard. Eine konkrete
+`"route": {"edgeId": {"sharePath": "none"}}` überschreibt die Vorgabe.
+Manuelle Geometrie bleibt unabhängig. Die Option wird in beide Richtungen
+zwischen JSON und DSL erhalten; Details und Grenzen: [HELP.md](HELP.md).

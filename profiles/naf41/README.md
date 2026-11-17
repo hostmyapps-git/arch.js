@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.1` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.6` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -8,12 +8,30 @@ connection checks and designated visible-reference checks. It inherits the
 existing UAF 1.0 catalog and explicitly adds the application concepts needed
 for the newer viewpoints.
 
+C7 treats EffectivenessCriterion and its subtypes as optional context: they do
+not inherit mandatory CharacterizesCapability/EvaluatesCriterion connections
+from the ordinary-criterion checks. A Time to find criterion may have only a
+SpecifiesEffectiveness link, as on p.99. Ordinary assessment criteria still need
+the complete capability-criterion-measure chain. EvaluatesCriterion uses the
+Measure → AssessmentCriterion direction from the p.98 cut-out; p.99 illustrates
+those arrows in reverse. See `@help viewpoints naf41-uaf C7` for the exact rules.
+
 It is an **authored structural application mapping**, not an official NATO or
 OMG profile, a Sparx MDG import, or a complete compliance checker. The NAF
 Information Model is conceptual rather than directly implementable (NAFv4.1,
 p.80). This mapping makes the tool representation explicit. The inherited
 [UAF limitations](../uaf/COVERAGE.md) still apply. Detailed source pages,
 counts, implemented checks and review obligations are in [COVERAGE.md](COVERAGE.md).
+
+C8 supports the p.101 `Constraint` vocabulary as a concrete subtype of
+`StrategicConstraint`. `ConstrainsCapability` points from either constraint type
+to `Capability`. For `Constraint`, `ruleKind` is optional and, when specified,
+must be `Constraint`; this meaning is implied by the type rather than inserted
+as an attribute value. `StrategicConstraint` retains its inherited required
+`ruleKind`. The p.100 constraint-to-rationale link is `OriginatesFromRationale`;
+`JustifiesStrategy` remains the explicit inverse application relationship.
+See [the C8 example](../../examples/shared-paths.arch) and
+`@help connections naf41-uaf Constraint`.
 
 ## Load and use
 

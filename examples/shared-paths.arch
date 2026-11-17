@@ -1,0 +1,17 @@
+architecture "C8 — Planning Constraints" {
+  config { profile naf41-uaf }
+  model {
+    Constraint search "Search covers radius of 10 km in 3 simultaneous missions"
+    Constraint availability "C2 unit must be permanently available"
+    Capability maritime "Maritime SAR"
+    relation searchApplies search -> maritime "applies to" { type ConstrainsCapability }
+    relation availabilityApplies availability -> maritime "applies to" { type ConstrainsCapability }
+  }
+  view c8 "C8 — Shared constraint paths" {
+    viewpoint C8
+    routes { sharePath stereotypes curve rounded }
+    place search at (0,0)
+    place availability at (0,300)
+    place maritime at (650,150)
+  }
+}

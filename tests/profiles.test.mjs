@@ -20,6 +20,21 @@ const pair = 'actor u "User" { owner "People" } system s "System" { owner "Apps"
 const view = 'view v "Context" { viewpoint context }';
 const errors = (source, options) => arch.validate(source, options).diagnostics.map(d => d.message).join('\n');
 
+test('viewpoint connection node exclusions include descendants and do not change type/endpoint compatibility',()=>{
+  const p={
+    defaultRelation:'link',
+    nodeTypes:{base:{},ordinary:{extends:'base'},optional:{extends:'base'},child:{extends:'optional'}},
+    relationTypes:{link:{from:['base'],to:['base']}},
+    viewpoints:{v:{nodes:['base'],relations:['link'],connections:[{nodes:['base'],nodesExclude:['optional'],relations:['link'],min:1,direction:'either'}]}},
+  };
+  const source=document('ordinary a "A" ordinary b "B" optional c "Optional" child d "Optional child" relation e a -> b "Linked"','view v "V"{viewpoint v}');
+  assert.equal(arch.validate(source,{profile:p}).valid,true);
+  assert.match(errors(source.replace('child d','ordinary d'),{profile:p}),/d requires.*connections/);
+  assert.equal(arch.validate(source.replace('a -> b','a -> c').replace('ordinary b "B"',''),{profile:p}).valid,true,'excluded nodes remain legal endpoints');
+  assert.throws(()=>arch.registerProfile('bad-exclusion',{...p,viewpoints:{v:{...p.viewpoints.v,connections:[{...p.viewpoints.v.connections[0],nodesExclude:['missing']}]}}}),/unknown node type/);
+  assert.ok(!arch.getProfiles().includes('bad-exclusion'));
+});
+
 test('default profile keeps existing syntax and separates semantic types from templates', () => {
   const m = arch.parse(document('service a "A" database b "B" relation e a -> b "Reads"'));
   assert.equal(m.profile.id, 'default'); assert.equal(arch.validate(m).valid, true);

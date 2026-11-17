@@ -1,5 +1,53 @@
 # Umsetzungsfortschritt
 
+## Gemeinsame Kantenpfade und C8-Vokabular (17.11.2026)
+
+- `routes {sharePath stereotypes|all|none}` und Overrides pro `route` ergänzt.
+  Standard `none`; `stereotypes` verlangt exakt gleiche Relationstypen, `all`
+  kompatible Darstellung. Automatische Fan-in-/Fan-out-Netze mit einmal
+  gezeichnetem Stamm/Querabschnitt und korrekten Markerenden in Connected-Views,
+  einschließlich benannter Tree-Gruppen. Individuelle IDs, Labels/Icons und
+  vollständige logische Pfade für Zuordnungen bleiben erhalten.
+- Manuelle `via`/`path`, absolute Endpunkte, gerade/Bezier-Kurven, parallele
+  Verbindungen und containerübergreifende Kanten bleiben unabhängig. Freier
+  Korridor und Labelplatz erforderlich; gemeinsame Junctions sind rechtwinklig.
+  Fan-in hat Vorrang; eine Kante gehört höchstens einem Bündel an.
+- NAFv4.1 S.100–101 visuell geprüft: `Constraint` als konkreter Untertyp von
+  `StrategicConstraint` ergänzt. Für diesen Vokabularadapter ist `ruleKind`
+  optional und auf `Constraint` begrenzt, ohne einen Attributwert einzufügen.
+  `OriginatesFromRationale` folgt der Constraint → StrategicRationale-Richtung
+  auf S.100; die inverse Anwendung `JustifiesStrategy` bleibt erhalten.
+- Profilrevision `4.1.0-arch.6`, generierte Profile, Bundles, Abdeckung,
+  Laufzeithilfe und Dokumentation aktualisiert. Editierbares C8-Beispiel:
+  `examples/shared-paths.arch`.
+
+Verifikation: **267 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+Vier Richtungen, Fan-in/Fan-out, Typ-/Stiltrennung, Overrides, manuelle Routen,
+Fallback bei Hindernissen, Labels/Icons, JSON, unverändertes Modell, Referenzanker,
+C8-Regeln, Quellenrichtung und beide Bundles geprüft. C7-/C8-Ausgaben visuell
+kontrolliert (`test-results/shared-paths-c7.png`, `shared-paths-c8.png`).
+
+## Optionale EffectivenessCriteria in C7 (17.11.2026)
+
+- C7-Einzelknotenpflichten für CharacterizesCapability und eingehende
+  EvaluatesCriterion schließen EffectivenessCriterion samt Untertypen aus.
+  Time to find kann entsprechend S.99 nur über SpecifiesEffectiveness angebunden
+  sein. Gewöhnliche AssessmentCriteria, Measures und View-Pflichtinhalte bleiben
+  geprüft; die gemeinsame Vererbung und Endpunktkompatibilität bleiben erhalten.
+- Generisches JSON-Viewpoint-Selektorfeld `connections[].nodesExclude` ergänzt.
+  Ausschlüsse wirken mit Vererbung nur auf die betreffende Verbindungsprüfung.
+  Schema/Referenzen werden bei Registrierung geprüft, ohne ältere Profile zu ändern.
+- Profilrevision `4.1.0-arch.5`, generierte Profile/Bundles und Abdeckungsbericht
+  aktualisiert. Pfeilrichtung EvaluatesCriterion bleibt Measure → AssessmentCriterion
+  nach S.98; die abweichende Darstellung auf S.99 ist dokumentiert.
+- Unabhängige C7-Fixture mit drei AssessmentCriteria/Measures und optionalem
+  EffectivenessCriterion. Tests für Untertypen, weiter bestehende Pflichtketten,
+  optionale Zusatzlinks, falsche Richtungen, JSON und beide Bundles ergänzt.
+
+Verifikation: **258 Node-Testgruppen** und vollständige Chromium-Suite;
+strikte/Entwurfsvalidierung ohne falsche Hinweise sowie Connected-/Class-Ausgabe
+in beiden Themes geprüft.
+
 ## Frei positionierbare Properties in beiden Darstellungen (17.11.2026)
 
 - `propertyFields` auf View-Ebene, pro Node-Style und als Diagrammvorgabe in

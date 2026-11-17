@@ -11,6 +11,31 @@ const coverage = JSON.parse(await readFile('profiles/naf41/coverage.json', 'utf8
 const errors = source => arch.validate(source).diagnostics.map(d => d.message).join('\n');
 const without = (id, relationship) => document(id, cases[id].replace(new RegExp(`relation ${relationship} [^}]*}`), ''));
 
+test('C8 accepts p.101 Constraint as a StrategicConstraint subtype and p.100 constraint-to-rationale links',async()=>{
+  const source=await readFile('examples/shared-paths.arch','utf8');
+  assert.equal(arch.getProfile('uaf').nodeTypes.Constraint,undefined);
+  for(const validation of ['strict','draft']) {
+    const report=arch.validate(source,{validation});assert.equal(report.valid,true);assert.deepEqual(report.diagnostics,[]);
+  }
+  assert.deepEqual(arch.getProfile('naf41-uaf').nodeTypes.Constraint.extends,['StrategicConstraint']);
+  assert.equal(arch.validate(source.replace('Constraint search','StrategicConstraint search').replace('missions"','missions" {ruleKind Constraint}')).valid,true);
+  assert.equal(arch.validate(source.replace('Constraint search','Constraint search').replace('missions"','missions" {ruleKind Constraint}')).valid,true);
+  assert.match(errors(source.replace('missions"','missions" {ruleKind Contract}')),/ruleKind/);
+  assert.match(errors(source.replace(/relation searchApplies [^}]*}/,'')),/search requires.*ConstrainsCapability/);
+  assert.match(errors(source.replace('search -> maritime','maritime -> search')),/not allowed for ConstrainsCapability/);
+  const rationale=source.replace('Capability maritime','StrategicRationale rationale "Planning assumptions" relation origin search -> rationale "originates from" {type OriginatesFromRationale} Capability maritime');
+  assert.equal(arch.validate(rationale).valid,true);
+  assert.match(errors(rationale.replace('search -> rationale','rationale -> search')),/not allowed for OriginatesFromRationale/);
+  assert.match(arch.help('types naf41-uaf Constraint'),/StrategicConstraint/);
+  assert.match(arch.help('connections naf41-uaf Constraint'),/ConstrainsCapability|OriginatesFromRationale/);
+  assert.equal(arch.validate(arch.translate(source)).valid,true);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
+    for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
+    assert.equal(context.arch.validate(source).valid,true);assert.equal(context.arch.layout(source).sharedPaths.length,2);
+  }
+});
+
 test('C3 permits specialization/grouping context without a dependency on every capability, as in NAF p.93',async()=>{
   const source=await readFile('tests/fixtures/naf41/c3-specialization.arch','utf8');
   for(const validation of ['strict','draft']) {
@@ -53,7 +78,7 @@ test('all 47 NAFv4.1 viewpoints accept independently authored scenarios and rend
   }
 });
 
-test('C7 requires the complete capability-criterion-measure chain for every criterion', () => {
+test('C7 requires the complete capability-criterion-measure chain for ordinary assessment criteria', () => {
   for (const link of ['characterizes','evaluates']) assert.equal(arch.validate(without('C7',link)).valid, false, link);
   const orphan = document('C7', cases.C7 + ' AssessmentCriterion orphan "Unused criterion" { expression "Must be allocated" }');
   assert.match(errors(orphan), /orphan requires.*CharacterizesCapability/);
@@ -61,6 +86,30 @@ test('C7 requires the complete capability-criterion-measure chain for every crit
   const reversed = document('C7', cases.C7.replace('measure -> criterion', 'criterion -> measure'));
   assert.equal(arch.validate(reversed).valid, false);
   assert.match(errors(document('C7',cases.C7,'include cap, criterion')), /Measure|EvaluatesCriterion/);
+});
+
+test('C7 accepts optional effectiveness criteria as on p.99 without weakening mandatory assessment/measure links',async()=>{
+  const source=await readFile('tests/fixtures/naf41/c7-effectiveness.arch','utf8');
+  for(const validation of ['strict','draft']) {
+    const report=arch.validate(source,{validation});assert.equal(report.valid,true);assert.deepEqual(report.diagnostics,[]);
+    const graph=arch.layout(source,{validation});assert.equal(graph.kind,undefined);assert.equal(graph.nodes.length,8);assert.equal(graph.edges.length,7);
+  }
+  for(const view of ['','diagram class'])assert.match(arch.renderToString(source.replace('viewpoint C7',`viewpoint C7 ${view}`)),/Time to find/);
+  assert.equal(arch.validate(arch.translate(source)).valid,true);
+  const derived=source.replace('config { profile naf41-uaf }','config {extends naf41-uaf type SearchEffectiveness {extends EffectivenessCriterion}}').replace('EffectivenessCriterion timeToFind','SearchEffectiveness timeToFind');
+  assert.equal(arch.validate(derived).valid,true,'exemption includes subtypes');
+  const plainDerived=source.replace('config { profile naf41-uaf }','config {extends naf41-uaf type SearchAssessment {extends AssessmentCriterion}}').replace('EffectivenessCriterion timeToFind','SearchAssessment timeToFind');
+  assert.match(errors(plainDerived),/timeToFind requires.*CharacterizesCapability/);
+  for(const [id,pattern]of [['seaCharacterizes',/seaState requires.*CharacterizesCapability/],['seaEvaluates',/seaState requires.*EvaluatesCriterion/]])assert.match(errors(source.replace(new RegExp(`relation ${id} [^}]*}`),'')),pattern);
+  assert.match(errors(source.replace('seaStateValue -> seaState "evaluates"','seaState -> seaStateValue "evaluates"')),/not allowed for EvaluatesCriterion/);
+  assert.match(arch.help('viewpoints naf41-uaf C7'),/nodesExclude|EffectivenessCriterion/);
+  const optional=source.replace('relation specifies', 'Measure searchTime "Search time" {unit "minutes" value 20} relation timeEvaluates searchTime -> timeToFind "evaluates" {type EvaluatesCriterion} relation timeCharacterizes timeToFind -> maritime "characterizes" {type CharacterizesCapability} relation specifies');
+  assert.equal(arch.validate(optional).valid,true,'optional links remain legal');
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
+    for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
+    assert.equal(context.arch.validate(source).valid,true);assert.deepEqual(Array.from(context.arch.validate(source).diagnostics),[]);
+  }
 });
 
 test('NAF C2 Goal maps to EnterpriseGoal and all three goals satisfy the inherited viewpoint and relationship rules',()=>{

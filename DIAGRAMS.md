@@ -535,3 +535,12 @@ asymmetrische Unterbäume, Größen/Styles, Relationstypvererbung, ausgeblendete
 Elemente, Strukturfehler, JSON/Metaview, 1.000 Hierarchieebenen, leere Views,
 Entwurfsmodus, gestapelte Views und beide Bundles. Chromium prüft die C1-Ansichten
 einschließlich Schrift-/Labelgrenzen, Themes und eigenständigem SVG-Export.
+
+Gemeinsame Kantenpfade in Connected-Views (einschließlich benannter Tree-Gruppen):
+`routes { sharePath stereotypes }`. Der exakte Relationstyp bestimmt die
+Bündelung; `all` erlaubt unterschiedliche Typen mit kompatibler Darstellung,
+`none` deaktiviert sie (Standard). Einzelrouten überschreiben die Vorgabe.
+Labels/Icons und IDs bleiben pro Beziehung erhalten. Die Automatik benötigt
+freie Korridore und Labelplatz; manuelle `via`/`path`, `straight`/`bezier` und
+containerübergreifende Kanten bleiben unabhängig. Gemeinsame Junctions werden
+rechtwinklig gezeichnet. Details: [HELP.md](HELP.md), `@help routing`.

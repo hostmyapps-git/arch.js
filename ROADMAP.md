@@ -1,12 +1,19 @@
 # Roadmap
 
-Stand: 16.11.2026. Der erste Abschnitt hält den implementierten Ausgangspunkt
+Stand: 17.11.2026. Der erste Abschnitt hält den implementierten Ausgangspunkt
 fest; die folgenden Abschnitte sind ein priorisierter Ausblick ohne Terminzusage.
 Einsatzschwerpunkt und Grenzen gegenüber anderen Werkzeugen:
 [COMPARISON.md](COMPARISON.md). arch.js konzentriert sich auf gemeinsame
 Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
+
+- Opt-in-Bündelung von Fan-in-/Fan-out-Kanten über `sharePath stereotypes|all|none`
+  in Connected-Views samt Tree-Gruppen. Gleiche tatsächliche Typen oder explizit
+  kompatible verschiedene Typen; separate Labels/Icons und logische Pfade für
+  Zuordnungen. Freie Korridore erforderlich, kein allgemeines Edge-Bundling.
+- C8-Vokabularadapter `Constraint` und `OriginatesFromRationale`, quellgebunden
+  an NAFv4.1 S.100–101; bestehendes `StrategicConstraint` weiter unterstützt.
 
 - Property-Zeilen auf Connected-/Tree-/Package-Karten, globale und pro-Node-Auswahl
   und Größenanpassung vor Positionierung/Routing. Class-Karten behalten ihre

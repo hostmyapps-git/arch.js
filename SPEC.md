@@ -123,9 +123,12 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
 - Relations-`pairs`: alternative `{ from, to, fromExclude?, toExclude? }`-Paare,
   zusätzlich zu globalen Endpunktregeln. `acyclic` prüft gerichtete Zyklen
   einschließlich abgeleiteter Relationstypen über das ganze Modell.
-- Viewpoint-`connections`: `{ nodes, relations, counterparts?, direction, min, max }` prüft
+- Viewpoint-`connections`: `{ nodes, nodesExclude?, relations, counterparts?, direction, min, max }` prüft
   Beziehungen mit sichtbaren Endpunkten pro sichtbarem passendem Knoten.
   `counterparts` filtert optional den Gegenstellentyp einschließlich Vererbung.
+  `nodesExclude` nimmt passende Typen einschließlich Untertypen aus dieser
+  Einzelknotenregel aus; Zulässigkeit, globale Pflichtinhalte und andere Regeln
+  bleiben aktiv. C7 verwendet dies für optionale EffectivenessCriteria.
 - Viewpoint-`references`: `{ nodes | relations, attributes }` verlangt sichtbare
   Zielknoten für ausgewählte skalare/mehrwertige Referenzattribute. Optionale
   fehlende Werte bleiben erlaubt; Pflichtwerte bestimmt das Attributschema.
@@ -187,12 +190,12 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.4`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.6`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 73 zusätzliche Knotentypen und
-94 zusätzliche Relationen ergeben mit dem Basisprofil 286 Knoten- und
-137 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter: 74 zusätzliche Knotentypen und
+95 zusätzliche Relationen ergeben mit dem Basisprofil 287 Knoten- und
+138 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
@@ -204,6 +207,13 @@ ADMBw-MDG-XML definiert ebenfalls `EnterpriseGoal`, keinen eigenen `Goal`-Typ.
 Dieser Vokabularadapter importiert keine Bundeswehr-Erweiterungen; dafür wäre
 ein eigenes Anwendungsprofil mit expliziter Basis angemessen (die MDG nennt
 NAF 4.0, nicht NAFv4.1).
+
+`Constraint` bildet die Knotenbezeichnung aus C8 S.101 als konkreten Untertyp
+von `StrategicConstraint` ab. `ruleKind` ist für diesen Untertyp optional und
+auf `Constraint` eingeschränkt; der Wert wird nicht als Attribut eingefügt.
+`ConstrainsCapability` führt zur Capability, `OriginatesFromRationale` nach
+S.100 vom Constraint zur StrategicRationale. `JustifiesStrategy` bleibt als
+explizite inverse Anwendungsrelation erhalten.
 
 Der C2-Cut-out auf S.90 zeigt `desires` von EnterprisePhase zu Capability,
 EnterpriseVision und Goal. Dafür stehen `DesiresCapability`, `DesiresVision`
@@ -571,7 +581,7 @@ architecture "Customer platform" {
   unverändert im Modell erhalten; Knotentitel/Beschreibungen können umbrechen.
 - `routes { from PORT; to TARGET; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD"; icon PACK.NAME; iconPosition POSITION;
-  showIcon BOOLEAN; showLabel BOOLEAN }` setzt Vorgaben für alle fachlichen Kanten
+  showIcon BOOLEAN; showLabel BOOLEAN; sharePath MODUS }` setzt Vorgaben für alle fachlichen Kanten
   und grafischen Zuordnungspfeile einer Connected-View. Jede Eigenschaft einer
   konkreten `route` hat Vorrang vor derselben Vorgabe, unabhängig von der
   Reihenfolge im Quelltext. Nicht überschriebene Eigenschaften werden geerbt.
@@ -581,6 +591,22 @@ architecture "Customer platform" {
   Konkrete `from`/`to`/`via`/`curve`-Angaben ersetzen einen geerbten freien
   `path`; ein expliziter konkreter `path` steuert weiterhin den gesamten Pfad.
   Ein leerer `routes {}`-Block ändert das automatische Routing nicht.
+- `sharePath none|stereotypes|all` in `routes` oder einer fachlichen `route`
+  steuert automatische Fan-in-/Fan-out-Bündelung in Connected-Views inklusive
+  benannter Tree-Gruppen. Standard `none`; `stereotypes` vergleicht den exakten
+  Relationstyp, `all` erlaubt unterschiedliche Typen. Linienstil, Pfeilrichtung,
+  Kurvenart und gemeinsamer Start-/Zielport müssen kompatibel sein.
+  Nur Geschwisterknoten desselben Containers werden gebündelt. Fan-in wird zuerst
+  verarbeitet; jede Kante gehört höchstens einem Bündel an. Manuelle `via`/`path`,
+  absolute Endpunkte, `straight`/`bezier`, parallele Verbindungen, Hindernisse
+  oder unzureichender Labelplatz behalten das bisherige Routing. Gemeinsame
+  Junctions sind rechtwinklig, auch bei `rounded`. IDs und Labels/Icons bleiben
+  pro Beziehung; automatische Labels liegen auf privaten Ästen, explizite
+  Labelpunkte bleiben erhalten. `graph.edges[].d` und `points` beschreiben den
+  vollständigen logischen Pfad für Zuordnungen. `drawD`, `drawStart`, `drawEnd`
+  und `sharedPath` steuern die private Zeichnung, `graph.sharedPaths` enthält
+  einmal gezeichneten Stamm und Querabschnitt samt beteiligten Kanten-IDs.
+  Zuordnungslinien erben `sharePath` nicht und werden selbst nicht gebündelt.
 - `route RELATION { from PORT; to PORT; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD" }`.
 - `route ELEMENT_ID -> RELATION_ID { from PORT; to FRACTION;
@@ -857,7 +883,7 @@ Die beschriebene Version ist implementiert. Prüfung am 16.11.2026 mit Node.js
 Chromium auf macOS/ARM64. Browserbundles ohne externe Laufzeitscripts; der Node-Quellimport verwendet
 @xmldom/xmldom und svgpath als gepinnte npm-Abhängigkeiten.
 
-- 256 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
+- 258 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
   deterministischer/isolierter Layouts, Routing, Iconpacks, Unicode, Escaping,
   Markdown und Vergleich beider Bundles.
 - Alle dreizehn Modellbeispiele mit 48 Ansichten sowie die eingebaute Hilfe im

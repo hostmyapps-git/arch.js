@@ -1,7 +1,7 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.4",
+  "version": "4.1.0-arch.6",
   "extends": "uaf",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
@@ -126,6 +126,28 @@
       "limitations": [
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
       ]
+    },
+    "Constraint": {
+      "extends": [
+        "StrategicConstraint"
+      ],
+      "styleGroup": "capability",
+      "description": "NAF C8 example vocabulary for a strategic constraint. Its type implies ruleKind Constraint; an explicit ruleKind, when supplied, must be Constraint.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 101 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ],
+      "attributes": {
+        "ruleKind": {
+          "type": "string",
+          "enum": [
+            "Constraint"
+          ],
+          "required": false
+        }
+      }
     },
     "StrategicRationale": {
       "extends": [
@@ -1483,6 +1505,20 @@
       "allowSelf": false,
       "style": "dependency",
       "description": "Rationale to planning constraint.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 100 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "OriginatesFromRationale": {
+      "from": [
+        "StrategicConstraint"
+      ],
+      "to": [
+        "StrategicRationale"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Constraint to its originating rationale, following the C8 cut-out. JustifiesStrategy remains the explicit inverse application relationship.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 100 (NAFv4.1, 2026.03)"
       ]
@@ -3055,12 +3091,14 @@
     },
     "C7": {
       "title": "Performance Criteria",
-      "description": "Capabilities characterized by criteria that are evaluated by measures.",
+      "description": "Capabilities characterized by assessment criteria evaluated by measures, with optional effectiveness criteria.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 98 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "EffectivenessCriterion and its subtypes are excluded from the per-assessment-criterion mandatory characterization/evaluation checks. Their links are optional, following p.98 and the Time to find example on p.99. Ordinary assessment criteria still require the complete capability-criterion-measure chain.",
+        "EvaluatesCriterion is directed from Measure to AssessmentCriterion, following the p.98 cut-out. The evaluates arrows on p.99 are drawn in the opposite direction; that illustration does not change endpoint compatibility."
       ],
       "nodes": [
         "Package",
@@ -3103,7 +3141,10 @@
             "CharacterizesCapability"
           ],
           "direction": "outgoing",
-          "min": 1
+          "min": 1,
+          "nodesExclude": [
+            "EffectivenessCriterion"
+          ]
         },
         {
           "nodes": [
@@ -3113,7 +3154,10 @@
             "EvaluatesCriterion"
           ],
           "direction": "incoming",
-          "min": 1
+          "min": 1,
+          "nodesExclude": [
+            "EffectivenessCriterion"
+          ]
         },
         {
           "nodes": [
@@ -3130,7 +3174,7 @@
     },
     "C8": {
       "title": "Planning Constraints",
-      "description": "Strategic constraints applied to capabilities.",
+      "description": "Strategic constraints applied to capabilities. Constraint extends StrategicConstraint and supports the p.101 example vocabulary.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 100 (NAFv4.1, 2026.03)"
       ],
@@ -3149,6 +3193,7 @@
       "relations": [
         "ConstrainsCapability",
         "JustifiesStrategy",
+        "OriginatesFromRationale",
         "DesiredEffect",
         "RequiresCapability",
         "SpecifiesGoal"

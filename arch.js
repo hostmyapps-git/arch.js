@@ -7906,11 +7906,12 @@ var arch = (() => {
   }
 
   // src/routing-options.js
-  var fields = ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel"];
+  var fields = ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
   var geometryFields = ["from", "to", "via", "curve"];
   function routingOptions(view, specific, reference2 = false) {
     const defaults = { ...view.routeDefaults };
     if (reference2) {
+      delete defaults.sharePath;
       delete defaults.label;
       delete defaults.icon;
       delete defaults.iconPosition;
@@ -8239,7 +8240,7 @@ var arch = (() => {
       if (raw.connections !== void 0) {
         if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail3(`${name}: invalid connections`);
         result.connections = raw.connections.map((check) => {
-          keys(check, ["nodes", "relations", "counterparts", "direction", "min", "max"], `${name}.connections`);
+          keys(check, ["nodes", "nodesExclude", "relations", "counterparts", "direction", "min", "max"], `${name}.connections`);
           const value2 = {
             nodes: names(check.nodes, name),
             relations: names(check.relations, name),
@@ -8250,6 +8251,10 @@ var arch = (() => {
           if (check.counterparts !== void 0) {
             value2.counterparts = names(check.counterparts, name);
             knownNodes(value2.counterparts, name);
+          }
+          if (check.nodesExclude !== void 0) {
+            value2.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true);
+            knownNodes(value2.nodesExclude, name);
           }
           knownNodes(value2.nodes, name);
           knownEdges(value2.relations, name);
@@ -8567,7 +8572,7 @@ var arch = (() => {
       for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Relationship type ${edge.type ?? profile.defaultRelation} is not allowed`, edge, { elementId: edge.id, viewId: view.id });
       for (const type of rule.requiredNodes) if (!selectedNodes.some((node) => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id, incomplete: true });
       for (const type of rule.requiredRelations) if (!selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id, incomplete: true });
-      for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)) {
+      for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes) && !matches(node.type, check.nodesExclude ?? [], profile.nodeTypes)) {
         const count = selectedEdges.filter((edge) => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) && ((check.direction !== "incoming" || edge.direction === "both") && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes)) || (check.direction !== "outgoing" || edge.direction === "both") && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))).length;
         if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? "∞"} ${check.direction} connections (${check.relations.join(", ")}${check.counterparts ? `; counterpart: ${check.counterparts.join(", ")}` : ""}); found ${count}`, node, { elementId: node.id, viewId: view.id, ...count < check.min ? { incomplete: true } : {} });
       }
@@ -8743,15 +8748,15 @@ var arch = (() => {
         });
         const gap = horizontal ? Math.max(80, anchor.y - Math.min(...endpoints.map((n) => n.y)) + 32) : 80;
         const obstacles = [...boxes, ...original.parent ? headers : containers, ...labels, ...cards];
-        for (let level = 0; !card; level++) for (const side of [-1, 1]) {
+        for (let level = 0; !card; level++) for (const side2 of [-1, 1]) {
           const candidate = {
             ...original,
             parent: null,
             height,
             referenceContentHeight: original.height,
             referenceIdentityLines: identityLines,
-            x: horizontal ? preferredX : anchor.x + (side < 0 ? -gap - original.width : gap) + side * level * (original.width + 28),
-            y: horizontal ? anchor.y + (side < 0 ? -gap - height : gap) + side * level * (height + 28) : anchor.y - height / 2
+            x: horizontal ? preferredX : anchor.x + (side2 < 0 ? -gap - original.width : gap) + side2 * level * (original.width + 28),
+            y: horizontal ? anchor.y + (side2 < 0 ? -gap - height : gap) + side2 * level * (height + 28) : anchor.y - height / 2
           };
           if (!obstacles.some((b) => overlap(candidate, b))) {
             card = candidate;
@@ -9546,7 +9551,7 @@ var arch = (() => {
     return output;
   }
   var styleKeys = ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology", "propertyFields"];
-  var routingKeys = ["from", "to", "via", "curve", "path", "label", "icon", "iconPosition", "showIcon", "showLabel"];
+  var routingKeys = ["from", "to", "via", "curve", "path", "label", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
   var viewKeys = ["name", "@meta", "meta", "diagram", "tree", "direction", "theme", "spacing", "viewpoint", "include", "exclude", "place", "style", "routes", "route", "referenceDisplay", "referenceOccurrences", "propertyFields"];
   var configKeys = ["profile", "views", "validation", "id", "title", "version", "extends", "defaultRelation", "requireViewpoint", "type", "relation", "viewpoint", "styleGroup"];
   var profileKeys = ["extends", "template", "container", "abstract", "contains", "attribute", "attributes", "icon", "accent", "backgroundColor", "styleGroup", "from", "to", "directions", "style", "allowSelf", "acyclic", "incoming", "outgoing", "nodes", "relations", "requiredNodes", "requiredRelations"];
@@ -9801,6 +9806,93 @@ var arch = (() => {
     return node.propertyRows?.length ? y - 23 * scale : start;
   }
 
+  // src/shared-paths.js
+  var opposite = { left: "right", right: "left", top: "bottom", bottom: "top" };
+  function side(box, p) {
+    const distances = [["left", Math.abs(p.x - box.x)], ["right", Math.abs(p.x - box.x - box.width)], ["top", Math.abs(p.y - box.y)], ["bottom", Math.abs(p.y - box.y - box.height)]];
+    const [name, distance3] = distances.sort((a, b) => a[1] - b[1])[0];
+    return distance3 < 0.01 ? name : null;
+  }
+  var overlap2 = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  var labelBox = (edge, p) => ({ x: p.x - edge.labelWidth / 2 - 4, y: p.y - edge.labelHeight / 2 - 4, width: edge.labelWidth + 8, height: edge.labelHeight + 8 });
+  function crosses(points, box) {
+    const b = { x: box.x + 1, y: box.y + 1, width: box.width - 2, height: box.height - 2 };
+    return points.slice(1).some((p, i) => {
+      const a = points[i];
+      return a.x === p.x ? a.x > b.x && a.x < b.x + b.width && Math.max(a.y, p.y) > b.y && Math.min(a.y, p.y) < b.y + b.height : a.y > b.y && a.y < b.y + b.height && Math.max(a.x, p.x) > b.x && Math.min(a.x, p.x) < b.x + b.width;
+    });
+  }
+  function shareEdgePaths(edges, nodes, routes, path) {
+    const boxes = new Map(nodes.map((n) => [n.id, n])), used = /* @__PURE__ */ new Set(), shared = [];
+    const eligible = (edge) => {
+      const r = routes.get(edge.id) ?? {};
+      return !used.has(edge.id) && ["all", "stereotypes"].includes(r.sharePath) && edge.source !== edge.target && r.path === void 0 && r.via === void 0 && !["straight", "bezier"].includes(r.curve) && typeof r.from !== "object" && typeof r.to !== "object";
+    };
+    for (const incoming of [true, false]) {
+      const groups = /* @__PURE__ */ new Map();
+      for (const edge of edges.filter(eligible)) {
+        const r = routes.get(edge.id), hub = boxes.get(incoming ? edge.target : edge.source), leaf = boxes.get(incoming ? edge.source : edge.target);
+        if (!hub || !leaf || hub.container || leaf.container || hub.parent !== leaf.parent) continue;
+        const hubPoint = incoming ? edge.points.at(-1) : edge.points[0], leafPoint = incoming ? edge.points[0] : edge.points.at(-1), port2 = side(hub, hubPoint);
+        if (!port2 || side(leaf, leafPoint) !== opposite[port2]) continue;
+        const key2 = JSON.stringify([hub.id, port2, r.sharePath, r.sharePath === "stereotypes" ? edge.type : null, edge.style, edge.direction ?? "forward", r.curve ?? "orthogonal"]);
+        if (!groups.has(key2)) groups.set(key2, []);
+        groups.get(key2).push({ edge, hub, leaf, port: port2, leafPoint });
+      }
+      for (const candidates of groups.values()) {
+        const group = candidates.filter((c) => !used.has(c.edge.id));
+        if (group.length < 2 || new Set(group.map((c) => c.leaf.id)).size !== group.length) continue;
+        const { hub, port: port2 } = group[0], horizontal = ["left", "right"].includes(port2), major = horizontal ? "x" : "y", cross = horizontal ? "y" : "x";
+        const sign = ["left", "top"].includes(port2) ? -1 : 1;
+        const hubPoint = { x: hub.x + hub.width / 2, y: hub.y + hub.height / 2 };
+        hubPoint[major] = hub[major] + (sign === 1 ? horizontal ? hub.width : hub.height : 0);
+        const gap = Math.min(...group.map((c) => (c.leafPoint[major] - hubPoint[major]) * sign));
+        if (gap < 64) continue;
+        const trunk = hubPoint[major] + sign * Math.max(24, gap * 0.28), junction = { ...hubPoint, [major]: trunk };
+        const crossValues = [hubPoint[cross], ...group.map((c) => c.leafPoint[cross])];
+        if (Math.max(...crossValues) - Math.min(...crossValues) < 16) continue;
+        const members2 = new Set(group.map((c) => c.edge.id));
+        const obstacles = nodes.filter((n) => !n.container && !n.referenceOnly);
+        const labels = edges.filter((e) => !members2.has(e.id) && (e.labelLines.length || e.labelIcon)).map((e) => labelBox(e, e.label));
+        const plans = [];
+        for (const { edge, leafPoint } of group) {
+          const fork = { ...leafPoint, [major]: trunk };
+          const points = incoming ? [leafPoint, fork, junction, hubPoint] : [hubPoint, junction, fork, leafPoint];
+          if (obstacles.some((n) => n.id !== edge.source && n.id !== edge.target && crosses(points, n))) break;
+          let label = edge.label;
+          if (!edge.labelExplicit && (edge.labelLines.length || edge.labelIcon)) {
+            const length = Math.abs(leafPoint[major] - trunk), needed = horizontal ? edge.labelWidth : edge.labelHeight;
+            if (length < needed + 16) break;
+            const middle2 = { x: (leafPoint.x + fork.x) / 2, y: (leafPoint.y + fork.y) / 2 };
+            const offset = (horizontal ? edge.labelHeight : edge.labelWidth) / 2 + 8;
+            const choices = [0, -offset, offset].map((delta) => ({ ...middle2, [cross]: middle2[cross] + delta }));
+            label = choices.find((p) => {
+              const b = labelBox(edge, p);
+              return !obstacles.some((n) => overlap2(b, n)) && !labels.some((n) => overlap2(b, n));
+            });
+            if (!label) break;
+          }
+          if (edge.labelLines.length || edge.labelIcon) labels.push(labelBox(edge, label));
+          plans.push({ edge, points, label, branch: incoming ? [leafPoint, fork] : [fork, leafPoint] });
+        }
+        if (plans.length !== group.length) continue;
+        const id = `shared-${shared.length / 2 + 1}`, prototype = group[0].edge;
+        const metadata = { id, edgeIds: group.map((c) => c.edge.id), types: [...new Set(group.map((c) => c.edge.type))], style: prototype.style, direction: prototype.direction };
+        const spine = [{ ...junction, [cross]: Math.min(...crossValues) }, { ...junction, [cross]: Math.max(...crossValues) }];
+        const stem = incoming ? [junction, hubPoint] : [hubPoint, junction];
+        shared.push(
+          { ...metadata, part: "spine", d: path(spine, false), drawStart: false, drawEnd: false },
+          { ...metadata, part: "stem", d: path(stem, false), drawStart: !incoming, drawEnd: incoming }
+        );
+        for (const { edge, points, label, branch } of plans) {
+          Object.assign(edge, { points, d: path(points, false), drawD: path(branch, false), label, sharedPath: id, drawStart: incoming, drawEnd: !incoming });
+          used.add(edge.id);
+        }
+      }
+    }
+    return shared;
+  }
+
   // src/geometry.js
   var num = (n) => String(Math.round(n * 1e3) / 1e3);
   var pt = (p) => `${num(p.x)} ${num(p.y)}`;
@@ -9958,19 +10050,19 @@ var arch = (() => {
       used.push(item);
     }
   }
-  function port(box, side, other) {
-    if (typeof side === "object") return side;
-    if (!side || side === "auto") {
+  function port(box, side2, other) {
+    if (typeof side2 === "object") return side2;
+    if (!side2 || side2 === "auto") {
       const dx = other.x + other.width / 2 - box.x - box.width / 2;
       const dy = other.y + other.height / 2 - box.y - box.height / 2;
-      side = Math.abs(dx) >= Math.abs(dy) ? dx >= 0 ? "right" : "left" : dy >= 0 ? "bottom" : "top";
+      side2 = Math.abs(dx) >= Math.abs(dy) ? dx >= 0 ? "right" : "left" : dy >= 0 ? "bottom" : "top";
     }
     return {
       left: { x: box.x, y: box.y + box.height / 2 },
       right: { x: box.x + box.width, y: box.y + box.height / 2 },
       top: { x: box.x + box.width / 2, y: box.y },
       bottom: { x: box.x + box.width / 2, y: box.y + box.height }
-    }[side];
+    }[side2];
   }
   function polyPath(points, rounded) {
     let d = `M ${pt(points[0])}`;
@@ -10270,11 +10362,13 @@ var arch = (() => {
     }
     const parallel = /* @__PURE__ */ new Map();
     const routeBoxes = new Map([...byId, ...treeGroups.map((g) => [g.id, g.bounds])]);
+    const resolvedRoutes = /* @__PURE__ */ new Map();
     const routedEdges = edges.map((edge) => {
       const key2 = [edge.source, edge.target].sort().join("\0"), count = parallel.get(key2) ?? 0;
       parallel.set(key2, count + 1);
       const preset = treeEdges.get(edge.id), groupOptions = preset ? view.trees[preset.treeGroup] : null;
       const route = resolveVia(groupOptions ? treeGroupRoute(view, edge.id, groupOptions) : routingOptions(view, view.routes[edge.id]) ?? {}, routeBoxes);
+      resolvedRoutes.set(edge.id, route);
       const labelHidden = route.label === "none";
       const manual = preset && ["from", "to", "via", "path"].some((key3) => route[key3] !== void 0) || route.curve === "bezier" || route.curve === "straight";
       const result = preset && !manual ? { ...preset, label: route.label && route.label !== "none" ? route.label : preset.label } : routeEdge(edge, byId.get(edge.source), byId.get(edge.target), { ...route, label: labelHidden ? void 0 : route.label }, count);
@@ -10282,6 +10376,7 @@ var arch = (() => {
       Object.assign(result, edgeLabelMetrics(edge, route, profile, modelNodes));
       return result;
     });
+    const sharedPaths = shareEdgePaths(routedEdges, nodes, resolvedRoutes, polyPath);
     const referenceNodes = attachReferenceNodes(nodes, routedEdges, view, wrap, (card, anchor, route) => routeEdge({}, card, { id: null, ...anchor, width: 0, height: 0 }, { ...route, to: { x: anchor.x, y: anchor.y } }, 0), (route) => resolveVia(route, routeBoxes));
     const extents = nodes.flatMap((n) => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
     for (const occurrence of referenceNodes) {
@@ -10304,6 +10399,7 @@ var arch = (() => {
       nodes,
       edges: routedEdges,
       referenceNodes,
+      ...sharedPaths.length ? { sharedPaths } : {},
       ...treeGroups.length ? { treeGroups } : {},
       bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
     };
@@ -11303,7 +11399,7 @@ var arch = (() => {
     };
     const readRouting = (item, reference2 = false, defaults = false) => block(() => {
       const attr = typed("word");
-      const allowed = reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel"];
+      const allowed = reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
       if (!allowed.includes(attr.value)) fail9(`Unknown routing attribute: ${attr.value}`, attr);
       if (Object.hasOwn(item, attr.value)) fail9(`Duplicate routing attribute: ${attr.value}`, attr);
       if (["showIcon", "showLabel"].includes(attr.value)) item[attr.value] = scalar();
@@ -11617,6 +11713,7 @@ var arch = (() => {
       for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail9(`Unknown relationship: ${id}`, route.loc);
       const checkRouting = (route, reference2 = false, defaults = false, combined = true) => {
         if (!route) return;
+        if (route.sharePath !== void 0 && !["none", "stereotypes", "all"].includes(route.sharePath)) fail9("sharePath must be none, stereotypes or all", route.loc);
         for (const key2 of ["from", ...!reference2 ? ["to"] : []]) if (typeof route[key2] === "string" && !["auto", "top", "right", "bottom", "left"].includes(route[key2]))
           fail9(`Unknown port: ${route[key2]}`, route.loc);
         if ((reference2 || defaults) && typeof route.to === "number" && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
@@ -12289,12 +12386,14 @@ var arch = (() => {
     <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
     <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
   </defs>`;
-    const edgePaths = graph.edges.map((edge) => {
+    const edgePath = (edge) => {
       const dash = ["dependency", "realization"].includes(edge.style) ? ' stroke-dasharray="6 5"' : "";
       const start = edge.direction === "both" ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === "composition" ? ` marker-start="url(#${prefix}-diamond)"` : "";
       const end = edge.direction !== "both" && ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${prefix}-${["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow"})"`;
-      return `<g class="arch-edge" data-edge="${escape3(edge.id)}" data-type="${escape3(edge.type)}" data-style="${edge.style}"><title>${escape3(edge.labelText || edge.title || edge.type)}</title><path d="${escape3(edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${start}${end}/></g>`;
-    }).join("");
+      return `<path d="${escape3(edge.drawD ?? edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${edge.drawStart === false ? "" : start}${edge.drawEnd === false ? "" : end}/>`;
+    };
+    const sharedPaths = (graph.sharedPaths ?? []).map((edge) => `<g class="arch-shared-path" data-shared-path="${escape3(edge.id)}" data-shared-part="${edge.part}" data-shared-for="${escape3(edge.edgeIds.join(" "))}" data-types="${escape3(edge.types.join(" "))}"><title>${escape3(edge.edgeIds.join(", "))}</title>${edgePath(edge)}</g>`).join("");
+    const edgePaths = sharedPaths + graph.edges.map((edge) => `<g class="arch-edge" data-edge="${escape3(edge.id)}" data-type="${escape3(edge.type)}" data-style="${edge.style}"><title>${escape3(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join("");
     const edgeLabels = graph.edges.filter((e) => e.labelLines.length || e.labelIcon).map((edge) => {
       const { x, y } = edge.label, offset = edge.labelTextOffset ?? { x: 0, y: 0 };
       let icon = "";
@@ -12716,8 +12815,16 @@ var arch = (() => {
         "  from auto",
         "}",
         "Defaults apply to every relationship and reference connector in this view, including routes without an individual block. Specific route properties override matching defaults, regardless of declaration order. Other defaults remain inherited.",
-        "Available fields: from, to, via, curve, label, path, icon, iconPosition, showIcon, showLabel. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. label, icon, iconPosition, showIcon and showLabel apply only to relationship labels.",
+        "Available fields: from, to, via, curve, label, path, icon, iconPosition, showIcon, showLabel, sharePath. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. label, icon, iconPosition, showIcon and showLabel apply only to relationship labels.",
         "Specific from/to/via/curve settings replace an inherited free path; an explicit path still controls the complete route. Empty routes {} keeps the existing automatic routing."
+      );
+      section(
+        "Shared relationship paths",
+        "routes { sharePath stereotypes }",
+        "route EDGE_ID { sharePath none }",
+        "sharePath: none (default), stereotypes (exact relationship type) or all (different types permitted). A specific route overrides the default.",
+        "Bundles fan-in or fan-out relationships sharing a target or source, compatible line styles/directions and facing ports. Applies to connected views, including named tree groups. Labels/icons and relationship IDs remain separate; reference connectors follow each complete logical path.",
+        "Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out."
       );
       section(
         "Edge routing (connected only)",

@@ -1,0 +1,26 @@
+architecture "C7 · Assessment and optional effectiveness criteria" {
+    config { profile naf41-uaf }
+    model {
+        Capability maritime "Maritime SAR"
+        AssessmentCriterion seaState "Sea State" { expression "Sea state scale" }
+        AssessmentCriterion weather "Weather Conditions" { expression "Weather conditions category" }
+        AssessmentCriterion coverage "Coverage" { expression "Geographical search coverage in miles" }
+        Measure seaStateValue "Sea State = 3" { unit "sea state scale" value 3 }
+        Measure weatherValue "Weather Conditions = Storm Force" { unit "category" }
+        Measure coverageValue "Coverage = 500 miles" { unit "miles" value 500 }
+        EffectivenessCriterion timeToFind "Time to find" {
+            expression "Elapsed time from distress alert to confirmed localization, in minutes"
+        }
+        relation seaCharacterizes seaState -> maritime "characterizes" { type CharacterizesCapability }
+        relation weatherCharacterizes weather -> maritime "characterizes" { type CharacterizesCapability }
+        relation coverageCharacterizes coverage -> maritime "characterizes" { type CharacterizesCapability }
+        relation seaEvaluates seaStateValue -> seaState "evaluates" { type EvaluatesCriterion }
+        relation weatherEvaluates weatherValue -> weather "evaluates" { type EvaluatesCriterion }
+        relation coverageEvaluates coverageValue -> coverage "evaluates" { type EvaluatesCriterion }
+        relation specifies maritime -> timeToFind "specifies" { type SpecifiesEffectiveness }
+    }
+    view c7 "C7" {
+        viewpoint C7
+        propertyFields [expression, unit, value]
+    }
+}

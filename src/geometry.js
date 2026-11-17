@@ -10,6 +10,7 @@ import { layoutTree } from './tree.js';
 import {placementPlan,resolvePlacements} from './placement.js';
 import {viaReferences,resolveVia} from './via.js';
 import {nodeProperties,positionProperties} from './property-fields.js';
+import {shareEdgePaths} from './shared-paths.js';
 
 export const num = (n) => String(Math.round(n * 1000) / 1000);
 const pt = (p) => `${num(p.x)} ${num(p.y)}`;
@@ -422,11 +423,13 @@ export function layout(model, options = {}) {
   }
   const parallel = new Map();
   const routeBoxes=new Map([...byId,...treeGroups.map(g=>[g.id,g.bounds])]);
+  const resolvedRoutes=new Map();
   const routedEdges = edges.map(edge => {
     const key = [edge.source, edge.target].sort().join('\0'), count = parallel.get(key) ?? 0;
     parallel.set(key, count + 1);
     const preset=treeEdges.get(edge.id),groupOptions=preset?view.trees[preset.treeGroup]:null;
     const route = resolveVia(groupOptions?treeGroupRoute(view,edge.id,groupOptions):routingOptions(view,view.routes[edge.id])??{},routeBoxes);
+    resolvedRoutes.set(edge.id,route);
     const labelHidden = route.label === 'none';
     const manual=preset&&['from','to','via','path'].some(key=>route[key]!==undefined)||route.curve==='bezier'||route.curve==='straight';
     const result=preset&&!manual?{...preset,label:route.label&&route.label!=='none'?route.label:preset.label}:routeEdge(edge, byId.get(edge.source), byId.get(edge.target), {...route, label: labelHidden ? undefined : route.label}, count);
@@ -434,6 +437,7 @@ export function layout(model, options = {}) {
     Object.assign(result,edgeLabelMetrics(edge,route,profile,modelNodes));
     return result;
   });
+  const sharedPaths=shareEdgePaths(routedEdges,nodes,resolvedRoutes,polyPath);
   const referenceNodes = attachReferenceNodes(nodes, routedEdges, view, wrap, (card, anchor, route) =>
     routeEdge({}, card, {id: null, ...anchor, width: 0, height: 0}, {...route, to: {x: anchor.x, y: anchor.y}}, 0),route=>resolveVia(route,routeBoxes));
   const extents = nodes.flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
@@ -448,5 +452,5 @@ export function layout(model, options = {}) {
   const minX = Math.min(0, ...extents.map(p => p.x)) - 48, minY = Math.min(0, ...extents.map(p => p.y)) - 48;
   const maxX = Math.max(160, ...extents.map(p => p.x)) + 48, maxY = Math.max(96, ...extents.map(p => p.y)) + 48;
   return { title: model.title, description: model.description, profile: { id: profile.id, version: profile.version }, view, nodes, edges: routedEdges,
-    referenceNodes,...(treeGroups.length?{treeGroups}:{}), bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY } };
+    referenceNodes,...(sharedPaths.length?{sharedPaths}:{}),...(treeGroups.length?{treeGroups}:{}), bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY } };
 }

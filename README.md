@@ -324,6 +324,10 @@ Capability benötigt eine eigene `CapabilityDependency`. Mindestens eine solche
 Abhängigkeit bleibt im Anwendungsprofil Pflichtinhalt der View. Das entspricht
 dem SAR-Kontext auf S.93, ohne Vollständigkeit aller fachlich relevanten
 Abhängigkeiten automatisch behaupten zu können.
+C7 behandelt `EffectivenessCriterion` und dessen Untertypen als optionale
+Ergänzung ohne pauschale Pflicht zu `CharacterizesCapability`/`EvaluatesCriterion`.
+Gewöhnliche AssessmentCriteria behalten die vollständige Pflichtkette.
+`EvaluatesCriterion` folgt weiterhin Measure → AssessmentCriterion aus S.98.
 Anleitung, Abbildung und offene Semantik:
 [profiles/naf41/README.md](profiles/naf41/README.md). Hilfebefehl:
 `@help viewpoints naf41-uaf C7`. Dies ist ein dokumentiertes Anwendungsprofil,
@@ -603,3 +607,19 @@ beim Rendern fehlschlagen. `renderAll` isoliert Fehler pro Codeblock;
 `renderToString`, `render` und `renderMarkdown` reichen Fehler an den Aufrufer
 weiter. Einbettungen sollten sie abfangen. Details: [SPEC.md](SPEC.md).
 Vollständige Einordnung und Alternativen: [COMPARISON.md](COMPARISON.md).
+
+Gemeinsame Kantenabschnitte lassen sich in Connected-Views aktivieren:
+
+```arch
+routes { sharePath stereotypes }
+route special { sharePath none }
+```
+
+`stereotypes` bündelt nur exakt gleiche Relationstypen mit gemeinsamem Start-
+oder Zielknoten; `all` erlaubt auch verschiedene Typen mit kompatibler Darstellung.
+Standard ist `none`. Die Bündelung funktioniert auch in benannten Tree-Gruppen,
+behält einzelne Labels/Icons und benötigt freien Platz. Manuelle `via`/`path`
+und `straight`/`bezier` bleiben unabhängig; gemeinsame Junctions sind rechtwinklig.
+Siehe [C8-Beispiel](examples/shared-paths.arch) und `@help routing`.
+Das Profil `naf41-uaf` akzeptiert darin `Constraint` entsprechend S.101 der
+NAFv4.1 als Untertyp von `StrategicConstraint`.

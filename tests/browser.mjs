@@ -479,6 +479,55 @@ try {
   },c3Context),[]);
   console.log('✓ C3 specialization context: SAR has no dependency requirement; strict validation and both themes render without notices');
 
+  const c7Effectiveness=await readFile('tests/fixtures/naf41/c7-effectiveness.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const renderer of ['connected','class']) {
+      const input=source.replace('viewpoint C7',`viewpoint C7 diagram ${renderer}`),report=arch.validate(input);
+      if(!report.valid||report.diagnostics.length)issues.push('Optional C7 effectiveness rejected');
+      const graph=arch.layout(input),svg=arch.render(host,input,{theme});
+      if(graph.nodes.length!==8||graph.edges.length!==7||svg.querySelector('.arch-validation-notices'))issues.push('C7 rendering is incomplete or has false notices');
+      if(!svg.querySelector('[data-node="timeToFind"]')?.textContent.includes('Time to find'))issues.push('C7 effectiveness missing');
+    }
+    const orphan=source.replace(/relation seaCharacterizes [^}]*}/,'');
+    if(arch.validate(orphan).valid)issues.push('Ordinary C7 criterion lost its required characterization');
+    host.remove();return issues;
+  },c7Effectiveness),[]);
+  console.log('✓ C7 optional effectiveness: p.99 fixture validates and renders in both card styles/themes; ordinary criteria stay required');
+
+  const sharedSource=await readFile('examples/shared-paths.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      if(!arch.validate(source).valid||graph.sharedPaths?.length!==2)issues.push('C8 sharing or Constraint validation failed');
+      if(svg.querySelectorAll('.arch-edge').length!==2||svg.querySelectorAll('.arch-shared-path').length!==2||svg.querySelectorAll('.arch-edge-label').length!==2)issues.push('Shared network lost relationship identity');
+      if(svg.querySelectorAll('.arch-shared-path [marker-end]').length!==1||svg.querySelector('.arch-edge [marker-end]'))issues.push('Fan-in must have exactly one common arrowhead');
+      for(const edge of graph.edges) {
+        const path=svg.querySelector(`[data-edge="${edge.id}"] path`);
+        const p=path.getPointAtLength(path.getTotalLength());
+        if(!Number.isFinite(p.x)||!Number.isFinite(p.y))issues.push('Invalid branch geometry');
+      }
+      const rects=[...svg.querySelectorAll('.arch-node > g > rect,.arch-edge-label > rect')].map(el=>el.getBoundingClientRect());
+      for(let i=0;i<rects.length;i++)for(let j=i+1;j<rects.length;j++) {
+        const a=rects[i],b=rects[j];if(a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top)issues.push('C8 label/card overlap');
+      }
+      if(new DOMParser().parseFromString(svg.outerHTML,'image/svg+xml').querySelector('parsererror'))issues.push('Shared paths produced invalid SVG');
+    }
+    host.remove();return issues;
+  },sharedSource),[]);
+  const sharedPage=await browser.newPage({viewport:{width:1300,height:800}});
+  await sharedPage.setContent(await page.evaluate(source=>arch.renderToString(source,{idPrefix:'shared-preview'}),sharedSource));
+  await sharedPage.locator('svg').screenshot({path:'test-results/shared-paths-c8.png'});await sharedPage.close();
+  const sharedC7=c7Effectiveness.replace('viewpoint C7','viewpoint C7 routes {sharePath stereotypes} tree g {nodes [maritime,seaState,weather,coverage,seaStateValue,weatherValue,coverageValue] parentDirection target direction left}');
+  assert.deepEqual(await page.evaluate(source=>{
+    const g=arch.layout(source);return g.sharedPaths?.[0].edgeIds;
+  },sharedC7),['seaCharacterizes','weatherCharacterizes','coverageCharacterizes']);
+  const c7Page=await browser.newPage({viewport:{width:1500,height:1300}});
+  await c7Page.setContent(await page.evaluate(source=>arch.renderToString(source,{idPrefix:'shared-c7-preview'}),sharedC7));
+  await c7Page.locator('svg').screenshot({path:'test-results/shared-paths-c7.png'});await c7Page.close();
+  console.log('✓ C8 Constraint vocabulary and shared fan-in: separate labels/IDs, one common arrow, both themes and valid SVG');
+
   assert.deepEqual(await page.evaluate(()=>{
     const issues=[],host=document.createElement('div');document.body.append(host);
     const profile={defaultRelation:'exchange',nodeTypes:{service:{template:'service'},document:{template:'artifact'}},relationTypes:{exchange:{style:'flow',attributes:{payload:{type:'reference',targets:['document'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};

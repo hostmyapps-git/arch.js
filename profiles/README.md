@@ -391,7 +391,12 @@ Whitelists und Pflichttypen. Die zusätzlichen JSON-Felder `pairs`,
 mit `config { profile ID }` auswählen.
 
 `connections` unterstützt außerdem `counterparts` zur Filterung des
-Gegenstellentyps einschließlich Untertypen. `references` verlangt für ausgewählte
+Gegenstellentyps einschließlich Untertypen. Optionales `nodesExclude: ["Typ"]`
+nimmt den genannten Typ und seine Untertypen aus genau dieser Einzelknotenregel
+aus. Die Typen bleiben erlaubte Elemente/Endpunkte; globale Pflichtinhalte und
+andere Regeln bleiben aktiv. Eine leere Liste verändert die Auswahl nicht;
+unbekannte Typnamen werden bei Registrierung abgewiesen.
+`references` verlangt für ausgewählte
 Referenzattribute sichtbare Zielknoten:
 
 ```json

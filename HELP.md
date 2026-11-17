@@ -374,12 +374,42 @@ Hier verwendet `pickup` abgerundete Ecken; der Zuordnungspfeil übernimmt
 `straight` und startet links an der Karte. Konkrete Angaben haben pro Eigenschaft
 Vorrang; die Reihenfolge der Blöcke ist beliebig.
 
-Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon` und `showLabel`. Ein `to`-Port oder
+Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon`, `showLabel` und `sharePath`. Ein `to`-Port oder
 absoluter Zielpunkt gilt für fachliche Kanten; ein `to`-Wert von 0 bis 1 für
 Zuordnungspfeile. `label` gilt nur für fachliche Kanten. Konkrete Angaben zu
 `from`, `to`, `via` oder `curve` ersetzen einen geerbten freien `path`.
 Ein konkret gesetzter `path` steuert den gesamten Pfad. `routes {}` lässt das
 bisherige automatische Routing bestehen. Siehe auch `@help routing`.
+
+## Gemeinsame Kantenpfade
+
+```arch
+routes { sharePath stereotypes }
+route special { sharePath none }
+```
+
+`none` ist der Standard. `stereotypes` bündelt nur exakt gleiche Relationstypen,
+`all` auch unterschiedliche Typen mit kompatiblem Linienstil und Pfeilrichtung.
+Gemeinsamer Start- oder Zielknoten und passende Ports sind erforderlich.
+Einzelne `route`-Eigenschaften haben Vorrang. Labels/Icons bleiben je Beziehung
+sichtbar; der gemeinsame Abschnitt und seine Pfeilspitze werden einmal gezeichnet.
+
+Die Option gilt in Connected-Views einschließlich benannter Tree-Gruppen.
+Gemeinsame Abzweige sind rechtwinklig, auch bei `curve rounded`. Es handelt sich
+um eine automatische Anordnung bei ausreichend freiem Platz: Hindernisse,
+zu wenig Labelplatz, manuelle `via`/`path`, absolute Endpunkte, `straight`/`bezier`,
+parallele Beziehungen und Kanten zwischen Containern bleiben unabhängig.
+Fan-in hat Vorrang vor Fan-out. Grafische Zuordnungslinien werden nicht gebündelt;
+sie folgen weiterhin dem vollständigen Pfad ihrer jeweiligen Beziehung.
+
+JSON: `"routes": {"sharePath": "stereotypes"}`. Beispiel:
+[Shared paths / C8](examples/shared-paths.arch). Laufzeithilfe: `@help routing`.
+
+Für C8 unterstützt das Profil zusätzlich `Constraint` als Untertyp von
+`StrategicConstraint`: `Constraint assumption "C2 unit must be available"`.
+`relation applies assumption -> capability "applies to" {type ConstrainsCapability}`
+verbindet ihn mit der Capability. `@help connections naf41-uaf Constraint`
+zeigt zulässige Beziehungen, `@help types naf41-uaf Constraint` die Attribute.
 
 ## Icons an Edge-Labels
 

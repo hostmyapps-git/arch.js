@@ -257,11 +257,12 @@ export function compileProfile(definition, fallbackId) {
     if (raw.connections !== undefined) {
       if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: invalid connections`);
       result.connections = raw.connections.map(check => {
-        keys(check, ['nodes', 'relations', 'counterparts', 'direction', 'min', 'max'], `${name}.connections`);
+        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'direction', 'min', 'max'], `${name}.connections`);
         const value = { nodes: names(check.nodes, name), relations: names(check.relations, name), direction: check.direction ?? 'either',
           ...cardinality({ min: check.min ?? 1, max: check.max }, `${name}.connections`) };
         if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: invalid connection direction`);
         if (check.counterparts !== undefined) { value.counterparts = names(check.counterparts, name); knownNodes(value.counterparts, name); }
+        if (check.nodesExclude !== undefined) { value.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true); knownNodes(value.nodesExclude, name); }
         knownNodes(value.nodes, name); knownEdges(value.relations, name); return value;
       });
     }
@@ -536,7 +537,7 @@ export function profileDiagnostics(model, profile) {
     for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Relationship type ${edge.type ?? profile.defaultRelation} is not allowed`, edge, { elementId: edge.id, viewId: view.id });
     for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id,incomplete:true });
     for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id,incomplete:true });
-    for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)) {
+    for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)&&!matches(node.type,check.nodesExclude??[],profile.nodeTypes)) {
       const count = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
         (((check.direction !== 'incoming'||edge.direction==='both') && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
          ((check.direction !== 'outgoing'||edge.direction==='both') && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))))).length;

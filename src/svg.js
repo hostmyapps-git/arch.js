@@ -136,12 +136,14 @@ export function toSVG(graph, options = {}) {
     <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
     <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
   </defs>`;
-  const edgePaths = graph.edges.map(edge => {
+  const edgePath = edge => {
     const dash = ['dependency', 'realization'].includes(edge.style) ? ' stroke-dasharray="6 5"' : '';
     const start = edge.direction==='both' ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === 'composition' ? ` marker-start="url(#${prefix}-diamond)"` : '';
     const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${prefix}-${['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow'})"`;
-    return `<g class="arch-edge" data-edge="${escape(edge.id)}" data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title><path d="${escape(edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${start}${end}/></g>`;
-  }).join('');
+    return `<path d="${escape(edge.drawD??edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}/>`;
+  };
+  const sharedPaths=(graph.sharedPaths??[]).map(edge=>`<g class="arch-shared-path" data-shared-path="${escape(edge.id)}" data-shared-part="${edge.part}" data-shared-for="${escape(edge.edgeIds.join(' '))}" data-types="${escape(edge.types.join(' '))}"><title>${escape(edge.edgeIds.join(', '))}</title>${edgePath(edge)}</g>`).join('');
+  const edgePaths = sharedPaths+graph.edges.map(edge => `<g class="arch-edge" data-edge="${escape(edge.id)}" data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join('');
   const edgeLabels = graph.edges.filter(e => e.labelLines.length || e.labelIcon).map(edge => {
     const {x, y} = edge.label, offset = edge.labelTextOffset ?? {x: 0, y: 0};
     let icon = '';

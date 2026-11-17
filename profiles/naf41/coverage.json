@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.4",
+  "version": "4.1.0-arch.6",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,10 +25,10 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 73,
-    "applicationRelations": 94,
-    "totalNodes": 286,
-    "totalRelations": 137,
+    "applicationNodeAdapters": 74,
+    "applicationRelations": 95,
+    "totalNodes": 287,
+    "totalRelations": 138,
     "viewpoints": 47
   },
   "adapters": [
@@ -39,6 +39,7 @@
     "Measure",
     "CapabilityGroup",
     "StrategicConstraint",
+    "Constraint",
     "StrategicRationale",
     "CapabilityIncrement",
     "CapabilityMilestone",
@@ -146,7 +147,10 @@
       "title": "Performance Criteria",
       "page": 98,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "EffectivenessCriterion and its subtypes are excluded from the per-assessment-criterion mandatory characterization/evaluation checks. Their links are optional, following p.98 and the Time to find example on p.99. Ordinary assessment criteria still require the complete capability-criterion-measure chain.",
+        "EvaluatesCriterion is directed from Measure to AssessmentCriterion, following the p.98 cut-out. The evaluates arrows on p.99 are drawn in the opposite direction; that illustration does not change endpoint compatibility."
+      ]
     },
     "C8": {
       "title": "Planning Constraints",

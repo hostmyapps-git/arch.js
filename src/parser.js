@@ -221,7 +221,7 @@ function parseDSLDocument(source) {
   };
   const readRouting = (item, reference = false, defaults = false) => block(() => {
     const attr = typed('word');
-    const allowed = reference ? ['from', 'to', 'via', 'curve', 'path'] : ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel'];
+    const allowed = reference ? ['from', 'to', 'via', 'curve', 'path'] : ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath'];
     if (!allowed.includes(attr.value)) fail(`Unknown routing attribute: ${attr.value}`, attr);
     if (Object.hasOwn(item, attr.value)) fail(`Duplicate routing attribute: ${attr.value}`, attr);
     if (['showIcon', 'showLabel'].includes(attr.value)) item[attr.value] = scalar();
@@ -468,6 +468,7 @@ export function validateModel(model, options = {}) {
     for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail(`Unknown relationship: ${id}`, route.loc);
     const checkRouting = (route, reference = false, defaults = false, combined = true) => {
       if (!route) return;
+      if (route.sharePath !== undefined && !['none', 'stereotypes', 'all'].includes(route.sharePath)) fail('sharePath must be none, stereotypes or all', route.loc);
       for (const key of ['from', ...(!reference ? ['to'] : [])]) if (typeof route[key] === 'string' && !['auto', 'top', 'right', 'bottom', 'left'].includes(route[key]))
         fail(`Unknown port: ${route[key]}`, route.loc);
       if ((reference || defaults) && typeof route.to === 'number' && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
