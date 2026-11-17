@@ -8,6 +8,8 @@ export const EDGE_STYLES = Object.freeze(['flow', 'dependency', 'association', '
 export const NODE_PROPERTIES = Object.freeze(['description', 'technology', 'icon', 'stereotype', 'tags']);
 export const EDGE_PROPERTIES = Object.freeze(['description', 'technology', 'tags', 'direction']);
 const registry = new Map();
+const revisions = new Map();
+const lockedRevisions = new Set();
 const compiledProfiles = new WeakSet();
 const idPattern = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 const reservedTypes = new Set(['relation', 'model', 'view', 'config', 'architecture']);
@@ -29,6 +31,7 @@ function documentation(raw, label) {
   return result;
 }
 const copy = value => JSON.parse(JSON.stringify(value));
+const stable = value => value && typeof value === 'object' ? Array.isArray(value) ? value.map(stable) : Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])])) : value;
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 function keys(value, allowed, label) {
   if (!record(value)) fail(`${label} must be an object`);
@@ -98,6 +101,29 @@ function attributes(value = {}, label) {
 }
 
 const bases = rule => typeof rule?.extends === 'string' ? [rule.extends] : rule?.extends ?? [];
+// Alias entries are resolved lookup views, never additional inheritance nodes.
+export const canonicalType = (name, definitions) => definitions[name]?.aliasOf ?? name;
+const canonicalEntries = definitions => Object.entries(definitions).filter(([, rule]) => !rule.aliasOf);
+const registered = selection => revisions.get(selection) ?? registry.get(selection);
+export function getProfileVersions(name) {
+  if (!registry.has(name)) fail(`Unknown profile: ${name}`);
+  return [...revisions.values()].filter(p => p.id === name).map(p => p.version);
+}
+function mappingDefinitions(value = []) {
+  if (!Array.isArray(value) || value.length > 512) fail('Profile.mappings: expected at most 512 mappings');
+  return value.map(raw => {
+    keys(raw, ['kind', 'source', 'target', 'relationship', ...documentationKeys], 'Mapping');
+    if (!['node', 'relation'].includes(raw.kind)) fail('Mapping.kind must be node or relation');
+    if (!['rename', 'equivalent', 'specialization', 'partial'].includes(raw.relationship)) fail('Mapping.relationship must be rename, equivalent, specialization or partial');
+    const endpoint = (value, label) => {
+      keys(value, ['framework', 'version', 'type'], label);
+      for (const key of ['framework', 'version', 'type']) if (typeof value[key] !== 'string' || !value[key].trim() || value[key].length > 256) fail(`${label}.${key}: expected nonempty text`);
+      return { ...value };
+    };
+    return { ...documentation(raw, 'Mapping'), kind: raw.kind, source: endpoint(raw.source, 'Mapping.source'),
+      target: endpoint(raw.target, 'Mapping.target'), relationship: raw.relationship };
+  });
+}
 function parentNames(value, label) {
   if (value === undefined) return [];
   const values = names(value, label, [], true);
@@ -125,12 +151,13 @@ function comparisons(value = [], label) {
 
 export function compileProfile(definition, fallbackId) {
   if (compiledProfiles.has(definition)) return definition;
-  keys(definition, ['id', ...documentationKeys, 'version', 'extends', 'nodeTypes', 'relationTypes', 'viewpoints', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profile');
+  keys(definition, ['id', ...documentationKeys, 'version', 'extends', 'aliases', 'mappings', 'nodeTypes', 'relationTypes', 'viewpoints', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profile');
   const id = definition.id ?? fallbackId;
   identifier(id, 'Profile ID');
-  if (definition.extends !== undefined && (typeof definition.extends !== 'string' || !registry.has(definition.extends))) fail(`Unknown base profile: ${definition.extends}`);
-  const base = definition.extends ? registry.get(definition.extends) : undefined;
+  if (definition.extends !== undefined && (typeof definition.extends !== 'string' || !registered(definition.extends))) fail(`Unknown base profile: ${definition.extends}`);
+  const base = definition.extends ? registered(definition.extends) : undefined;
   for (const key of ['title', 'version']) if (definition[key] !== undefined && typeof definition[key] !== 'string') fail(`Profile.${key} must be a string`);
+  if (definition.version !== undefined && !/^[A-Za-z0-9_][A-Za-z0-9_.-]*$/.test(definition.version)) fail('Profile.version must be an identifier-like version without @ or whitespace');
   if (definition.requireViewpoint !== undefined && typeof definition.requireViewpoint !== 'boolean') fail('requireViewpoint must be boolean');
   const merged = key => {
     const values = definition[key] ?? {};
@@ -138,6 +165,43 @@ export function compileProfile(definition, fallbackId) {
     return Object.assign(Object.create(null), base?.[key] ?? {}, values);
   };
   const rawNodes = merged('nodeTypes'), rawEdges = merged('relationTypes'), rawViews = merged('viewpoints');
+  const aliases = {}, aliasTargets = {}, mirrors = [];
+  if (definition.aliases !== undefined) keys(definition.aliases, ['nodeTypes', 'relationTypes'], 'Profile.aliases');
+  for (const [kind, rawTypes] of [['nodeTypes', rawNodes], ['relationTypes', rawEdges]]) {
+    const local = definition.aliases?.[kind] ?? {};
+    if (!record(local)) fail(`Profile.aliases.${kind} must be an object`);
+    const table = Object.assign(Object.create(null), base?.aliases?.[kind] ?? {}, local);
+    if (Object.keys(table).length > 512) fail(`Too many ${kind} aliases`);
+    for (const [name, raw] of Object.entries(table)) {
+      identifier(name, 'Alias');
+      if (reservedTypes.has(name)) fail(`Reserved alias: ${name}`);
+      if (typeof raw !== 'string') keys(raw, ['target', ...documentationKeys], `Alias ${name}`);
+      const target = typeof raw === 'string' ? raw : raw.target;
+      identifier(target, `Alias ${name} target`);
+      const previous = base?.aliases?.[kind]?.[name];
+      if (previous !== undefined && (typeof previous === 'string' ? previous : previous.target) !== target) fail(`Alias ${name}: cannot change an inherited target`);
+      table[name] = typeof raw === 'string' ? raw : { target, ...documentation(raw, `Alias ${name}`) };
+      if (own(rawTypes, name)) {
+        // Detached compiled profiles/parsed-model snapshots contain lookup entries.
+        // Accept only exact generated mirrors; user-defined alias semantics fail.
+        if (!rawTypes[name]?.aliasOf) fail(`Alias ${name}: conflicts with a ${kind} definition`);
+        if (own(definition[kind] ?? {}, name)) mirrors.push({ kind, name, rule: rawTypes[name] });
+        delete rawTypes[name];
+      }
+    }
+    const targets = Object.create(null), visiting = new Set();
+    const resolve = name => {
+      if (own(targets, name)) return targets[name];
+      if (visiting.has(name)) fail(`Cyclic ${kind} alias: ${name}`);
+      visiting.add(name);
+      const raw = table[name], next = typeof raw === 'string' ? raw : raw.target;
+      const target = own(table, next) ? resolve(next) : next;
+      if (!own(rawTypes, target)) fail(`Alias ${name}: unknown ${kind} target ${target}`);
+      visiting.delete(name); return targets[name] = target;
+    };
+    for (const name of Object.keys(table)) resolve(name);
+    aliases[kind] = table; aliasTargets[kind] = targets;
+  }
   const styleGroups = merged('styleGroups');
   if (Object.keys(styleGroups).length > 512) fail('Too many style groups');
   for (const [name, group] of Object.entries(styleGroups)) {
@@ -150,6 +214,7 @@ export function compileProfile(definition, fallbackId) {
   const compiling = new Set();
   const node = name => {
     if (own(nodeTypes, name)) return nodeTypes[name];
+    if (own(aliasTargets.nodeTypes, name)) return nodeTypes[name] = { ...node(aliasTargets.nodeTypes[name]), aliasOf: aliasTargets.nodeTypes[name] };
     if (!own(rawNodes, name) || compiling.has(`n:${name}`)) fail(`Unknown or cyclic node type: ${name}`);
     identifier(name, 'node type');
     if (reservedTypes.has(name)) fail(`Reserved node type: ${name}`);
@@ -182,6 +247,7 @@ export function compileProfile(definition, fallbackId) {
     nodeTypes[name] = result; compiling.delete(`n:${name}`); return result;
   };
   for (const name of Object.keys(rawNodes)) node(name);
+  for (const name of Object.keys(aliases.nodeTypes)) node(name);
   const knownNodes = (list, label) => { for (const name of list) if (name !== '*' && !own(nodeTypes, name)) fail(`${label}: unknown node type ${name}`); };
   const checkReferences = (rule, label) => { for (const [key, attr] of Object.entries(rule.attributes)) if (attr.type === 'reference') knownNodes(attr.targets, `${label}.${key}`); };
   for (const [name, rule] of Object.entries(nodeTypes)) {
@@ -190,6 +256,7 @@ export function compileProfile(definition, fallbackId) {
   }
   const relation = name => {
     if (own(relationTypes, name)) return relationTypes[name];
+    if (own(aliasTargets.relationTypes, name)) return relationTypes[name] = { ...relation(aliasTargets.relationTypes[name]), aliasOf: aliasTargets.relationTypes[name] };
     if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail(`Unknown or cyclic relation type: ${name}`);
     identifier(name, 'relation type');
     const raw = rawEdges[name];
@@ -245,6 +312,8 @@ export function compileProfile(definition, fallbackId) {
     relationTypes[name] = result; compiling.delete(`e:${name}`); return result;
   };
   for (const name of Object.keys(rawEdges)) relation(name);
+  for (const name of Object.keys(aliases.relationTypes)) relation(name);
+  for (const mirror of mirrors) if (JSON.stringify(stable(mirror.rule)) !== JSON.stringify(stable((mirror.kind === 'nodeTypes' ? nodeTypes : relationTypes)[mirror.name]))) fail(`Alias ${mirror.name}: resolved lookup entry cannot override target rules`);
   const knownEdges = (list, label) => { for (const name of list) if (name !== '*' && !own(relationTypes, name)) fail(`${label}: unknown relation type ${name}`); };
   for (const [name, raw] of Object.entries(rawViews)) {
     identifier(name, 'Viewpoint');
@@ -284,6 +353,8 @@ export function compileProfile(definition, fallbackId) {
   const defaultRelation = own(definition, 'defaultRelation') ? definition.defaultRelation : base ? base.defaultRelation : (own(relationTypes, 'flow') ? 'flow' : null);
   if (defaultRelation !== null && (!own(relationTypes, defaultRelation) || relationTypes[defaultRelation].abstract)) fail(`Invalid default relationship type: ${defaultRelation}`);
   const compiled = freeze({ ...documentation(definition, 'Profile'), id, title: definition.title ?? base?.title ?? id, version: definition.version ?? base?.version ?? '1',
+    ...(Object.values(aliases).some(table => Object.keys(table).length) ? { aliases: copy(aliases) } : {}),
+    ...((definition.mappings ?? base?.mappings) ? { mappings: mappingDefinitions(definition.mappings ?? base.mappings) } : {}),
     nodeTypes, relationTypes, viewpoints, styleGroups: copy(styleGroups), defaultRelation, requireViewpoint: definition.requireViewpoint ?? base?.requireViewpoint ?? false });
   compiledProfiles.add(compiled);
   return compiled;
@@ -293,13 +364,19 @@ export function registerProfile(name, definition) {
   identifier(name, 'Profile name');
   if (definition?.id !== undefined && definition.id !== name) fail('Profile name and profile ID must match');
   const profile = compileProfile(definition, name);
+  const key = `${name}@${profile.version}`, previous = revisions.get(key);
+  if (previous && (definition.version !== undefined || lockedRevisions.has(key)) && JSON.stringify(stable(previous)) !== JSON.stringify(stable(profile))) fail(`Profile revision already registered with different contents: ${key}`);
+  // Unversioned registrations retain the existing replace-by-ID API behavior.
+  revisions.set(key, profile);
+  if (definition.version !== undefined) lockedRevisions.add(key);
   registry.set(name, profile);
   return copy(profile);
 }
 export function getProfiles() { return [...registry.keys()]; }
 export function getProfile(name) {
-  if (!registry.has(name)) fail(`Unknown profile: ${name}`);
-  return copy(registry.get(name));
+  const profile = registered(name);
+  if (!profile) fail(`Unknown profile: ${name}`);
+  return copy(profile);
 }
 
 export function resolveProfile(model, options = {}) {
@@ -308,8 +385,8 @@ export function resolveProfile(model, options = {}) {
   if (selection === undefined) selection = model.config?.profile;
   if (selection !== undefined) {
     if (typeof selection === 'string') {
-      if (!registry.has(selection)) throw new ArchError(`Unknown profile: ${selection}`, model.config?.loc, 'ARCH_PROFILE');
-      return registry.get(selection);
+      if (!registered(selection)) throw new ArchError(`Unknown profile: ${selection}`, model.config?.loc, 'ARCH_PROFILE');
+      return registered(selection);
     }
     return compileProfile(selection, 'parameter');
   }
@@ -322,11 +399,12 @@ export function resolveProfile(model, options = {}) {
 
 export function matches(type, allowed, definitions) {
   if (allowed.includes('*')) return true;
-  const visited = new Set(), pending = [type];
+  const accepted = new Set(allowed.map(name => canonicalType(name, definitions)));
+  const visited = new Set(), pending = [canonicalType(type, definitions)];
   while (pending.length) {
-    const next = pending.pop();
+    const next = canonicalType(pending.pop(), definitions);
     if (!next || visited.has(next)) continue;
-    if (allowed.includes(next)) return true;
+    if (accepted.has(next)) return true;
     visited.add(next); pending.push(...bases(definitions[next]));
   }
   return false;
@@ -335,7 +413,7 @@ export function matches(type, allowed, definitions) {
 // Inheritance and abstract flags are part of every compiled profile. This is
 // independent of framework names and includes indirect/multiple inheritance.
 export function concreteSubtypes(type, definitions) {
-  return Object.keys(definitions).filter(name => name !== type && !definitions[name].abstract && matches(name, [type], definitions)).sort();
+  return Object.keys(definitions).filter(name => canonicalType(name, definitions) !== canonicalType(type, definitions) && !definitions[name].abstract && matches(name, [type], definitions)).sort();
 }
 
 function matchesPair(source, target, pair, definitions) {
@@ -485,7 +563,7 @@ export function profileDiagnostics(model, profile) {
     const pending = [edge.type ?? profile.defaultRelation];
     const visited = new Set();
     while (pending.length) {
-      const type = pending.pop();
+      const type = canonicalType(pending.pop(), profile.relationTypes);
       if (!type || visited.has(type)) continue;
       visited.add(type);
       if (!counts.has(type)) counts.set(type, { source: new Map(), target: new Map() });
@@ -496,7 +574,7 @@ export function profileDiagnostics(model, profile) {
       pending.push(...bases(profile.relationTypes[type]));
     }
   }
-  for (const [type, rule] of Object.entries(profile.relationTypes)) if (rule.acyclic) {
+  for (const [type, rule] of canonicalEntries(profile.relationTypes)) if (rule.acyclic) {
     const adjacency = new Map(), state = new Map();
     for (const edge of model.edges) if (matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes)) {
       if (!adjacency.has(edge.source)) adjacency.set(edge.source, []);
@@ -519,7 +597,7 @@ export function profileDiagnostics(model, profile) {
     for (const id of adjacency.keys()) { if (!state.has(id)) visit(id); if (cycle) break; }
     if (cycle) add(`${type}: Cycles are not allowed`, cycle, { elementId: cycle.id });
   }
-  for (const [name, rule] of Object.entries(profile.relationTypes)) for (const key of ['outgoing', 'incoming']) if (rule[key]) {
+  for (const [name, rule] of canonicalEntries(profile.relationTypes)) for (const key of ['outgoing', 'incoming']) if (rule[key]) {
     const endpoint = key === 'outgoing' ? 'source' : 'target', applicable = key === 'outgoing' ? rule.from : rule.to;
     for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes) || counts.get(name)?.[endpoint].has(node.id)) {
       const count = counts.get(name)?.[endpoint].get(node.id) ?? 0;

@@ -1,6 +1,6 @@
 import { ArchError, parseDocument, validate as validateModel } from './parser.js';
 import { jsonToDSL, isJSONDocument } from './json.js';
-import { resolveProfile, getProfiles, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
+import { resolveProfile, getProfiles, getProfileVersions, matches, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
 import { DIAGRAMS, DIAGRAM_OPTIONS } from './diagrams.js';
 import { topics } from './help-syntax.js';
 import {POSITION_FIELDS} from './placement.js';
@@ -144,7 +144,7 @@ function corrections(diagnostic, model, source, format, options) {
   if(found&&profile)nearest(found[1],Object.keys(message.includes('relationship')?profile.relationTypes:profile.nodeTypes),'Type');
   if(Array.isArray(diagnostic.candidates)) for(const type of diagnostic.candidates.slice(0,8)) add(`Use concrete type ${type}`,format==='json'?`"type": "${type}"`:`${type} ${diagnostic.elementId??'element'} "Title"`);
   const unknownProfile=message.match(/Unknown profile: ([^\s(]+)/);
-  if(unknownProfile)nearest(unknownProfile[1],getProfiles(),'Registered profile');
+  if(unknownProfile)nearest(unknownProfile[1],getProfiles().flatMap(id=>[id,...getProfileVersions(id).map(version=>`${id}@${version}`)]),'Registered profile');
   const unknownKey=message.match(/Unknown (?:JSON field|view option|routing attribute|attribute rule|profile rule|config option|attribute): ([^\s(]+)/);
   if(unknownKey) {
     const key=unknownKey[1], parent=diagnostic.path?.replace(/\/[^/]*$/,'');
@@ -158,7 +158,7 @@ function corrections(diagnostic, model, source, format, options) {
   if(missing) {
     const item=model?.nodes.find(n=>n.id===diagnostic.elementId)??model?.edges.find(e=>e.id===diagnostic.elementId);
     const rule=(profile?.nodeTypes[item?.type]??profile?.relationTypes[item?.type])?.attributes?.[missing[1]];
-    const value=rule?.enum?.[0]??(rule?.type==='boolean'?true:['number','integer'].includes(rule?.type)?rule.min??0:rule?.type==='reference'?model?.nodes.find(n=>!rule.targets||rule.targets.includes(n.type))?.id??'elementId':'value');
+    const value=rule?.enum?.[0]??(rule?.type==='boolean'?true:['number','integer'].includes(rule?.type)?rule.min??0:rule?.type==='reference'?model?.nodes.find(n=>!rule.targets||matches(n.type,rule.targets,profile.nodeTypes))?.id??'elementId':'value');
     const serialized=JSON.stringify(rule?.many?[value]:value);
     add(`Provide ${missing[1]}`,format==='json'?`"${missing[1]}": ${serialized}`:`${missing[1]} ${serialized}`,'Check the attribute type and profile constraints.');
   }

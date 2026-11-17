@@ -565,3 +565,10 @@ Connected-View mit Tree-Gruppe für ServiceGeneralization. Die Pfeile zeigen vom
 spezialisierten zum allgemeinen Service; die Policy steht außerhalb der Gruppe.
 `SatisfiesServicePolicy` verbindet Service → Policy. So werden fachliche
 Spezialisierung und Policy-Erfüllung nicht zu einer gemeinsamen Hierarchie vermischt.
+
+Aliasnamen bleiben in Stereotypbeschriftung und `data-type` erhalten. So können
+Service und ServiceSpecification dieselbe Fachsemantik besitzen und dennoch
+mit der im Modell gewählten Schreibweise erscheinen. `sharePath stereotypes`
+fasst Relationsaliase mit ihrer kanonischen Relation zusammen; echte Untertypen
+bleiben getrennte Stereotypen. Regeln und Versionsbindung:
+[Aliase und Mappings](profiles/naf41/ALIASES.md).

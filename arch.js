@@ -7583,6 +7583,7 @@ var arch = (() => {
     ArchError: () => ArchError,
     getIconPacks: () => getIconPacks,
     getProfile: () => getProfile,
+    getProfileVersions: () => getProfileVersions,
     getProfiles: () => getProfiles,
     help: () => help,
     inspectSource: () => inspectSource,
@@ -7797,6 +7798,8 @@ var arch = (() => {
     meta: ["Translate DSL/JSON and inspect source correction candidates", 0],
     model: ["Elements, containers, relationships and attributes", 0],
     profiles: ["Registered profiles and profile summaries", 1],
+    aliases: ["Alternative names and their canonical types", 1],
+    mappings: ["Documented metamodel correspondences (not conversions)", 1],
     types: ["Node types and inherited attribute rules", 2],
     relations: ["Relationship types, endpoints and rules", 2],
     connections: ["Allowed incoming/outgoing relationships for a node type", 2],
@@ -7814,6 +7817,8 @@ var arch = (() => {
   var aliases = { icons: "iconpacks", profile: "profiles", nodes: "types", edges: "relations", diagram: "diagrams", view: "views", style: "styles" };
   var usage = {
     profiles: "@help profiles [PROFILE]",
+    aliases: "@help aliases [PROFILE]",
+    mappings: "@help mappings [PROFILE]",
     types: "@help types [PROFILE [TYPE]]",
     relations: "@help relations [PROFILE [RELATION]]",
     viewpoints: "@help viewpoints [PROFILE [VIEWPOINT]]",
@@ -7957,6 +7962,8 @@ var arch = (() => {
   var NODE_PROPERTIES = Object.freeze(["description", "technology", "icon", "stereotype", "tags"]);
   var EDGE_PROPERTIES = Object.freeze(["description", "technology", "tags", "direction"]);
   var registry = /* @__PURE__ */ new Map();
+  var revisions = /* @__PURE__ */ new Map();
+  var lockedRevisions = /* @__PURE__ */ new Set();
   var compiledProfiles = /* @__PURE__ */ new WeakSet();
   var idPattern = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
   var reservedTypes = /* @__PURE__ */ new Set(["relation", "model", "view", "config", "architecture"]);
@@ -7980,6 +7987,7 @@ var arch = (() => {
     return result;
   }
   var copy = (value2) => JSON.parse(JSON.stringify(value2));
+  var stable = (value2) => value2 && typeof value2 === "object" ? Array.isArray(value2) ? value2.map(stable) : Object.fromEntries(Object.keys(value2).sort().map((key2) => [key2, stable(value2[key2])])) : value2;
   var freeze = (value2) => {
     if (value2 && typeof value2 === "object") {
       Object.values(value2).forEach(freeze);
@@ -8051,6 +8059,33 @@ var arch = (() => {
     return result;
   }
   var bases = (rule) => typeof rule?.extends === "string" ? [rule.extends] : rule?.extends ?? [];
+  var canonicalType = (name, definitions) => definitions[name]?.aliasOf ?? name;
+  var canonicalEntries = (definitions) => Object.entries(definitions).filter(([, rule]) => !rule.aliasOf);
+  var registered = (selection) => revisions.get(selection) ?? registry.get(selection);
+  function getProfileVersions(name) {
+    if (!registry.has(name)) fail3(`Unknown profile: ${name}`);
+    return [...revisions.values()].filter((p) => p.id === name).map((p) => p.version);
+  }
+  function mappingDefinitions(value2 = []) {
+    if (!Array.isArray(value2) || value2.length > 512) fail3("Profile.mappings: expected at most 512 mappings");
+    return value2.map((raw) => {
+      keys(raw, ["kind", "source", "target", "relationship", ...documentationKeys], "Mapping");
+      if (!["node", "relation"].includes(raw.kind)) fail3("Mapping.kind must be node or relation");
+      if (!["rename", "equivalent", "specialization", "partial"].includes(raw.relationship)) fail3("Mapping.relationship must be rename, equivalent, specialization or partial");
+      const endpoint = (value3, label) => {
+        keys(value3, ["framework", "version", "type"], label);
+        for (const key2 of ["framework", "version", "type"]) if (typeof value3[key2] !== "string" || !value3[key2].trim() || value3[key2].length > 256) fail3(`${label}.${key2}: expected nonempty text`);
+        return { ...value3 };
+      };
+      return {
+        ...documentation(raw, "Mapping"),
+        kind: raw.kind,
+        source: endpoint(raw.source, "Mapping.source"),
+        target: endpoint(raw.target, "Mapping.target"),
+        relationship: raw.relationship
+      };
+    });
+  }
   function parentNames(value2, label) {
     if (value2 === void 0) return [];
     const values = names(value2, label, [], true);
@@ -8078,12 +8113,13 @@ var arch = (() => {
   }
   function compileProfile(definition, fallbackId) {
     if (compiledProfiles.has(definition)) return definition;
-    keys(definition, ["id", ...documentationKeys, "version", "extends", "nodeTypes", "relationTypes", "viewpoints", "styleGroups", "defaultRelation", "requireViewpoint"], "Profile");
+    keys(definition, ["id", ...documentationKeys, "version", "extends", "aliases", "mappings", "nodeTypes", "relationTypes", "viewpoints", "styleGroups", "defaultRelation", "requireViewpoint"], "Profile");
     const id = definition.id ?? fallbackId;
     identifier(id, "Profile ID");
-    if (definition.extends !== void 0 && (typeof definition.extends !== "string" || !registry.has(definition.extends))) fail3(`Unknown base profile: ${definition.extends}`);
-    const base = definition.extends ? registry.get(definition.extends) : void 0;
+    if (definition.extends !== void 0 && (typeof definition.extends !== "string" || !registered(definition.extends))) fail3(`Unknown base profile: ${definition.extends}`);
+    const base = definition.extends ? registered(definition.extends) : void 0;
     for (const key2 of ["title", "version"]) if (definition[key2] !== void 0 && typeof definition[key2] !== "string") fail3(`Profile.${key2} must be a string`);
+    if (definition.version !== void 0 && !/^[A-Za-z0-9_][A-Za-z0-9_.-]*$/.test(definition.version)) fail3("Profile.version must be an identifier-like version without @ or whitespace");
     if (definition.requireViewpoint !== void 0 && typeof definition.requireViewpoint !== "boolean") fail3("requireViewpoint must be boolean");
     const merged2 = (key2) => {
       const values = definition[key2] ?? {};
@@ -8091,6 +8127,43 @@ var arch = (() => {
       return Object.assign(/* @__PURE__ */ Object.create(null), base?.[key2] ?? {}, values);
     };
     const rawNodes = merged2("nodeTypes"), rawEdges = merged2("relationTypes"), rawViews = merged2("viewpoints");
+    const aliases2 = {}, aliasTargets = {}, mirrors = [];
+    if (definition.aliases !== void 0) keys(definition.aliases, ["nodeTypes", "relationTypes"], "Profile.aliases");
+    for (const [kind, rawTypes] of [["nodeTypes", rawNodes], ["relationTypes", rawEdges]]) {
+      const local = definition.aliases?.[kind] ?? {};
+      if (!record(local)) fail3(`Profile.aliases.${kind} must be an object`);
+      const table = Object.assign(/* @__PURE__ */ Object.create(null), base?.aliases?.[kind] ?? {}, local);
+      if (Object.keys(table).length > 512) fail3(`Too many ${kind} aliases`);
+      for (const [name, raw] of Object.entries(table)) {
+        identifier(name, "Alias");
+        if (reservedTypes.has(name)) fail3(`Reserved alias: ${name}`);
+        if (typeof raw !== "string") keys(raw, ["target", ...documentationKeys], `Alias ${name}`);
+        const target = typeof raw === "string" ? raw : raw.target;
+        identifier(target, `Alias ${name} target`);
+        const previous = base?.aliases?.[kind]?.[name];
+        if (previous !== void 0 && (typeof previous === "string" ? previous : previous.target) !== target) fail3(`Alias ${name}: cannot change an inherited target`);
+        table[name] = typeof raw === "string" ? raw : { target, ...documentation(raw, `Alias ${name}`) };
+        if (own(rawTypes, name)) {
+          if (!rawTypes[name]?.aliasOf) fail3(`Alias ${name}: conflicts with a ${kind} definition`);
+          if (own(definition[kind] ?? {}, name)) mirrors.push({ kind, name, rule: rawTypes[name] });
+          delete rawTypes[name];
+        }
+      }
+      const targets = /* @__PURE__ */ Object.create(null), visiting = /* @__PURE__ */ new Set();
+      const resolve = (name) => {
+        if (own(targets, name)) return targets[name];
+        if (visiting.has(name)) fail3(`Cyclic ${kind} alias: ${name}`);
+        visiting.add(name);
+        const raw = table[name], next = typeof raw === "string" ? raw : raw.target;
+        const target = own(table, next) ? resolve(next) : next;
+        if (!own(rawTypes, target)) fail3(`Alias ${name}: unknown ${kind} target ${target}`);
+        visiting.delete(name);
+        return targets[name] = target;
+      };
+      for (const name of Object.keys(table)) resolve(name);
+      aliases2[kind] = table;
+      aliasTargets[kind] = targets;
+    }
     const styleGroups = merged2("styleGroups");
     if (Object.keys(styleGroups).length > 512) fail3("Too many style groups");
     for (const [name, group] of Object.entries(styleGroups)) {
@@ -8104,6 +8177,7 @@ var arch = (() => {
     const compiling = /* @__PURE__ */ new Set();
     const node = (name) => {
       if (own(nodeTypes, name)) return nodeTypes[name];
+      if (own(aliasTargets.nodeTypes, name)) return nodeTypes[name] = { ...node(aliasTargets.nodeTypes[name]), aliasOf: aliasTargets.nodeTypes[name] };
       if (!own(rawNodes, name) || compiling.has(`n:${name}`)) fail3(`Unknown or cyclic node type: ${name}`);
       identifier(name, "node type");
       if (reservedTypes.has(name)) fail3(`Reserved node type: ${name}`);
@@ -8143,6 +8217,7 @@ var arch = (() => {
       return result;
     };
     for (const name of Object.keys(rawNodes)) node(name);
+    for (const name of Object.keys(aliases2.nodeTypes)) node(name);
     const knownNodes = (list2, label) => {
       for (const name of list2) if (name !== "*" && !own(nodeTypes, name)) fail3(`${label}: unknown node type ${name}`);
     };
@@ -8155,6 +8230,7 @@ var arch = (() => {
     }
     const relation = (name) => {
       if (own(relationTypes, name)) return relationTypes[name];
+      if (own(aliasTargets.relationTypes, name)) return relationTypes[name] = { ...relation(aliasTargets.relationTypes[name]), aliasOf: aliasTargets.relationTypes[name] };
       if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail3(`Unknown or cyclic relation type: ${name}`);
       identifier(name, "relation type");
       const raw = rawEdges[name];
@@ -8219,6 +8295,8 @@ var arch = (() => {
       return result;
     };
     for (const name of Object.keys(rawEdges)) relation(name);
+    for (const name of Object.keys(aliases2.relationTypes)) relation(name);
+    for (const mirror of mirrors) if (JSON.stringify(stable(mirror.rule)) !== JSON.stringify(stable((mirror.kind === "nodeTypes" ? nodeTypes : relationTypes)[mirror.name]))) fail3(`Alias ${mirror.name}: resolved lookup entry cannot override target rules`);
     const knownEdges = (list2, label) => {
       for (const name of list2) if (name !== "*" && !own(relationTypes, name)) fail3(`${label}: unknown relation type ${name}`);
     };
@@ -8283,6 +8361,8 @@ var arch = (() => {
       id,
       title: definition.title ?? base?.title ?? id,
       version: definition.version ?? base?.version ?? "1",
+      ...Object.values(aliases2).some((table) => Object.keys(table).length) ? { aliases: copy(aliases2) } : {},
+      ...definition.mappings ?? base?.mappings ? { mappings: mappingDefinitions(definition.mappings ?? base.mappings) } : {},
       nodeTypes,
       relationTypes,
       viewpoints,
@@ -8297,6 +8377,10 @@ var arch = (() => {
     identifier(name, "Profile name");
     if (definition?.id !== void 0 && definition.id !== name) fail3("Profile name and profile ID must match");
     const profile = compileProfile(definition, name);
+    const key2 = `${name}@${profile.version}`, previous = revisions.get(key2);
+    if (previous && (definition.version !== void 0 || lockedRevisions.has(key2)) && JSON.stringify(stable(previous)) !== JSON.stringify(stable(profile))) fail3(`Profile revision already registered with different contents: ${key2}`);
+    revisions.set(key2, profile);
+    if (definition.version !== void 0) lockedRevisions.add(key2);
     registry.set(name, profile);
     return copy(profile);
   }
@@ -8304,8 +8388,9 @@ var arch = (() => {
     return [...registry.keys()];
   }
   function getProfile(name) {
-    if (!registry.has(name)) fail3(`Unknown profile: ${name}`);
-    return copy(registry.get(name));
+    const profile = registered(name);
+    if (!profile) fail3(`Unknown profile: ${name}`);
+    return copy(profile);
   }
   function resolveProfile(model, options = {}) {
     let selection = options.profile;
@@ -8313,8 +8398,8 @@ var arch = (() => {
     if (selection === void 0) selection = model.config?.profile;
     if (selection !== void 0) {
       if (typeof selection === "string") {
-        if (!registry.has(selection)) throw new ArchError(`Unknown profile: ${selection}`, model.config?.loc, "ARCH_PROFILE");
-        return registry.get(selection);
+        if (!registered(selection)) throw new ArchError(`Unknown profile: ${selection}`, model.config?.loc, "ARCH_PROFILE");
+        return registered(selection);
       }
       return compileProfile(selection, "parameter");
     }
@@ -8329,18 +8414,19 @@ var arch = (() => {
   }
   function matches(type, allowed, definitions) {
     if (allowed.includes("*")) return true;
-    const visited = /* @__PURE__ */ new Set(), pending = [type];
+    const accepted = new Set(allowed.map((name) => canonicalType(name, definitions)));
+    const visited = /* @__PURE__ */ new Set(), pending = [canonicalType(type, definitions)];
     while (pending.length) {
-      const next = pending.pop();
+      const next = canonicalType(pending.pop(), definitions);
       if (!next || visited.has(next)) continue;
-      if (allowed.includes(next)) return true;
+      if (accepted.has(next)) return true;
       visited.add(next);
       pending.push(...bases(definitions[next]));
     }
     return false;
   }
   function concreteSubtypes(type, definitions) {
-    return Object.keys(definitions).filter((name) => name !== type && !definitions[name].abstract && matches(name, [type], definitions)).sort();
+    return Object.keys(definitions).filter((name) => canonicalType(name, definitions) !== canonicalType(type, definitions) && !definitions[name].abstract && matches(name, [type], definitions)).sort();
   }
   function matchesPair(source, target, pair, definitions) {
     return matches(source, pair.from, definitions) && matches(target, pair.to, definitions) && !matches(source, pair.fromExclude ?? [], definitions) && !matches(target, pair.toExclude ?? [], definitions);
@@ -8508,7 +8594,7 @@ var arch = (() => {
       const pending = [edge.type ?? profile.defaultRelation];
       const visited = /* @__PURE__ */ new Set();
       while (pending.length) {
-        const type = pending.pop();
+        const type = canonicalType(pending.pop(), profile.relationTypes);
         if (!type || visited.has(type)) continue;
         visited.add(type);
         if (!counts.has(type)) counts.set(type, { source: /* @__PURE__ */ new Map(), target: /* @__PURE__ */ new Map() });
@@ -8519,7 +8605,7 @@ var arch = (() => {
         pending.push(...bases(profile.relationTypes[type]));
       }
     }
-    for (const [type, rule] of Object.entries(profile.relationTypes)) if (rule.acyclic) {
+    for (const [type, rule] of canonicalEntries(profile.relationTypes)) if (rule.acyclic) {
       const adjacency = /* @__PURE__ */ new Map(), state = /* @__PURE__ */ new Map();
       for (const edge of model.edges) if (matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes)) {
         if (!adjacency.has(edge.source)) adjacency.set(edge.source, []);
@@ -8548,7 +8634,7 @@ var arch = (() => {
       }
       if (cycle) add(`${type}: Cycles are not allowed`, cycle, { elementId: cycle.id });
     }
-    for (const [name, rule] of Object.entries(profile.relationTypes)) for (const key2 of ["outgoing", "incoming"]) if (rule[key2]) {
+    for (const [name, rule] of canonicalEntries(profile.relationTypes)) for (const key2 of ["outgoing", "incoming"]) if (rule[key2]) {
       const endpoint = key2 === "outgoing" ? "source" : "target", applicable = key2 === "outgoing" ? rule.from : rule.to;
       for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes) || counts.get(name)?.[endpoint].has(node.id)) {
         const count = counts.get(name)?.[endpoint].get(node.id) ?? 0;
@@ -9630,7 +9716,7 @@ var arch = (() => {
     if (found && profile) nearest(found[1], Object.keys(message.includes("relationship") ? profile.relationTypes : profile.nodeTypes), "Type");
     if (Array.isArray(diagnostic.candidates)) for (const type of diagnostic.candidates.slice(0, 8)) add(`Use concrete type ${type}`, format === "json" ? `"type": "${type}"` : `${type} ${diagnostic.elementId ?? "element"} "Title"`);
     const unknownProfile = message.match(/Unknown profile: ([^\s(]+)/);
-    if (unknownProfile) nearest(unknownProfile[1], getProfiles(), "Registered profile");
+    if (unknownProfile) nearest(unknownProfile[1], getProfiles().flatMap((id) => [id, ...getProfileVersions(id).map((version2) => `${id}@${version2}`)]), "Registered profile");
     const unknownKey = message.match(/Unknown (?:JSON field|view option|routing attribute|attribute rule|profile rule|config option|attribute): ([^\s(]+)/);
     if (unknownKey) {
       const key2 = unknownKey[1], parent = diagnostic.path?.replace(/\/[^/]*$/, "");
@@ -9644,7 +9730,7 @@ var arch = (() => {
     if (missing) {
       const item = model?.nodes.find((n) => n.id === diagnostic.elementId) ?? model?.edges.find((e) => e.id === diagnostic.elementId);
       const rule = (profile?.nodeTypes[item?.type] ?? profile?.relationTypes[item?.type])?.attributes?.[missing[1]];
-      const value2 = rule?.enum?.[0] ?? (rule?.type === "boolean" ? true : ["number", "integer"].includes(rule?.type) ? rule.min ?? 0 : rule?.type === "reference" ? model?.nodes.find((n) => !rule.targets || rule.targets.includes(n.type))?.id ?? "elementId" : "value");
+      const value2 = rule?.enum?.[0] ?? (rule?.type === "boolean" ? true : ["number", "integer"].includes(rule?.type) ? rule.min ?? 0 : rule?.type === "reference" ? model?.nodes.find((n) => !rule.targets || matches(n.type, rule.targets, profile.nodeTypes))?.id ?? "elementId" : "value");
       const serialized = JSON.stringify(rule?.many ? [value2] : value2);
       add(`Provide ${missing[1]}`, format === "json" ? `"${missing[1]}": ${serialized}` : `${missing[1]} ${serialized}`, "Check the attribute type and profile constraints.");
     }
@@ -9872,7 +9958,7 @@ var arch = (() => {
         if (!hub || !leaf || hub.container || leaf.container || hub.parent !== leaf.parent) continue;
         const hubPoint = incoming ? edge.points.at(-1) : edge.points[0], leafPoint = incoming ? edge.points[0] : edge.points.at(-1), port2 = side(hub, hubPoint);
         if (!port2 || side(leaf, leafPoint) !== opposite[port2]) continue;
-        const key2 = JSON.stringify([hub.id, port2, r.sharePath, r.sharePath === "stereotypes" ? edge.type : null, edge.style, edge.direction ?? "forward", r.curve ?? "orthogonal", routeStyleKey(edge)]);
+        const key2 = JSON.stringify([hub.id, port2, r.sharePath, r.sharePath === "stereotypes" ? edge.canonicalType ?? edge.type : null, edge.style, edge.direction ?? "forward", r.curve ?? "orthogonal", routeStyleKey(edge)]);
         if (!groups.has(key2)) groups.set(key2, []);
         groups.get(key2).push({ edge, hub, leaf, port: port2, leafPoint });
       }
@@ -10299,7 +10385,7 @@ var arch = (() => {
       const referenceDisplay = view.referenceDisplay ?? rule.referenceDisplay ?? "labels";
       const referenceItems = referenceDisplay === "labels" ? [] : relationshipReferences(edge, rule).filter((item) => byId.has(item.id) && !byId.get(item.id).container);
       const referenceOccurrences = view.referenceOccurrences ?? rule.referenceOccurrences ?? "shared";
-      return { ...edge, type, style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
+      return { ...edge, type, ...rule.aliasOf ? { canonicalType: canonicalType(type, profile.relationTypes) } : {}, style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
     });
     if (view.diagram?.type === "tree") return layoutTree(model, profile, view, nodes, edges);
     if (view.diagram && view.diagram.type !== "connected") return layoutDiagram(model, profile, view, nodes, edges);
@@ -12534,6 +12620,7 @@ var arch = (() => {
   };
   var list = (values) => values?.length ? values.join(", ") : "(none)";
   var pageSize = 100;
+  var typeCount = (definitions) => `${Object.values(definitions).filter((rule) => !rule.aliasOf).length}${Object.values(definitions).some((rule) => rule.aliasOf) ? ` (+${Object.values(definitions).filter((rule) => rule.aliasOf).length} aliases)` : ""}`;
   function parseHelp(source, options = {}) {
     return { ...helpDocument(parseHelpCommand(source)), profile: resolveProfile({}, options) };
   }
@@ -12555,6 +12642,17 @@ var arch = (() => {
         const rule = p[key2][args[1]];
         if (!Object.hasOwn(p[key2], args[1])) fail10(`Unknown name in ${label}: ${args[1]}. Use @help ${topic} ${target}.`);
         if (key2 === "nodeTypes") section("Allowed relationships", `@help connections ${target} ${args[1]}`);
+        if (key2 !== "viewpoints") {
+          const canonical = rule.aliasOf ?? args[1];
+          const aliases2 = Object.entries(p[key2]).filter(([, r]) => r.aliasOf === canonical).map(([name]) => name);
+          section(
+            "Type identity",
+            `Canonical type: ${canonical}`,
+            `Aliases: ${list(aliases2)}`,
+            "Aliases have identical semantic rules in both directions; they are not subtypes. Written type names remain in diagrams and source translations."
+          );
+          if (rule.aliasOf && typeof p.aliases?.[key2]?.[args[1]] === "object") section("Alias documentation", JSON.stringify(p.aliases[key2][args[1]], null, 2).split("\n"));
+        }
         if (key2 !== "viewpoints" && rule.abstract) {
           const candidates = concreteSubtypes(args[1], p[key2]);
           section("Concrete subtypes", candidates.length ? candidates.map((name) => key2 === "nodeTypes" ? `${name} ID "Title"  · template ${p[key2][name].template}` : `relation ID SOURCE -> TARGET "Label" { type ${name} }`) : ["No concrete subtypes are defined in this profile."]);
@@ -12563,7 +12661,7 @@ var arch = (() => {
         section(args[1], JSON.stringify(rule, null, 2).split("\n"));
         if (key2 !== "viewpoints") section("Built-in attributes", key2 === "nodeTypes" ? list(NODE_PROPERTIES) : list(EDGE_PROPERTIES), "Additional attributes and constraints are listed above under attributes.");
       } else {
-        section(label, entries.length ? entries.map(([name, rule]) => key2 === "nodeTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · template ${rule.template}${rule.container ? " · container" : ""}` : key2 === "relationTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · style ${rule.style} · directions ${(rule.directions ?? ["forward"]).join(", ")}` : `${name}${rule.title ? ` · ${rule.title}` : ""}`) : ["(none)"]);
+        section(label, entries.length ? entries.map(([name, rule]) => key2 === "nodeTypes" ? `${name}${rule.aliasOf ? ` [alias of ${rule.aliasOf}]` : ""}${rule.abstract ? " [abstract]" : ""} · template ${rule.template}${rule.container ? " · container" : ""}` : key2 === "relationTypes" ? `${name}${rule.aliasOf ? ` [alias of ${rule.aliasOf}]` : ""}${rule.abstract ? " [abstract]" : ""} · style ${rule.style} · directions ${(rule.directions ?? ["forward"]).join(", ")}` : `${name}${rule.title ? ` · ${rule.title}` : ""}`) : ["(none)"]);
         section("Show details", `@help ${topic} ${target} NAME`, "Use . as PROFILE to inspect the selected document/API profile, including inline definitions.", "Abstract types support inheritance and cannot be instantiated directly.");
         if (key2 === "relationTypes") section("Filter by node type", `@help connections ${target} NODE_TYPE`);
       }
@@ -12707,7 +12805,7 @@ var arch = (() => {
     } else if (topic === "profiles") {
       if (!args.length) section("Registered profiles", getProfiles().map((id) => {
         const p = getProfile(id);
-        return `${id} · ${p.version} · ${Object.keys(p.nodeTypes).length} node types · ${Object.keys(p.relationTypes).length} relationship types · ${Object.keys(p.viewpoints).length} viewpoints`;
+        return `${id} · ${p.version} · ${typeCount(p.nodeTypes)} node types · ${typeCount(p.relationTypes)} relationship types · ${Object.keys(p.viewpoints).length} viewpoints`;
       }));
       else {
         const p = getProfile(args[0]);
@@ -12717,21 +12815,51 @@ var arch = (() => {
           `Version: ${p.version}`,
           `Default relationship type: ${p.defaultRelation ?? "(none)"}`,
           `Viewpoint required: ${p.requireViewpoint ? "yes" : "no"}`,
-          `Node types: ${Object.keys(p.nodeTypes).length}; relationship types: ${Object.keys(p.relationTypes).length}; viewpoints: ${Object.keys(p.viewpoints).length}.`
+          `Node types: ${typeCount(p.nodeTypes)}; relationship types: ${typeCount(p.relationTypes)}; viewpoints: ${Object.keys(p.viewpoints).length}.`
         );
         if (p.description) section("Scope", p.description);
         if (p.sources?.length) section("Sources", p.sources);
         if (p.limitations?.length) section("Limits of validation", p.limitations);
-        section("Contents and rules", `@help types ${p.id}`, `@help relations ${p.id}`, `@help viewpoints ${p.id}`);
+        section("Available revisions", getProfileVersions(p.id).map((version2) => `${p.id}@${version2}`));
+        section("Contents and rules", `@help types ${args[0]}`, `@help relations ${args[0]}`, `@help viewpoints ${args[0]}`, `@help aliases ${args[0]}`, `@help mappings ${args[0]}`);
         section("Style groups", Object.entries(p.styleGroups).map(([name, rule]) => `${name}: ${rule.backgroundColor ?? "(neutral)"}`));
       }
       section(
         "Selection and registration",
         "config { profile PROFILE }  // inside architecture",
         "API options.profile takes precedence over the document profile.",
-        "Help lists registered profiles; it does not load files.",
+        'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.10" }.',
+        "Help lists registered profiles; it does not load files. Unqualified IDs select the most recently registered revision.",
         "@help config"
       );
+    } else if (topic === "aliases") {
+      const p = selectProfile();
+      section(`Profile ${p.id} · ${p.version}`, "Aliases resolve before semantic validation, including endpoints, references, inheritance and viewpoint selectors. Original names remain in model source and diagram labels.");
+      for (const [kind, label] of [["nodeTypes", "Node aliases"], ["relationTypes", "Relationship aliases"]]) {
+        const lines = Object.entries(p.aliases?.[kind] ?? {}).flatMap(([name, raw]) => [
+          `${name} -> ${p[kind][name].aliasOf}${typeof raw === "object" && raw.target !== p[kind][name].aliasOf ? ` (via ${raw.target})` : ""}`,
+          ...typeof raw === "object" ? [raw.description, ...raw.sources ?? [], ...raw.limitations ?? []].filter(Boolean) : []
+        ]);
+        section(label, lines.length ? lines : ["(none)"]);
+      }
+      section(
+        "Definition",
+        'External JSON profile: aliases: { nodeTypes: { Service: "ServiceSpecification" }, relationTypes: {} }',
+        "A target may be another alias. Cycles, unknown targets and collisions with types are rejected. Aliases cannot override semantic or drawing rules.",
+        "Inline DSL profile declarations do not define aliases; register an external JSON profile."
+      );
+    } else if (topic === "mappings") {
+      const p = selectProfile();
+      section(`Profile ${p.id} · ${p.version}`, "Mappings are descriptive, versioned metamodel correspondences. They do not convert models or equate types automatically. Only explicit aliases share semantic identity.");
+      for (const mapping of p.mappings ?? []) section(
+        `${mapping.kind} · ${mapping.relationship}`,
+        `${mapping.source.framework}@${mapping.source.version}.${mapping.source.type} -> ${mapping.target.framework}@${mapping.target.version}.${mapping.target.type}`,
+        mapping.description ?? "",
+        ...mapping.sources ?? [],
+        ...mapping.limitations ?? []
+      );
+      if (!p.mappings?.length) section("Mappings", "(none)");
+      section("Relationship kinds", "rename · equivalent · specialization · partial", "A rename between metamodel versions does not establish equivalence of every inherited property, endpoint or constraint.");
     } else if (topic === "types") definitions("nodeTypes", "node types");
     else if (topic === "relations") definitions("relationTypes", "relationship types");
     else if (topic === "viewpoints") definitions("viewpoints", "viewpoints");
@@ -13041,7 +13169,7 @@ var arch = (() => {
         "arch.renderAll({ root, selector, ...options }) → rendered SVG elements",
         "arch.renderMarkdown(markdown, options) → HTML with inline SVG"
       );
-      section("Registration", "arch.registerProfile(name, definition)", "arch.getProfiles() → registered IDs", "arch.getProfile(name) → independent profile copy", "arch.registerIconPack(name, data)  // Iconify or converted paths", "arch.getIconPacks() → registered pack names", 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
+      section("Registration", "arch.registerProfile(name, definition)", "arch.getProfiles() → registered IDs", "arch.getProfile(name) → independent profile copy; name may be PROFILE@VERSION", "arch.getProfileVersions(name) → registered revision strings for an ID", "arch.registerIconPack(name, data)  // Iconify or converted paths", "arch.getIconPacks() → registered pack names", 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
       section("Options", "profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.", "validation: strict | draft; overrides config.validation. Incomplete drafts have warning diagnostics and conformant: false; layout returns kind notices with content and enlarged bounds.", "view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.", "theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.", "Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.");
     }
     return { topic, profile, title: topic ? `Help · ${topic}` : "arch.js · Help", sections };

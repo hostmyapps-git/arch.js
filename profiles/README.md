@@ -13,7 +13,9 @@ Diese Anleitung beschreibt das generische Profilschema. Sprach-/API-Vertrag:
 Architekturquellen können zusätzlich zur DSL als [JSON](../JSON.md) beschrieben
 werden. Deren Inline-`config` verwendet die DSL-Schlüssel `type`, `relation`,
 `viewpoint` und `attribute`. Das hier beschriebene vollständige Profilformat mit
-`nodeTypes`/`relationTypes` für `registerProfile()` bleibt unverändert.
+`nodeTypes`/`relationTypes` für `registerProfile()` bleibt ein separates Format.
+Dieses unterstützt zusätzlich Aliasdefinitionen und dokumentierte
+Metamodell-Mappings; sie sind keine neuen Inline-DSL-Schlüssel.
 
 ## Variante 1: Profil als Parameter
 
@@ -56,6 +58,29 @@ arch.registerProfile('company', profile);
 arch.render('#diagram', source, { profile: 'company' });
 arch.parse(source, { profile: 'company' });
 ```
+
+`profile: 'company@1'` wählt ausdrücklich diese geladene Revision; in der DSL
+`config { profile "company@1" }`. Ohne Versionssuffix gilt die zuletzt
+registrierte Definition. `arch.getProfileVersions('company')` listet geladene
+Versionen; `getProfile('company@1')` liefert die konkrete Kopie. Auch `extends`
+akzeptiert `ID@VERSION`. Explizit versionierte Definitionen sind unveränderlich:
+bei Änderungen die Version erhöhen; identische Wiederregistrierung ist möglich.
+Registrierungen ohne explizite Version bleiben wie bisher per ID ersetzbar.
+Historische Revisionen müssen selbst geladen werden.
+
+Ein externer Profilzusatz wie
+`aliases: { nodeTypes: { Service: 'ServiceSpecification' } }` macht zwei Namen
+semantisch identisch. Das gilt symmetrisch für Vererbung, Endpunkte, Referenzen,
+Container, Viewpoint-Selektoren und Diagrammfilter. Die Schreibweise im Modell
+bleibt erhalten. Relationsaliase stehen unter `aliases.relationTypes`.
+Zyklen, fehlende Ziele, Namenskollisionen und eigene Aliasregeln sind Fehler.
+`extends` bleibt dagegen eine gerichtete Spezialisierung mit eigener Identität.
+
+`mappings` dokumentiert versionierte Framework-Zuordnungen als `rename`,
+`equivalent`, `specialization` oder `partial`; die Metadaten führen keine
+Modellkonvertierung aus. Neue Hilfe: `@help aliases [PROFILE]` und
+`@help mappings [PROFILE]`. Vollständiges generisches Schema, Beispiel und
+NAF-Service-Migration: [Aliase und Mappings](naf41/ALIASES.md).
 
 Ein geladenes JSON-Objekt wird genauso registriert. Die Engine lädt keine URLs
 automatisch. Über HTTP kann `fetch()` verwendet werden; in Node `readFile()`.
@@ -176,7 +201,9 @@ Capability→Capability begrenzt.
 
 | Bereich | Unterstützte Einstellungen |
 | --- | --- |
-| Profil | `styleGroups`, `id`, `title`, `version`, `extends`, `defaultRelation`, `requireViewpoint` |
+| Profil | `styleGroups`, `id`, `title`, `version`, `extends`, `defaultRelation`, `requireViewpoint`, `aliases`, `mappings` |
+| `aliases.nodeTypes` / `aliases.relationTypes` | Aliasname → Zielname oder Objekt mit `target` und Dokumentation; nur externes Profilformat |
+| `mappings[]` | `kind`, `relationship`, `source`, `target` und Dokumentation; rein beschreibend |
 | `nodeTypes.NAME` | `extends`, `template`, `abstract`, `container`, `contains`, `attributes`, `icon`, `accent`, `styleGroup`, `backgroundColor`, `comparisons` |
 | `relationTypes.NAME` | `extends`, `from`, `to`, `directions`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic`, `referenceLabels`, `referenceDisplay`, `referenceOccurrences` |
 | `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections`, `references` |

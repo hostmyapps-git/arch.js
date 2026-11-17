@@ -159,6 +159,8 @@ test('native enum, required boolean, URI and temporal attributes are validated a
 
 test('generic profile dependency ordering registers bases before derived profiles and rejects ambiguous graphs', () => {
   assert.deepEqual(orderProfiles([naf,uaf]).map(p => p.id), ['uaf','naf4-uaf']);
+  assert.deepEqual(orderProfiles([{id:'derived',extends:`uaf@${uaf.version}`},uaf]).map(p=>p.id),['uaf','derived']);
+  assert.throws(()=>orderProfiles([{id:'derived',extends:'uaf@missing'},uaf]),/Missing or cyclic/);
   assert.throws(() => orderProfiles([{id:'x',extends:'missing'}]), /Missing or cyclic/);
   assert.throws(() => orderProfiles([{id:'x',extends:'y'},{id:'y',extends:'x'}]), /cyclic/);
   assert.throws(() => orderProfiles([{id:'x'},{id:'x'}]), /Duplicate/);

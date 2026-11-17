@@ -63,7 +63,6 @@ edge('TriggersEnterprisePhase', 'EnterprisePhase', 'EnterprisePhase', 102, 'Trig
 edge('SchedulesCapability', 'CapabilityProject', 'CapabilityMilestone', 102, 'Project to scheduled milestone.');
 
 // Service structure, explicit state/lifeline/parameter adapters.
-node('Service', 'ServiceSpecification', 104, 'NAF S1 Service vocabulary, as displayed in the p.105 example. A concrete subtype of UAF ServiceSpecification; inherited attributes, service relationships and viewpoint compatibility apply. Distinct from the actual instance type ActualService.');
 node('ServiceGroup', 'UAFElement', 104, 'A grouping of service specifications.');
 node('ServiceConstraint', 'Rule', 121, 'An individual constraint grouped by a service policy.');
 node('ServiceFunctionParameter', 'ServiceParameter', 119, 'Parameter of a service function.', { attributes: { owner: ref('ServiceFunction'), resource: ref('PhysicalPassiveResource DataElement') } });
@@ -236,8 +235,8 @@ view('Cr', 'Capability Roadmap', 102, 'Increments deliver capabilities and may r
     'AggregatesEnterprisePhase and TriggersEnterprisePhase are authored binary application adapters, directed whole-to-part and triggering-to-following phase. Each type is acyclic and disallows self-links as an application rule. No single-parent ownership, UML TemporalPart/slot semantics, execution, guards or date ordering between phases is inferred.',
     'CapabilityIncrement is a distinct UAFElement adapter, not an ActualEnterprisePhase/Achiever/ActualState. Earlier implicit compatibility with AchievedEffect and ActualEnterprisePhase relationships no longer applies. Optional startDate/endDate retain ISO date-time validation and ordering.',
     'Connected views reproduce the explanatory p.103 structure. A time-based Gantt representation needs actual schedule dates; the sample does not invent them.']);
-view('S1', 'Service Taxonomy', 104, 'Service specialization taxonomy. Service is the NAF vocabulary subtype of UAF ServiceSpecification; policies and nested groups are optional context.', 'ServiceSpecification ServiceGroup ServicePolicy', 'ServiceGeneralization GroupsService AggregatesServiceGroup SatisfiesServicePolicy ServicePolicySatisfiedBy', 'ServiceSpecification', '', [], [],
-  ['Service extends ServiceSpecification, so mixed vocabulary and all inherited service endpoints remain compatible. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.',
+view('S1', 'Service Taxonomy', 104, 'Service specialization taxonomy. Service is a vocabulary alias of UAF 1.0 ServiceSpecification in this application profile; policies and nested groups are optional context.', 'ServiceSpecification ServiceGroup ServicePolicy', 'ServiceGeneralization GroupsService AggregatesServiceGroup SatisfiesServicePolicy ServicePolicySatisfiedBy', 'ServiceSpecification', '', [], [],
+  ['Service aliases ServiceSpecification in both directions, preserving written labels and inherited service rules. This is not an implementation of the UAF 1.2 service metamodel. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.',
     'SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.',
     'GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.',
     'Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges.']);
@@ -294,9 +293,26 @@ relationTypes.LogicalInteraction.sources.push(source(132));
 relationTypes.LogicalInteraction.description += ' The default connected presentation uses reference cards attached to the flow, following the example on page 132 with the original arch.js templates and colors.';
 
 export const definition = {
-  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.9', extends: 'uaf',
+  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.10', extends: 'uaf@1.0.0-arch.1',
   description: 'All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.',
   sources: [source('78–82, 88–190'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — inherited UAF 1.0 catalog', 'ReferenceDocs/nafv4/NAFv4-ADMBw-MDG-2026.05.xml — supporting comparison only; its declared foundation is NAF 4.0'],
   limitations: [mappingLimit, 'No certification or complete NAF/UAF conformance is claimed. All 47 IDs are covered structurally, not all normative semantics.', 'The inherited UAF coverage report still applies, including deferred native constraints. Application adapters are identified in type help.', 'Only included view elements/links count toward viewpoint connection rules. Typed references resolve in the model; designated structural references must also be visible.', 'NAF methodology, stakeholder approval, full state/sequence execution semantics and qualitative completeness require human review. See profiles/naf41/COVERAGE.md.'],
+  aliases: { nodeTypes: { Service: {
+    target: 'ServiceSpecification',
+    description: 'NAF S1 vocabulary resolved to UAF 1.0 ServiceSpecification in this application profile. ActualService remains distinct.',
+    sources: [source('104–105'), 'https://issues.omg.org/issues/UAF12-33'],
+    limitations: ['UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence.'],
+  } } },
+  mappings: [{ kind: 'node', relationship: 'equivalent',
+    source: { framework: 'NAF', version: '4.1', type: 'Service' },
+    target: { framework: 'UAF', version: '1.0', type: 'ServiceSpecification' },
+    description: 'Explicit application-profile vocabulary equivalence for S1. Executable identity is defined separately by aliases.nodeTypes.Service.',
+    sources: [source('104–105')], limitations: [mappingLimit],
+  }, { kind: 'node', relationship: 'rename',
+    source: { framework: 'UAF', version: '1.0', type: 'ServiceSpecification' },
+    target: { framework: 'UAF', version: '1.2', type: 'Service' },
+    description: 'Documented UAF rename. Descriptive only: other service concepts and relationships also changed in UAF 1.2.',
+    sources: ['https://issues.omg.org/issues/UAF12-33'], limitations: ['No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted.'],
+  }],
   requireViewpoint: true, defaultRelation: null, nodeTypes, relationTypes, viewpoints,
 };

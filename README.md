@@ -229,6 +229,20 @@ const report = arch.validate(source, { profile: 'enterprise-demo' });
 // report.valid, report.diagnostics: Fehler mit Element, Attribut und Quellposition
 ```
 
+Externe Profile unterstützen getrennte `aliases.nodeTypes` und
+`aliases.relationTypes`. Ein Alias ist derselbe semantische Typ unter anderem
+Namen; `extends` bleibt echte Spezialisierung. Ursprüngliche Namen bleiben in
+Diagrammen und JSON-/DSL-Übersetzungen erhalten. `mappings` dokumentiert
+Framework-/Versionszuordnungen und konvertiert keine Modelle automatisch.
+
+Mit `config { profile "naf41-uaf@4.1.0-arch.10" }` lässt sich eine geladene
+Revision ausdrücklich auswählen. `arch.getProfileVersions('naf41-uaf')` zeigt
+verfügbare Versionen; unqualifizierte IDs wählen die zuletzt registrierte.
+Explizit versionierte Definitionen benötigen bei Änderungen eine neue Version.
+Hilfe: `@help aliases naf41-uaf`, `@help mappings naf41-uaf` und
+`@help types naf41-uaf Service`. Format, Grenzen und Migration:
+[Aliase und Mappings](profiles/naf41/ALIASES.md).
+
 Oder ein vereinfachtes eigenes Profil direkt im Dokument definieren:
 
 ```arch
@@ -335,7 +349,7 @@ wie im PDF implizite Properties sein. Die neuen Phasenbeziehungen sind explizite
 Anwendungsadapter; [Abbildung und Migration](profiles/naf41/CR-MAPPING.md) erklären
 die Trennung von UAF/ADMBw und die korrigierte Increment-Vererbung.
 
-S1 akzeptiert `Service` als konkreten Untertyp von UAF `ServiceSpecification`,
+S1 akzeptiert `Service` als Alias von UAF 1.0 `ServiceSpecification`,
 entsprechend S.104–105. `ServiceGeneralization` führt vom spezialisierten zum
 allgemeinen Service, `SatisfiesServicePolicy` vom Service zur Policy.
 [Vollständiges S1-Beispiel](examples/naf41-service-taxonomy.arch), auch in der

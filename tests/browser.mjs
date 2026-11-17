@@ -45,7 +45,7 @@ try {
     const issues = [], host = document.createElement('div'); document.body.append(host);
     const queries = ['', 'syntax', 'model', 'profiles', 'types uaf Capability', 'types uaf OperationalAgent', 'relations uaf Implements', 'connections uaf OperationalPerformer', 'viewpoints naf4-uaf C1', 'profiles naf41-uaf', 'viewpoints naf41-uaf C7', 'types naf41-uaf Needline', 'connections naf41-uaf OperationalPerformer', 'iconpacks lucide cloud', 'iconpacks tabler "*" 2', 'diagrams', 'views', 'routing', 'styles', 'colors', 'templates', 'config', 'api'];
     arch.registerProfile('wide_help', { title: '界'.repeat(300), nodeTypes: { ['Long'.repeat(80)]: { attributes: { note: { enum: ['🙂界'.repeat(200)] } } } } });
-    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80));
+    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80), 'aliases naf41-uaf', 'mappings naf41-uaf', 'types naf41-uaf@4.1.0-arch.10 Service');
     for (const query of queries) for (const theme of ['light', 'dark']) {
       const svg = arch.render(host, '@help ' + query, { theme });
       if (new DOMParser().parseFromString(svg.outerHTML, 'image/svg+xml').querySelector('parsererror')) issues.push(`Invalid SVG: ${query}`);
@@ -89,6 +89,22 @@ try {
   await helpPreview.locator('svg').screenshot({ path: 'test-results/help-icons.png' });
   await helpPreview.close();
   console.log('✓ Built-in help, registered types/icons, SVG export, themes, bounds and error recovery');
+  const aliasChecks=await page.evaluate(()=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    const source='architecture "Mixed service names" {config {profile "naf41-uaf@4.1.0-arch.10"} model {ServiceSpecification general "General service" Service specialized "Specialized service" relation kind specialized -> general "is a kind of" {type ServiceGeneralization}} view s1 "S1" {viewpoint S1 diagram tree}}';
+    for(const theme of ['light','dark']) {
+      const svg=arch.render(host,source,{theme});
+      if(svg.querySelector('[data-node="specialized"]')?.getAttribute('data-type')!=='Service')issues.push('Written node type lost');
+      if(!svg.textContent.includes('ServiceSpecification')||!svg.textContent.includes('Service'))issues.push('Written stereotypes lost');
+      if(arch.renderToString(source,{theme,idPrefix:'alias-roundtrip'})!==arch.renderToString(arch.translate(source),{theme,idPrefix:'alias-roundtrip'}))issues.push('Alias JSON roundtrip changed SVG');
+      for(const text of svg.querySelectorAll('text')) {
+        const box=text.getBBox(),bounds=svg.viewBox.baseVal;
+        if(box.x<bounds.x||box.y<bounds.y||box.x+box.width>bounds.x+bounds.width||box.y+box.height>bounds.y+bounds.height)issues.push('Alias label clipped');
+      }
+    }
+    host.remove();return issues;
+  });
+  assert.deepEqual(aliasChecks,[],'Version-pinned mixed Service vocabulary, source preservation, JSON and themes');
   await page.locator('#source').fill('architecture "Test"{\n    @help profiles\n    model {}\n}');
   await page.locator('#render-button').click();
   assert.equal(await page.locator('#error').isVisible(), false);

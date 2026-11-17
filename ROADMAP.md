@@ -8,7 +8,14 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
 
-- S1-Vokabularadapter `Service extends ServiceSpecification`, quellgerichtetes
+- Generische Knoten-/Relationsaliase mit symmetrischer Typidentität,
+  erhaltener Quellnotation und versionierter Profilwahl. Service ist im
+  NAF-Profil ein Alias von ServiceSpecification; Goal und Constraint bleiben
+  Untertypen. Mappings dokumentieren Framework-/Versionskorrespondenzen;
+  automatische Metamodellmigration und die fachliche Gleichsetzung weiterer
+  Begriffe bleiben offen. Siehe `profiles/naf41/ALIASES.md`.
+
+- S1-Vokabularalias `Service → ServiceSpecification`, quellgerichtetes
   `SatisfiesServicePolicy` und verschachtelte Servicegruppen. Vollständiges
   Beispiel von S.105 mit gefilterter Tree-Gruppe und Policy-Kontext in der Demo;
   native Typen und vorhandene inverse Policy-Beziehungen bleiben kompatibel.
@@ -24,7 +31,7 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
   in `profiles/naf41/CR-MAPPING.md`; vollständige UML-/Ausführungssemantik bleibt offen.
 
 - Opt-in-Bündelung von Fan-in-/Fan-out-Kanten über `sharePath stereotypes|all|none`
-  in Connected-Views samt Tree-Gruppen. Gleiche tatsächliche Typen oder explizit
+  in Connected-Views samt Tree-Gruppen. Gleiche semantische Typen einschließlich Aliasnamen oder explizit
   kompatible verschiedene Typen; separate Labels/Icons und logische Pfade für
   Zuordnungen. Freie Korridore erforderlich, kein allgemeines Edge-Bundling.
 - C8-Vokabularadapter `Constraint` und `OriginatesFromRationale`, quellgebunden

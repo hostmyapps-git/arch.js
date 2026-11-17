@@ -48,6 +48,8 @@ Ebene des `architecture`-Blocks.
 | `@help meta` | Meta-View, DSL-/JSON-Übersetzung, Fehlerstellen und Korrekturkandidaten |
 | `@help model` | Elemente, Container, Beziehungen, Standardattribute |
 | `@help profiles [PROFILE]` | Registrierte Profile bzw. deren Übersicht |
+| `@help aliases [PROFILE]` | Aliasnamen und kanonische Typziele |
+| `@help mappings [PROFILE]` | Dokumentierte Metamodellzuordnungen mit Versionen und Grenzen |
 | `@help types [PROFILE [TYPE]]` | Knotentypen bzw. expandierte Typdefinition |
 | `@help relations [PROFILE [RELATION]]` | Relationstypen bzw. Endpunkt- und Attributregeln |
 | `@help connections [PROFILE [TYPE]]` | Erlaubte eingehende/ausgehende Relationen für einen Knotentyp |
@@ -206,7 +208,7 @@ Ein Tree über alle Beziehungen würde Hierarchie und Trigger vermischen;
 für eine Tree-Gruppe nur `relations [AggregatesEnterprisePhase]` auswählen.
 
 Für S1 stehen `Service` und `ServiceSpecification` zur Verfügung. Der erste
-Name erweitert den zweiten als NAF-Vokabularadapter; ActualService bleibt separat.
+Name ist ein Alias des zweiten mit identischer Typsemantik; ActualService bleibt separat.
 `@help connections naf41-uaf Service` zeigt die geerbten Beziehungen.
 Spezialisierung: `ServiceGeneralization`, spezialisiert → allgemein.
 Policy-Erfüllung: `SatisfiesServicePolicy`, Service → ServicePolicy.
@@ -638,3 +640,21 @@ Eine Mehrfachview-Ausgabe ist eine gemeinsame SVG-Ausgabe; ein Renderfehler in
 einer ausgewählten View verhindert sie vollständig. Unabhängige DOM-Codeblöcke
 werden durch `renderAll()` getrennt behandelt. `renderMarkdown()` bietet diese
 Fehlerisolation nicht. API-Vertrag: [SPEC.md](SPEC.md#prüfgrenzen-und-fehlerverhalten).
+
+## Aliasnamen, Mappings und Versionen
+
+`@help aliases naf41-uaf` listet Aliasnamen und ihre kanonischen Ziele.
+`@help mappings naf41-uaf` zeigt dokumentierte Framework-/Versionszuordnungen.
+`@help types naf41-uaf Service` zeigt Aliasidentität und vollständige Regeln;
+`@help connections naf41-uaf Service` berücksichtigt die gemeinsame Identität.
+Jeweils einen Befehl pro Hilfedokument verwenden; `.` wählt das Dokumentprofil.
+
+Eine geladene Revision lässt sich mit
+`config { profile "naf41-uaf@4.1.0-arch.10" }` festlegen. Auch die Hilfebefehle
+akzeptieren diesen qualifizierten Profilnamen. Unqualifizierte IDs bleiben
+möglich. `arch.getProfileVersions('naf41-uaf')` zeigt geladene Revisionen;
+es werden keine historischen Dateien automatisch geladen.
+
+Aliase werden im externen JSON-Profil definiert, nicht im Inline-config-Block.
+Mappings allein akzeptieren keine zusätzlichen Modelltypen. Details und Beispiele:
+[Aliase und Mappings](profiles/naf41/ALIASES.md).

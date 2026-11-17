@@ -251,7 +251,15 @@ automatisch. Syntax und Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
 
 ### Inline-Profile und Hilfe
 
-Ein registriertes Profil wird über `config.profile` gewählt. Inline-Definitionen
+Ein registriertes Profil wird über `config.profile` gewählt. Eine konkrete
+geladene Revision kann beispielsweise mit
+`"config": { "profile": "naf41-uaf@4.1.0-arch.10" }` gebunden werden.
+Aliasnamen bleiben in den `type`-Feldern auch bei JSON-/DSL-Übersetzungen
+erhalten. `aliases` und `mappings` gehören zum vollständigen externen
+Registrierungsformat, nicht zur Inline-Konfiguration:
+[Aliase und Mappings](profiles/naf41/ALIASES.md).
+
+Inline-Definitionen
 verwenden die originalen DSL-Schlüssel `type`, `relation`, `viewpoint`,
 `styleGroup` und `attribute` beziehungsweise `attributes`:
 

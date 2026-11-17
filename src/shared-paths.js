@@ -35,7 +35,7 @@ export function shareEdgePaths(edges,nodes,routes,path) {
       if(!hub||!leaf||hub.container||leaf.container||hub.parent!==leaf.parent)continue;
       const hubPoint=incoming?edge.points.at(-1):edge.points[0],leafPoint=incoming?edge.points[0]:edge.points.at(-1),port=side(hub,hubPoint);
       if(!port||side(leaf,leafPoint)!==opposite[port])continue;
-      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?edge.type:null,edge.style,edge.direction??'forward',r.curve??'orthogonal',routeStyleKey(edge)]);
+      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?(edge.canonicalType??edge.type):null,edge.style,edge.direction??'forward',r.curve??'orthogonal',routeStyleKey(edge)]);
       if(!groups.has(key))groups.set(key,[]);
       groups.get(key).push({edge,hub,leaf,port,leafPoint});
     }

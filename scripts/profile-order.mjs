@@ -1,5 +1,5 @@
 // Dependency ordering is generic: no knowledge of particular framework IDs.
-export function orderProfiles(definitions, available = ['default']) {
+export function orderProfiles(definitions, available = ['default', 'default@1']) {
   const known = new Set(available), pending = new Map(), result = [];
   for (const definition of definitions) {
     if (!definition || typeof definition.id !== 'string') throw new Error('Every profile file requires an id');
@@ -9,7 +9,7 @@ export function orderProfiles(definitions, available = ['default']) {
   while (pending.size) {
     const ready = [...pending.values()].filter(definition => !definition.extends || known.has(definition.extends));
     if (!ready.length) throw new Error(`Missing or cyclic profile dependencies: ${[...pending.keys()].join(', ')}`);
-    for (const definition of ready) { pending.delete(definition.id); known.add(definition.id); result.push(definition); }
+    for (const definition of ready) { pending.delete(definition.id); known.add(definition.id); if (definition.version) known.add(`${definition.id}@${definition.version}`); result.push(definition); }
   }
   return result;
 }

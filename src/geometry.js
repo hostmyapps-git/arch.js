@@ -1,5 +1,5 @@
 import { ArchError, validateModel } from './parser.js';
-import { resolveProfile, visibleNodeIds } from './profiles.js';
+import { resolveProfile, visibleNodeIds, canonicalType } from './profiles.js';
 import { layoutDiagram } from './diagrams.js';
 import { relationshipLabel, relationshipReferences } from './relationship-labels.js';
 import { routingOptions } from './routing-options.js';
@@ -327,7 +327,7 @@ export function layout(model, options = {}) {
     const referenceDisplay = view.referenceDisplay ?? rule.referenceDisplay ?? 'labels';
     const referenceItems = referenceDisplay === 'labels' ? [] : relationshipReferences(edge, rule).filter(item => byId.has(item.id) && !byId.get(item.id).container);
     const referenceOccurrences = view.referenceOccurrences ?? rule.referenceOccurrences ?? 'shared';
-    return { ...edge, type, style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
+    return { ...edge, type, ...(rule.aliasOf ? { canonicalType: canonicalType(type, profile.relationTypes) } : {}), style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
   });
   if(view.diagram?.type==='tree')return layoutTree(model,profile,view,nodes,edges);
   if (view.diagram && view.diagram.type !== 'connected') return layoutDiagram(model, profile, view, nodes, edges);

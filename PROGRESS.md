@@ -1,5 +1,40 @@
 # Umsetzungsfortschritt
 
+## Aliase und versionierte Metamodell-Zuordnungen (17.11.2026)
+
+- Generische `aliases.nodeTypes` / `aliases.relationTypes` mit Alias-Ketten,
+  kanonischer Typidentität und symmetrischen Selektoren implementiert.
+  Abstraktheit, Attribute, Referenzziele, Container, Paare/Ausschlüsse,
+  Kardinalität, Zyklen und Viewpoint-Regeln verwenden dieselbe Semantik;
+  Relationstypen werden bei Zählung/Zyklusprüfung nicht doppelt ausgewertet.
+- Geschriebene `.type`, SVG-Stereotype/`data-type`, Diagnosen und JSON-/DSL-Quellen
+  bleiben erhalten. Relationsaliase können mit `sharePath stereotypes` gemeinsame
+  Pfade bilden. Referenz-Korrekturvorschläge berücksichtigen Aliasidentität.
+- `PROFILE@VERSION` in Dokument/API/Profilbasis und Hilfe; neue API
+  `getProfileVersions(ID)`. Gleichzeitige Revisionen und eingefrorene
+  Modell-Snapshots; explizite Versionen dürfen nicht mit verändertem Inhalt
+  überschrieben werden. Legacy-Registrierungen ohne Version bleiben ersetzbar.
+- `mappings` beschreibt `rename`, `equivalent`, `specialization`, `partial` mit
+  Framework-/Versionsendpunkten und Quellen; keine automatische Konvertierung.
+  Neue englische Hilfe `@help aliases` / `@help mappings` und Aliasidentität in
+  Typdetails. Profilübersichten zählen semantische Typen und Aliase getrennt.
+- `naf41-uaf@4.1.0-arch.10` stellt Service auf einen Alias von UAF 1.0
+  ServiceSpecification um und bindet `uaf@1.0.0-arch.1`. Goal und Constraint
+  bleiben Untertypen. 287 semantische Knoten, ein Knotenalias, 143 Relationstypen,
+  47 Viewpoints. UAF-1.2-Umbenennung wird als beschreibendes Mapping mit
+  ausdrücklicher Begrenzung dokumentiert, nicht als vollständige Äquivalenz.
+- Dokumentation in `profiles/naf41/ALIASES.md`, Profilanleitungen,
+  README/SPEC/HELP/JSON/DIAGRAMS/ROADMAP und generiertem Abdeckungsbericht ergänzt.
+  Eigene Service-Typdefinitionen in abgeleiteten Profilen müssen bei der neuen
+  Basisrevision geprüft werden; ältere Revisionen werden nicht automatisch geladen.
+
+Verifikation: Build, **291 Node-Testgruppen** und vollständige Chromium-Suite
+bestanden. Acht neue Alias-Testgruppen prüfen symmetrische Identität,
+Vererbung, Referenzen, View-Regeln, doppelfreie Kardinalitäts-/Zyklusprüfung,
+Fehlerfälle, Profil-Snapshots/Revisionen, Metadaten/Hilfe, gemeinsame Pfade,
+Quellnotation und beide Bundles. Browser prüft neue Hilfe/Bounds und gemischte
+Service-/ServiceSpecification-Quellen mit Versionsbindung, JSON und beiden Themes.
+
 ## S1: Service-Vokabular und Beispiel von S.105 (17.11.2026)
 
 - NAFv4.1 S.104–105 vollständig visuell geprüft. `Service` als konkreten

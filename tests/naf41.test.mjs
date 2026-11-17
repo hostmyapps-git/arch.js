@@ -34,9 +34,9 @@ test('S1 accepts p.105 Service vocabulary, specialization and the service-to-pol
   }
 });
 
-test('Service inherits native ServiceSpecification compatibility without changing UAF or conflating ActualService',()=>{
+test('Service aliases native ServiceSpecification without changing UAF or conflating ActualService',()=>{
   const type=arch.getProfile('naf41-uaf').nodeTypes.Service;
-  assert.deepEqual(type.extends,['ServiceSpecification']);assert.equal(type.abstract,false);assert.equal(type.template,'service');
+  assert.equal(type.aliasOf,'ServiceSpecification');assert.deepEqual(type.extends,arch.getProfile('naf41-uaf').nodeTypes.ServiceSpecification.extends);assert.equal(type.abstract,false);assert.equal(type.template,'service');
   assert.equal(arch.getProfile('uaf').nodeTypes.Service,undefined);
   const mixed=cases.S1.replace('ServiceSpecification service','Service service');assert.equal(arch.validate(document('S1',mixed)).valid,true);
   for(const id of ['S2','S3','S4','S6','C1-S1'])assert.equal(arch.validate(document(id,cases[id].replaceAll('ServiceSpecification','Service'))).valid,true,id);

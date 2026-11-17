@@ -6,6 +6,8 @@ export const topics = {
   meta: ['Translate DSL/JSON and inspect source correction candidates', 0],
   model: ['Elements, containers, relationships and attributes', 0],
   profiles: ['Registered profiles and profile summaries', 1],
+  aliases: ['Alternative names and their canonical types', 1],
+  mappings: ['Documented metamodel correspondences (not conversions)', 1],
   types: ['Node types and inherited attribute rules', 2],
   relations: ['Relationship types, endpoints and rules', 2],
   connections: ['Allowed incoming/outgoing relationships for a node type', 2],
@@ -22,7 +24,7 @@ export const topics = {
 };
 const aliases = { icons: 'iconpacks', profile: 'profiles', nodes: 'types', edges: 'relations', diagram: 'diagrams', view: 'views', style: 'styles' };
 const usage = {
-  profiles: '@help profiles [PROFILE]', types: '@help types [PROFILE [TYPE]]',
+  profiles: '@help profiles [PROFILE]', aliases: '@help aliases [PROFILE]', mappings: '@help mappings [PROFILE]', types: '@help types [PROFILE [TYPE]]',
   relations: '@help relations [PROFILE [RELATION]]', viewpoints: '@help viewpoints [PROFILE [VIEWPOINT]]',
   connections: '@help connections [PROFILE [TYPE]]',
   iconpacks: '@help iconpacks [PACK [FILTER [PAGE]]]', diagrams: '@help diagrams [TYPE]', colors: '@help colors [FILTER]',

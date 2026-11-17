@@ -1,8 +1,8 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.9",
-  "extends": "uaf",
+  "version": "4.1.0-arch.10",
+  "extends": "uaf@1.0.0-arch.1",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
     "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 78–82, 88–190 (NAFv4.1, 2026.03)",
@@ -15,6 +15,65 @@
     "The inherited UAF coverage report still applies, including deferred native constraints. Application adapters are identified in type help.",
     "Only included view elements/links count toward viewpoint connection rules. Typed references resolve in the model; designated structural references must also be visible.",
     "NAF methodology, stakeholder approval, full state/sequence execution semantics and qualitative completeness require human review. See profiles/naf41/COVERAGE.md."
+  ],
+  "aliases": {
+    "nodeTypes": {
+      "Service": {
+        "target": "ServiceSpecification",
+        "description": "NAF S1 vocabulary resolved to UAF 1.0 ServiceSpecification in this application profile. ActualService remains distinct.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104–105 (NAFv4.1, 2026.03)",
+          "https://issues.omg.org/issues/UAF12-33"
+        ],
+        "limitations": [
+          "UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence."
+        ]
+      }
+    }
+  },
+  "mappings": [
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "Service"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceSpecification"
+      },
+      "description": "Explicit application-profile vocabulary equivalence for S1. Executable identity is defined separately by aliases.nodeTypes.Service.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104–105 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "rename",
+      "source": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceSpecification"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.2",
+        "type": "Service"
+      },
+      "description": "Documented UAF rename. Descriptive only: other service concepts and relationships also changed in UAF 1.2.",
+      "sources": [
+        "https://issues.omg.org/issues/UAF12-33"
+      ],
+      "limitations": [
+        "No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted."
+      ]
+    }
   ],
   "requireViewpoint": true,
   "defaultRelation": null,
@@ -231,19 +290,6 @@
       "description": "A project scheduling capability milestones.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
-      ],
-      "limitations": [
-        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
-      ]
-    },
-    "Service": {
-      "extends": [
-        "ServiceSpecification"
-      ],
-      "styleGroup": "service",
-      "description": "NAF S1 Service vocabulary, as displayed in the p.105 example. A concrete subtype of UAF ServiceSpecification; inherited attributes, service relationships and viewpoint compatibility apply. Distinct from the actual instance type ActualService.",
-      "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
@@ -3418,13 +3464,13 @@
     },
     "S1": {
       "title": "Service Taxonomy",
-      "description": "Service specialization taxonomy. Service is the NAF vocabulary subtype of UAF ServiceSpecification; policies and nested groups are optional context.",
+      "description": "Service specialization taxonomy. Service is a vocabulary alias of UAF 1.0 ServiceSpecification in this application profile; policies and nested groups are optional context.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
-        "Service extends ServiceSpecification, so mixed vocabulary and all inherited service endpoints remain compatible. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
+        "Service aliases ServiceSpecification in both directions, preserving written labels and inherited service rules. This is not an implementation of the UAF 1.2 service metamodel. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
         "SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.",
         "GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.",
         "Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges."

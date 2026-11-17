@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.9",
+  "version": "4.1.0-arch.10",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,12 +25,72 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 75,
+    "applicationNodeAdapters": 74,
     "applicationRelations": 100,
-    "totalNodes": 288,
+    "nodeAliases": 1,
+    "totalNodes": 287,
     "totalRelations": 143,
     "viewpoints": 47
   },
+  "aliases": {
+    "nodeTypes": {
+      "Service": {
+        "target": "ServiceSpecification",
+        "description": "NAF S1 vocabulary resolved to UAF 1.0 ServiceSpecification in this application profile. ActualService remains distinct.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104–105 (NAFv4.1, 2026.03)",
+          "https://issues.omg.org/issues/UAF12-33"
+        ],
+        "limitations": [
+          "UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence."
+        ]
+      }
+    }
+  },
+  "mappings": [
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "Service"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceSpecification"
+      },
+      "description": "Explicit application-profile vocabulary equivalence for S1. Executable identity is defined separately by aliases.nodeTypes.Service.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104–105 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "rename",
+      "source": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceSpecification"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.2",
+        "type": "Service"
+      },
+      "description": "Documented UAF rename. Descriptive only: other service concepts and relationships also changed in UAF 1.2.",
+      "sources": [
+        "https://issues.omg.org/issues/UAF12-33"
+      ],
+      "limitations": [
+        "No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted."
+      ]
+    }
+  ],
   "adapters": [
     "Goal",
     "Effect",
@@ -44,7 +104,6 @@
     "CapabilityIncrement",
     "CapabilityMilestone",
     "CapabilityProject",
-    "Service",
     "ServiceGroup",
     "ServiceConstraint",
     "ServiceFunctionParameter",
@@ -175,7 +234,7 @@
       "page": 104,
       "status": "structural application checks",
       "limitations": [
-        "Service extends ServiceSpecification, so mixed vocabulary and all inherited service endpoints remain compatible. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
+        "Service aliases ServiceSpecification in both directions, preserving written labels and inherited service rules. This is not an implementation of the UAF 1.2 service metamodel. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
         "SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.",
         "GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.",
         "Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges."

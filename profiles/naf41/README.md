@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.9` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.10` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -50,11 +50,15 @@ for exact semantics, validation limits and UAF/ADMBw differences.
 
 ## S1 — Service Taxonomy vocabulary
 
-`Service` is the p.104–105 NAF vocabulary adapter extending native UAF
-`ServiceSpecification`. Both names are concrete and can be mixed: existing
-service attributes, relationship endpoints and viewpoint rules accept the new
-subtype. It is not an alias for the actual instance type `ActualService` and is
-not added to the native `uaf` profile or imported from the ADMBw MDG.
+`Service` is the p.104–105 NAF vocabulary alias of native UAF 1.0
+`ServiceSpecification`. Both names have the same semantic identity; original
+written stereotypes remain visible. ActualService is a separate instance type.
+The native `uaf` profile is unchanged. This is an application-profile mapping,
+not complete UAF 1.2 compatibility or an import of the ADMBw MDG.
+See [aliases, metamodel mappings and migration](ALIASES.md),
+`@help aliases naf41-uaf` and `@help mappings naf41-uaf`.
+The profile pins `uaf@1.0.0-arch.1`; select this revision explicitly with
+`config { profile "naf41-uaf@4.1.0-arch.10" }` when needed.
 
 | Source relationship | arch.js type | Direction |
 |---|---|---|

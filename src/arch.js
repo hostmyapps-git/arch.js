@@ -9,7 +9,7 @@ import { profileDiagnostics, resolveProfile } from './profiles.js';
 import { validationMode, validationDiagnostics, withValidationNotices, noticesSVG } from './validation-mode.js';
 export { ArchError, parse };
 export { help } from './help.js';
-export { registerProfile, getProfiles, getProfile } from './profiles.js';
+export { registerProfile, getProfiles, getProfile, getProfileVersions } from './profiles.js';
 export { registerIconPack, getIconPacks } from './icons.js';
 export { renderIconToString } from './svg.js';
 export { translate, inspectSource } from './source.js';

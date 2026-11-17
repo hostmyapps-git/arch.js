@@ -55,7 +55,7 @@ test('profiles register atomically, return detached data, and parsed models reta
   assert.ok(arch.getProfiles().includes('snapshot'));
   assert.throws(() => arch.registerProfile('snapshot', { nodeTypes: {} }));
   assert.equal(arch.getProfile('snapshot').nodeTypes.actor.template, 'person');
-  const next = profile('snapshot'); next.nodeTypes.actor.template = 'component'; arch.registerProfile('snapshot', next);
+  const next = profile('snapshot'); next.version = '2'; next.nodeTypes.actor.template = 'component'; arch.registerProfile('snapshot', next);
   assert.equal(arch.layout(model).nodes[0].template, 'person');
   assert.equal(arch.layout(model, { profile: 'snapshot' }).nodes[0].template, 'component');
   assert.equal(arch.layout(JSON.parse(JSON.stringify(model))).nodes[0].template, 'person');

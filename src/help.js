@@ -1,6 +1,6 @@
 import { ArchError } from './errors.js';
 import { getIconPacks, getIconNames } from './icons.js';
-import { getProfiles, getProfile, resolveProfile, concreteSubtypes, typeConnections, TEMPLATES, EDGE_STYLES, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
+import { getProfiles, getProfile, getProfileVersions, resolveProfile, concreteSubtypes, typeConnections, TEMPLATES, EDGE_STYLES, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
 import { DIAGRAMS, DIAGRAM_OPTIONS } from './diagrams.js';
 import { CSS3_COLORS } from './css3-colors.js';
 import { escape } from './svg.js';
@@ -10,6 +10,7 @@ import { topics, syntax, request, parseHelpCommand, helpDocument } from './help-
 const fail = message => { throw new ArchError(message, {}, 'ARCH_HELP'); };
 const list = values => values?.length ? values.join(', ') : '(none)';
 const pageSize = 100;
+const typeCount = definitions => `${Object.values(definitions).filter(rule => !rule.aliasOf).length}${Object.values(definitions).some(rule => rule.aliasOf) ? ` (+${Object.values(definitions).filter(rule => rule.aliasOf).length} aliases)` : ''}`;
 
 function parseHelp(source, options = {}) {
   return { ...helpDocument(parseHelpCommand(source)), profile: resolveProfile({}, options) };
@@ -34,6 +35,13 @@ export function helpContent(model, options = {}) {
       const rule = p[key][args[1]];
       if (!Object.hasOwn(p[key], args[1])) fail(`Unknown name in ${label}: ${args[1]}. Use @help ${topic} ${target}.`);
       if (key === 'nodeTypes') section('Allowed relationships', `@help connections ${target} ${args[1]}`);
+      if (key !== 'viewpoints') {
+        const canonical = rule.aliasOf ?? args[1];
+        const aliases = Object.entries(p[key]).filter(([, r]) => r.aliasOf === canonical).map(([name]) => name);
+        section('Type identity', `Canonical type: ${canonical}`, `Aliases: ${list(aliases)}`,
+          'Aliases have identical semantic rules in both directions; they are not subtypes. Written type names remain in diagrams and source translations.');
+        if (rule.aliasOf && typeof p.aliases?.[key]?.[args[1]] === 'object') section('Alias documentation', JSON.stringify(p.aliases[key][args[1]], null, 2).split('\n'));
+      }
       if (key !== 'viewpoints' && rule.abstract) {
         const candidates = concreteSubtypes(args[1], p[key]);
         section('Concrete subtypes', candidates.length ? candidates.map(name => key === 'nodeTypes'
@@ -45,8 +53,8 @@ export function helpContent(model, options = {}) {
       if (key !== 'viewpoints') section('Built-in attributes', key === 'nodeTypes' ? list(NODE_PROPERTIES) : list(EDGE_PROPERTIES), 'Additional attributes and constraints are listed above under attributes.');
     } else {
       section(label, entries.length ? entries.map(([name, rule]) => key === 'nodeTypes'
-        ? `${name}${rule.abstract ? ' [abstract]' : ''} · template ${rule.template}${rule.container ? ' · container' : ''}`
-        : key === 'relationTypes' ? `${name}${rule.abstract ? ' [abstract]' : ''} · style ${rule.style} · directions ${(rule.directions??['forward']).join(', ')}` : `${name}${rule.title ? ` · ${rule.title}` : ''}`) : ['(none)']);
+        ? `${name}${rule.aliasOf ? ` [alias of ${rule.aliasOf}]` : ''}${rule.abstract ? ' [abstract]' : ''} · template ${rule.template}${rule.container ? ' · container' : ''}`
+        : key === 'relationTypes' ? `${name}${rule.aliasOf ? ` [alias of ${rule.aliasOf}]` : ''}${rule.abstract ? ' [abstract]' : ''} · style ${rule.style} · directions ${(rule.directions??['forward']).join(', ')}` : `${name}${rule.title ? ` · ${rule.title}` : ''}`) : ['(none)']);
       section('Show details', `@help ${topic} ${target} NAME`, 'Use . as PROFILE to inspect the selected document/API profile, including inline definitions.', 'Abstract types support inheritance and cannot be instantiated directly.');
       if (key === 'relationTypes') section('Filter by node type', `@help connections ${target} NODE_TYPE`);
     }
@@ -136,20 +144,42 @@ export function helpContent(model, options = {}) {
   } else if (topic === 'profiles') {
     if (!args.length) section('Registered profiles', getProfiles().map(id => {
       const p = getProfile(id);
-      return `${id} · ${p.version} · ${Object.keys(p.nodeTypes).length} node types · ${Object.keys(p.relationTypes).length} relationship types · ${Object.keys(p.viewpoints).length} viewpoints`;
+      return `${id} · ${p.version} · ${typeCount(p.nodeTypes)} node types · ${typeCount(p.relationTypes)} relationship types · ${Object.keys(p.viewpoints).length} viewpoints`;
     }));
     else {
       const p = getProfile(args[0]);
       section(p.title, `ID: ${p.id}`, `Version: ${p.version}`, `Default relationship type: ${p.defaultRelation ?? '(none)'}`, `Viewpoint required: ${p.requireViewpoint ? 'yes' : 'no'}`,
-        `Node types: ${Object.keys(p.nodeTypes).length}; relationship types: ${Object.keys(p.relationTypes).length}; viewpoints: ${Object.keys(p.viewpoints).length}.`);
+        `Node types: ${typeCount(p.nodeTypes)}; relationship types: ${typeCount(p.relationTypes)}; viewpoints: ${Object.keys(p.viewpoints).length}.`);
       if (p.description) section('Scope', p.description);
       if (p.sources?.length) section('Sources', p.sources);
       if (p.limitations?.length) section('Limits of validation', p.limitations);
-      section('Contents and rules', `@help types ${p.id}`, `@help relations ${p.id}`, `@help viewpoints ${p.id}`);
+      section('Available revisions', getProfileVersions(p.id).map(version => `${p.id}@${version}`));
+      section('Contents and rules', `@help types ${args[0]}`, `@help relations ${args[0]}`, `@help viewpoints ${args[0]}`, `@help aliases ${args[0]}`, `@help mappings ${args[0]}`);
       section('Style groups', Object.entries(p.styleGroups).map(([name, rule]) => `${name}: ${rule.backgroundColor ?? '(neutral)'}`));
     }
     section('Selection and registration', 'config { profile PROFILE }  // inside architecture', 'API options.profile takes precedence over the document profile.',
-      'Help lists registered profiles; it does not load files.', '@help config');
+      'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.10" }.',
+      'Help lists registered profiles; it does not load files. Unqualified IDs select the most recently registered revision.', '@help config');
+  } else if (topic === 'aliases') {
+    const p = selectProfile();
+    section(`Profile ${p.id} · ${p.version}`, 'Aliases resolve before semantic validation, including endpoints, references, inheritance and viewpoint selectors. Original names remain in model source and diagram labels.');
+    for (const [kind, label] of [['nodeTypes', 'Node aliases'], ['relationTypes', 'Relationship aliases']]) {
+      const lines = Object.entries(p.aliases?.[kind] ?? {}).flatMap(([name, raw]) => [
+        `${name} -> ${p[kind][name].aliasOf}${typeof raw === 'object' && raw.target !== p[kind][name].aliasOf ? ` (via ${raw.target})` : ''}`,
+        ...(typeof raw === 'object' ? [raw.description, ...(raw.sources ?? []), ...(raw.limitations ?? [])].filter(Boolean) : [])]);
+      section(label, lines.length ? lines : ['(none)']);
+    }
+    section('Definition', 'External JSON profile: aliases: { nodeTypes: { Service: "ServiceSpecification" }, relationTypes: {} }',
+      'A target may be another alias. Cycles, unknown targets and collisions with types are rejected. Aliases cannot override semantic or drawing rules.',
+      'Inline DSL profile declarations do not define aliases; register an external JSON profile.');
+  } else if (topic === 'mappings') {
+    const p = selectProfile();
+    section(`Profile ${p.id} · ${p.version}`, 'Mappings are descriptive, versioned metamodel correspondences. They do not convert models or equate types automatically. Only explicit aliases share semantic identity.');
+    for (const mapping of p.mappings ?? []) section(`${mapping.kind} · ${mapping.relationship}`,
+      `${mapping.source.framework}@${mapping.source.version}.${mapping.source.type} -> ${mapping.target.framework}@${mapping.target.version}.${mapping.target.type}`,
+      mapping.description ?? '', ...(mapping.sources ?? []), ...(mapping.limitations ?? []));
+    if (!p.mappings?.length) section('Mappings', '(none)');
+    section('Relationship kinds', 'rename · equivalent · specialization · partial', 'A rename between metamodel versions does not establish equivalence of every inherited property, endpoint or constraint.');
   } else if (topic === 'types') definitions('nodeTypes', 'node types');
   else if (topic === 'relations') definitions('relationTypes', 'relationship types');
   else if (topic === 'viewpoints') definitions('viewpoints', 'viewpoints');
@@ -324,7 +354,7 @@ export function helpContent(model, options = {}) {
   } else if (topic === 'api') {
     section('Queries and rendering', 'arch.help("types default service", options) → help text', 'arch.parse(source, options) → architecture or help document', 'arch.validate(sourceOrModel, options) → { valid, profile, diagnostics }',
       'arch.layout(sourceOrModel, options) → layout with bounds', 'arch.renderToString(sourceOrModel, options) → SVG string', 'arch.render(target, sourceOrModel, options) → SVG DOM element', 'arch.renderAll({ root, selector, ...options }) → rendered SVG elements', 'arch.renderMarkdown(markdown, options) → HTML with inline SVG');
-    section('Registration', 'arch.registerProfile(name, definition)', 'arch.getProfiles() → registered IDs', 'arch.getProfile(name) → independent profile copy', 'arch.registerIconPack(name, data)  // Iconify or converted paths', 'arch.getIconPacks() → registered pack names', 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
+    section('Registration', 'arch.registerProfile(name, definition)', 'arch.getProfiles() → registered IDs', 'arch.getProfile(name) → independent profile copy; name may be PROFILE@VERSION', 'arch.getProfileVersions(name) → registered revision strings for an ID', 'arch.registerIconPack(name, data)  // Iconify or converted paths', 'arch.getIconPacks() → registered pack names', 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
     section('Options', 'profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.', 'validation: strict | draft; overrides config.validation. Incomplete drafts have warning diagnostics and conformant: false; layout returns kind notices with content and enlarged bounds.', 'view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.', 'theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.', 'Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.');
   }
   return { topic, profile, title: topic ? `Help · ${topic}` : 'arch.js · Help', sections };

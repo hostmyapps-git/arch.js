@@ -190,11 +190,11 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.9`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.10`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 75 zusätzliche Knotentypen und
-100 zusätzliche Relationen ergeben mit dem Basisprofil 288 Knoten- und
+Quellseiten und explizite Anwendungsadapter: 74 zusätzliche Knotentypen und
+100 zusätzliche Relationen ergeben mit dem Basisprofil 287 Knoten- und
 143 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
@@ -232,9 +232,9 @@ ActualEnterprisePhase-/Achiever-/ActualState-Kompatibilität entfällt; optional
 ISO-Date-Time-Felder startDate/endDate samt Reihenfolgeprüfung bleiben direkt
 am Adapter deklariert. [Cr-Abbildung und Migration](profiles/naf41/CR-MAPPING.md).
 
-`Service` bildet das S1-Vokabular von S.104–105 als konkreten Untertyp von
-UAF ServiceSpecification ab. Gemischte Bezeichnungen funktionieren durch
-Vererbung; ActualService bleibt ein eigener Instanztyp. ServiceGeneralization
+`Service` bildet das S1-Vokabular von S.104–105 als Alias von
+UAF 1.0 ServiceSpecification ab. Gemischte Bezeichnungen besitzen identische
+Typsemantik; ActualService bleibt ein eigener Instanztyp. ServiceGeneralization
 führt spezialisiert → allgemein. SatisfiesServicePolicy führt Service → Policy;
 ServicePolicySatisfiedBy bleibt die vorhandene inverse Anwendungsrelation.
 GroupsService führt Gruppe → Service, AggregatesServiceGroup Gruppe → Untergruppe;
@@ -727,6 +727,7 @@ Node/ESM: `import * as arch from './src/arch.js'`.
 | `validate(sourceOrModel, { profile, view, views })` | Bericht `{ valid, profile: { id, version } oder null, diagnostics }` |
 | `registerProfile(name, definition)` | atomare Registrierung und unabhängige Kopie des expandierten Profils |
 | `getProfiles()` / `getProfile(id)` | registrierte Namen / unabhängiger Profil-Snapshot |
+| `getProfileVersions(id)` | geladene Revisionsstrings; `getProfile("id@version")` liefert eine bestimmte Revision |
 | `layout(sourceOrModel, { view, views, profile })` | DSL-/JSON-Quelle oder geparstes Modell → Architektur mit Boxen/Pfaden oder Hilfe mit Textzeilen; jeweils Begrenzungen |
 | `renderToString(sourceOrModel, { view, views, theme, idPrefix, profile })` | eigenständiger SVG-String |
 | `render(target, sourceOrModel, options)` | ersetzt Inhalt eines DOM-Elements; gibt SVG zurück |
@@ -1127,3 +1128,33 @@ geladen noch Entitäten expandiert. Fehlende Dimensionen werden aus absoluten
 SVG-Größen oder der `viewBox` abgeleitet. Jedes Icon erhält einen lokalen
 SVG-Viewport, damit Prozentwerte in Architekturdiagrammen korrekt bleiben.
 `icons/reference-iconpacks.lock.json` dokumentiert die unveränderten Nutzerdaten.
+
+## Aliasidentität und Profilrevisionen
+
+Externe Profile akzeptieren `aliases: { nodeTypes: {...}, relationTypes: {...} }`.
+Ein Eintrag ist ein Zielname oder `{ target, title?, description?, sources?,
+limitations? }`. Aliase haben keine eigene Vererbungsstufe und keine eigenen
+Regeln; sie werden vor allen semantischen Typvergleichen auf beiden Seiten
+aufgelöst. Aliasnamen bleiben als geschriebene `.type` im Modell und in der
+Notation erhalten. Kardinalität/Zyklen zählen kanonische Relationstypen einmal;
+Diagrammfilter und `sharePath stereotypes` berücksichtigen Aliasidentität.
+Zyklen, unbekannte Ziele, Typkollisionen und semantische Alias-Overrides sind
+Profilfehler. `getProfile()` liefert aufgelöste Lookup-Einträge mit `aliasOf`.
+
+Profilwahl und `extends` akzeptieren `ID@VERSION`; DSL-Werte werden zitiert.
+Versionierte Revisionen bleiben gleichzeitig registriert. Ein unqualifizierter
+ID wählt die zuletzt registrierte Definition. Explizit versionierte Inhalte
+dürfen unter derselben Revision nicht verändert werden. `getProfileVersions(ID)`
+listet geladene Versionen. Keine impliziten Downloads oder Versionsvergleiche.
+
+`mappings` ist eine Liste dokumentierter Zuordnungen mit `kind: node|relation`,
+`relationship: rename|equivalent|specialization|partial`, versionierten
+`source`/`target`-Endpunkten und optionalen Dokumentationsfeldern. Mappings sind
+rein beschreibend; nur separat deklarierte Aliase erzeugen Typgleichheit.
+Die Inline-DSL-Profilgrammatik wird nicht erweitert.
+
+NAF Revision 10 verwendet `Service → ServiceSpecification` als Alias und bindet
+`uaf@1.0.0-arch.1`. Es gibt einen zusätzlichen Knotennamen, keinen weiteren
+semantischen Knotentyp. Goal und Constraint bleiben fachlich zu prüfende
+Untertypen. Vollständiges Format und Migrationsgrenzen:
+[ALIASES.md](profiles/naf41/ALIASES.md).
