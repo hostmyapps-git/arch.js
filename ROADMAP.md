@@ -8,6 +8,21 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
 
+- S1-Vokabularadapter `Service extends ServiceSpecification`, quellgerichtetes
+  `SatisfiesServicePolicy` und verschachtelte Servicegruppen. Vollständiges
+  Beispiel von S.105 mit gefilterter Tree-Gruppe und Policy-Kontext in der Demo;
+  native Typen und vorhandene inverse Policy-Beziehungen bleiben kompatibel.
+
+- Viewweite und individuelle Connected-Routenstile `color`, `width`, `dasharray`,
+  auch für Zuordnungslinien und interne Tree-Gruppen-Kanten. Farbige Marker,
+  Breiten-/Strichmusterprüfung, automatische Referenzwege bei reinen Stiländerungen,
+  kompatible gemeinsame Pfade und konservative Exportgrenzen für breite Marker.
+
+- Vollständiges Cr-Beispiel nach NAFv4.1 S.103 mit sechs Elementen, sieben Kanten,
+  Phasengliederung/Triggern und optional sichtbaren Milestones. CapabilityIncrement
+  bleibt ein eigenständiger Planungsadapter. Quellenabbildung und Migration stehen
+  in `profiles/naf41/CR-MAPPING.md`; vollständige UML-/Ausführungssemantik bleibt offen.
+
 - Opt-in-Bündelung von Fan-in-/Fan-out-Kanten über `sharePath stereotypes|all|none`
   in Connected-Views samt Tree-Gruppen. Gleiche tatsächliche Typen oder explizit
   kompatible verschiedene Typen; separate Labels/Icons und logische Pfade für

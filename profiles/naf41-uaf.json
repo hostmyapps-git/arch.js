@@ -1,7 +1,7 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.6",
+  "version": "4.1.0-arch.9",
   "extends": "uaf",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
@@ -164,15 +164,43 @@
     },
     "CapabilityIncrement": {
       "extends": [
-        "ActualEnterprisePhase"
+        "UAFElement"
       ],
       "styleGroup": "capability",
-      "description": "A planned increment of capability delivery.",
+      "description": "A planned increment of capability delivery, kept distinct from an ActualEnterprisePhase. Milestones may be explicit defining nodes, referenced as properties, or implicit in the p.103 presentation.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ],
+      "template": "node",
+      "attributes": {
+        "milestones": {
+          "type": "reference",
+          "targets": [
+            "CapabilityMilestone"
+          ],
+          "required": false,
+          "many": true,
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "comparisons": [
+        {
+          "left": "startDate",
+          "op": "<=",
+          "right": "endDate"
+        }
       ]
     },
     "CapabilityMilestone": {
@@ -203,6 +231,19 @@
       "description": "A project scheduling capability milestones.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
+    },
+    "Service": {
+      "extends": [
+        "ServiceSpecification"
+      ],
+      "styleGroup": "service",
+      "description": "NAF S1 Service vocabulary, as displayed in the p.105 example. A concrete subtype of UAF ServiceSpecification; inherited attributes, service relationships and viewpoint compatibility apply. Distinct from the actual instance type ActualService.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
@@ -1551,6 +1592,50 @@
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
       ]
     },
+    "RelatesToEnterprisePhase": {
+      "from": [
+        "CapabilityIncrement"
+      ],
+      "to": [
+        "EnterprisePhase"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Capability increment to a related planning enterprise phase, following the Cr cut-out and p.103 example. Distinct from AchievedEffect, whose target must be an ActualState.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "AggregatesEnterprisePhase": {
+      "from": [
+        "EnterprisePhase"
+      ],
+      "to": [
+        "EnterprisePhase"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Whole planning phase to a temporal subphase, following aggregates on pp.102–103. Binary application projection of temporal membership, not an imported UAF TemporalPart property or UML composition.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true
+    },
+    "TriggersEnterprisePhase": {
+      "from": [
+        "EnterprisePhase"
+      ],
+      "to": [
+        "EnterprisePhase"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Triggering planning phase to a following phase, following triggers on pp.102–103. A directed planning dependency, not an executable state transition or a calculated date constraint.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true
+    },
     "SchedulesCapability": {
       "from": [
         "CapabilityProject"
@@ -1608,6 +1693,21 @@
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ]
     },
+    "AggregatesServiceGroup": {
+      "from": [
+        "ServiceGroup"
+      ],
+      "to": [
+        "ServiceGroup"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Whole service group to a member group, following the recursive grouping in the S1 cut-out. Acyclic binary membership projection, not strong UML composition.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true
+    },
     "SpecifiesServiceInterface": {
       "from": [
         "ServiceSpecification"
@@ -1645,7 +1745,21 @@
       ],
       "allowSelf": false,
       "style": "dependency",
-      "description": "Policy to a service satisfying it.",
+      "description": "Policy to a service satisfying it. Retained inverse application relationship; use SatisfiesServicePolicy for the service-to-policy direction shown on pp.104–105.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "SatisfiesServicePolicy": {
+      "from": [
+        "ServiceSpecification"
+      ],
+      "to": [
+        "ServicePolicy"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Service to the policy it satisfies, following the S1 cut-out and p.105 example. ServicePolicySatisfiedBy remains the explicit inverse application relationship.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ]
@@ -3231,12 +3345,16 @@
     },
     "Cr": {
       "title": "Capability Roadmap",
-      "description": "Dated milestones define increments delivering capabilities.",
+      "description": "Increments deliver capabilities and may relate to planning phases with temporal grouping and trigger dependencies. Supports the p.103 presentation with implicit milestone properties.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "The p.103 example omits explicit milestone nodes because milestones are properties of an increment. Cr therefore does not require visible CapabilityMilestone nodes or incoming DefinesIncrement at every increment. Explicit visible milestones still require a DefinesIncrement link; the optional milestones reference attribute may point to model elements outside the view. Implicit milestone completeness is not checked.",
+        "AggregatesEnterprisePhase and TriggersEnterprisePhase are authored binary application adapters, directed whole-to-part and triggering-to-following phase. Each type is acyclic and disallows self-links as an application rule. No single-parent ownership, UML TemporalPart/slot semantics, execution, guards or date ordering between phases is inferred.",
+        "CapabilityIncrement is a distinct UAFElement adapter, not an ActualEnterprisePhase/Achiever/ActualState. Earlier implicit compatibility with AchievedEffect and ActualEnterprisePhase relationships no longer applies. Optional startDate/endDate retain ISO date-time validation and ordering.",
+        "Connected views reproduce the explanatory p.103 structure. A time-based Gantt representation needs actual schedule dates; the sample does not invent them."
       ],
       "nodes": [
         "Package",
@@ -3250,17 +3368,18 @@
       "relations": [
         "DefinesIncrement",
         "DeliversCapability",
+        "RelatesToEnterprisePhase",
+        "AggregatesEnterprisePhase",
+        "TriggersEnterprisePhase",
         "SchedulesCapability",
         "DesiresCapability",
         "Exhibits"
       ],
       "requiredNodes": [
-        "CapabilityMilestone",
         "CapabilityIncrement",
         "Capability"
       ],
       "requiredRelations": [
-        "DefinesIncrement",
         "DeliversCapability"
       ],
       "connections": [
@@ -3272,16 +3391,6 @@
             "DefinesIncrement"
           ],
           "direction": "outgoing",
-          "min": 1
-        },
-        {
-          "nodes": [
-            "CapabilityIncrement"
-          ],
-          "relations": [
-            "DefinesIncrement"
-          ],
-          "direction": "incoming",
           "min": 1
         },
         {
@@ -3309,12 +3418,16 @@
     },
     "S1": {
       "title": "Service Taxonomy",
-      "description": "Service specialization taxonomy.",
+      "description": "Service specialization taxonomy. Service is the NAF vocabulary subtype of UAF ServiceSpecification; policies and nested groups are optional context.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "Service extends ServiceSpecification, so mixed vocabulary and all inherited service endpoints remain compatible. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
+        "SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.",
+        "GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.",
+        "Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges."
       ],
       "nodes": [
         "Package",
@@ -3325,6 +3438,8 @@
       "relations": [
         "ServiceGeneralization",
         "GroupsService",
+        "AggregatesServiceGroup",
+        "SatisfiesServicePolicy",
         "ServicePolicySatisfiedBy"
       ],
       "requiredNodes": [

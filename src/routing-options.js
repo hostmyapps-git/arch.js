@@ -1,6 +1,6 @@
 // View defaults apply before per-route overrides. Endpoint types differ:
 // model relationships use target ports; reference connectors use path fractions.
-const fields = ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath'];
+const fields = ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath', 'color', 'width', 'dasharray'];
 const geometryFields = ['from', 'to', 'via', 'curve'];
 export function routingOptions(view, specific, reference = false) {
   const defaults = {...view.routeDefaults};

@@ -190,12 +190,12 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.6`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.9`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 74 zusätzliche Knotentypen und
-95 zusätzliche Relationen ergeben mit dem Basisprofil 287 Knoten- und
-138 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter: 75 zusätzliche Knotentypen und
+100 zusätzliche Relationen ergeben mit dem Basisprofil 288 Knoten- und
+143 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
@@ -214,6 +214,34 @@ auf `Constraint` eingeschränkt; der Wert wird nicht als Attribut eingefügt.
 `ConstrainsCapability` führt zur Capability, `OriginatesFromRationale` nach
 S.100 vom Constraint zur StrategicRationale. `JustifiesStrategy` bleibt als
 explizite inverse Anwendungsrelation erhalten.
+
+`RelatesToEnterprisePhase` verbindet in Cr ein `CapabilityIncrement` mit einer
+`EnterprisePhase` nach S.102–103. `AchievedEffect` bleibt unverändert auf
+`Achiever` → `ActualState` beschränkt; Planungsphasen sind keine ActualStates.
+`AggregatesEnterprisePhase` bildet Gesamtphase → zeitliche Teilphase ab,
+`TriggersEnterprisePhase` auslösende → folgende Phase. Beide Anwendungsadapter
+verbieten Selbstbezüge und Zyklen pro Relationstyp; sie bilden keine UML-Part-/
+Slot-Semantik, starken Besitz, Ausführung oder Datumslogik zwischen Phasen ab.
+Cr verlangt Capability/Increment samt Delivery; sichtbare Milestones brauchen
+weiterhin `DefinesIncrement`, sind aber entsprechend S.103 keine View-Pflicht.
+`CapabilityIncrement.milestones` ist eine optionale Liste typisierter Referenzen
+auf CapabilityMilestone, auch außerhalb der View. Vollständigkeit impliziter
+Milestone-Properties wird nicht behauptet.
+Seit Revision 8 erweitert CapabilityIncrement direkt UAFElement. Unbelegte
+ActualEnterprisePhase-/Achiever-/ActualState-Kompatibilität entfällt; optionale
+ISO-Date-Time-Felder startDate/endDate samt Reihenfolgeprüfung bleiben direkt
+am Adapter deklariert. [Cr-Abbildung und Migration](profiles/naf41/CR-MAPPING.md).
+
+`Service` bildet das S1-Vokabular von S.104–105 als konkreten Untertyp von
+UAF ServiceSpecification ab. Gemischte Bezeichnungen funktionieren durch
+Vererbung; ActualService bleibt ein eigener Instanztyp. ServiceGeneralization
+führt spezialisiert → allgemein. SatisfiesServicePolicy führt Service → Policy;
+ServicePolicySatisfiedBy bleibt die vorhandene inverse Anwendungsrelation.
+GroupsService führt Gruppe → Service, AggregatesServiceGroup Gruppe → Untergruppe;
+Letztere verbietet Selbstbezüge und Zyklen als Anwendungsregel, ohne starken Besitz
+oder Single-Parent-Semantik. ServicePolicy.ruleKind bleibt Pflicht; der Beispielwert
+Constraint ist eine explizite Wahl und steht nicht im PDF. Das vollständige
+S1-Beispiel nutzt Connected samt gefilterter Tree-Gruppe und externer Policy.
 
 Der C2-Cut-out auf S.90 zeigt `desires` von EnterprisePhase zu Capability,
 EnterpriseVision und Goal. Dafür stehen `DesiresCapability`, `DesiresVision`
@@ -581,7 +609,8 @@ architecture "Customer platform" {
   unverändert im Modell erhalten; Knotentitel/Beschreibungen können umbrechen.
 - `routes { from PORT; to TARGET; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD"; icon PACK.NAME; iconPosition POSITION;
-  showIcon BOOLEAN; showLabel BOOLEAN; sharePath MODUS }` setzt Vorgaben für alle fachlichen Kanten
+  showIcon BOOLEAN; showLabel BOOLEAN; sharePath MODUS;
+  color FARBE; width ZAHL; dasharray MUSTER }` setzt Vorgaben für alle fachlichen Kanten
   und grafischen Zuordnungspfeile einer Connected-View. Jede Eigenschaft einer
   konkreten `route` hat Vorrang vor derselben Vorgabe, unabhängig von der
   Reihenfolge im Quelltext. Nicht überschriebene Eigenschaften werden geerbt.
@@ -591,10 +620,30 @@ architecture "Customer platform" {
   Konkrete `from`/`to`/`via`/`curve`-Angaben ersetzen einen geerbten freien
   `path`; ein expliziter konkreter `path` steuert weiterhin den gesamten Pfad.
   Ein leerer `routes {}`-Block ändert das automatische Routing nicht.
+- `color`, `width`, `dasharray` in `routes`, fachlichen Einzelrouten und
+  `route ELEMENT -> RELATION` stylen Linien in Connected-Views samt benannten
+  Tree-Gruppen. Konkrete Werte überschreiben Vorgaben feldweise. Farben sind
+  CSS3-Namen oder zitierte #RGB/#RRGGBB-Hexwerte, beim Rendern als kleingeschriebene
+  sechsstellige Hexwerte normalisiert. Linien und Marker erhalten dieselbe Farbe;
+  Labeltext, Rahmen und Icons behalten eigene Theme-/Packfarben.
+  `width` ist eine endliche SVG-Strichbreite von 0.1 bis 64, Standard 1.5.
+  `dasharray` ist `none`, `[]` oder eine Liste mit 1–32 endlichen Zahlen zwischen
+  0 und 10000, mindestens eine positiv. SVG-Zahlenstrings mit Leerzeichen/Kommas
+  sind gleichwertig erlaubt, keine Einheiten/Prozentwerte. Ungerade Listen werden
+  verdoppelt; leere Listen/none bedeuten durchgezogen. Ohne Wert bleiben
+  Dependency/Realization-Kanten bei 6 5, alle anderen Kanten und Zuordnungslinien
+  durchgezogen. Das Quellmodell behält die geschriebene Form; Layoutdaten tragen
+  normalisierte optionale Felder `color`, `width`, `dasharray`.
+  Style-only-Referenzrouten behalten automatische Hindernisumgehung. Geometrie
+  und freie Pfade werden nicht durch Stilfelder ersetzt. Markerdefinitionen sind
+  nach Farbe/Export-ID isoliert, ihre Größe skaliert mit width; konservative
+  Exportabstände wachsen für breite Marker. Alte Darstellungen bleiben ohne
+  neue Optionen erhalten. Ganze Tree-/Class-/andere Spezialrenderer akzeptieren
+  weiterhin keine route/routes-Blöcke.
 - `sharePath none|stereotypes|all` in `routes` oder einer fachlichen `route`
   steuert automatische Fan-in-/Fan-out-Bündelung in Connected-Views inklusive
   benannter Tree-Gruppen. Standard `none`; `stereotypes` vergleicht den exakten
-  Relationstyp, `all` erlaubt unterschiedliche Typen. Linienstil, Pfeilrichtung,
+  Relationstyp, `all` erlaubt unterschiedliche Typen. Linienstil, Pfeilrichtung, Farbe, Breite, Strichmuster,
   Kurvenart und gemeinsamer Start-/Zielport müssen kompatibel sein.
   Nur Geschwisterknoten desselben Containers werden gebündelt. Fan-in wird zuerst
   verarbeitet; jede Kante gehört höchstens einem Bündel an. Manuelle `via`/`path`,

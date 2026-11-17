@@ -1,5 +1,6 @@
 // Presentation-only fan-in/fan-out networks. Every relationship keeps its full
 // path for reference attachments; only its private branch is painted separately.
+import {routeStyleKey} from './route-styles.js';
 const opposite = {left:'right',right:'left',top:'bottom',bottom:'top'};
 function side(box,p) {
   const distances=[['left',Math.abs(p.x-box.x)],['right',Math.abs(p.x-box.x-box.width)],['top',Math.abs(p.y-box.y)],['bottom',Math.abs(p.y-box.y-box.height)]];
@@ -34,7 +35,7 @@ export function shareEdgePaths(edges,nodes,routes,path) {
       if(!hub||!leaf||hub.container||leaf.container||hub.parent!==leaf.parent)continue;
       const hubPoint=incoming?edge.points.at(-1):edge.points[0],leafPoint=incoming?edge.points[0]:edge.points.at(-1),port=side(hub,hubPoint);
       if(!port||side(leaf,leafPoint)!==opposite[port])continue;
-      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?edge.type:null,edge.style,edge.direction??'forward',r.curve??'orthogonal']);
+      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?edge.type:null,edge.style,edge.direction??'forward',r.curve??'orthogonal',routeStyleKey(edge)]);
       if(!groups.has(key))groups.set(key,[]);
       groups.get(key).push({edge,hub,leaf,port,leafPoint});
     }
@@ -74,6 +75,7 @@ export function shareEdgePaths(edges,nodes,routes,path) {
       if(plans.length!==group.length)continue;
       const id=`shared-${shared.length/2+1}`,prototype=group[0].edge;
       const metadata={id,edgeIds:group.map(c=>c.edge.id),types:[...new Set(group.map(c=>c.edge.type))],style:prototype.style,direction:prototype.direction};
+      for(const key of ['color','width','dasharray'])if(prototype[key]!==undefined)metadata[key]=prototype[key];
       const spine=[{...junction,[cross]:Math.min(...crossValues)},{...junction,[cross]:Math.max(...crossValues)}];
       const stem=incoming?[junction,hubPoint]:[hubPoint,junction];
       shared.push({...metadata,part:'spine',d:path(spine,false),drawStart:false,drawEnd:false},

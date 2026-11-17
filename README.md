@@ -328,6 +328,20 @@ C7 behandelt `EffectivenessCriterion` und dessen Untertypen als optionale
 Ergänzung ohne pauschale Pflicht zu `CharacterizesCapability`/`EvaluatesCriterion`.
 Gewöhnliche AssessmentCriteria behalten die vollständige Pflichtkette.
 `EvaluatesCriterion` folgt weiterhin Measure → AssessmentCriterion aus S.98.
+Das [vollständige Cr-Beispiel](examples/naf41-capability-roadmap.arch) bildet
+S.103 mit Increment, Horizon 2030, IOC/MOC/FOC, `aggregates` und `triggers` nach.
+Es ist in der Demo als **NAFv4.1 · Capability Roadmap** verfügbar. Milestones dürfen
+wie im PDF implizite Properties sein. Die neuen Phasenbeziehungen sind explizite
+Anwendungsadapter; [Abbildung und Migration](profiles/naf41/CR-MAPPING.md) erklären
+die Trennung von UAF/ADMBw und die korrigierte Increment-Vererbung.
+
+S1 akzeptiert `Service` als konkreten Untertyp von UAF `ServiceSpecification`,
+entsprechend S.104–105. `ServiceGeneralization` führt vom spezialisierten zum
+allgemeinen Service, `SatisfiesServicePolicy` vom Service zur Policy.
+[Vollständiges S1-Beispiel](examples/naf41-service-taxonomy.arch), auch in der
+Demo als **NAFv4.1 · Service Taxonomy**. `ServicePolicy` benötigt weiterhin
+`ruleKind`; das Beispiel wählt ausdrücklich `Constraint`.
+
 Anleitung, Abbildung und offene Semantik:
 [profiles/naf41/README.md](profiles/naf41/README.md). Hilfebefehl:
 `@help viewpoints naf41-uaf C7`. Dies ist ein dokumentiertes Anwendungsprofil,
@@ -623,3 +637,16 @@ und `straight`/`bezier` bleiben unabhängig; gemeinsame Junctions sind rechtwink
 Siehe [C8-Beispiel](examples/shared-paths.arch) und `@help routing`.
 Das Profil `naf41-uaf` akzeptiert darin `Constraint` entsprechend S.101 der
 NAFv4.1 als Untertyp von `StrategicConstraint`.
+
+Linienstile für Connected-Routen (auch benannte Tree-Gruppen) sind viewlokal:
+
+```arch
+routes { color "#64748b" width 2 dasharray [8, 4] }
+route cr.6 { color red width 3 dasharray none }
+```
+
+Einzelrouten überschreiben Vorgaben feldweise. Linie und Pfeilspitzen werden
+gemeinsam gefärbt; Label-/Iconfarben bleiben erhalten. `dasharray none` macht
+die Linie durchgezogen. Zuordnungslinien unterstützen dieselben Felder.
+Unterschiedliche Farben/Breiten/Muster verhindern gemeinsame `sharePath`-Abschnitte.
+[Beispiel](examples/route-styles.arch), Demo **Route line styles**, `@help routing`.

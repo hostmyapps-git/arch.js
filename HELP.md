@@ -187,6 +187,34 @@ Das ausführbare Beispiel und die dokumentierten Anwendungsadapter stehen in
 Englisch. Erfolgreiche Validierung bescheinigt die implementierten
 Strukturprüfungen, keine vollständige NAF-/UAF-Konformität.
 
+Für das Cr-Beispiel auf S.103:
+
+```arch
+@help viewpoints naf41-uaf Cr
+@help connections naf41-uaf EnterprisePhase
+@help types naf41-uaf CapabilityIncrement
+```
+
+Die Abfragen jeweils als eigenes Hilfedokument verwenden.
+`AggregatesEnterprisePhase` verbindet Gesamtphase → Teilphase,
+`TriggersEnterprisePhase` auslösende → folgende Phase. Beide sind gerichtete,
+azyklische Anwendungsadapter. Cr braucht keine sichtbaren Milestone-Knoten,
+wenn diese wie auf S.103 implizite Properties sind. Vollständiges Beispiel:
+[Capability Roadmap](examples/naf41-capability-roadmap.arch).
+Es verwendet Connected mit `place`, `via` und gemeinsamen Aggregationspfaden.
+Ein Tree über alle Beziehungen würde Hierarchie und Trigger vermischen;
+für eine Tree-Gruppe nur `relations [AggregatesEnterprisePhase]` auswählen.
+
+Für S1 stehen `Service` und `ServiceSpecification` zur Verfügung. Der erste
+Name erweitert den zweiten als NAF-Vokabularadapter; ActualService bleibt separat.
+`@help connections naf41-uaf Service` zeigt die geerbten Beziehungen.
+Spezialisierung: `ServiceGeneralization`, spezialisiert → allgemein.
+Policy-Erfüllung: `SatisfiesServicePolicy`, Service → ServicePolicy.
+Gruppierung: `GroupsService` (Gruppe → Service) und `AggregatesServiceGroup`
+(Gruppe → Untergruppe). Die vorhandene inverse `ServicePolicySatisfiedBy`
+bleibt gültig. ServicePolicy benötigt `ruleKind`, beispielsweise `Constraint`.
+[Beispiel von S.105](examples/naf41-service-taxonomy.arch).
+
 `@help types`, `relations` und `viewpoints` verwenden ohne explizite Profil-ID
 `options.profile`, andernfalls `default`. Ein explizites Profil im Befehl
 wählt gezielt dieses Profil. Abstrakte Typen sind in der Liste gekennzeichnet;
@@ -374,12 +402,41 @@ Hier verwendet `pickup` abgerundete Ecken; der Zuordnungspfeil übernimmt
 `straight` und startet links an der Karte. Konkrete Angaben haben pro Eigenschaft
 Vorrang; die Reihenfolge der Blöcke ist beliebig.
 
-Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon`, `showLabel` und `sharePath`. Ein `to`-Port oder
+Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon`, `showLabel`, `sharePath`, `color`, `width` und `dasharray`. Ein `to`-Port oder
 absoluter Zielpunkt gilt für fachliche Kanten; ein `to`-Wert von 0 bis 1 für
 Zuordnungspfeile. `label` gilt nur für fachliche Kanten. Konkrete Angaben zu
 `from`, `to`, `via` oder `curve` ersetzen einen geerbten freien `path`.
 Ein konkret gesetzter `path` steuert den gesamten Pfad. `routes {}` lässt das
 bisherige automatische Routing bestehen. Siehe auch `@help routing`.
+
+## Farbe, Breite und Strichmuster von Routen
+
+```arch
+routes { color "#64748b" width 2 dasharray [8, 4] }
+route cr.6 { color red width 3 dasharray none }
+route data -> pickup { color blue width 1.5 dasharray [2, 3] }
+```
+
+Die Optionen gelten in Connected-Views einschließlich benannter Tree-Gruppen.
+Einzelrouten überschreiben Vorgaben feldweise. `color` akzeptiert CSS3-Farbnamen
+und `"#RGB"`/`"#RRGGBB"`; Hexwerte müssen in Anführungszeichen stehen. Die Farbe
+gilt für Linie und Pfeilspitzen, während Labeltexte/-rahmen und Icons ihre
+bisherigen Farben behalten. Ohne Vorgabe gilt die Kantenfarbe des Themes.
+
+`width` ist eine SVG-Strichbreite von 0,1 bis 64 (Standard 1,5). Pfeilspitzen
+skalieren mit; die Exportgrenzen berücksichtigen breite Marker.
+`dasharray [8, 4]` bedeutet 8 Einheiten Strich, 4 Einheiten Lücke. Zulässig sind
+1–32 nichtnegative Zahlen bis 10000, davon mindestens eine positiv. Ungerade
+Listen werden wie in SVG verdoppelt. Auch `"8 4"` und `"8,4"` sind möglich.
+`dasharray none` oder `[]` erzwingt eine durchgezogene Linie; Einheiten/Prozentwerte
+sind nicht erlaubt. Ohne Vorgabe bleiben Dependency-/Realization-Kanten bei
+`6 5`, andere Kanten und Zuordnungslinien durchgezogen.
+
+Zuordnungslinien übernehmen dieselben Vorgaben und erlauben eigene Overrides.
+Reine Stiländerungen erhalten ihre automatische Hindernisumgehung und einen
+geerbten freien `path`. `sharePath` bündelt nur übereinstimmende Farben, Breiten
+und Strichmuster. JSON verwendet dieselben Felder und Zahlenlisten.
+Beispiel: [Route line styles](examples/route-styles.arch), auch in der Demo.
 
 ## Gemeinsame Kantenpfade
 

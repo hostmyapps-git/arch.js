@@ -112,7 +112,7 @@ export function modelSource(model,format) {
 }
 
 const styleKeys = ['template','accent','icon','iconPosition','backgroundColor','opacity','display','fontSize','width','height','showIcon','showLabel','showStereotype','showDescription','showTechnology','propertyFields'];
-const routingKeys = ['from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel','sharePath'];
+const routingKeys = ['from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel','sharePath','color','width','dasharray'];
 const viewKeys = ['name','@meta','meta','diagram','tree','direction','theme','spacing','viewpoint','include','exclude','place','style','routes','route','referenceDisplay','referenceOccurrences','propertyFields'];
 const configKeys = ['profile','views','validation','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
 const profileKeys = ['extends','template','container','abstract','contains','attribute','attributes','icon','accent','backgroundColor','styleGroup','from','to','directions','style','allowSelf','acyclic','incoming','outgoing','nodes','relations','requiredNodes','requiredRelations'];

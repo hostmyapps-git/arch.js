@@ -1,5 +1,111 @@
 # Umsetzungsfortschritt
 
+## S1: Service-Vokabular und Beispiel von S.105 (17.11.2026)
+
+- NAFv4.1 S.104–105 vollständig visuell geprüft. `Service` als konkreten
+  Untertyp von UAF ServiceSpecification ergänzt. Beide Namen lassen sich
+  mischen; vorhandene Attribute, Endpunkte und View-Regeln werden geerbt.
+  ActualService bleibt separat; das native UAF-Profil wurde nicht verändert.
+- `SatisfiesServicePolicy` bildet Service → ServicePolicy nach Cut-out/Beispiel
+  ab. ServicePolicySatisfiedBy bleibt als vorhandene inverse Anwendung erhalten.
+  `AggregatesServiceGroup` ergänzt Gruppe → Untergruppe mit Selbstbezug-/
+  Zyklusverbot als Anwendungsregel; GroupsService bleibt Gruppe → Service.
+- S1-Regeln/Hilfe beschreiben Richtungen, Gruppierung, Mehrfachvererbung und
+  Tree-Grenzen. Native ServicePolicy.ruleKind bleibt Pflicht; Constraint ist
+  im Beispiel eine ausdrücklich dokumentierte Wahl, kein PDF-Attributwert.
+- `examples/naf41-service-taxonomy.arch` reproduziert vier Services, drei
+  Spezialisierungen und eine Service-Policy samt satisfies. Connected mit
+  gefilterter Tree-Gruppe, gemeinsamer Generalisierungsstrecke und externer
+  Policy. Demo **NAFv4.1 · Service Taxonomy** ergänzt.
+- Profilrevision `4.1.0-arch.9`, generierte Profile/Bundles und Abdeckungsbericht
+  aktualisiert; README/SPEC/HELP/DIAGRAMS/ROADMAP und Profilanleitung ergänzt.
+
+Verifikation: **283 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+S1-Beispiel strikt/draft, fünf Knoten/vier Kanten/Richtungen, gemischtes Vokabular,
+Service-Nutzung in weiteren Viewpoints, ActualService-Abgrenzung, native
+Generalisierungsprüfung, inverse Policy-Kompatibilität, Untergruppen/Zyklen,
+JSON, Hilfetexte und beide Bundles geprüft. Browser prüft Demo, Tree/Sharing,
+Richtung, Label-/Kartentrennung und Textgrenzen in beiden Themes. Screenshots
+`test-results/naf41-s1-light.png` und `naf41-s1-dark.png` visuell kontrolliert.
+
+## Liniengestaltung für Routen (17.11.2026)
+
+- `color`, `width`, `dasharray` in viewweiten `routes`, fachlichen Einzelrouten
+  und `route NODE -> EDGE` ergänzt. Einzelwerte übersteuern Vorgaben feldweise;
+  reine Stilfelder ersetzen keinen geerbten freien Pfad und erhalten bei
+  Referenzverbindungen die automatische Hindernisumgehung.
+- CSS3-Namen und zitierte #RGB/#RRGGBB-Farben, Breiten 0.1–64 sowie geprüfte
+  SVG-Strichmuster aus Zahlenlisten/-strings. `none`/`[]` erzwingen eine
+  durchgezogene Linie; ungerade Muster werden wie in SVG verdoppelt.
+- Linien und Pfeilspitzen erhalten die Farbe gemeinsam; Marker skalieren mit
+  der Strichbreite. Farbige Marker werden je SVG-ID isoliert wiederverwendet.
+  Label-/Iconfarben bleiben eigenständig; breite Marker erhalten konservative
+  Exportabstände. Nicht gesetzte Stile behalten die bisherige Darstellung.
+- Gemeinsame Pfade verlangen zusätzlich übereinstimmende normalisierte Farben,
+  Breiten und Strichmuster. Unterschiede halten die Kanten unabhängig;
+  Stamm/Querabschnitt übernehmen die gemeinsame Darstellung.
+- `examples/route-styles.arch`, Demo **Route line styles**, Laufzeithilfe,
+  Quell-/JSON-Schlüsselvorschläge und README/SPEC/HELP/JSON/DIAGRAMS/ROADMAP
+  aktualisiert. Engine-Bundles und Demo gebaut.
+
+Verifikation: **280 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+Defaults/Overrides, freie Pfade, unverändertes Quellmodell, viewlokale Stile,
+Farb-/Breiten-/Musterprüfung, Markerarten/beide Richtungen, Referenz-Overrides,
+automatische Referenzgeometrie, Sharing-Trennung, dicke Exportgrenzen,
+JSON/DSL/Meta und beide Standalone-Bundles geprüft. Zwölf bestehende
+Beispiel-/Theme-Ausgaben bleiben bytegleich zum vorherigen Bundle. Browser
+prüft tatsächlich angewendete Muster, Markerfarben, Referenzen, Export-IDs,
+Demo und beide Themes. Screenshots `test-results/route-styles-light.png` und
+`route-styles-dark.png` visuell kontrolliert.
+
+## Cr-Beispiel von S.103 vollständig nachmodelliert (17.11.2026)
+
+- `AggregatesEnterprisePhase` und `TriggersEnterprisePhase` ergänzen die
+  Phasengliederung und Triggerabhängigkeit. Beide sind explizite gerichtete
+  Anwendungsadapter mit Selbstbezug-/Zyklusverbot, ohne starke Komposition,
+  Single-Parent-, Ausführungs- oder phasenübergreifende Datumssemantik.
+- `CapabilityIncrement` erweitert jetzt direkt UAFElement. Unbelegte
+  ActualEnterprisePhase-/Achiever-/ActualState-Kompatibilität entfällt;
+  das bisherige Node-Template sowie optionale ISO-Date-Time startDate/endDate
+  samt Reihenfolgeprüfung bleiben erhalten. `milestones` ist eine optionale
+  typisierte Referenzliste auf CapabilityMilestone.
+- Cr erlaubt gemäß der Erläuterung auf S.103 implizite Milestone-Properties.
+  Sichtbare Milestone-Knoten brauchen weiterhin `DefinesIncrement` und ein Datum;
+  Capability/Increment und Delivery bleiben Pflichtinhalte. Vollständigkeit
+  impliziter Properties wird nicht behauptet.
+- `examples/naf41-capability-roadmap.arch` enthält genau sechs Elemente und
+  sieben Beziehungen: Increment → Capability, Increment → IOC, Horizon 2030 →
+  IOC/MOC/FOC sowie IOC → MOC → FOC. Connected-Positionen, geroutete Trigger und
+  gemeinsame Aggregationspfade erhalten die gestufte Struktur im arch.js-Stil.
+  Als **NAFv4.1 · Capability Roadmap** in der Demo ergänzt.
+- Profilrevision `4.1.0-arch.8`, Profile, Abdeckungsbericht und Demo-Daten gebaut.
+  `profiles/naf41/CR-MAPPING.md` dokumentiert Quellen, UAF-/ADMBw-Abgrenzung,
+  vollständiges Beispiel, implizite Milestones, Darstellungsgrenzen und Migration.
+  README, SPEC, HELP, DIAGRAMS und ROADMAP aktualisiert.
+
+Verifikation: **272 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+Strikte/Entwurfsvalidierung, sechs/sieben Beispielinhalte und Richtungen, beide
+Phasenrelationen, falsche Endpunkte, Selbstbezüge/Zyklen, optionale Phasenkontexte,
+explizite/implizite Milestones, Referenztypen, Datumsregeln, JSON, Hilfetexte und
+beide Standalone-Bundles geprüft. Demo-Aufruf, Textgrenzen, Kollisionsfreiheit
+zwischen Labels/Karten und beide Themes im Browser geprüft. Screenshots
+`test-results/naf41-cr-light.png` und `naf41-cr-dark.png` visuell kontrolliert.
+
+## Cr: CapabilityIncrement zu EnterprisePhase (17.11.2026)
+
+- NAFv4.1 S.102–103 visuell geprüft. Der optionale `relates to`-Link wird als
+  `RelatesToEnterprisePhase` (CapabilityIncrement → EnterprisePhase) ergänzt
+  und in Cr zugelassen. `AchievedEffect` bleibt Achiever → ActualState;
+  eine Planungsphase wird nicht zum tatsächlichen Zustand umgedeutet.
+- Profilrevision `4.1.0-arch.7`, generierte Profile/Bundles und Abdeckungsbericht
+  aktualisiert. Beispiel `examples/naf41-capability-roadmap.arch` mit separatem
+  Milestone; bestehende Pflichtinhalte werden beibehalten.
+- Tests für gültige Endpunkte/Cr-View, falsche Richtung/ActualEnterprisePhase,
+  AchievedEffect-Abgrenzung, JSON, Hilfetexte und beide Standalone-Bundles.
+
+Verifikation: **268 Node-Testgruppen** und vollständige Chromium-Suite bestanden;
+Cr-Beispiel strikt validiert und in beiden Themes gerendert.
+
 ## Gemeinsame Kantenpfade und C8-Vokabular (17.11.2026)
 
 - `routes {sharePath stereotypes|all|none}` und Overrides pro `route` ergänzt.

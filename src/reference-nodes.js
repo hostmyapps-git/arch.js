@@ -1,5 +1,6 @@
 import svgpath from 'svgpath';
 import { routingOptions } from './routing-options.js';
+import {routeStyle} from './route-styles.js';
 
 const distance = (a,b) => Math.hypot(b.x-a.x,b.y-a.y);
 const overlap = (a,b,gap=18) => a.x < b.x+b.width+gap && a.x+a.width+gap > b.x && a.y < b.y+b.height+gap && a.y+a.height+gap > b.y;
@@ -106,7 +107,7 @@ export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnecto
       const explicit=!original.referenceOnly;
       const key=JSON.stringify([item.id,explicit||edge.referenceOccurrences!=='perEdge'?null:edge.id]);
       if(!groups.has(key))groups.set(key,[]);
-      const occurrence={edgeId:edge.id,attribute:item.attribute,nodeId:item.id,anchor,explicit,route,
+      const occurrence={edgeId:edge.id,attribute:item.attribute,nodeId:item.id,anchor,explicit,route,...routeStyle(route),
         horizontal:horizontalPath(samples),preferredX:rowLeft};
       groups.get(key).push(occurrence);occurrences.push(occurrence);
       rowLeft+=original.width+28;
@@ -142,7 +143,7 @@ export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnecto
   }
   for(const occurrence of occurrences) {
     const obstacles=[...boxes,...headers,...cards].filter(box=>box!==occurrence.node);
-    if(occurrence.route) {
+    if(occurrence.route&&['from','to','via','curve','path'].some(key=>occurrence.route[key]!==undefined)) {
       const routed=routeConnector(occurrence.node,occurrence.anchor,occurrence.route);
       occurrence.points=routed.points;occurrence.d=routed.d;
     } else occurrence.points=connector(occurrence.node,occurrence.anchor,obstacles);

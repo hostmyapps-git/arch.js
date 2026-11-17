@@ -1,0 +1,57 @@
+# NAFv4.1 p.103: explanatory Cr example, using arch.js cards.
+# Milestones are implicit increment properties in that example.
+architecture "Cr — Maritime Rescue by Aircraft" {
+  config { profile naf41-uaf }
+  model {
+    Capability c_maritimeSAR "Maritime SAR"
+    CapabilityIncrement capabilityIncrement_maritimeRescueByAircraft "Maritime Rescue by Aircraft"
+    EnterprisePhase enterprisePhase_Horizon2030 "Horizon 2030"
+    EnterprisePhase enterprisePhase_IOC "IOC"
+    EnterprisePhase enterprisePhase_MOC "MOC"
+    EnterprisePhase enterprisePhase_FOC "FOC"
+
+    relation cr.1 capabilityIncrement_maritimeRescueByAircraft -> c_maritimeSAR "delivers" {
+      type DeliversCapability
+    }
+    relation cr.2 capabilityIncrement_maritimeRescueByAircraft -> enterprisePhase_IOC "relates to" {
+      type RelatesToEnterprisePhase
+    }
+    relation cr.3 enterprisePhase_Horizon2030 -> enterprisePhase_IOC "aggregates" {
+      type AggregatesEnterprisePhase
+    }
+    relation cr.4 enterprisePhase_Horizon2030 -> enterprisePhase_MOC "aggregates" {
+      type AggregatesEnterprisePhase
+    }
+    relation cr.5 enterprisePhase_Horizon2030 -> enterprisePhase_FOC "aggregates" {
+      type AggregatesEnterprisePhase
+    }
+    relation cr.6 enterprisePhase_IOC -> enterprisePhase_MOC "triggers" {
+      type TriggersEnterprisePhase
+    }
+    relation cr.7 enterprisePhase_MOC -> enterprisePhase_FOC "triggers" {
+      type TriggersEnterprisePhase
+    }
+  }
+  view cr "Cr — Capability Roadmap" {
+    viewpoint Cr
+    routes { sharePath stereotypes curve rounded from right to left }
+
+    place c_maritimeSAR at (0,0) size (260,96)
+    place capabilityIncrement_maritimeRescueByAircraft at (560,0) size (260,96)
+    place enterprisePhase_Horizon2030 at (0,320) size (260,96)
+    place enterprisePhase_IOC at (560,320) size (260,96)
+    place enterprisePhase_MOC at (1000,580) size (260,96)
+    place enterprisePhase_FOC at (1440,840) size (260,96)
+
+    route cr.1 { from left to right }
+    route cr.2 { from bottom to top }
+    route cr.6 {
+      from right to top
+      via (enterprisePhase_MOC.centerX,enterprisePhase_IOC.centerY)
+    }
+    route cr.7 {
+      from right to top
+      via (enterprisePhase_FOC.centerX,enterprisePhase_MOC.centerY)
+    }
+  }
+}

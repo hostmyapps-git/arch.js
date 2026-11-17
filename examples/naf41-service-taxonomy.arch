@@ -1,0 +1,37 @@
+# NAFv4.1 pp.104–105: four services and one policy.
+architecture "S1 — Maritime Rescue Services" {
+  config { profile naf41-uaf }
+  model {
+    Service service_maritimeRescue "Maritime Rescue Services"
+    Service service_inshoreRescue "Inshore Rescue Service"
+    Service service_offshoreRescue "Offshore Rescue Service"
+    Service service_underwaterRescue "Underwater Rescue Service"
+    # UAF requires ruleKind. Constraint is an explicit example choice, not a PDF value.
+    ServicePolicy policy_inMissionOperation "In Mission Operation" { ruleKind Constraint }
+
+    relation s1.1 service_inshoreRescue -> service_maritimeRescue "is a kind of" {
+      type ServiceGeneralization
+    }
+    relation s1.2 service_offshoreRescue -> service_maritimeRescue "is a kind of" {
+      type ServiceGeneralization
+    }
+    relation s1.3 service_underwaterRescue -> service_maritimeRescue "is a kind of" {
+      type ServiceGeneralization
+    }
+    relation s1.4 service_inshoreRescue -> policy_inMissionOperation "satisfies" {
+      type SatisfiesServicePolicy
+    }
+  }
+  view s1 "S1 — Service Taxonomy" {
+    viewpoint S1
+    routes { sharePath stereotypes }
+    tree services {
+      nodes [service_maritimeRescue, service_inshoreRescue, service_offshoreRescue, service_underwaterRescue]
+      relations [ServiceGeneralization]
+      direction down
+    }
+    place services at (0,0)
+    place policy_inMissionOperation at (service_inshoreRescue.x,service_inshoreRescue.bottom + 140)
+    route s1.4 { from bottom to top }
+  }
+}

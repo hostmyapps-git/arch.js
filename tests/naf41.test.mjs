@@ -11,6 +11,136 @@ const coverage = JSON.parse(await readFile('profiles/naf41/coverage.json', 'utf8
 const errors = source => arch.validate(source).diagnostics.map(d => d.message).join('\n');
 const without = (id, relationship) => document(id, cases[id].replace(new RegExp(`relation ${relationship} [^}]*}`), ''));
 
+test('S1 accepts p.105 Service vocabulary, specialization and the service-to-policy direction',async()=>{
+  const source=await readFile('examples/naf41-service-taxonomy.arch','utf8');
+  for(const validation of ['strict','draft']) {
+    const report=arch.validate(source,{validation});assert.equal(report.valid,true);assert.deepEqual(report.diagnostics,[]);
+  }
+  const model=arch.parse(source),graph=arch.layout(model);
+  assert.equal(model.nodes.length,5);assert.equal(model.nodes.filter(n=>n.type==='Service').length,4);assert.equal(graph.edges.length,4);
+  assert.deepEqual(graph.treeGroups[0].roots,['service_maritimeRescue']);assert.deepEqual(graph.sharedPaths[0].edgeIds,['s1.1','s1.2','s1.3']);
+  assert.deepEqual(model.edges.map(e=>[e.type,e.source,e.target]),[
+    ...['inshore','offshore','underwater'].map(kind=>['ServiceGeneralization',`service_${kind}Rescue`,'service_maritimeRescue']),
+    ['SatisfiesServicePolicy','service_inshoreRescue','policy_inMissionOperation']
+  ]);
+  assert.equal(arch.validate(source.replace('service_inshoreRescue -> policy_inMissionOperation','policy_inMissionOperation -> service_inshoreRescue').replace('type SatisfiesServicePolicy','type ServicePolicySatisfiedBy')).valid,true,'inverse remains compatible');
+  assert.match(errors(source.replace('service_inshoreRescue -> policy_inMissionOperation','policy_inMissionOperation -> service_inshoreRescue')),/not allowed for SatisfiesServicePolicy/);
+  assert.match(errors(source.replace(' { ruleKind Constraint }','')),/Missing required attribute ruleKind/);
+  const expected=arch.renderToString(source,{idPrefix:'s1'});
+  assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s1'}),expected);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
+    assert.equal(context.arch.renderToString(source,{idPrefix:'s1'}),expected);
+  }
+});
+
+test('Service inherits native ServiceSpecification compatibility without changing UAF or conflating ActualService',()=>{
+  const type=arch.getProfile('naf41-uaf').nodeTypes.Service;
+  assert.deepEqual(type.extends,['ServiceSpecification']);assert.equal(type.abstract,false);assert.equal(type.template,'service');
+  assert.equal(arch.getProfile('uaf').nodeTypes.Service,undefined);
+  const mixed=cases.S1.replace('ServiceSpecification service','Service service');assert.equal(arch.validate(document('S1',mixed)).valid,true);
+  for(const id of ['S2','S3','S4','S6','C1-S1'])assert.equal(arch.validate(document(id,cases[id].replaceAll('ServiceSpecification','Service'))).valid,true,id);
+  assert.match(errors(document('S1',mixed+' ActualService instance "Instance" relation wrong instance -> service "is a kind of" {type ServiceGeneralization}')),/not allowed for ServiceGeneralization/);
+  assert.match(errors(document('S1',mixed+' relation back service -> specialized "cycle" {type ServiceGeneralization}')),/Cycles are not allowed/);
+  assert.match(arch.help('types naf41-uaf Service'),/ServiceSpecification/);
+  const connections=arch.help('connections naf41-uaf Service');for(const name of ['ServiceGeneralization','SatisfiesServicePolicy','GroupsService'])assert.match(connections,new RegExp(name));
+  assert.match(arch.help('viewpoints naf41-uaf S1'),/p\.105|pp\.104|ServiceSpecification/);
+});
+
+test('S1 cut-out supports nested service groups with acyclic group membership and separate service membership',()=>{
+  const body='Service service "Rescue" ServiceGroup all "All services" ServiceGroup rescue "Rescue group" relation subgroup all -> rescue "aggregates" {type AggregatesServiceGroup} relation member rescue -> service "aggregates" {type GroupsService}';
+  assert.equal(arch.validate(document('S1',body)).valid,true);
+  assert.match(errors(document('S1',body+' relation back rescue -> all "cycle" {type AggregatesServiceGroup}')),/Cycles are not allowed/);
+  assert.match(errors(document('S1',body.replace('all -> rescue','all -> all'))),/Self|self/);
+  assert.match(errors(document('S1',body.replace('all -> rescue','all -> service'))),/not allowed for AggregatesServiceGroup/);
+  assert.match(errors(document('S1',body.replace('rescue -> service','rescue -> all'))),/not allowed for GroupsService/);
+  assert.equal(arch.getProfile('uaf').relationTypes.AggregatesServiceGroup,undefined);
+});
+
+test('Cr reproduces all six elements and seven relationships of the p.103 example without visible milestones',async()=>{
+  const source=await readFile('examples/naf41-capability-roadmap.arch','utf8');
+  for(const validation of ['strict','draft']) {
+    const report=arch.validate(source,{validation});assert.equal(report.valid,true);assert.deepEqual(report.diagnostics,[]);
+  }
+  const model=arch.parse(source),graph=arch.layout(model);
+  assert.equal(model.nodes.length,6);assert.equal(graph.nodes.length,6);assert.equal(graph.edges.length,7);
+  assert.equal(model.nodes.filter(n=>n.type==='EnterprisePhase').length,4);
+  assert.deepEqual(model.edges.map(e=>[e.type,e.source,e.target]),[
+    ['DeliversCapability','capabilityIncrement_maritimeRescueByAircraft','c_maritimeSAR'],
+    ['RelatesToEnterprisePhase','capabilityIncrement_maritimeRescueByAircraft','enterprisePhase_IOC'],
+    ...['IOC','MOC','FOC'].map(p=>['AggregatesEnterprisePhase','enterprisePhase_Horizon2030',`enterprisePhase_${p}`]),
+    ['TriggersEnterprisePhase','enterprisePhase_IOC','enterprisePhase_MOC'],
+    ['TriggersEnterprisePhase','enterprisePhase_MOC','enterprisePhase_FOC']
+  ]);
+  assert.deepEqual(graph.sharedPaths[0].edgeIds,['cr.3','cr.4','cr.5']);
+  const expected=arch.renderToString(source,{idPrefix:'cr'});
+  assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'cr'}),expected);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
+    vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
+    assert.equal(context.arch.renderToString(source,{idPrefix:'cr'}),expected);
+  }
+  const help=arch.help('connections naf41-uaf EnterprisePhase');
+  for(const type of ['AggregatesEnterprisePhase','TriggersEnterprisePhase'])assert.match(help,new RegExp(type));
+  assert.match(arch.help('viewpoints naf41-uaf Cr'),/implicit|properties/);
+});
+
+test('Cr phase adapters enforce endpoint types, directed self-link/cycle rules and retain optional phase context',()=>{
+  for(const type of ['AggregatesEnterprisePhase','TriggersEnterprisePhase']) {
+    const body=cases.Cr+` EnterprisePhase horizon "Horizon 2030" EnterprisePhase ioc "IOC" EnterprisePhase moc "MOC"
+      relation first horizon -> ioc "phase link" {type ${type}} relation next ioc -> moc "phase link" {type ${type}}`;
+    assert.equal(arch.validate(document('Cr',body)).valid,true);
+    assert.match(errors(document('Cr',body+` relation back moc -> horizon "cycle" {type ${type}}`)),/Cycles are not allowed/);
+    assert.match(errors(document('Cr',body.replace('horizon -> ioc','horizon -> horizon'))),/Self|self/);
+    assert.match(errors(document('Cr',body.replace('horizon -> ioc','cap -> ioc'))),new RegExp(`not allowed for ${type}`));
+    assert.match(errors(document('Cr',body.replace('horizon -> ioc','horizon -> increment'))),new RegExp(`not allowed for ${type}`));
+    assert.equal(arch.validate(document('Cr',body+` relation shared horizon -> moc "also includes" {type ${type}}`)).valid,true,'no single-parent restriction is inferred');
+    assert.equal(arch.getProfile('uaf').relationTypes[type],undefined,'application adapter does not modify UAF');
+  }
+  assert.equal(arch.validate(document('Cr')).valid,true,'minimal roadmap needs no phase grouping or triggers');
+  assert.match(errors(without('Cr','delivers')),/DeliversCapability/);
+});
+
+test('Cr accepts implicit or hidden milestone properties, checks explicit milestones and validates milestone references',()=>{
+  const noDefines=cases.Cr.replace(/relation defines [^}]*}/,'');
+  assert.match(errors(document('Cr',noDefines)),/milestone requires.*DefinesIncrement/);
+  assert.equal(arch.validate(document('Cr',noDefines,'include cap, increment')).valid,true,'milestone projection is optional');
+  const asProperty=noDefines.replace('CapabilityIncrement increment "Initial capability"','CapabilityIncrement increment "Initial capability" {milestones [milestone]}');
+  assert.equal(arch.validate(document('Cr',asProperty,'include cap, increment propertyFields [milestones]')).valid,true);
+  assert.match(arch.renderToString(document('Cr',asProperty,'include cap, increment propertyFields [milestones]')),/milestones: \[milestone\]/);
+  assert.match(errors(document('Cr',asProperty.replace('[milestone]','[cap]'),'include cap, increment')),/Reference type Capability.*not allowed/);
+  assert.match(errors(document('Cr',asProperty.replace('[milestone]','[missing]'),'include cap, increment')),/unknown reference missing/);
+  assert.match(errors(document('Cr',cases.Cr+' CapabilityMilestone orphan "Disconnected" {date "2030-01-01"}')),/orphan requires.*DefinesIncrement/);
+});
+
+test('CapabilityIncrement is a separate planning adapter without ActualEnterprisePhase inheritance; date compatibility remains explicit',()=>{
+  const type=arch.getProfile('naf41-uaf').nodeTypes.CapabilityIncrement;
+  assert.deepEqual(type.extends,['UAFElement']);
+  const help=arch.help('connections naf41-uaf CapabilityIncrement');assert.doesNotMatch(help,/AchievedEffect:/);
+  const dates=cases.Cr.replace('CapabilityIncrement increment "Initial capability"','CapabilityIncrement increment "Initial capability" {startDate "2029-01-01T00:00:00Z" endDate "2030-01-01T00:00:00Z"}');
+  assert.equal(arch.validate(document('Cr',dates)).valid,true);
+  assert.match(errors(document('Cr',dates.replace('2029-01-01T00:00:00Z','2031-01-01T00:00:00Z'))),/startDate|comparison/i);
+  assert.match(errors(document('Cr',dates.replace('2029-01-01T00:00:00Z','invalid'))),/date-time/);
+});
+
+test('Cr relates capability increments to planning EnterprisePhase without changing AchievedEffect semantics',async()=>{
+  const body=cases.Cr+' EnterprisePhase phase "Horizon 2030" relation relates increment -> phase "relates to" {type RelatesToEnterprisePhase}';
+  const source=document('Cr',body),report=arch.validate(source);
+  assert.equal(report.valid,true);assert.deepEqual(report.diagnostics,[]);
+  assert.match(arch.renderToString(source),/Horizon 2030/);
+  assert.equal(arch.validate(arch.translate(source)).valid,true);
+  assert.match(errors(source.replace('increment -> phase','phase -> increment')),/not allowed for RelatesToEnterprisePhase/);
+  assert.match(errors(source.replace('type RelatesToEnterprisePhase','type AchievedEffect')),/not allowed for AchievedEffect/);
+  assert.match(errors(source.replace('EnterprisePhase phase','ActualEnterprisePhase phase')),/not allowed for RelatesToEnterprisePhase/);
+  assert.match(arch.help('connections naf41-uaf CapabilityIncrement'),/RelatesToEnterprisePhase: CapabilityIncrement -> EnterprisePhase/);
+  assert.match(arch.help('viewpoints naf41-uaf Cr'),/RelatesToEnterprisePhase/);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
+    for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
+    assert.equal(context.arch.validate(source).valid,true);
+  }
+});
+
 test('C8 accepts p.101 Constraint as a StrategicConstraint subtype and p.100 constraint-to-rationale links',async()=>{
   const source=await readFile('examples/shared-paths.arch','utf8');
   assert.equal(arch.getProfile('uaf').nodeTypes.Constraint,undefined);

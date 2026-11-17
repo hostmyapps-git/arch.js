@@ -544,3 +544,24 @@ Labels/Icons und IDs bleiben pro Beziehung erhalten. Die Automatik benötigt
 freie Korridore und Labelplatz; manuelle `via`/`path`, `straight`/`bezier` und
 containerübergreifende Kanten bleiben unabhängig. Gemeinsame Junctions werden
 rechtwinklig gezeichnet. Details: [HELP.md](HELP.md), `@help routing`.
+
+Das [Cr-Beispiel nach NAFv4.1 S.103](examples/naf41-capability-roadmap.arch)
+kombiniert Phasenaggregation und Trigger in einer Connected-View. Die Hierarchie
+und die Reihenfolge sind verschiedene Beziehungstypen; ein vollständiger Tree
+über beide ist ungeeignet. `place` erhält die gestufte Anordnung, `via` die
+Triggerwege und `sharePath stereotypes` bündelt die Aggregationslinien. Die
+Darstellung erklärt das Modell; ein zeitbasierter Plan braucht tatsächliche Daten.
+
+Connected-Routen einschließlich interner Tree-Gruppen-Kanten unterstützen
+`color`, `width` und `dasharray`, sowohl in `routes` als auch pro `route` und
+Zuordnungslinie. Beispielsweise `routes {color blue width 2 dasharray [8,4]}`
+und `route edge {dasharray none}`. Farben/Breiten gelten auch für Pfeilspitzen.
+Gemeinsame Pfade verlangen übereinstimmende Farben, Breiten und Muster. Andere
+Renderer erhalten dadurch keine Routing-Blöcke. Siehe [Linienstile](HELP.md)
+und [Beispiel](examples/route-styles.arch).
+
+Das [S1-Beispiel nach S.105](examples/naf41-service-taxonomy.arch) verwendet eine
+Connected-View mit Tree-Gruppe für ServiceGeneralization. Die Pfeile zeigen vom
+spezialisierten zum allgemeinen Service; die Policy steht außerhalb der Gruppe.
+`SatisfiesServicePolicy` verbindet Service → Policy. So werden fachliche
+Spezialisierung und Policy-Erfüllung nicht zu einer gemeinsamen Hierarchie vermischt.

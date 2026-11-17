@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.6",
+  "version": "4.1.0-arch.9",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,10 +25,10 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 74,
-    "applicationRelations": 95,
-    "totalNodes": 287,
-    "totalRelations": 138,
+    "applicationNodeAdapters": 75,
+    "applicationRelations": 100,
+    "totalNodes": 288,
+    "totalRelations": 143,
     "viewpoints": 47
   },
   "adapters": [
@@ -44,6 +44,7 @@
     "CapabilityIncrement",
     "CapabilityMilestone",
     "CapabilityProject",
+    "Service",
     "ServiceGroup",
     "ServiceConstraint",
     "ServiceFunctionParameter",
@@ -162,13 +163,23 @@
       "title": "Capability Roadmap",
       "page": 102,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "The p.103 example omits explicit milestone nodes because milestones are properties of an increment. Cr therefore does not require visible CapabilityMilestone nodes or incoming DefinesIncrement at every increment. Explicit visible milestones still require a DefinesIncrement link; the optional milestones reference attribute may point to model elements outside the view. Implicit milestone completeness is not checked.",
+        "AggregatesEnterprisePhase and TriggersEnterprisePhase are authored binary application adapters, directed whole-to-part and triggering-to-following phase. Each type is acyclic and disallows self-links as an application rule. No single-parent ownership, UML TemporalPart/slot semantics, execution, guards or date ordering between phases is inferred.",
+        "CapabilityIncrement is a distinct UAFElement adapter, not an ActualEnterprisePhase/Achiever/ActualState. Earlier implicit compatibility with AchievedEffect and ActualEnterprisePhase relationships no longer applies. Optional startDate/endDate retain ISO date-time validation and ordering.",
+        "Connected views reproduce the explanatory p.103 structure. A time-based Gantt representation needs actual schedule dates; the sample does not invent them."
+      ]
     },
     "S1": {
       "title": "Service Taxonomy",
       "page": 104,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "Service extends ServiceSpecification, so mixed vocabulary and all inherited service endpoints remain compatible. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
+        "SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.",
+        "GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.",
+        "Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges."
+      ]
     },
     "S2": {
       "title": "Service Structure",

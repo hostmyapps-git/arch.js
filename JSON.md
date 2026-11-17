@@ -316,3 +316,18 @@ Typen mit kompatibler Darstellung, `"none"` ist der Standard. Eine konkrete
 `"route": {"edgeId": {"sharePath": "none"}}` überschreibt die Vorgabe.
 Manuelle Geometrie bleibt unabhängig. Die Option wird in beide Richtungen
 zwischen JSON und DSL erhalten; Details und Grenzen: [HELP.md](HELP.md).
+
+Linienstile sind ebenfalls gleichwertig zur DSL:
+
+```json
+"routes": {"color": "#64748b", "width": 2, "dasharray": [8, 4]},
+"route": {
+  "cr.6": {"color": "red", "width": 3, "dasharray": "none"},
+  "data -> pickup": {"color": "blue", "dasharray": [2, 3]}
+}
+```
+
+Das Fragment gehört in eine View. Defaults gelten auch für Zuordnungslinien;
+konkrete Felder haben Vorrang. `dasharray` akzeptiert Zahlenlisten,
+SVG-Zahlenstrings oder `"none"`; `[]` erzwingt ebenfalls eine durchgezogene Linie.
+Wertebereiche und Marker-/Sharing-Verhalten: [HELP.md](HELP.md).

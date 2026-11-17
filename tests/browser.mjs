@@ -495,6 +495,121 @@ try {
   },c7Effectiveness),[]);
   console.log('✓ C7 optional effectiveness: p.99 fixture validates and renders in both card styles/themes; ordinary criteria stay required');
 
+  const s1Source=await readFile('examples/naf41-service-taxonomy.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const report=arch.validate(source),graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      if(!report.valid||report.diagnostics.length)issues.push('S1 Service vocabulary rejected');
+      if(svg.querySelectorAll('.arch-node').length!==5||svg.querySelectorAll('.arch-edge').length!==4)issues.push('S1 sample content missing');
+      const policy=graph.edges.find(e=>e.id==='s1.4');
+      if(policy?.source!=='service_inshoreRescue'||policy?.target!=='policy_inMissionOperation'||policy?.type!=='SatisfiesServicePolicy')issues.push('S1 policy direction differs');
+      if(graph.treeGroups[0].roots.join(',')!=='service_maritimeRescue'||graph.sharedPaths?.[0].edgeIds.join(',')!=='s1.1,s1.2,s1.3')issues.push('S1 specialization tree/sharing differs');
+      const cards=[...svg.querySelectorAll('.arch-node')].map(e=>e.getBoundingClientRect()),labels=[...svg.querySelectorAll('.arch-edge-label > rect')].map(e=>e.getBoundingClientRect());
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(labels.some(a=>cards.some(b=>overlaps(a,b))))issues.push('S1 label/card overlap');
+      const bounds=svg.viewBox.baseVal;
+      for(const text of svg.querySelectorAll('text')) {
+        const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+        for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+          const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S1 text exceeds bounds');
+        }
+      }
+      if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s1'})!==arch.renderToString(source,{theme,idPrefix:'s1'}))issues.push('S1 JSON differs');
+    }
+    host.remove();return issues;
+  },s1Source),[]);
+  const s1Page=await browser.newPage({viewport:{width:1400,height:1050}});
+  for(const theme of ['light','dark']) {
+    await s1Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s1-preview'}),{source:s1Source,theme}));
+    await s1Page.locator('svg').screenshot({path:`test-results/naf41-s1-${theme}.png`});
+  }
+  await s1Page.close();
+  await page.locator('[data-example="naf41-service-taxonomy"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ S1 p.105: Service vocabulary, shared specialization, service-to-policy satisfaction, JSON, bounds and both themes');
+
+  const roadmapSource=await readFile('examples/naf41-capability-roadmap.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const report=arch.validate(source),graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      if(!report.valid||report.diagnostics.length)issues.push('Cr phase relation rejected');
+      if(svg.querySelectorAll('.arch-node').length!==6||svg.querySelectorAll('.arch-edge').length!==7||!svg.querySelector('[data-edge="cr.2"][data-type="RelatesToEnterprisePhase"]'))issues.push('Missing Cr sample content');
+      if(graph.edges.find(e=>e.id==='cr.2').target!=='enterprisePhase_IOC')issues.push('Increment must relate to IOC in the p.103 sample');
+      if(svg.querySelectorAll('[data-type="AggregatesEnterprisePhase"]').length!==3||svg.querySelectorAll('[data-type="TriggersEnterprisePhase"]').length!==2)issues.push('Missing phase grouping/trigger links');
+      if(graph.sharedPaths[0]?.edgeIds.join(',')!=='cr.3,cr.4,cr.5')issues.push('Phase aggregate paths are not shared');
+      const cards=[...svg.querySelectorAll('.arch-node')].map(el=>el.getBoundingClientRect());
+      const labels=[...svg.querySelectorAll('.arch-edge-label > rect')].map(el=>el.getBoundingClientRect());
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(labels.some(a=>cards.some(b=>overlaps(a,b))))issues.push('Cr label overlaps a card');
+      for(let i=0;i<labels.length;i++)if(labels.slice(i+1).some(b=>overlaps(labels[i],b)))issues.push('Cr labels overlap');
+      const bounds=svg.viewBox.baseVal;
+      for(const node of svg.querySelectorAll('text')) {
+        const b=node.getBBox(),transform=node.getCTM(),root=svg.getCTM();
+        const matrix=root.inverse().multiply(transform);
+        const corners=[[b.x,b.y],[b.x+b.width,b.y+b.height]].map(([x,y])=>new DOMPoint(x,y).matrixTransform(matrix));
+        if(corners.some(p=>p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height))issues.push('Cr text exceeds viewBox');
+      }
+      const json=arch.translate(source);
+      if(arch.renderToString(json,{theme,idPrefix:'cr'})!==arch.renderToString(source,{theme,idPrefix:'cr'}))issues.push('Cr JSON differs');
+      if(/NaN|Infinity|undefined/.test(svg.outerHTML))issues.push('Cr SVG has invalid coordinates');
+    }
+    host.remove();return issues;
+  },roadmapSource),[]);
+  const roadmapPage=await browser.newPage({viewport:{width:1900,height:1200}});
+  for(const theme of ['light','dark']) {
+    await roadmapPage.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'cr-preview'}),{source:roadmapSource,theme}));
+    await roadmapPage.locator('svg').screenshot({path:`test-results/naf41-cr-${theme}.png`});
+  }
+  await roadmapPage.close();
+  await page.locator('[data-example="naf41-capability-roadmap"]').click();
+  assert.equal(await page.locator('#error').isVisible(),false);
+  assert.equal(await page.locator('#diagram .arch-node').count(),6);
+  console.log('✓ Cr p.103: six nodes, seven edges, shared aggregates, triggers, implicit milestones, JSON, bounds and both themes');
+
+  const routeStylesSource=await readFile('examples/route-styles.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    const markerColor=(svg,path)=>{
+      const url=path.getAttribute('marker-end'),id=url?.slice(5,-1);
+      return svg.querySelector(`[id="${id}"] path`)?.getAttribute('stroke');
+    };
+    for(const theme of ['light','dark']) {
+      const svg=arch.render(host,source,{theme}),g=arch.layout(source);
+      for(const id of ['firstFlow','secondFlow','thirdFlow']) {
+        const path=svg.querySelector(`[data-edge="${id}"] path`),special=id==='thirdFlow';
+        const color=special?'#16a34a':'#3b82f6';
+        if(path.getAttribute('stroke')!==color||markerColor(svg,path)!==color)issues.push('Line/arrow colors differ');
+        if(path.getAttribute('stroke-width')!==(special?'4':'2'))issues.push('Incorrect width');
+        if(path.getAttribute('stroke-dasharray')!==(special?'none':'8 4'))issues.push('Incorrect dash pattern');
+        if(getComputedStyle(path).strokeDasharray!==(special?'none':'8px, 4px'))issues.push('Browser dash rendering differs');
+      }
+      if(g.sharedPaths?.[0].edgeIds.join(',')!=='firstFlow,secondFlow')issues.push('Different styles were bundled');
+      for(const path of svg.querySelectorAll('.arch-shared-path path'))if(path.getAttribute('stroke')!=='#3b82f6'||path.getAttribute('stroke-width')!=='2'||path.getAttribute('stroke-dasharray')!=='8 4')issues.push('Shared path lost styling');
+      const json=arch.translate(source);if(arch.renderToString(json,{theme,idPrefix:'style'})!==arch.renderToString(source,{theme,idPrefix:'style'}))issues.push('Styled JSON differs');
+      if(new DOMParser().parseFromString(svg.outerHTML,'image/svg+xml').querySelector('parsererror'))issues.push('Invalid styled SVG');
+    }
+    const profile={nodeTypes:{actor:{},item:{}},relationTypes:{flow:{style:'dependency',attributes:{payload:{type:'reference',targets:['item'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
+    const ref='architecture "References" {model {actor a "A" actor b "B" item info "Data" relation e a -> b "Carries" {type flow payload [info]}} view v "V" {place a at (0,0) place b at (700,0) place info at (300,-240) routes {color blue width 3 dasharray [8,4]} route info -> e {color orange width 2.5 dasharray [2,3]}}}';
+    for(const theme of ['light','dark']) {
+      const svg=arch.render(host,ref,{profile,theme}),path=svg.querySelector('.arch-reference-connector');
+      if(path.getAttribute('stroke')!=='#ffa500'||path.getAttribute('stroke-width')!=='2.5'||path.getAttribute('stroke-dasharray')!=='2 3'||markerColor(svg,path)!=='#ffa500')issues.push('Independent reference style failed');
+    }
+    const stacked=source.replace('view overview','view plain "Plain" {} view overview');
+    const svg=arch.render(host,stacked,{views:['overview','plain']});
+    const ids=[...svg.querySelectorAll('[id]')].map(e=>e.id);if(new Set(ids).size!==ids.length)issues.push('Stacked marker IDs collide');
+    for(const path of svg.querySelectorAll('[marker-end]'))if(!svg.querySelector(`[id="${path.getAttribute('marker-end').slice(5,-1)}"]`))issues.push('Export marker target missing');
+    host.remove();return issues;
+  },routeStylesSource),[]);
+  const stylesPage=await browser.newPage({viewport:{width:1300,height:1000}});
+  for(const theme of ['light','dark']) {
+    await stylesPage.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'route-style-preview'}),{source:routeStylesSource,theme}));
+    await stylesPage.locator('svg').screenshot({path:`test-results/route-styles-${theme}.png`});
+  }
+  await stylesPage.close();
+  await page.locator('[data-example="route-styles"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ Route styles: color/width/dashes, arrowheads, shared paths, independent reference connectors, JSON, themes and export IDs');
+
   const sharedSource=await readFile('examples/shared-paths.arch','utf8');
   assert.deepEqual(await page.evaluate(source=>{
     const issues=[],host=document.createElement('div');document.body.append(host);

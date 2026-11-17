@@ -5,6 +5,7 @@ import { contrast, foreground, composite } from './colors.js';
 import { toDiagramSVG } from './diagrams.js';
 import { iconifyMarkup } from './iconify.js';
 import { metaSVG } from './meta.js';
+import {effectiveDasharray} from './route-styles.js';
 
 export const escape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
 let serial = 0;
@@ -136,11 +137,26 @@ export function toSVG(graph, options = {}) {
     <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
     <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
   </defs>`;
+  const coloredMarkers=new Map();
+  const marker=(kind,color)=>{
+    if(!color||color===palette.edge)return `${prefix}-${kind}`;
+    if(!coloredMarkers.has(color)) {
+      const id=`${prefix}-route-color-${coloredMarkers.size+1}`;
+      coloredMarkers.set(color,{id,markup:`
+        <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color}" stroke-width="1.5"/></marker>
+        <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${color}"/></marker>
+        <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color}"/></marker>`});
+    }
+    return `${coloredMarkers.get(color).id}-${kind}`;
+  };
+  const dashAttribute=(edge,reference=false)=>{
+    const pattern=effectiveDasharray(edge,reference);
+    return pattern.length?` stroke-dasharray="${pattern.join(' ')}"`:edge.dasharray!==undefined?' stroke-dasharray="none"':'';
+  };
   const edgePath = edge => {
-    const dash = ['dependency', 'realization'].includes(edge.style) ? ' stroke-dasharray="6 5"' : '';
-    const start = edge.direction==='both' ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === 'composition' ? ` marker-start="url(#${prefix}-diamond)"` : '';
-    const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${prefix}-${['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow'})"`;
-    return `<path d="${escape(edge.drawD??edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}/>`;
+    const start = edge.direction==='both' ? ` marker-start="url(#${marker('arrow',edge.color)})"` : edge.style === 'composition' ? ` marker-start="url(#${marker('diamond',edge.color)})"` : '';
+    const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${marker(['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow',edge.color)})"`;
+    return `<path d="${escape(edge.drawD??edge.d)}" fill="none" stroke="${edge.color??palette.edge}" stroke-width="${num(edge.width??1.5)}" stroke-linejoin="round"${dashAttribute(edge)}${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}/>`;
   };
   const sharedPaths=(graph.sharedPaths??[]).map(edge=>`<g class="arch-shared-path" data-shared-path="${escape(edge.id)}" data-shared-part="${edge.part}" data-shared-for="${escape(edge.edgeIds.join(' '))}" data-types="${escape(edge.types.join(' '))}"><title>${escape(edge.edgeIds.join(', '))}</title>${edgePath(edge)}</g>`).join('');
   const edgePaths = sharedPaths+graph.edges.map(edge => `<g class="arch-edge" data-edge="${escape(edge.id)}" data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join('');
@@ -158,7 +174,7 @@ export function toSVG(graph, options = {}) {
   }).join('');
   const referenceConnectors = (graph.referenceNodes ?? []).map(occurrence => {
     const d = occurrence.d ?? occurrence.points.map((p,i) => `${i ? 'L' : 'M'} ${num(p.x)} ${num(p.y)}`).join(' ');
-    return `<path class="arch-reference-connector" data-reference-for="${escape(occurrence.edgeId)}" data-reference-node="${escape(occurrence.nodeId)}" d="${escape(d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#${prefix}-arrow)"/>`;
+    return `<path class="arch-reference-connector" data-reference-for="${escape(occurrence.edgeId)}" data-reference-node="${escape(occurrence.nodeId)}" d="${escape(d)}" fill="none" stroke="${occurrence.color??palette.edge}" stroke-width="${num(occurrence.width??1.5)}" stroke-linejoin="round"${dashAttribute(occurrence,true)} marker-end="url(#${marker('arrow',occurrence.color)})"/>`;
   }).join('');
   const renderedCards=new Set();
   const referenceCards = (graph.referenceNodes ?? []).filter(occurrence => {
@@ -172,7 +188,7 @@ export function toSVG(graph, options = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree?' data-diagram="tree"':''} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
     <title id="${prefix}-title">${escape(graph.title)} — ${escape(graph.view.title)}</title>
     <desc id="${prefix}-desc">${escape(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
-    ${definitions}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
+    ${definitions.replace('</defs>',[...coloredMarkers.values()].map(m=>m.markup).join('')+'</defs>')}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
     <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${palette.bg}"/>
     ${graph.nodes.filter(n => n.container).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}
     ${edgePaths}${referenceConnectors}${graph.nodes.filter(n => !n.container && !n.referenceOnly).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}${referenceCards}${edgeLabels}

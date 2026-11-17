@@ -7906,7 +7906,7 @@ var arch = (() => {
   }
 
   // src/routing-options.js
-  var fields = ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
+  var fields = ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath", "color", "width", "dasharray"];
   var geometryFields = ["from", "to", "via", "curve"];
   function routingOptions(view, specific, reference2 = false) {
     const defaults = { ...view.routeDefaults };
@@ -8611,6 +8611,42 @@ var arch = (() => {
 
   // src/reference-nodes.js
   var import_svgpath = __toESM(require_svgpath2(), 1);
+
+  // src/route-styles.js
+  function color(value2) {
+    const hex = normalizeColor(value2)?.toLowerCase();
+    return hex?.length === 4 ? "#" + [...hex.slice(1)].map((c) => c + c).join("") : hex;
+  }
+  function dashArray(value2) {
+    if (value2 === void 0) return void 0;
+    if (value2 === "none") return [];
+    if (typeof value2 === "string") {
+      const number2 = "(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?";
+      if (value2.length > 1024 || !new RegExp(`^${number2}(?:(?:\\s*,\\s*|\\s+)${number2})*$`).test(value2.trim())) return null;
+      value2 = value2.trim().split(/[\s,]+/).map(Number);
+    }
+    if (!Array.isArray(value2) || value2.length > 32 || value2.some((n) => typeof n !== "number" || !Number.isFinite(n) || n < 0 || n > 1e4) || value2.length && !value2.some((n) => n > 0)) return null;
+    return value2.length % 2 ? [...value2, ...value2] : [...value2];
+  }
+  function validateRouteStyle(route) {
+    const fail11 = (message) => {
+      throw new ArchError(message, route.loc, "ARCH_VALIDATION");
+    };
+    if (route.color !== void 0 && !color(route.color)) fail11("color requires a hex color or CSS3 color name");
+    if (route.width !== void 0 && (typeof route.width !== "number" || !Number.isFinite(route.width) || route.width < 0.1 || route.width > 64)) fail11("Route width must be a number between 0.1 and 64");
+    if (route.dasharray !== void 0 && dashArray(route.dasharray) === null) fail11("dasharray must be none, an empty list, or 1–32 lengths from 0 to 10000 with at least one positive value");
+  }
+  function routeStyle(route = {}) {
+    const result = {};
+    if (route?.color !== void 0) result.color = color(route.color);
+    if (route?.width !== void 0) result.width = route.width;
+    if (route?.dasharray !== void 0) result.dasharray = dashArray(route.dasharray);
+    return result;
+  }
+  var effectiveDasharray = (edge, reference2 = false) => edge.dasharray ?? (!reference2 && ["dependency", "realization"].includes(edge.style) ? [6, 5] : []);
+  var routeStyleKey = (edge) => [edge.color ?? null, edge.width ?? 1.5, effectiveDasharray(edge)];
+
+  // src/reference-nodes.js
   var distance = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
   var overlap = (a, b, gap = 18) => a.x < b.x + b.width + gap && a.x + a.width + gap > b.x && a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
   var point = (x, y) => ({ x, y });
@@ -8722,6 +8758,7 @@ var arch = (() => {
           anchor,
           explicit,
           route,
+          ...routeStyle(route),
           horizontal: horizontalPath(samples),
           preferredX: rowLeft
         };
@@ -8770,7 +8807,7 @@ var arch = (() => {
     }
     for (const occurrence of occurrences) {
       const obstacles = [...boxes, ...headers, ...cards].filter((box) => box !== occurrence.node);
-      if (occurrence.route) {
+      if (occurrence.route && ["from", "to", "via", "curve", "path"].some((key2) => occurrence.route[key2] !== void 0)) {
         const routed = routeConnector(occurrence.node, occurrence.anchor, occurrence.route);
         occurrence.points = routed.points;
         occurrence.d = routed.d;
@@ -9551,7 +9588,7 @@ var arch = (() => {
     return output;
   }
   var styleKeys = ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology", "propertyFields"];
-  var routingKeys = ["from", "to", "via", "curve", "path", "label", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
+  var routingKeys = ["from", "to", "via", "curve", "path", "label", "icon", "iconPosition", "showIcon", "showLabel", "sharePath", "color", "width", "dasharray"];
   var viewKeys = ["name", "@meta", "meta", "diagram", "tree", "direction", "theme", "spacing", "viewpoint", "include", "exclude", "place", "style", "routes", "route", "referenceDisplay", "referenceOccurrences", "propertyFields"];
   var configKeys = ["profile", "views", "validation", "id", "title", "version", "extends", "defaultRelation", "requireViewpoint", "type", "relation", "viewpoint", "styleGroup"];
   var profileKeys = ["extends", "template", "container", "abstract", "contains", "attribute", "attributes", "icon", "accent", "backgroundColor", "styleGroup", "from", "to", "directions", "style", "allowSelf", "acyclic", "incoming", "outgoing", "nodes", "relations", "requiredNodes", "requiredRelations"];
@@ -9835,7 +9872,7 @@ var arch = (() => {
         if (!hub || !leaf || hub.container || leaf.container || hub.parent !== leaf.parent) continue;
         const hubPoint = incoming ? edge.points.at(-1) : edge.points[0], leafPoint = incoming ? edge.points[0] : edge.points.at(-1), port2 = side(hub, hubPoint);
         if (!port2 || side(leaf, leafPoint) !== opposite[port2]) continue;
-        const key2 = JSON.stringify([hub.id, port2, r.sharePath, r.sharePath === "stereotypes" ? edge.type : null, edge.style, edge.direction ?? "forward", r.curve ?? "orthogonal"]);
+        const key2 = JSON.stringify([hub.id, port2, r.sharePath, r.sharePath === "stereotypes" ? edge.type : null, edge.style, edge.direction ?? "forward", r.curve ?? "orthogonal", routeStyleKey(edge)]);
         if (!groups.has(key2)) groups.set(key2, []);
         groups.get(key2).push({ edge, hub, leaf, port: port2, leafPoint });
       }
@@ -9878,6 +9915,7 @@ var arch = (() => {
         if (plans.length !== group.length) continue;
         const id = `shared-${shared.length / 2 + 1}`, prototype = group[0].edge;
         const metadata = { id, edgeIds: group.map((c) => c.edge.id), types: [...new Set(group.map((c) => c.edge.type))], style: prototype.style, direction: prototype.direction };
+        for (const key2 of ["color", "width", "dasharray"]) if (prototype[key2] !== void 0) metadata[key2] = prototype[key2];
         const spine = [{ ...junction, [cross]: Math.min(...crossValues) }, { ...junction, [cross]: Math.max(...crossValues) }];
         const stem = incoming ? [junction, hubPoint] : [hubPoint, junction];
         shared.push(
@@ -10373,7 +10411,7 @@ var arch = (() => {
       const manual = preset && ["from", "to", "via", "path"].some((key3) => route[key3] !== void 0) || route.curve === "bezier" || route.curve === "straight";
       const result = preset && !manual ? { ...preset, label: route.label && route.label !== "none" ? route.label : preset.label } : routeEdge(edge, byId.get(edge.source), byId.get(edge.target), { ...route, label: labelHidden ? void 0 : route.label }, count);
       if (preset && !manual) result.d = polyPath(preset.points, (route.curve ?? groupOptions.curve ?? "rounded") === "rounded");
-      Object.assign(result, edgeLabelMetrics(edge, route, profile, modelNodes));
+      Object.assign(result, edgeLabelMetrics(edge, route, profile, modelNodes), routeStyle(route));
       return result;
     });
     const sharedPaths = shareEdgePaths(routedEdges, nodes, resolvedRoutes, polyPath);
@@ -10389,8 +10427,9 @@ var arch = (() => {
         { x: edge.label.x + edge.labelWidth / 2, y: edge.label.y + edge.labelHeight / 2 }
       );
     }
-    const minX = Math.min(0, ...extents.map((p) => p.x)) - 48, minY = Math.min(0, ...extents.map((p) => p.y)) - 48;
-    const maxX = Math.max(160, ...extents.map((p) => p.x)) + 48, maxY = Math.max(96, ...extents.map((p) => p.y)) + 48;
+    const padding = Math.max(48, ...[...routedEdges, ...referenceNodes].map((e) => (e.width ?? 1.5) * 12));
+    const minX = Math.min(0, ...extents.map((p) => p.x)) - padding, minY = Math.min(0, ...extents.map((p) => p.y)) - padding;
+    const maxX = Math.max(160, ...extents.map((p) => p.x)) + padding, maxY = Math.max(96, ...extents.map((p) => p.y)) + padding;
     return {
       title: model.title,
       description: model.description,
@@ -10734,10 +10773,10 @@ var arch = (() => {
       }
       return lines;
     };
-    const label = (s, x, y, w = 200, size = 13, color = text, anchor = "start") => {
+    const label = (s, x, y, w = 200, size = 13, color2 = text, anchor = "start") => {
       const all = wrap3(s, Math.max(1, Math.floor(w / (size * 0.65)))), lines = all.slice(0, 2);
       if (all.length > 2) lines[1] = lines[1].slice(0, -1) + "…";
-      out.push(`<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="${anchor}"><title>${esc(s)}</title>${lines.map((s2, i) => `<tspan x="${x}" dy="${i ? size * 1.4 : 0}">${esc(s2)}</tspan>`).join("")}</text>`);
+      out.push(`<text x="${x}" y="${y}" fill="${color2}" font-size="${size}" text-anchor="${anchor}"><title>${esc(s)}</title>${lines.map((s2, i) => `<tspan x="${x}" dy="${i ? size * 1.4 : 0}">${esc(s2)}</tspan>`).join("")}</text>`);
       return lines.length * size * 1.4;
     };
     const rect = (x, y, w, h, fill = bg, opacity = 1, rx = 6) => out.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" fill-opacity="${opacity}" stroke="${border}"/>`);
@@ -11399,10 +11438,12 @@ var arch = (() => {
     };
     const readRouting = (item, reference2 = false, defaults = false) => block(() => {
       const attr = typed("word");
-      const allowed = reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"];
+      const allowed = [...reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"], "color", "width", "dasharray"];
       if (!allowed.includes(attr.value)) fail9(`Unknown routing attribute: ${attr.value}`, attr);
       if (Object.hasOwn(item, attr.value)) fail9(`Duplicate routing attribute: ${attr.value}`, attr);
       if (["showIcon", "showLabel"].includes(attr.value)) item[attr.value] = scalar();
+      else if (attr.value === "width") item.width = typed("number", "route width").value;
+      else if (attr.value === "dasharray") item.dasharray = scalar();
       else if (attr.value === "via") item.via = list2(placementPoint);
       else if (attr.value === "to" && (reference2 || defaults && peek().type === "number")) item.to = typed("number", "position along the relationship (0 to 1)").value;
       else if (attr.value === "label") {
@@ -11713,6 +11754,7 @@ var arch = (() => {
       for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail9(`Unknown relationship: ${id}`, route.loc);
       const checkRouting = (route, reference2 = false, defaults = false, combined = true) => {
         if (!route) return;
+        validateRouteStyle(route);
         if (route.sharePath !== void 0 && !["none", "stereotypes", "all"].includes(route.sharePath)) fail9("sharePath must be none, stereotypes or all", route.loc);
         for (const key2 of ["from", ...!reference2 ? ["to"] : []]) if (typeof route[key2] === "string" && !["auto", "top", "right", "bottom", "left"].includes(route[key2]))
           fail9(`Unknown port: ${route[key2]}`, route.loc);
@@ -11905,8 +11947,8 @@ var arch = (() => {
     if (/^currentcolor$/i.test(value2)) return "currentColor";
     const contrast2 = value2.match(/^contrast-color\(\s*([^()]+?)\s*\)$/i);
     if (contrast2) {
-      const color = iconPaint(contrast2[1]);
-      if (color && !["none", "inherit"].includes(color)) return `contrast-color(${color})`;
+      const color2 = iconPaint(contrast2[1]);
+      if (color2 && !["none", "inherit"].includes(color2)) return `contrast-color(${color2})`;
       return void 0;
     }
     const hex = normalizeColor(value2);
@@ -12196,9 +12238,9 @@ var arch = (() => {
         inspectPath(value2.d);
         const paint = Object.fromEntries(paintKeys.map((key2) => [key2, value2[key2] ?? paintDefaults[key2]]));
         for (const key2 of ["fill", "stroke"]) {
-          const color = iconPaint(paint[key2]);
-          if (!color) error(`Invalid icon color: ${id}.${key2}`);
-          paint[key2] = color;
+          const color2 = iconPaint(paint[key2]);
+          if (!color2) error(`Invalid icon color: ${id}.${key2}`);
+          paint[key2] = color2;
         }
         if (!["butt", "round", "square"].includes(paint.linecap) || !["miter", "round", "bevel"].includes(paint.linejoin) || !["nonzero", "evenodd"].includes(paint.fillRule)) error(`Invalid paint style: ${id}`);
         if (!Number.isFinite(paint.strokeWidth) || paint.strokeWidth < 0 || paint.strokeWidth > 64 || ["opacity", "fillOpacity", "strokeOpacity"].some((key2) => !Number.isFinite(paint[key2]) || paint[key2] < 0 || paint[key2] > 1))
@@ -12272,8 +12314,8 @@ var arch = (() => {
     const icon = getIcon(name), longest = Math.max(icon.width, icon.height);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${icon.width} ${icon.height}" width="${num(size * icon.width / longest)}" height="${num(size * icon.height / longest)}" role="img" aria-label="${escape3(title)}"><title>${escape3(title)}</title>${iconMarkup(name, 0, 0, longest, void 0, idPrefix)}</svg>`;
   }
-  function linesMarkup(lines, x, y, size, color, weight = 400, lineHeight = 17, anchor = "start") {
-    return `<text x="${num(x)}" y="${num(y)}" fill="${color}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}">${lines.map((line, i) => `<tspan x="${num(x)}" dy="${i ? lineHeight : 0}">${escape3(line)}</tspan>`).join("")}</text>`;
+  function linesMarkup(lines, x, y, size, color2, weight = 400, lineHeight = 17, anchor = "start") {
+    return `<text x="${num(x)}" y="${num(y)}" fill="${color2}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}">${lines.map((line, i) => `<tspan x="${num(x)}" dy="${i ? lineHeight : 0}">${escape3(line)}</tspan>`).join("")}</text>`;
   }
   function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = prefix) {
     const { width: w, height: h } = node;
@@ -12376,9 +12418,9 @@ var arch = (() => {
     const backdropFor = (node) => {
       if (backdrops.has(node.id)) return backdrops.get(node.id);
       const parent = nodeById.get(node.parent);
-      const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? 0.2 : 1)) : palette.bg;
-      backdrops.set(node.id, color);
-      return color;
+      const color2 = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? 0.2 : 1)) : palette.bg;
+      backdrops.set(node.id, color2);
+      return color2;
     };
     const definitions = `<defs>
     <filter id="${prefix}-shadow" x="-15%" y="-15%" width="130%" height="145%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity=".045"/></filter>
@@ -12386,11 +12428,26 @@ var arch = (() => {
     <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
     <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
   </defs>`;
+    const coloredMarkers = /* @__PURE__ */ new Map();
+    const marker = (kind, color2) => {
+      if (!color2 || color2 === palette.edge) return `${prefix}-${kind}`;
+      if (!coloredMarkers.has(color2)) {
+        const id = `${prefix}-route-color-${coloredMarkers.size + 1}`;
+        coloredMarkers.set(color2, { id, markup: `
+        <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color2}" stroke-width="1.5"/></marker>
+        <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${color2}"/></marker>
+        <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color2}"/></marker>` });
+      }
+      return `${coloredMarkers.get(color2).id}-${kind}`;
+    };
+    const dashAttribute = (edge, reference2 = false) => {
+      const pattern = effectiveDasharray(edge, reference2);
+      return pattern.length ? ` stroke-dasharray="${pattern.join(" ")}"` : edge.dasharray !== void 0 ? ' stroke-dasharray="none"' : "";
+    };
     const edgePath = (edge) => {
-      const dash = ["dependency", "realization"].includes(edge.style) ? ' stroke-dasharray="6 5"' : "";
-      const start = edge.direction === "both" ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === "composition" ? ` marker-start="url(#${prefix}-diamond)"` : "";
-      const end = edge.direction !== "both" && ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${prefix}-${["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow"})"`;
-      return `<path d="${escape3(edge.drawD ?? edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${edge.drawStart === false ? "" : start}${edge.drawEnd === false ? "" : end}/>`;
+      const start = edge.direction === "both" ? ` marker-start="url(#${marker("arrow", edge.color)})"` : edge.style === "composition" ? ` marker-start="url(#${marker("diamond", edge.color)})"` : "";
+      const end = edge.direction !== "both" && ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${marker(["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow", edge.color)})"`;
+      return `<path d="${escape3(edge.drawD ?? edge.d)}" fill="none" stroke="${edge.color ?? palette.edge}" stroke-width="${num(edge.width ?? 1.5)}" stroke-linejoin="round"${dashAttribute(edge)}${edge.drawStart === false ? "" : start}${edge.drawEnd === false ? "" : end}/>`;
     };
     const sharedPaths = (graph.sharedPaths ?? []).map((edge) => `<g class="arch-shared-path" data-shared-path="${escape3(edge.id)}" data-shared-part="${edge.part}" data-shared-for="${escape3(edge.edgeIds.join(" "))}" data-types="${escape3(edge.types.join(" "))}"><title>${escape3(edge.edgeIds.join(", "))}</title>${edgePath(edge)}</g>`).join("");
     const edgePaths = sharedPaths + graph.edges.map((edge) => `<g class="arch-edge" data-edge="${escape3(edge.id)}" data-type="${escape3(edge.type)}" data-style="${edge.style}"><title>${escape3(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join("");
@@ -12408,7 +12465,7 @@ var arch = (() => {
     }).join("");
     const referenceConnectors = (graph.referenceNodes ?? []).map((occurrence) => {
       const d = occurrence.d ?? occurrence.points.map((p, i) => `${i ? "L" : "M"} ${num(p.x)} ${num(p.y)}`).join(" ");
-      return `<path class="arch-reference-connector" data-reference-for="${escape3(occurrence.edgeId)}" data-reference-node="${escape3(occurrence.nodeId)}" d="${escape3(d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#${prefix}-arrow)"/>`;
+      return `<path class="arch-reference-connector" data-reference-for="${escape3(occurrence.edgeId)}" data-reference-node="${escape3(occurrence.nodeId)}" d="${escape3(d)}" fill="none" stroke="${occurrence.color ?? palette.edge}" stroke-width="${num(occurrence.width ?? 1.5)}" stroke-linejoin="round"${dashAttribute(occurrence, true)} marker-end="url(#${marker("arrow", occurrence.color)})"/>`;
     }).join("");
     const renderedCards = /* @__PURE__ */ new Set();
     const referenceCards = (graph.referenceNodes ?? []).filter((occurrence) => {
@@ -12423,7 +12480,7 @@ var arch = (() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree ? ' data-diagram="tree"' : ""} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
     <title id="${prefix}-title">${escape3(graph.title)} — ${escape3(graph.view.title)}</title>
     <desc id="${prefix}-desc">${escape3(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
-    ${definitions}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
+    ${definitions.replace("</defs>", [...coloredMarkers.values()].map((m) => m.markup).join("") + "</defs>")}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
     <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${palette.bg}"/>
     ${graph.nodes.filter((n) => n.container).map((n) => nodeMarkup(n, palette, prefix, backdropFor(n))).join("")}
     ${edgePaths}${referenceConnectors}${graph.nodes.filter((n) => !n.container && !n.referenceOnly).map((n) => nodeMarkup(n, palette, prefix, backdropFor(n))).join("")}${referenceCards}${edgeLabels}
@@ -12815,7 +12872,7 @@ var arch = (() => {
         "  from auto",
         "}",
         "Defaults apply to every relationship and reference connector in this view, including routes without an individual block. Specific route properties override matching defaults, regardless of declaration order. Other defaults remain inherited.",
-        "Available fields: from, to, via, curve, label, path, icon, iconPosition, showIcon, showLabel, sharePath. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. label, icon, iconPosition, showIcon and showLabel apply only to relationship labels.",
+        "Available fields: from, to, via, curve, label, path, icon, iconPosition, showIcon, showLabel, sharePath, color, width, dasharray. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. label, icon, iconPosition, showIcon and showLabel apply only to relationship labels.",
         "Specific from/to/via/curve settings replace an inherited free path; an explicit path still controls the complete route. Empty routes {} keeps the existing automatic routing."
       );
       section(
@@ -12823,8 +12880,18 @@ var arch = (() => {
         "routes { sharePath stereotypes }",
         "route EDGE_ID { sharePath none }",
         "sharePath: none (default), stereotypes (exact relationship type) or all (different types permitted). A specific route overrides the default.",
-        "Bundles fan-in or fan-out relationships sharing a target or source, compatible line styles/directions and facing ports. Applies to connected views, including named tree groups. Labels/icons and relationship IDs remain separate; reference connectors follow each complete logical path.",
+        "Bundles fan-in or fan-out relationships sharing a target or source, compatible line styles/directions, matching color/width/dasharray and facing ports. Applies to connected views, including named tree groups. Labels/icons and relationship IDs remain separate; reference connectors follow each complete logical path.",
         "Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out."
+      );
+      section(
+        "Route line styles (connected only)",
+        'routes { color "#64748b" width 2 dasharray [8, 4] }',
+        "route EDGE_ID { color red width 3 dasharray none }",
+        "route NODE_ID -> EDGE_ID { color blue width 1.5 dasharray [2, 3] }",
+        "color: a quoted #RGB/#RRGGBB value or a CSS3 color name. Applies to the line and arrowheads; label text, frames and icons retain their own theme colors. Without color, uses the theme edge color.",
+        "width: stroke width from 0.1 to 64 SVG units (default 1.5). Arrowheads scale with line width. Export bounds grow conservatively for thick markers.",
+        'dasharray: none or [] for a solid line; otherwise 1–32 numeric lengths from 0 to 10000, with at least one positive value. Alternates dash/gap lengths in SVG units. Odd patterns repeat. Also accepts SVG number strings such as "8 4" or "8,4"; units and percentages are not accepted.',
+        "Without dasharray, dependency/realization edges remain dashed (6 5), other edges and reference connectors stay solid. Individual fields override routes defaults. Line styles also apply to reference connectors; style-only settings preserve automatic obstacle avoidance and do not replace an inherited path."
       );
       section(
         "Edge routing (connected only)",

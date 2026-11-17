@@ -12,6 +12,7 @@ import {validateTreeGroups} from './tree-groups.js';
 import {placementCoordinate,placementPlan} from './placement.js';
 import {viaReferences} from './via.js';
 import {validateClassPlacement} from './class-placement.js';
+import {validateRouteStyle} from './route-styles.js';
 import { TEMPLATES, EDGE_STYLES, NODE_PROPERTIES, EDGE_PROPERTIES, resolveProfile, profileDiagnostics } from './profiles.js';
 export { ArchError };
 export const TYPES = TEMPLATES;
@@ -221,10 +222,12 @@ function parseDSLDocument(source) {
   };
   const readRouting = (item, reference = false, defaults = false) => block(() => {
     const attr = typed('word');
-    const allowed = reference ? ['from', 'to', 'via', 'curve', 'path'] : ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath'];
+    const allowed = [...(reference ? ['from', 'to', 'via', 'curve', 'path'] : ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath']), 'color', 'width', 'dasharray'];
     if (!allowed.includes(attr.value)) fail(`Unknown routing attribute: ${attr.value}`, attr);
     if (Object.hasOwn(item, attr.value)) fail(`Duplicate routing attribute: ${attr.value}`, attr);
     if (['showIcon', 'showLabel'].includes(attr.value)) item[attr.value] = scalar();
+    else if (attr.value === 'width') item.width = typed('number', 'route width').value;
+    else if (attr.value === 'dasharray') item.dasharray = scalar();
     else if (attr.value === 'via') item.via = list(placementPoint);
     else if (attr.value === 'to' && (reference || defaults && peek().type === 'number')) item.to = typed('number', 'position along the relationship (0 to 1)').value;
     else if (attr.value === 'label') {
@@ -468,6 +471,7 @@ export function validateModel(model, options = {}) {
     for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail(`Unknown relationship: ${id}`, route.loc);
     const checkRouting = (route, reference = false, defaults = false, combined = true) => {
       if (!route) return;
+      validateRouteStyle(route);
       if (route.sharePath !== undefined && !['none', 'stereotypes', 'all'].includes(route.sharePath)) fail('sharePath must be none, stereotypes or all', route.loc);
       for (const key of ['from', ...(!reference ? ['to'] : [])]) if (typeof route[key] === 'string' && !['auto', 'top', 'right', 'bottom', 'left'].includes(route[key]))
         fail(`Unknown port: ${route[key]}`, route.loc);

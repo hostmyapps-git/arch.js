@@ -11,6 +11,7 @@ import {placementPlan,resolvePlacements} from './placement.js';
 import {viaReferences,resolveVia} from './via.js';
 import {nodeProperties,positionProperties} from './property-fields.js';
 import {shareEdgePaths} from './shared-paths.js';
+import {routeStyle} from './route-styles.js';
 
 export const num = (n) => String(Math.round(n * 1000) / 1000);
 const pt = (p) => `${num(p.x)} ${num(p.y)}`;
@@ -434,7 +435,7 @@ export function layout(model, options = {}) {
     const manual=preset&&['from','to','via','path'].some(key=>route[key]!==undefined)||route.curve==='bezier'||route.curve==='straight';
     const result=preset&&!manual?{...preset,label:route.label&&route.label!=='none'?route.label:preset.label}:routeEdge(edge, byId.get(edge.source), byId.get(edge.target), {...route, label: labelHidden ? undefined : route.label}, count);
     if(preset&&!manual)result.d=polyPath(preset.points,(route.curve??groupOptions.curve??'rounded')==='rounded');
-    Object.assign(result,edgeLabelMetrics(edge,route,profile,modelNodes));
+    Object.assign(result,edgeLabelMetrics(edge,route,profile,modelNodes),routeStyle(route));
     return result;
   });
   const sharedPaths=shareEdgePaths(routedEdges,nodes,resolvedRoutes,polyPath);
@@ -449,8 +450,11 @@ export function layout(model, options = {}) {
     if (edge.labelLines.length || edge.labelIcon) extents.push({ x: edge.label.x - edge.labelWidth / 2, y: edge.label.y - edge.labelHeight / 2 },
       { x: edge.label.x + edge.labelWidth / 2, y: edge.label.y + edge.labelHeight / 2 });
   }
-  const minX = Math.min(0, ...extents.map(p => p.x)) - 48, minY = Math.min(0, ...extents.map(p => p.y)) - 48;
-  const maxX = Math.max(160, ...extents.map(p => p.x)) + 48, maxY = Math.max(96, ...extents.map(p => p.y)) + 48;
+  // Markers use stroke-width units. Reserve their conservative maximum reach
+  // for thick routes, including reference connectors, without changing defaults.
+  const padding=Math.max(48,...[...routedEdges,...referenceNodes].map(e=>(e.width??1.5)*12));
+  const minX = Math.min(0, ...extents.map(p => p.x)) - padding, minY = Math.min(0, ...extents.map(p => p.y)) - padding;
+  const maxX = Math.max(160, ...extents.map(p => p.x)) + padding, maxY = Math.max(96, ...extents.map(p => p.y)) + padding;
   return { title: model.title, description: model.description, profile: { id: profile.id, version: profile.version }, view, nodes, edges: routedEdges,
     referenceNodes,...(sharedPaths.length?{sharedPaths}:{}),...(treeGroups.length?{treeGroups}:{}), bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY } };
 }

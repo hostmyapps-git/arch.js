@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.6` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.9` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -32,6 +32,54 @@ as an attribute value. `StrategicConstraint` retains its inherited required
 `JustifiesStrategy` remains the explicit inverse application relationship.
 See [the C8 example](../../examples/shared-paths.arch) and
 `@help connections naf41-uaf Constraint`.
+
+Cr uses `RelatesToEnterprisePhase` from `CapabilityIncrement` to the planning
+`EnterprisePhase`, following pp.102–103. `AchievedEffect` remains restricted to
+Achiever → ActualState and is not a substitute for this planning relationship.
+The complete p.103 [roadmap example](../../examples/naf41-capability-roadmap.arch)
+adds `AggregatesEnterprisePhase` (whole → subphase) and `TriggersEnterprisePhase`
+(triggering → following phase), each acyclic with no self-links. The example
+needs no visible milestone nodes: these are implicit increment properties on
+p.103. Explicit visible milestones still need a defining relationship.
+
+Since `4.1.0-arch.8`, `CapabilityIncrement` extends `UAFElement` directly rather
+than `ActualEnterprisePhase`. This removes accidental actual-state/achiever
+compatibility. Optional date-time start/end properties remain supported; optional
+`milestones` references may point outside the view. See [Cr mapping and migration](CR-MAPPING.md)
+for exact semantics, validation limits and UAF/ADMBw differences.
+
+## S1 — Service Taxonomy vocabulary
+
+`Service` is the p.104–105 NAF vocabulary adapter extending native UAF
+`ServiceSpecification`. Both names are concrete and can be mixed: existing
+service attributes, relationship endpoints and viewpoint rules accept the new
+subtype. It is not an alias for the actual instance type `ActualService` and is
+not added to the native `uaf` profile or imported from the ADMBw MDG.
+
+| Source relationship | arch.js type | Direction |
+|---|---|---|
+| is a kind of | `ServiceGeneralization` | Specialized service → general service |
+| satisfies | `SatisfiesServicePolicy` | Service → ServicePolicy |
+| aggregates (services) | `GroupsService` | ServiceGroup → Service |
+| aggregates (groups) | `AggregatesServiceGroup` | ServiceGroup → subgroup |
+
+`ServicePolicySatisfiedBy` retains its earlier policy → service direction as an
+explicit inverse application link. `AggregatesServiceGroup` forbids cycles and
+self-links as an application rule, without implying single-parent ownership or
+strong UML composition. The native service-generalization checks remain intact.
+
+The [complete p.105 example](../../examples/naf41-service-taxonomy.arch) has four
+services and the In Mission Operation policy. A Connected view with a named
+ServiceGeneralization-only tree group keeps policy context outside the hierarchy;
+shared specialization paths point toward the general service. Available in the
+demo as **NAFv4.1 · Service Taxonomy**. Help: `@help types naf41-uaf Service`,
+`@help connections naf41-uaf Service`, `@help viewpoints naf41-uaf S1`.
+
+Native `ServicePolicy` requires `ruleKind`. The sample explicitly chooses
+`Constraint`; this value is an example modeling choice, not information supplied
+by the PDF. Optional group/policy context is supported but its completeness is
+not automatically inferred. A whole-view tree may filter to ServiceGeneralization
+and will omit non-hierarchy edges; multiple inheritance needs Connected layout.
 
 ## Load and use
 
@@ -123,7 +171,7 @@ viewpoint can impose further restrictions.
 | State | `ServiceState`, `LogicalState`, `ResourceState`, each with required `owner`; distinct from a UAF state-machine description |
 | Sequence | Domain lifelines with `represents`; interactions have a positive `order` |
 | Parameters | `ServiceOperationParameter` / `ServiceFunctionParameter`, with `owner` and `resource` |
-| Roadmaps | Domain milestones with a valid ISO date, readiness/increment nodes, explicit defining and fulfilment/delivery links |
+| Roadmaps | Domain milestones with a valid ISO date, readiness/increment nodes and defining/fulfilment/delivery links; Cr additionally permits implicit milestone properties as in p.103 |
 | Foundation | Explicit glossary, correspondence, methodology, work-product, status, version and library adapters |
 
 `Needline` and `ResourceInteraction` have identities because they can themselves

@@ -1,0 +1,31 @@
+architecture "Route line styles" {
+  model {
+    system source "Source"
+    system first "First target"
+    system second "Second target"
+    system third "Third target"
+    relation firstFlow source -> first "Shared blue path"
+    relation secondFlow source -> second "Shared blue path"
+    relation thirdFlow source -> third "Solid green path"
+  }
+  view overview "Color, width and dasharray" {
+    routes {
+      from right to left
+      color "#3b82f6"
+      width 2
+      dasharray [8, 4]
+      sharePath stereotypes
+    }
+    route thirdFlow {
+      from bottom
+      via (source.centerX,third.centerY)
+      color "#16a34a"
+      width 4
+      dasharray none
+    }
+    place source at (0,250)
+    place first at (750,0)
+    place second at (750,300)
+    place third at (750,600)
+  }
+}
