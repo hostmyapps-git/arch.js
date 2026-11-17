@@ -28,7 +28,9 @@ Die Vorteile ergeben sich aus der Kombination folgender Funktionen:
   Viewpoint-Pflichten. Eingebaute Hilfe und Kandidatenlisten verwenden dieselbe
   Profilregistry. Regeln müssen nicht als ausführbarer Profilcode eingebunden werden.
 - **Gezielte Darstellung:** Connected-Views kombinieren automatisches Layout mit
-  `place`, Mindestgrößen, Ports, Wegpunkten und freien SVG-Pfaden. Node-Felder und
+  Property-Zeilen auf den vorhandenen Node-Karten; Class-Karten erlauben ebenfalls
+  freie `place`-Positionierung, ihre Kanten bleiben automatisch. Connected bietet
+  `place`, Mindestgrößen, Ports, Wegpunkte und freie SVG-Pfade. Node-Felder und
   Labeltext/Icon lassen sich getrennt anzeigen; Icons können auf vier Seiten stehen.
 - **Sichtbare Austauschobjekte:** Referenzierte InformationElements können als
   gemeinsame Karte an mehreren Beziehungen erscheinen. Zuordnungspfeile lassen
@@ -48,7 +50,7 @@ Die genaue Syntax steht in [HELP.md](HELP.md) und [SPEC.md](SPEC.md).
 
 | Bereich | Implementierter Umfang und Konsequenz |
 | --- | --- |
-| Automatisches Layout | Deterministisches Schichtenlayout, kein globaler Kantenkreuzungsoptimierer. Allgemeine Modellkanten umgehen Hindernisse nicht zuverlässig automatisch. Für dichte Ansichten sind kleinere Views oder manuelle Routen nötig. Referenzpfeile haben eine eigene heuristische Hindernisumgehung; manuelle Routen ersetzen sie. |
+| Automatisches Layout | Connected: deterministisches Schichtenlayout mit benannten Tree-Teilgruppen, kein globaler Kantenkreuzungsoptimierer. Tree: automatische Taxonomien/Wälder mit zentrierten Eltern, vier Wachstumsrichtungen und variablen Kartengrößen; mehrere Eltern/Zyklen werden abgewiesen. Gruppen und externe Karten sind separat positionierbar; Gruppen dürfen keine Package-Grenzen überqueren. Allgemeine Modellkanten umgehen Hindernisse nicht zuverlässig automatisch. Für dichte Ansichten sind kleinere Views oder manuelle Routen nötig. Referenzpfeile haben eine eigene heuristische Hindernisumgehung; manuelle Routen ersetzen sie. |
 | Umfang | Der DSL-Parser begrenzt auf 1000 Elemente, 4000 Beziehungen und 32 Package-Ebenen. Diese Obergrenzen sind keine Zusage für Lesbarkeit oder Geschwindigkeit großer Modelle. Ein dokumentierter Leistungstest fehlt. |
 | Notation | Acht Renderer sind vorhanden, aber Sequenz, Zustand, Aktivität, Matrix, Heatmap, Timeline und Klasse haben einen begrenzten Teilumfang. Beispielsweise fehlen Sequenzfragmente, verschachtelte Zustände und Ressourcen-/Terminplanung. [Renderergrenzen](DIAGRAMS.md). |
 | Styles | Freie Positionen/Routen, Logo-Karten, Iconpositionen, Feldsichtbarkeit und Schrift-/Größen-Overrides gehören zu Connected-Views. Spezialrenderer bestimmen Form und Geometrie selbst. Neue beliebige SVG-Templates erfordern derzeit Änderungen am Renderer. |

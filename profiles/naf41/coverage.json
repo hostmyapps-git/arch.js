@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.1",
+  "version": "4.1.0-arch.4",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,13 +25,14 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 72,
-    "applicationRelations": 92,
-    "totalNodes": 285,
-    "totalRelations": 135,
+    "applicationNodeAdapters": 73,
+    "applicationRelations": 94,
+    "totalNodes": 286,
+    "totalRelations": 137,
     "viewpoints": 47
   },
   "adapters": [
+    "Goal",
     "Effect",
     "AssessmentCriterion",
     "EffectivenessCriterion",
@@ -117,14 +118,17 @@
       "page": 90,
       "status": "structural application checks",
       "limitations": [
-        "EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states."
+        "EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states.",
+        "The C2 cut-out permits desires from an enterprise phase to a capability, vision or goal. Every planning phase requires at least one of these links; a direct DesiresCapability is not mandatory when DesiresVision/DesiresGoal is present."
       ]
     },
     "C3": {
       "title": "Capability Dependencies",
       "page": 92,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "Not every displayed capability must have a CapabilityDependency: specialization/grouping context is allowed, as SAR demonstrates in the p.93 example. The view requires at least one dependency; completeness of relevant real-world dependencies cannot be checked automatically."
+      ]
     },
     "C4": {
       "title": "Standard Processes",

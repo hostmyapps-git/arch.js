@@ -46,7 +46,7 @@ export function helpContent(model, options = {}) {
     } else {
       section(label, entries.length ? entries.map(([name, rule]) => key === 'nodeTypes'
         ? `${name}${rule.abstract ? ' [abstract]' : ''} · template ${rule.template}${rule.container ? ' · container' : ''}`
-        : key === 'relationTypes' ? `${name}${rule.abstract ? ' [abstract]' : ''} · style ${rule.style}` : `${name}${rule.title ? ` · ${rule.title}` : ''}`) : ['(none)']);
+        : key === 'relationTypes' ? `${name}${rule.abstract ? ' [abstract]' : ''} · style ${rule.style} · directions ${(rule.directions??['forward']).join(', ')}` : `${name}${rule.title ? ` · ${rule.title}` : ''}`) : ['(none)']);
       section('Show details', `@help ${topic} ${target} NAME`, 'Use . as PROFILE to inspect the selected document/API profile, including inline definitions.', 'Abstract types support inheritance and cannot be instantiated directly.');
       if (key === 'relationTypes') section('Filter by node type', `@help connections ${target} NODE_TYPE`);
     }
@@ -95,9 +95,11 @@ export function helpContent(model, options = {}) {
       'Packages nest elements and relations inside the container element. All identifiers and model limits remain unchanged.',
       'Model properties such as description, technology and conveyed are direct fields. An attributes object handles custom names that collide with JSON structure.',
       'place: { ID: { at: [x,y], size: [width,height] } }; style: { ID: { ... } }.',
+      'Coordinate expressions are strings: at: ["coverage.x + 20", "vision.y - 40"], via: [["source.right + 40", "target.centerY"]]. size, endpoint and label points remain numeric.',
       'routes: { ... } defines shared defaults; route: { RELATION_ID: { ... } } overrides individual fields.',
       'Reference route key: "ELEMENT_ID -> RELATION_ID". via is [[x,y],[x,y]], label is [x,y] or "none".',
       'diagram: { type: "sequence", participants: ["user","api"] }; include/exclude use ID arrays.',
+      'tree: { hierarchy: { nodes: ["phase","vision","goal"], direction: "up" } } defines named layout groups in a connected view.',
       'Inline config uses type, relation, viewpoint, styleGroup and attribute objects keyed by name, matching DSL keywords.',
       'Help: { "@help": "json" } or architecture-level "@help": "profiles". A help query omits the @help prefix.');
     section('Diagnostics and boundaries', 'Strict JSON: no comments, trailing commas, duplicate keys, null attribute values or executable values.',
@@ -110,14 +112,26 @@ export function helpContent(model, options = {}) {
       'Comments start with # or //. Whitespace and semicolons separate statements.',
       'Attribute value lists: ["A", "B"]. Include/exclude and routing lists: a, b.');
     section('Complete starter example (default profile)', 'architecture "Portal" {', '  model {', '    person user "User"', '    application app "Portal"', '    relation uses user -> app "Uses" { type flow }', '  }', '  view overview "Overview" { direction right theme light }', '}');
+    section('Bidirectional syntax', 'relation exchange a <-> b "Exchange"', 'The selected relationship type must allow direction both. Details: @help model and @help relations . TYPE.');
     section('Learn more', '@help model', '@help views', '@help config', '@help json');
   } else if (topic === 'model') {
     section('Elements and relationships', 'TYPE ID "Title" { ATTRIBUTE VALUE ... }', 'relation ID SOURCE -> TARGET "Label" { type RELATION ... }',
       `Selected profile: ${profile.id}. Node types: @help types. Relationship types: @help relations.`, `Default relationship type: ${profile.defaultRelation ?? '(none; set type explicitly)'}`);
+    section('Bidirectional relationships', 'relation exchange a <-> b "Exchange" { type flow }',
+      'One relationship ID, label and shared attributes/references, with arrowheads at both ends. JSON uses direction: "both"; direction: "forward" is the default.',
+      'The relationship profile rule must allow directions [forward, both] (or [both] to require it). Custom rules default to [forward]; inherited rules retain their directions.',
+      'from/to and pairs describe the written endpoint roles. Both endpoints count once as incoming and outgoing. A bidirectional link creates a directed cycle, so acyclic rules reject it.',
+      'Connected/class views draw both arrowheads; matrices count the relationship in both directions. Sequence, state, activity and timeline views require separate directed relationships.',
+      'Default flow, dependency, association and access types allow both; composition, generalization and realization remain forward-only. Inspect @help relations . TYPE.');
     section('Built-in attributes', `Nodes: ${list(NODE_PROPERTIES)}`, `Relationships: ${list(EDGE_PROPERTIES)}; also type to select the relationship type.`,
       'Built-in attributes are scalar strings; additional attributes must be defined in the profile.',
       'stereotype is a label; TYPE determines the semantic type.', 'icon uses PACK.NAME, for example core.service. tags is a string.');
     section('Carried information', 'Profiles can configure relationship referenceLabels, for example conveyed → Conveys.', 'Connected views support referenceDisplay labels | nodes | both. referenceOccurrences shared (default) reuses one card across edges; perEdge repeats cards with visible element IDs. Graphical cards point to the carrying edge and reuse the original node styles; these connectors are visual annotations, not model relationships.');
+    section('Draft validation', 'config { validation draft }',
+      'Default: validation strict. Draft mode renders incomplete profiles and appends validation notices below the diagram, including SVG exports.',
+      'Warnings: missing required attributes/viewpoints, missing required viewpoint types/relationships, and unmet minimum incoming/outgoing/connection counts.',
+      'Unknown/abstract types, invalid values/references, maximum counts, cycles, syntax and structural/renderer errors still block rendering. API validation: "draft" | "strict" overrides config.',
+      'validate() returns valid: true, conformant: false and warning diagnostics for an incomplete draft. Use validation: "strict" for a conformance check.');
     section('Containers', 'package platform "Platform" { service api "API" }', 'Only container types in the selected profile support nesting.', 'IDs are document-wide. Relationships reference element IDs.');
   } else if (topic === 'profiles') {
     if (!args.length) section('Registered profiles', getProfiles().map(id => {
@@ -147,13 +161,14 @@ export function helpContent(model, options = {}) {
       if (!Object.hasOwn(p.nodeTypes, args[1])) fail(`Unknown node type: ${args[1]}. Use @help types ${target}.`);
       const connections = typeConnections(args[1], p);
       section('Selected node type', `${connections.type}${connections.abstract ? ' [abstract; choose a concrete subtype to instantiate]' : ''}`,
-        'The lists include concrete relationship types and concrete counterpart node types, accounting for inheritance and pair exclusions.');
+        'The lists include concrete relationship types and concrete counterpart node types, accounting for inheritance and pair exclusions.',
+        'Source/target lists describe the written from/to roles. A type allowing both also permits reverse flow on that same relationship.');
       section('Relationship overview', `Outgoing: ${list(connections.outgoing.map(item => item.type))}`,
         `Incoming: ${list(connections.incoming.map(item => item.type))}`);
       for (const direction of ['outgoing', 'incoming']) {
         const lines = connections[direction].flatMap(item => [
           direction === 'outgoing' ? `${item.type}: ${connections.type} -> ${list(item.counterparts)}` : `${item.type}: ${list(item.counterparts)} -> ${connections.type}`,
-          `  allowSelf: ${item.allowSelf}; acyclic: ${item.acyclic}; details: @help relations ${target} ${item.type}`,
+          `  allowSelf: ${item.allowSelf}; acyclic: ${item.acyclic}; directions: ${item.directions.join(', ')}; details: @help relations ${target} ${item.type}`,
         ]);
         section(direction === 'outgoing' ? 'Outgoing relationships (this type is the source)' : 'Incoming relationships (this type is the target)', lines.length ? lines : ['(none)']);
       }
@@ -183,32 +198,73 @@ export function helpContent(model, options = {}) {
     const selected = args.length ? [args[0]] : DIAGRAMS;
     if (selected.some(type => !DIAGRAMS.includes(type))) fail(`Unknown diagram type. Valid types: ${list(DIAGRAMS)}.`);
     const notes = {
-      connected: ['Default renderer. Use place, style and route to control the presentation.'],
+      connected: ['Default renderer. Use place, style and route to control the presentation.', 'propertyFields [expression, unit, value] adds actual property rows to cards; place and route remain available.', 'Named tree groups arrange selected sibling nodes automatically within this view. See @help views.'],
+      tree: ['Automatic taxonomy/forest layout: parents centered across their ordered children. No place/route blocks in a whole-view tree.',
+        'relations: optional relationship-type list (includes subtypes); other edges are omitted from this view.',
+        'parentDirection: auto (default; generalization target is parent, otherwise source), source or target.',
+        'direction: down (default), up, right or left; orientation is an alias. Choose only one. Direction describes parent-to-child layout, independently of arrow direction.',
+        'levelGap/siblingGap: 16–800 pixels (defaults 96/48); level gaps grow for edge labels.',
+        'showLabels: true (default) or false. curve: rounded (default) or orthogonal.',
+        'Node styles, icons, visibility and minimum sizes work as in connected views. Packages are flat cards; containment is not the hierarchy.',
+        'A visible node has at most one hierarchy parent; cycles, self-links, parallel hierarchy links and bidirectional links are errors. Use relations/include/exclude/display none to select a tree, or diagram connected for multiple inheritance.',
+        'For mixed layouts use tree ID { nodes [a, b, c] direction up } inside a connected view. External nodes remain visible and can be positioned separately; see @help views.'],
       sequence: ['participants/messages: ordered lists of node/edge IDs.', 'asyncMessages/returns: subsets of messages; a message cannot be both async and return.'],
       state: ['initial: node ID; finals: list of node IDs. Initial has no incoming edges; finals have no outgoing edges.'],
       activity: ['lanes: list of node IDs; laneAttribute: assignment attribute (default owner).', 'decisions/forks require at least two outgoing edges; joins require at least two incoming edges.'],
-      matrix: ['rows/columns: lists of node IDs (at most 100 each); relations: relationship types.', 'Without a selection, uses all visible elements/relationships. Cells count directed relationships.'],
+      matrix: ['rows/columns: lists of node IDs (at most 100 each); relations: relationship types.', 'Without a selection, uses all visible elements/relationships. Cells count relationships in each direction; bidirectional links appear in both cells.'],
       heatmap: ['valueAttribute is required; numeric values between min and max (defaults 0 and 5).', 'parentAttribute is optional; otherwise uses the model hierarchy. colorLow/colorHigh: hex or CSS3 name.'],
       timeline: ['startAttribute/endAttribute: attribute names (defaults start/end).', 'Both ISO date values are required; start must not be after end.'],
-      class: ['attributes/methods/functions/interfaces/ports/parameters: lists of element IDs.', 'ownerAttribute/signatureAttribute: attribute names (defaults owner/signature).', 'Parameters belong to methods/functions; other details belong to classes.', 'propertyFields [FIELD, FIELD]: display actual attribute values/reference IDs on each class card; different from member element IDs.'],
+      class: ['attributes/methods/functions/interfaces/ports/parameters: lists of element IDs.', 'ownerAttribute/signatureAttribute: attribute names (defaults owner/signature).', 'Parameters belong to methods/functions; other details belong to classes.', 'propertyFields [FIELD, FIELD]: display actual attribute values/reference IDs on each class card; different from member element IDs.', 'place CLASS_ID at (X, Y) supports numeric or calculated absolute view coordinates. Optional size sets minimum dimensions (cards remain at least 380 wide and grow for contents). Unplaced cards keep their automatic row positions.', 'Ports move with their owner and can be coordinate anchors. Details cannot be placed individually. Packages are flat class cards here. Tree groups, route/routes, via and graphical reference connectors remain connected-only.'],
     };
     for (const type of selected) section(type, `diagram ${type}${DIAGRAM_OPTIONS[type].length ? ' { ... }' : ''}`, `Valid options: ${list(DIAGRAM_OPTIONS[type])}`, notes[type]);
-    section('Lists and layout', 'Diagram lists use square brackets: participants [user, app].', 'All referenced elements must be visible.', 'place and route apply only to connected; style is also available in other diagrams.');
+    section('Lists and layout', 'Diagram lists use square brackets: participants [user, app].', 'All referenced elements must be visible.', 'place applies to connected and class; route applies to connected only. style is also available in other diagrams.');
   } else if (topic === 'views') {
     section('View', 'view ID "Title" { ... }', 'direction right | down  (default right)', 'theme light | dark  (default light)', 'spacing NUMBER  (24–400; default 80)',
       'include ID, ID  // without include: all elements', 'exclude ID, ID  // exclusions always win, including descendants', 'viewpoint NAME  // from the selected profile', 'referenceDisplay labels | nodes | both  // connected only; otherwise uses profile setting', 'referenceOccurrences shared | perEdge  // graphical references; default shared', 'routes { curve straight }  // defaults for all connected routes; individual route properties win', 'diagram TYPE { ... }  // default connected');
     section('Rendered views', 'config { views all }  // all views in declaration order', 'config { views [detail, overview] }  // selected IDs in this order', 'config { views overview }  // one view', 'Without a selection, the first view is rendered. Multiple views are stacked with headings inside one standalone SVG.', 'API precedence: options.view, then options.views, then config.views, then the first view. The preview dropdown offers Configured views and individual views.');
+    section('Named tree layout groups (connected only)', 'tree hierarchy { nodes [phase, vision, goalA, goalB] direction up }',
+      'place hierarchy at (300, 0)  // optional group position', 'place capability at (0, 250)  // optional external card position',
+      'Each group has its own direction: down (default), up, left or right. orientation is an alias. parentDirection auto/source/target selects hierarchy parents independently of arrow direction.',
+      'Other options: relations, levelGap, siblingGap, curve rounded/orthogonal, showLabels. relations selects hierarchy edges; other visible relationships remain drawn and routable.',
+      'Multiple groups are allowed. Members must be unique, visible non-container siblings; one node belongs to at most one group. Use include to select view contents and nodes to select group members.',
+      'Groups are invisible layout regions, not model elements or packages. Group dimensions are automatic; place GROUP sets its bounding-box origin, relative to the parent package content if nested. Do not place individual members.',
+      'External cards use normal connected layout; directly linked top-level cards are aligned beside the group when unplaced. Internal hierarchy edges use automatic tree paths; route overrides remain available.',
+      'Route precedence: individual route properties, then group curve/showLabels, then view routes defaults. showLabels controls text; label none hides the entire label. See @help diagrams tree for hierarchy constraints.');
     section('Selection', 'Including a container includes its descendants. Required ancestor containers are added automatically.', 'Edges appear only when both endpoints are visible.', 'Without a view block, the default view is created automatically.', '@help routing', '@help styles', '@help diagrams');
   } else if (topic === 'routing') {
-    section('Position and size (connected only)', 'place ID at (X, Y)', 'place ID at (X, Y) size (WIDTH, HEIGHT)', 'Coordinates: ±10000000; minimum size (160, 96). Positions inside containers are relative to their content.');
+    section('Position and size (connected and class)', 'place ID at (X, Y)', 'place ID at (X, Y) size (WIDTH, HEIGHT)', 'Coordinates: ±10000000; minimum size (160, 96). Connected positions inside containers are relative to their content. Class cards are flat, use absolute coordinates, remain at least 380 wide and grow for contents; details move with their owner.');
+    section('Coordinate references and offsets', 'place maritime at (coverage.x + 20, vision.y - 40)',
+      'place maritime at (hierarchy.x - maritime.width - 80, vision.y)', 'place second at (first.right + 40, first.y)',
+      'Reference fields: x, y (top-left corner), width, height, right, bottom, centerX, centerY. Use visible node or tree group IDs from the same view, including automatically positioned tree members.',
+      'Each coordinate supports numbers, references and +, -, *, /. Multiplication/division precede addition/subtraction; equal-precedence operators evaluate left to right. Parentheses override precedence, unary + and - are supported. At most 32 operands and 16 nested parentheses; no executable code. Expressions work in place at and route via; size, endpoint and label points stay numeric.',
+      'place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)',
+      'place second at ((first.x + first.right) / 2, first.y + 20 * 3)',
+      'Division by zero and nonfinite calculations are errors. Constant zero divisors are rejected during validation; divisors depending on layout values are checked when positions resolve.',
+      'References are evaluated in the target parent content coordinate space. At top level this is the view coordinate space. A single reference plus an offset aligns to the referenced absolute position even across containers; plain numeric coordinates retain their local meaning.',
+      'Automatic layout runs once. Symbolic placements then resolve before edge/reference routing; they do not trigger collision avoidance or reflow. Coordinates and references are local to each view.',
+      'Forward references work independently of declaration order. Circular coordinate chains are errors, also in draft mode; the error lists the chain. A tree member depends on its group, and package sizes depend on their contents. Anchor at least one coordinate independently.',
+      'Package content may expand right/down after placement. A result outside the parent left/top content area is an error; move the parent or choose an inside position. A graphical reference card used as a coordinate anchor becomes a canonical card in normal layout.',
+      'JSON: "at": ["coverage.x + 20", "vision.y - 40"]. Expressions remain symbolic in JSON/DSL/meta exports.');
+    section('Tree groups', 'place TREE_GROUP_ID at (X, Y)', 'Positions the complete automatic tree; size and individual member placement are not supported. Outside nodes accept ordinary place. Internal edges accept route overrides, including label icons. @help views');
     section('Routing defaults (connected only)', 'routes {', '  curve straight', '  from auto', '}',
       'Defaults apply to every relationship and reference connector in this view, including routes without an individual block. Specific route properties override matching defaults, regardless of declaration order. Other defaults remain inherited.',
       'Available fields: from, to, via, curve, label, path, icon, iconPosition, showIcon, showLabel. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. label, icon, iconPosition, showIcon and showLabel apply only to relationship labels.',
       'Specific from/to/via/curve settings replace an inherited free path; an explicit path still controls the complete route. Empty routes {} keeps the existing automatic routing.');
     section('Edge routing (connected only)', 'route EDGE_ID {', '  from right', '  to left', '  via (270, 100), (270, 180)', '  curve rounded', '  label (300, 140)', '}',
       'from/to: auto | top | right | bottom | left, or an absolute point (X, Y).', 'curve: orthogonal | straight | rounded | bezier. With via, bezier requires exactly two control points.', 'path "M 0 0 L 100 100" replaces the calculated path; label (X, Y) positions the edge label; label none hides its text, frame and icon.');
+    section('Calculated via points', 'route EDGE_ID { via (source.right + 40, source.centerY), (target.x - 40, target.centerY) }',
+      'route information -> EDGE_ID { via (information.centerX, information.y - 40), (target.x - 40, target.centerY) curve bezier }',
+      'routes { via ((source.x + target.x) / 2, source.y - 60) }',
+      'via accepts the same node/group fields, +, -, *, /, parentheses and numeric limits as place. Literal numbers and expressions may be mixed. Defaults resolve after specific route overrides; a local via replaces the whole default point list.',
+      'All via values are absolute view coordinates, including inside packages. Nodes, package sizes and tree groups resolve first; via resolves immediately before routing. Explicit path replaces via. Endpoint points, label positions and size remain numeric.',
+      'Only visible nodes and groups in this view can be used; relationship IDs and other routes are not coordinate anchors. Graphical reference cards used as anchors become canonical cards in normal layout, also with perEdge occurrences. Other reference cards retain automatic placement.',
+      'A hidden carrying edge or a hidden reference card does not evaluate its unused via. Unknown IDs and invalid arithmetic are still rejected in stored routes. Constant zero divisors fail validation; layout-dependent zero divisors fail during rendering.',
+      'JSON: "via": [["source.right + 40", "target.y - 20"], ["target.x - 40", "target.centerY"]]. Source/meta exports preserve expressions.');
     section('Independent label fields', 'routes { icon core.cloud showIcon true showLabel false }', 'route EDGE_ID { showIcon false showLabel true }', 'showIcon and showLabel are booleans (default true). showLabel controls visible text; showIcon controls the configured icon. Both false removes the label frame. label none hides the entire label regardless of these switches.');
     section('Hide relationship labels', 'routes { label none }', 'route EDGE_ID { label none }', 'A local label (X, Y) overrides a global label none and shows the label again, including any inherited icon. Hidden labels occupy no layout space; relationship titles and references remain in the model and edge tooltip.');
+    section('Hide entire relationships', 'style EDGE_ID { display none }', 'style EDGE_ID { display standard }',
+      'View-local presentation only: hide the path, label/icon and carried reference connectors. Hidden relationships still count for profile/model constraints. Matrices omit their cells; explicit sequence message lists skip hidden messages.',
+      'Relationship styles accept only display none or standard. Other presentation fields belong in route EDGE_ID.');
     section('Icons on relationship labels', 'routes { icon core.cloud iconPosition left }', 'route EDGE_ID { icon core.shield iconPosition top }',
       'icon: PACK.NAME from a registered pack, or none to disable an inherited icon. iconPosition: top | left | bottom | right (default left).',
       'Icons appear inside the label frame relative to its text. Layout reserves space for the icon, multiline text and export bounds. An icon also works without label text.',
@@ -220,9 +276,19 @@ export function helpContent(model, options = {}) {
       'path "M 0 0 L 100 100" overrides the whole connector, including its endpoints. No connector label is supported.',
       'Hidden references, hidden carrying relationships and labels-only presentation do not draw connectors; their stored routes remain available.');
   } else if (topic === 'styles') {
+    section('Property fields on cards', 'propertyFields [expression, unit, value]  // view-wide', 'style criterion { propertyFields [expression] }', 'style measure { propertyFields [unit, value] }',
+      'Available in connected, tree and class views. diagram connected/tree/class { propertyFields [...] } supplies diagram defaults. Precedence: node style, view, diagram. [] clears a selection.',
+      'Names are declared attributes or public properties (id, type, title, description, technology, stereotype, tags). Each card shows only values it has, including 0, false and lists. Unknown names are errors. Text wraps and cards grow before placement/routing; packages reserve header space for their rows.',
+      'Connected cards retain templates, icons, place, routes, tree groups and reference cards. Logo display hides all text including properties. Property visibility is independent of showLabel/showDescription. Class details cannot have their own propertyFields style; configure the owner card.',
+      'Class cards retain compartments and accept place with calculated coordinates. Routes remain automatic; route/routes/via are not supported in class views.');
+    section('Hide nodes, packages or relationships', 'style ELEMENT_ID { display none }', 'style ELEMENT_ID { display standard }',
+      'Node hiding removes the card and all incident relationships. Packages also hide their descendants, even when explicitly included. Hidden reference cards/connectors are omitted.',
+      'Relationship hiding removes the line, label/icon and carried reference connectors. It does not remove the relationship from model/profile validation.',
+      'Presentation only, local to the view; structural renderer and profile requirements still apply. Node display none works in all diagram renderers. Other relationship styles belong in route EDGE_ID.');
     section('View style', 'style NODE_ID {', '  template component', '  icon core.service', '  accent SlateBlue', '  backgroundColor Gold', '  opacity 0.45', '}',
-      'Valid fields: template, icon, iconPosition, accent, backgroundColor, opacity, display, fontSize, width, height, showIcon, showLabel, showStereotype, showDescription, showTechnology.', 'fontSize: title size from 6 to 64 (default 15); other node texts scale proportionally. width/height: minimum dimensions (at least 160/96). These overrides require a connected view and take precedence over place size; content may increase height.', 'The type/stereotype badge stays on one line with an ellipsis when needed; its tooltip keeps the complete text.', 'display logo: connected view, non-container elements; show only a rectangle and an aspect-preserving icon. Centered by default; iconPosition aligns it inside the padded rectangle. display standard restores the usual card. Accessible title/type remain present.', 'Containers use template package; other elements use a non-container template.', 'opacity: number from 0 to 1, applied to fills only. Text, icons and borders remain opaque.', 'Default: 0.2 with an explicit background, otherwise 1.');
+      'Valid fields: template, icon, iconPosition, accent, backgroundColor, opacity, display, fontSize, width, height, showIcon, showLabel, showStereotype, showDescription, showTechnology, propertyFields.', 'fontSize: title size from 6 to 64 (default 15); other node texts scale proportionally. width/height: minimum dimensions (at least 160/96). These overrides require a connected view and take precedence over place size; content may increase height.', 'The type/stereotype badge stays on one line with an ellipsis when needed; its tooltip keeps the complete text.', 'display logo: connected view, non-container elements; show only a rectangle and an aspect-preserving icon. Centered by default; iconPosition aligns it inside the padded rectangle. display standard restores the usual card. Accessible title/type remain present.', 'Containers use template package; other elements use a non-container template.', 'opacity: number from 0 to 1, applied to fills only. Text, icons and borders remain opaque.', 'Default: 0.2 with an explicit background, otherwise 1.');
     section('Node icon placement and visible fields', 'style NODE_ID { iconPosition right showStereotype false showDescription false }', 'iconPosition: top | left | bottom | right. Default: existing template placement; logo display stays centered unless a side is chosen. Package icons stay inside the header. Text and card/header sizes adapt to the placement.', 'showIcon, showLabel, showStereotype, showDescription, showTechnology: true | false (default true). showLabel controls the node title. Hidden fields reserve no text space; model values and accessible tooltips remain present.', 'Use standard display for independent text/icon visibility. Logo display still hides all text; showIcon false leaves its rectangle. These options require connected views and also apply to graphical reference cards.');
+    section('Tree projection', 'Tree views also accept node fontSize, width/height, iconPosition, showIcon/showLabel/showStereotype/showDescription/showTechnology and logo display. Placement and routing are automatic. See @help diagrams tree.');
     section('Precedence', 'View style overrides type presentation. Background: view, then type color, then style group, then theme.', 'A model icon overrides the type icon; a view icon has the highest priority.', 'Colors: hex (3/6 digits, quoted) or a CSS3 color name.', '@help colors', '@help templates');
   } else if (topic === 'colors') {
     const filter = (args[0] ?? '').toLowerCase(), colors = Object.entries(CSS3_COLORS).sort(([a], [b]) => a.localeCompare(b)).filter(([name]) => name.includes(filter));
@@ -239,17 +305,18 @@ export function helpContent(model, options = {}) {
     section('Custom inline profile', 'config {', '  type actor { template person }', '  type product {', '    template application', '    attribute owner { type string required true }', '  }', '  relation uses { from actor to product style flow }', '  defaultRelation uses', '}',
       'Choose either config profile or an inline definition. Inline profiles are not registered globally.');
     section('Inline rule fields', 'Profile: id, title, version, extends, defaultRelation, requireViewpoint.', 'type: extends, template, container, abstract, contains, icon, accent, backgroundColor, styleGroup, attribute/attributes.',
-      'relation: extends, style, abstract, from, to, allowSelf, acyclic, incoming/outgoing { min ... max ... }, attribute/attributes.',
+      'relation: extends, style, abstract, from, to, directions [forward, both], allowSelf, acyclic, incoming/outgoing { min ... max ... }, attribute/attributes.',
       'attribute: type, required, enum, min, max, minLength, maxLength, format, many, minItems, maxItems, uniqueItems, targets.',
       'Attribute types: string, number, integer, boolean, reference. Formats: date, date-time, uri.',
       'viewpoint: nodes, relations, requiredNodes, requiredRelations. styleGroup: backgroundColor.',
       'Multiple inheritance: extends A, B. Profile extends has exactly one registered parent.',
       'JSON profiles also support comparisons, pairs and connections. Details: @help types/relations/viewpoints PROFILE NAME.');
+    section('Validation mode', 'config { profile naf41-uaf validation draft }', 'validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.');
   } else if (topic === 'api') {
     section('Queries and rendering', 'arch.help("types default service", options) → help text', 'arch.parse(source, options) → architecture or help document', 'arch.validate(sourceOrModel, options) → { valid, profile, diagnostics }',
       'arch.layout(sourceOrModel, options) → layout with bounds', 'arch.renderToString(sourceOrModel, options) → SVG string', 'arch.render(target, sourceOrModel, options) → SVG DOM element', 'arch.renderAll({ root, selector, ...options }) → rendered SVG elements', 'arch.renderMarkdown(markdown, options) → HTML with inline SVG');
     section('Registration', 'arch.registerProfile(name, definition)', 'arch.getProfiles() → registered IDs', 'arch.getProfile(name) → independent profile copy', 'arch.registerIconPack(name, data)  // Iconify or converted paths', 'arch.getIconPacks() → registered pack names', 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
-    section('Options', 'profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.', 'view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.', 'theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.', 'Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.');
+    section('Options', 'profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.', 'validation: strict | draft; overrides config.validation. Incomplete drafts have warning diagnostics and conformant: false; layout returns kind notices with content and enlarged bounds.', 'view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.', 'theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.', 'Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.');
   }
   return { topic, profile, title: topic ? `Help · ${topic}` : 'arch.js · Help', sections };
 }

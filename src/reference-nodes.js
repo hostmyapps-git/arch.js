@@ -78,7 +78,7 @@ function connector(card,anchor,obstacles) {
   return candidates.find(path=>!path.slice(1).some((p,i)=>obstacles.some(box=>segmentHits(path[i],p,box))))??candidates[0];
 }
 
-export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnector) {
+export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnector, resolveRoute=route=>route) {
   const byId=new Map(nodes.map(n=>[n.id,n])), occurrences=[], boxes=nodes.filter(n=>!n.container&&!n.referenceOnly);
   const containers=nodes.filter(n=>n.container),headers=containers.map(n=>({...n,height:n.headerHeight}));
   // Labels are obstacles too. In nodes mode the relation keeps its original
@@ -100,7 +100,7 @@ export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnecto
     const rowWidth=edge.referenceItems.reduce((sum,item)=>sum+byId.get(item.id).width,0)+28*(edge.referenceItems.length-1);
     let rowLeft=pointOnPath(samples,0.5).x-rowWidth/2;
     for(const [index,item] of edge.referenceItems.entries()) {
-      const route=routingOptions(view,routes.get(JSON.stringify([item.id,edge.id])),true);
+      const route=resolveRoute(routingOptions(view,routes.get(JSON.stringify([item.id,edge.id])),true));
       const original=byId.get(item.id), anchor=pointOnPath(samples,route?.to??(index+1)/(edge.referenceItems.length+1));
       // Already visible (including explicitly placed) model cards stay canonical.
       const explicit=!original.referenceOnly;

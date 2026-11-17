@@ -1,0 +1,41 @@
+architecture "NAFv4 · Capability Taxonomy" {
+    description "C1 specialization taxonomy: the more specialized capability points to its parent."
+    config { profile naf41-uaf }
+    model {
+        Capability c_SAR "SAR"
+        Capability c_maritimeSAR "Maritime SAR"
+        Capability c_landSAR "Land SAR"
+        Capability c_highMountainsSAR "High Mountains SAR"
+        Capability c_highSeaMaritimeSAR "High Sea Maritime SAR"
+        Capability c_nearShoreMaritimeSAR "Near-Shore Maritime SAR"
+        relation c0 c_maritimeSAR -> c_SAR "is a kind of" { type CapabilityGeneralization }
+        relation c0.1 c_highSeaMaritimeSAR -> c_maritimeSAR "is a kind of" { type CapabilityGeneralization }
+        relation c0.2 c_nearShoreMaritimeSAR -> c_maritimeSAR "is a kind of" { type CapabilityGeneralization }
+        relation c1 c_landSAR -> c_SAR "is a kind of" { type CapabilityGeneralization }
+        relation c1.1 c_highMountainsSAR -> c_landSAR "is a kind of" { type CapabilityGeneralization }
+    }
+    view taxonomy "C1 · Roots at the top" {
+        viewpoint C1
+        diagram tree {
+            relations [CapabilityGeneralization]
+            orientation down
+            siblingGap 48
+            levelGap 100
+        }
+        style c_SAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+        style c_maritimeSAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+        style c_landSAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+        style c_highMountainsSAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+        style c_highSeaMaritimeSAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+        style c_nearShoreMaritimeSAR { backgroundColor "#e0ffc0" opacity 1 showIcon false }
+    }
+    view horizontal "C1 · Roots on the left" {
+        viewpoint C1
+        diagram tree {
+            relations [CapabilityGeneralization]
+            orientation right
+            showLabels false
+            curve orthogonal
+        }
+    }
+}

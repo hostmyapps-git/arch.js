@@ -66,6 +66,7 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
     const shapeIcon=getIcon(iconName,node.loc),glyphSize=node.container?22:17,glyphScale=glyphSize/Math.max(shapeIcon.width,shapeIcon.height);
     nodeIcon=iconMarkup(iconName,iconBox.x+(iconBox.size-shapeIcon.width*glyphScale)/2,iconBox.y+(iconBox.size-shapeIcon.height*glyphScale)/2,glyphSize,node.loc,`${iconScope}-${node.id}-icon`);
   }
+  const propertyMarkup=()=>node.propertyRows?.length?`<g data-node-properties="true"><path d="M20 ${num(node.textStyle.propertyDividerY)} H${num(w-20)}" stroke="${palette.border}"/>${node.propertyRows.map(row=>`<g data-property="${escape(row.key)}"><title>${escape(row.full)}</title>${linesMarkup(row.lines,20,row.y,node.textStyle.description,palette.text,400,node.textStyle.descriptionLeading)}</g>`).join('')}</g>`:'';
   if (node.container) {
     return `<g class="arch-package" ${attrs}>${title}
       <rect width="${num(w)}" height="${num(h)}" rx="18" fill="${palette.package}"${fillOpacity} stroke="${palette.border}" stroke-dasharray="5 4"/>
@@ -73,6 +74,7 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
       <g color="${accent}">${nodeIcon}</g>
       ${node.titleLines.length?linesMarkup(node.titleLines, node.packageTitleX, node.packageTitleY, node.packageTitleSize, palette.text, 650, node.textStyle.titleLeading):''}
       ${node.packageBadge?linesMarkup([node.packageBadge], node.packageBadgeX, node.packageBadgeY, node.textStyle.badge, palette.muted, 600, 17, 'end'):''}
+      ${propertyMarkup()}
     </g>`;
   }
   let shape;
@@ -106,6 +108,7 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
     ${node.titleLines.length?linesMarkup(node.titleLines, 20, fonts.titleY, fonts.title, palette.text, 650, fonts.titleLeading):""}
     ${node.descLines.length?linesMarkup(node.descLines, 20, fonts.descriptionY, fonts.description, palette.muted, 400, fonts.descriptionLeading):""}
     ${node.technologyLines.length?linesMarkup(node.technologyLines, 20, fonts.technologyY, fonts.technology, accent, 500, fonts.technologyLeading):""}
+    ${propertyMarkup()}
   </g>`;
 }
 
@@ -115,7 +118,7 @@ export function toSVG(graph, options = {}) {
   const prefix = options.idPrefix ?? `arch-${++serial}`;
   if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(prefix)) throw new ArchError('Invalid idPrefix');
   if (graph.kind==='meta') return metaSVG(graph,{theme,idPrefix:prefix});
-  if (graph.view.diagram && graph.view.diagram.type !== 'connected') return toDiagramSVG(graph, { theme, idPrefix: prefix });
+  if (graph.view.diagram && !['connected','tree'].includes(graph.view.diagram.type)) return toDiagramSVG(graph, { theme, idPrefix: prefix });
   const palette = theme === 'dark'
     ? { dark: true, bg: '#111827', card: '#1e293b', package: '#162032', border: '#3b4960', text: '#f1f5f9', muted: '#a4b2c7', edge: '#9caac0' }
     : { bg: '#fafbfe', card: '#ffffff', package: '#f0f3fa', border: '#d8dfec', text: '#1e293b', muted: '#738198', edge: '#94a3b8' };
@@ -135,8 +138,8 @@ export function toSVG(graph, options = {}) {
   </defs>`;
   const edgePaths = graph.edges.map(edge => {
     const dash = ['dependency', 'realization'].includes(edge.style) ? ' stroke-dasharray="6 5"' : '';
-    const start = edge.style === 'composition' ? ` marker-start="url(#${prefix}-diamond)"` : '';
-    const end = ['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${prefix}-${['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow'})"`;
+    const start = edge.direction==='both' ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === 'composition' ? ` marker-start="url(#${prefix}-diamond)"` : '';
+    const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${prefix}-${['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow'})"`;
     return `<g class="arch-edge" data-edge="${escape(edge.id)}" data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title><path d="${escape(edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${start}${end}/></g>`;
   }).join('');
   const edgeLabels = graph.edges.filter(e => e.labelLines.length || e.labelIcon).map(edge => {
@@ -164,7 +167,7 @@ export function toSVG(graph, options = {}) {
     const footer=identity.length?`<g data-reference-id="${escape(occurrence.nodeId)}"><rect x="${num(card.x)}" y="${num(card.y+card.referenceContentHeight)}" width="${num(card.width)}" height="${num(card.height-card.referenceContentHeight)}" rx="4" fill="${palette.bg}" stroke="${palette.border}"/>${linesMarkup(identity,card.x+10,card.y+card.referenceContentHeight+16,11,palette.text,500,16)}</g>`:'';
     return `<g class="arch-edge-reference" data-reference-for="${escape(occurrence.edgeIds.join(' '))}" data-reference-node="${escape(occurrence.nodeId)}" data-reference-attribute="${escape(occurrence.attribute)}">${nodeMarkup({...card,height:card.referenceContentHeight??card.height},palette,prefix,palette.bg,`${prefix}-reference-${index}`)}${footer}</g>`;
   }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree?' data-diagram="tree"':''} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
     <title id="${prefix}-title">${escape(graph.title)} — ${escape(graph.view.title)}</title>
     <desc id="${prefix}-desc">${escape(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
     ${definitions}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>

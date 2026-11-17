@@ -1,0 +1,39 @@
+architecture "Bidirectional exchange" {
+    config {
+        extends default
+        relation exchange {
+            from service
+            to service
+            style flow
+            directions [forward, both]
+            attribute conveyed { type reference targets artifact many true }
+        }
+        defaultRelation exchange
+    }
+    model {
+        package enterprise "Enterprise" {
+            package datacenter "Datacenter" {
+                service a "System A"
+            }
+            service b "System B"
+        }
+        artifact information "Shared information"
+        relation exchange a <-> b "Exchange" { conveyed [information] }
+    }
+    view overview "Bidirectional exchange in nested packages" {
+        style enterprise { backgroundColor "#f1f5f9" opacity 1 }
+        style datacenter {
+            backgroundColor "#dbeafe"
+            opacity 1
+            fontSize 18
+            width 400
+            height 220
+            iconPosition right
+            showStereotype false
+        }
+        routes { curve rounded }
+    }
+    view matrix "Exchange in both directions" {
+        diagram matrix { rows [a, b] columns [a, b] }
+    }
+}

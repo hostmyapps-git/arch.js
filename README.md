@@ -22,7 +22,7 @@ Dokumentation: [Sprach-/API-Spezifikation](SPEC.md), [JSON-Format](JSON.md), [Me
 
 `index.html` im Browser öffnen. Die gebauten Dateien sind bereits enthalten;
 Installation und Server sind dafür nicht erforderlich. Die Beispieloberfläche
-bietet zwölf editierbare Modelle mit 46 Ansichten, die eingebaute Hilfereferenz, Live-Vorschau, Zoom,
+bietet dreizehn editierbare Modelle mit 48 Ansichten, die eingebaute Hilfereferenz, Live-Vorschau, Zoom,
 helle/dunkle Darstellung sowie SVG- und Quelltextexport. Ctrl/Cmd+Enter rendert
 und passt das Diagramm ein. Geänderte Beispiele bleiben beim Wechsel in der
 laufenden Sitzung erhalten.
@@ -88,7 +88,52 @@ style backend { backgroundColor Gold accent SlateBlue opacity 0.45 }
 
 `opacity` steuert nur die Füllung (0–1); Schrift und Rahmen bleiben deckend.
 
+Packages dürfen weitere Packages enthalten (bis zu 32 Ebenen). Ihre IDs werden
+wie andere Nodes per `style` gestaltet, einschließlich `backgroundColor`,
+`opacity`, `fontSize`, `width`/`height` und `iconPosition`. Größen sind Mindestgrößen;
+der Inhalt kann den Container vergrößern. Eigene Profile steuern erlaubte Kinder
+über `contains`. Beispiel: [bidirectional.arch](examples/bidirectional.arch).
+
+## Bidirektionale Beziehungen und Entwürfe
+
+```arch
+relation exchange a <-> b "Exchange" { type flow }
+```
+
+`<->` beschreibt eine Beziehung mit gemeinsamer ID, Beschriftung und Attributen.
+Das Profil muss `directions [forward, both]` erlauben. Im Standardprofil gilt
+dies für `flow`, `dependency`, `access` und `association`. Neue eigene
+Relationstypen erlauben standardmäßig nur `forward`. Details: `@help model`,
+`@help relations . TYPE` und [Profilformat](profiles/README.md).
+
+```arch
+config { profile naf41-uaf validation draft }
+```
+
+`validation draft` erlaubt das Rendern unvollständiger Modelle: fehlende
+Pflichtattribute, Viewpoints, erforderliche Typen/Beziehungen und unterschrittene
+Verbindungs-Mindestzahlen erscheinen unter dem Diagramm als Hinweise, auch im
+SVG-Export. Unbekannte/abstrakte Typen, ungültige Werte/Referenzen, überschrittene
+Höchstzahlen, Zyklen sowie Syntax-/Strukturfehler bleiben blockierend.
+Standard ist `validation strict`; die API-Option `validation` überschreibt die
+Konfiguration. `validate()` liefert bei einem unvollständigen Entwurf
+`valid: true`, `conformant: false` und `warning`-Diagnosen.
+Beispiel: [draft.arch](examples/draft.arch).
+
 ## Nodes und Kanten gestalten
+
+Eine ganze Beziehung wird innerhalb der gewünschten View ausgeblendet mit
+`style EDGE_ID { display none }`; `display standard` zeigt sie wieder.
+Linie, Label/Icon und Zuordnungspfeile verschwinden. Das Modell und seine
+Profilregeln bleiben vollständig; die ausgeblendete Beziehung zählt weiterhin
+für Kardinalitäten. Andere Kantenoptionen stehen im `route`-Block.
+
+Dasselbe gilt für Nodes: `style NODE_ID { display none }` entfernt die Karte
+und ihre angrenzenden Kanten. Bei Packages verschwinden auch alle Nachkommen;
+`include` hebt dies nicht auf. Die Einstellung gilt für alle Diagrammrenderer
+und wird in JSON als `style.NODE_ID.display: "none"` beschrieben. Die gesamten
+Modell-/Profilregeln bleiben erhalten; `display standard` stellt die normale
+Darstellung in dieser View wieder her.
 
 Innerhalb einer Connected-View, beispielsweise der obigen View `detail`:
 Die vorhandenen `style api`- und `route reads`-Blöcke dabei durch diese ersetzen.
@@ -259,6 +304,26 @@ NATO-Ausgabe 2026.03 und berücksichtigt die ADMBw-MDG 2026.05 als Vergleichsque
 Das neue Beispiel **NAFv4.1 · Search & Rescue** zeigt neun verknüpfte Ansichten.
 Nach dem UAF-Basisscript `profiles/naf41-uaf.js` laden und im Dokument
 `config { profile naf41-uaf }` auswählen; `profiles/profiles.js` enthält es bereits.
+
+Die C2-Bezeichnung `Goal` ist als Untertyp von UAF `EnterpriseGoal` verfügbar.
+Beide funktionieren mit `SpecifiesGoal` und denselben C2-Regeln. Beispiel:
+`Goal coverage "Increase Coverage"` und
+`relation goalLink vision -> coverage "Specifies" { type SpecifiesGoal }`.
+`@help types naf41-uaf Goal` und `@help connections naf41-uaf Goal` erläutern die
+Abbildung. Nach einem Profilupdate auch die Profil-JSON/-Scripts neu laden.
+
+C2 unterstützt alle drei `desires`-Ziele aus dem Cut-out auf S.90:
+`DesiresCapability` (Phase → Capability), `DesiresVision` (Phase → Vision)
+und `DesiresGoal` (Phase → Goal). Eine direkte Phase→Capability-Verbindung ist
+nicht zwingend, wenn die Phase eine Vision oder ein Goal adressiert. Das
+[C2-Beispiel](examples/naf41-enterprise-vision.arch) zeigt die Beziehungen von
+S.91 als aufwärts wachsende Tree-Gruppe mit externer Capability, vollständigen
+Tree und mit manueller, dem PDF ähnlicher Anordnung.
+C3 erlaubt reine Generalisierungs-/Gruppierungskontexte: Nicht jede sichtbare
+Capability benötigt eine eigene `CapabilityDependency`. Mindestens eine solche
+Abhängigkeit bleibt im Anwendungsprofil Pflichtinhalt der View. Das entspricht
+dem SAR-Kontext auf S.93, ohne Vollständigkeit aller fachlich relevanten
+Abhängigkeiten automatisch behaupten zu können.
 Anleitung, Abbildung und offene Semantik:
 [profiles/naf41/README.md](profiles/naf41/README.md). Hilfebefehl:
 `@help viewpoints naf41-uaf C7`. Dies ist ein dokumentiertes Anwendungsprofil,
@@ -410,13 +475,116 @@ Browser-Screenshots landen unter
 
 ## Weitere Diagrammtypen
 
-Neben dem Knoten-Kanten-Renderer sind jetzt sieben eigenständige Darstellungen
-enthalten: Sequenz, Zustand, Aktivität/Swimlanes, Matrix, Capability Map/Heatmap,
+Neben dem Knoten-Kanten-Renderer sind acht weitere Darstellungen
+enthalten: Tree/Taxonomie, Sequenz, Zustand, Aktivität/Swimlanes, Matrix, Capability Map/Heatmap,
 Zeitachse/Gantt und Klassenansicht mit Detailbereichen und Ports.
+
+Eine Taxonomie wird automatisch mit zentrierten Eltern über ihren Kindern
+angeordnet; Generalisierungen behalten ihre Richtung vom Kind zum Elternteil:
+
+```arch
+view c1 "C1" {
+    viewpoint C1
+    diagram tree {
+        relations [CapabilityGeneralization]
+        orientation down
+    }
+}
+```
+
+`place` und `route` entfallen in dieser View. `direction down|up|left|right`
+(Alias `orientation`) legt die Wachstumsrichtung fest;
+`parentDirection auto|source|target` bestimmt den Eltern-Endpunkt.
+`levelGap`, `siblingGap`, `showLabels` und `curve` steuern die Darstellung.
+Mehrere Bäume und einzelne Nodes sind möglich. Zyklen, mehrere Eltern pro Node,
+parallele Hierarchiebeziehungen und bidirektionale Hierarchien werden abgewiesen.
+Andere Beziehungen lassen sich über `relations` filtern oder per `display none`
+ausblenden. Nodes unterstützen ihre vorhandenen Styles. In der Demo:
+**Capability taxonomy**, Quelle: [taxonomy.arch](examples/taxonomy.arch).
+Hilfe: `@help diagrams tree`.
+
+Für gemischte Ansichten kann eine Connected-View einzelne Trees enthalten:
+
+```arch
+tree hierarchy {
+    nodes [horizon, vision, manpower, coverage, response]
+    direction up
+}
+place hierarchy at (300, 0)  // optional: gesamte Gruppe
+place maritime at (0, 250)  // optional: externe Karte
+```
+
+Mehrere Gruppen mit eigener Richtung sind möglich. Die übrigen Nodes und
+Beziehungen bleiben erhalten und frei positionierbar; ohne `place` werden sie
+automatisch angeordnet. Mitglieder werden ausschließlich durch den Tree
+positioniert. Gruppen sind unsichtbare Layoutbereiche, keine Modell-Packages.
+Syntax und Grenzen: [DIAGRAMS.md](DIAGRAMS.md), Hilfe: `@help views`.
+
+`place` unterstützt auch Koordinatenreferenzen mit `+`, `-`, `*` und `/`:
+
+```arch
+place maritime at (coverage.x + 20, vision.y - 40)
+place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)
+```
+
+Verfügbar sind `.x`, `.y`, `.width`, `.height`, `.right`, `.bottom`, `.centerX`
+und `.centerY` sichtbarer Nodes oder Tree-Gruppen derselben View. Automatische
+Tree-Mitglieder sind ebenfalls referenzierbar. Die Reihenfolge der `place`-Zeilen
+ist beliebig; Zirkelbezüge werden mit ihrer Koordinatenkette gemeldet.
+Automatisches Layout erfolgt zuerst, Referenzpositionierung danach, Kantenrouting
+zuletzt. Manuelle Ergebnisse lösen keine erneute Kollisionsvermeidung aus.
+JSON erhält Ausdrücke als Strings. Details: `@help routing`.
+Punktrechnung geht vor Strichrechnung; Klammern sind möglich. Division durch null
+und nichtendliche Rechenergebnisse werden als Fehler gemeldet.
+
+Auch `via` akzeptiert diese Berechnungen:
+
+```arch
+route requires {
+    from left to right
+    via (vision.x - 40, vision.centerY),
+        (maritime.right + 40, maritime.centerY)
+    curve rounded
+}
+```
+
+Das funktioniert ebenfalls in `routes`-Vorgaben und bei Zuordnungslinien wie
+`route information -> requires`. Die Punkte verwenden die endgültigen absoluten
+Diagrammkoordinaten, auch innerhalb von Packages. JSON bewahrt die Ausdrücke
+als Strings. Endpunkt- und Labelpositionen bleiben numerisch.
 
 In `index.html` zeigt **Seven diagram renderers** alle sieben Ansichten.
 Eine View wählt beispielsweise `diagram sequence { messages [request, response] }`.
 Syntax, Konfiguration und genaue Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
+
+Properties auf normalen Karten erlauben weiterhin freie Positionierung und Routing:
+
+```arch
+propertyFields [expression, unit, value]
+style timeToFind { propertyFields [expression] width 340 }
+place timeToFind at (0, 0)
+place elapsed at (timeToFind.x, timeToFind.bottom + 80)
+```
+
+Das sind Anweisungen innerhalb einer Connected-View für vorhandene Nodes.
+Die Auswahl gilt auch für Tree-Karten und Package-Header. Jede Karte zeigt
+vorhandene Werte, einschließlich 0, false und Listen. Node-Style überschreibt
+View-Auswahl, diese das Diagramm; `propertyFields []` leert die Auswahl.
+
+Class-Karten behalten ihre gegliederten Bereiche und unterstützen ebenfalls
+`place`, berechnete Koordinaten und Mindestgrößen:
+
+```arch
+diagram class { propertyFields [expression, unit, value] }
+place timeToFind at (0, 0)
+place elapsed at (timeToFind.right + 80, timeToFind.y)
+```
+
+Class-Ports bewegen sich mit ihrem Owner; Details werden nicht einzeln platziert.
+Class-Kanten bleiben automatisch. `route`/`routes`/`via`, Tree-Gruppen und grafische
+Zuordnungslinien bleiben Connected vorbehalten. Vollständiges C5-Beispiel mit
+beiden Varianten: [property-fields.arch](examples/property-fields.arch).
+Hilfe: `@help styles`, `@help diagrams class`.
 Weiterführende Funktionen stehen in [ROADMAP.md](ROADMAP.md).
 
 ## Grenzen

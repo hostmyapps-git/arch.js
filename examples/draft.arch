@@ -1,0 +1,25 @@
+architecture "Draft with pending connections" {
+    config {
+        validation draft
+        extends default
+        relation exchange {
+            from service
+            to service
+            directions [forward, both]
+            style flow
+            outgoing { min 1 }
+            incoming { min 1 }
+        }
+        defaultRelation exchange
+    }
+    model {
+        service a "System A"
+        service b "System B"
+        service pending "New system — connections still missing"
+        relation exchange a <-> b "Existing exchange"
+    }
+    view draft "Work in progress" {
+        # Presentation only: this relationship still satisfies model constraints.
+        style exchange { display none }
+    }
+}

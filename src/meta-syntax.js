@@ -11,7 +11,7 @@ export function validateMetaView(view) {
   if (view.meta === undefined) return false;
   const fail = message => { throw new ArchError(`View ${view.id}: ${message}`,view.loc,'ARCH_META'); };
   if (!META_FORMATS.includes(view.meta)) fail('meta must be json or dsl');
-  if (view.diagram || view.viewpoint || view.include !== undefined || view.exclude !== undefined ||
+  if (view.diagram || view.trees || view.viewpoint || view.propertyFields!==undefined || view.include !== undefined || view.exclude !== undefined ||
       Object.keys(view.places).length || Object.keys(view.styles).length || Object.keys(view.routes).length || view.referenceRoutes?.length ||
       view.routeDefaults !== undefined || view.referenceDisplay !== undefined || view.referenceOccurrences !== undefined ||
       view.direction !== 'right' || view.spacing !== 80)

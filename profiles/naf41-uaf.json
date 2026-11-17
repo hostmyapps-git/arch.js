@@ -1,7 +1,7 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.1",
+  "version": "4.1.0-arch.4",
   "extends": "uaf",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
@@ -19,6 +19,19 @@
   "requireViewpoint": true,
   "defaultRelation": null,
   "nodeTypes": {
+    "Goal": {
+      "extends": [
+        "EnterpriseGoal"
+      ],
+      "styleGroup": "capability",
+      "description": "NAF C2 Goal, mapped as a concrete subtype of UAF EnterpriseGoal. Existing goal relationships, attributes and viewpoint rules apply to both names.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 91 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
+    },
     "Effect": {
       "extends": [
         "ActualState"
@@ -1356,6 +1369,36 @@
       "allowSelf": false,
       "style": "dependency",
       "description": "Enterprise phase to desired capability.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 90 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "DesiresVision": {
+      "from": [
+        "EnterprisePhase",
+        "ActualEnterprisePhase"
+      ],
+      "to": [
+        "EnterpriseVision"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Enterprise phase to desired vision, as shown in the C2 cut-out and the p.91 example.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 90 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "DesiresGoal": {
+      "from": [
+        "EnterprisePhase",
+        "ActualEnterprisePhase"
+      ],
+      "to": [
+        "EnterpriseGoal"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Enterprise phase to desired goal, as shown in the C2 cut-out.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 90 (NAFv4.1, 2026.03)"
       ]
@@ -2787,7 +2830,8 @@
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
-        "EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states."
+        "EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states.",
+        "The C2 cut-out permits desires from an enterprise phase to a capability, vision or goal. Every planning phase requires at least one of these links; a direct DesiresCapability is not mandatory when DesiresVision/DesiresGoal is present."
       ],
       "nodes": [
         "Package",
@@ -2805,6 +2849,8 @@
         "RequiresCapability",
         "SpecifiesGoal",
         "DesiresCapability",
+        "DesiresVision",
+        "DesiresGoal",
         "DesiredEffect",
         "CapabilityForTask",
         "Exhibits"
@@ -2817,8 +2863,7 @@
       ],
       "requiredRelations": [
         "RequiresCapability",
-        "SpecifiesGoal",
-        "DesiresCapability"
+        "SpecifiesGoal"
       ],
       "connections": [
         {
@@ -2846,7 +2891,9 @@
             "EnterprisePhase"
           ],
           "relations": [
-            "DesiresCapability"
+            "DesiresCapability",
+            "DesiresVision",
+            "DesiresGoal"
           ],
           "direction": "outgoing",
           "min": 1
@@ -2877,12 +2924,13 @@
     },
     "C3": {
       "title": "Capability Dependencies",
-      "description": "Dependencies between capabilities.",
+      "description": "Dependencies between capabilities, with optional specialization and grouping context.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 92 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "Not every displayed capability must have a CapabilityDependency: specialization/grouping context is allowed, as SAR demonstrates in the p.93 example. The view requires at least one dependency; completeness of relevant real-world dependencies cannot be checked automatically."
       ],
       "nodes": [
         "Package",
@@ -2901,18 +2949,7 @@
       "requiredRelations": [
         "CapabilityDependency"
       ],
-      "connections": [
-        {
-          "nodes": [
-            "Capability"
-          ],
-          "relations": [
-            "CapabilityDependency"
-          ],
-          "direction": "either",
-          "min": 1
-        }
-      ],
+      "connections": [],
       "references": []
     },
     "C4": {

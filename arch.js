@@ -63,9 +63,9 @@ var arch = (() => {
   };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+      for (let key2 of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key2) && key2 !== except)
+          __defProp(to, key2, { get: () => from[key2], enumerable: !(desc = __getOwnPropDesc(from, key2)) || desc.enumerable });
     }
     return to;
   };
@@ -1127,16 +1127,16 @@ var arch = (() => {
         }
         return oc && typeof oc.freeze === "function" ? oc.freeze(object) : object;
       }
-      function hasOwn(object, key) {
-        return Object.prototype.hasOwnProperty.call(object, key);
+      function hasOwn(object, key2) {
+        return Object.prototype.hasOwnProperty.call(object, key2);
       }
       function assign(target, source) {
         if (target === null || typeof target !== "object") {
           throw new TypeError("target is not an object");
         }
-        for (var key in source) {
-          if (hasOwn(source, key)) {
-            target[key] = source[key];
+        for (var key2 in source) {
+          if (hasOwn(source, key2)) {
+            target[key2] = source[key2];
           }
         }
         return target;
@@ -1196,12 +1196,12 @@ var arch = (() => {
         title: true
       });
       function isHTMLRawTextElement(tagName) {
-        var key = tagName.toLowerCase();
-        return hasOwn(HTML_RAW_TEXT_ELEMENTS, key) && !HTML_RAW_TEXT_ELEMENTS[key];
+        var key2 = tagName.toLowerCase();
+        return hasOwn(HTML_RAW_TEXT_ELEMENTS, key2) && !HTML_RAW_TEXT_ELEMENTS[key2];
       }
       function isHTMLEscapableRawTextElement(tagName) {
-        var key = tagName.toLowerCase();
-        return hasOwn(HTML_RAW_TEXT_ELEMENTS, key) && HTML_RAW_TEXT_ELEMENTS[key];
+        var key2 = tagName.toLowerCase();
+        return hasOwn(HTML_RAW_TEXT_ELEMENTS, key2) && HTML_RAW_TEXT_ELEMENTS[key2];
       }
       function isHTMLMimeType(mimeType) {
         return mimeType === MIME_TYPE.HTML;
@@ -1256,8 +1256,8 @@ var arch = (() => {
          */
         XML_SVG_IMAGE: "image/svg+xml"
       });
-      var _MIME_TYPES = Object.keys(MIME_TYPE).map(function(key) {
-        return MIME_TYPE[key];
+      var _MIME_TYPES = Object.keys(MIME_TYPE).map(function(key2) {
+        return MIME_TYPE[key2];
       });
       function isValidMimeType(mimeType) {
         return _MIME_TYPES.indexOf(mimeType) > -1;
@@ -1447,10 +1447,10 @@ var arch = (() => {
       };
       var entries = Object.entries(ExceptionCode);
       for (i = 0; i < entries.length; i++) {
-        key = entries[i][0];
-        DOMException[key] = entries[i][1];
+        key2 = entries[i][0];
+        DOMException[key2] = entries[i][1];
       }
-      var key;
+      var key2;
       var i;
       function ParseError(message, locator, cause) {
         this.message = message;
@@ -4217,8 +4217,8 @@ var arch = (() => {
         });
         return destRoot;
       }
-      function __set__(object, key, value2) {
-        object[key] = value2;
+      function __set__(object, key2, value2) {
+        object[key2] = value2;
       }
       function childrenRefresh(node) {
         var ls = [];
@@ -4310,8 +4310,8 @@ var arch = (() => {
               return new LiveNodeList(this, childrenRefresh);
             }
           });
-          __set__ = function(object, key, value2) {
-            object["$$" + key] = value2;
+          __set__ = function(object, key2, value2) {
+            object["$$" + key2] = value2;
           };
         }
       } catch (e) {
@@ -7506,8 +7506,8 @@ var arch = (() => {
       }
       "endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(
         /\w+/g,
-        function(key) {
-          DOMHandler.prototype[key] = function() {
+        function(key2) {
+          DOMHandler.prototype[key2] = function() {
             return null;
           };
         }
@@ -7918,8 +7918,8 @@ var arch = (() => {
       delete defaults.showLabel;
       if (typeof defaults.to !== "number") delete defaults.to;
     } else if (typeof defaults.to === "number") delete defaults.to;
-    if (specific && geometryFields.some((key) => specific[key] !== void 0)) delete defaults.path;
-    if (!specific && !fields.some((key) => defaults[key] !== void 0)) return void 0;
+    if (specific && geometryFields.some((key2) => specific[key2] !== void 0)) delete defaults.path;
+    if (!specific && !fields.some((key2) => defaults[key2] !== void 0)) return void 0;
     return { ...defaults, ...specific };
   }
 
@@ -7954,7 +7954,7 @@ var arch = (() => {
   ]);
   var EDGE_STYLES = Object.freeze(["flow", "dependency", "association", "access", "composition", "realization", "generalization"]);
   var NODE_PROPERTIES = Object.freeze(["description", "technology", "icon", "stereotype", "tags"]);
-  var EDGE_PROPERTIES = Object.freeze(["description", "technology", "tags"]);
+  var EDGE_PROPERTIES = Object.freeze(["description", "technology", "tags", "direction"]);
   var registry = /* @__PURE__ */ new Map();
   var compiledProfiles = /* @__PURE__ */ new WeakSet();
   var idPattern = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
@@ -7963,18 +7963,18 @@ var arch = (() => {
   var fail3 = (message) => {
     throw new ArchError(message, {}, "ARCH_PROFILE");
   };
-  var own = (object, key) => Object.hasOwn(object, key);
+  var own = (object, key2) => Object.hasOwn(object, key2);
   var record = (value2) => value2 && typeof value2 === "object" && !Array.isArray(value2);
   var documentationKeys = ["title", "description", "sources", "limitations"];
   function documentation(raw, label) {
     const result = {};
-    for (const key of ["title", "description"]) if (raw[key] !== void 0) {
-      if (typeof raw[key] !== "string" || raw[key].length > 16e3) fail3(`${label}.${key}: expected text (at most 16000 characters)`);
-      result[key] = raw[key];
+    for (const key2 of ["title", "description"]) if (raw[key2] !== void 0) {
+      if (typeof raw[key2] !== "string" || raw[key2].length > 16e3) fail3(`${label}.${key2}: expected text (at most 16000 characters)`);
+      result[key2] = raw[key2];
     }
-    for (const key of ["sources", "limitations"]) if (raw[key] !== void 0) {
-      if (!Array.isArray(raw[key]) || raw[key].length > 128 || raw[key].some((s) => typeof s !== "string" || s.length > 4e3)) fail3(`${label}.${key}: expected a text list`);
-      result[key] = [...raw[key]];
+    for (const key2 of ["sources", "limitations"]) if (raw[key2] !== void 0) {
+      if (!Array.isArray(raw[key2]) || raw[key2].length > 128 || raw[key2].some((s) => typeof s !== "string" || s.length > 4e3)) fail3(`${label}.${key2}: expected a text list`);
+      result[key2] = [...raw[key2]];
     }
     return result;
   }
@@ -7988,7 +7988,7 @@ var arch = (() => {
   };
   function keys(value2, allowed, label) {
     if (!record(value2)) fail3(`${label} must be an object`);
-    for (const key of Object.keys(value2)) if (!allowed.includes(key)) fail3(`${label}: unknown option ${key}`);
+    for (const key2 of Object.keys(value2)) if (!allowed.includes(key2)) fail3(`${label}: unknown option ${key2}`);
   }
   function identifier(value2, label) {
     if (typeof value2 !== "string" || !idPattern.test(value2)) fail3(`${label}: invalid identifier ${value2}`);
@@ -8058,10 +8058,10 @@ var arch = (() => {
   }
   function mergeAttributes(parents, local, label) {
     const result = /* @__PURE__ */ Object.create(null);
-    for (const parent of parents) for (const [key, value2] of Object.entries(parent.attributes)) {
-      if (own(result, key) && JSON.stringify(result[key]) !== JSON.stringify(value2) && !own(local ?? {}, key))
-        fail3(`${label}.${key}: ambiguous inherited attribute rule; a local override is required`);
-      result[key] = value2;
+    for (const parent of parents) for (const [key2, value2] of Object.entries(parent.attributes)) {
+      if (own(result, key2) && JSON.stringify(result[key2]) !== JSON.stringify(value2) && !own(local ?? {}, key2))
+        fail3(`${label}.${key2}: ambiguous inherited attribute rule; a local override is required`);
+      result[key2] = value2;
     }
     return Object.assign(result, attributes(local, label));
   }
@@ -8082,12 +8082,12 @@ var arch = (() => {
     identifier(id, "Profile ID");
     if (definition.extends !== void 0 && (typeof definition.extends !== "string" || !registry.has(definition.extends))) fail3(`Unknown base profile: ${definition.extends}`);
     const base = definition.extends ? registry.get(definition.extends) : void 0;
-    for (const key of ["title", "version"]) if (definition[key] !== void 0 && typeof definition[key] !== "string") fail3(`Profile.${key} must be a string`);
+    for (const key2 of ["title", "version"]) if (definition[key2] !== void 0 && typeof definition[key2] !== "string") fail3(`Profile.${key2} must be a string`);
     if (definition.requireViewpoint !== void 0 && typeof definition.requireViewpoint !== "boolean") fail3("requireViewpoint must be boolean");
-    const merged2 = (key) => {
-      const values = definition[key] ?? {};
-      if (!record(values)) fail3(`Profile.${key} must be an object`);
-      return Object.assign(/* @__PURE__ */ Object.create(null), base?.[key] ?? {}, values);
+    const merged2 = (key2) => {
+      const values = definition[key2] ?? {};
+      if (!record(values)) fail3(`Profile.${key2} must be an object`);
+      return Object.assign(/* @__PURE__ */ Object.create(null), base?.[key2] ?? {}, values);
     };
     const rawNodes = merged2("nodeTypes"), rawEdges = merged2("relationTypes"), rawViews = merged2("viewpoints");
     const styleGroups = merged2("styleGroups");
@@ -8117,8 +8117,8 @@ var arch = (() => {
         abstract: raw.abstract ?? false,
         attributes: mergeAttributes(parents, raw.attributes, name)
       };
-      for (const key of ["icon", "accent"]) if (raw[key] !== void 0 || parent?.[key] !== void 0) result[key] = raw[key] ?? parent[key];
-      for (const key of ["styleGroup", "backgroundColor"]) if (raw[key] !== void 0 || parent?.[key] !== void 0) result[key] = raw[key] ?? parent[key];
+      for (const key2 of ["icon", "accent"]) if (raw[key2] !== void 0 || parent?.[key2] !== void 0) result[key2] = raw[key2] ?? parent[key2];
+      for (const key2 of ["styleGroup", "backgroundColor"]) if (raw[key2] !== void 0 || parent?.[key2] !== void 0) result[key2] = raw[key2] ?? parent[key2];
       if (result.styleGroup !== void 0 && !own(styleGroups, result.styleGroup)) fail3(`${name}: unknown style group ${result.styleGroup}`);
       if (result.backgroundColor !== void 0 && !normalizeColor(result.backgroundColor)) fail3(`${name}: invalid backgroundColor`);
       if (raw.extends !== void 0) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
@@ -8136,7 +8136,7 @@ var arch = (() => {
       if (result.container) result.contains = names(raw.contains ?? parent?.contains, `${name}.contains`, ["*"], true);
       if (result.icon !== void 0 && (typeof result.icon !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*\.[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(result.icon))) fail3(`${name}: invalid icon reference`);
       if (result.accent !== void 0 && !normalizeColor(result.accent)) fail3(`${name}: invalid accent color`);
-      for (const key of ["accent", "backgroundColor"]) if (result[key] !== void 0) result[key] = normalizeColor(result[key]);
+      for (const key2 of ["accent", "backgroundColor"]) if (result[key2] !== void 0) result[key2] = normalizeColor(result[key2]);
       nodeTypes[name] = result;
       compiling.delete(`n:${name}`);
       return result;
@@ -8146,7 +8146,7 @@ var arch = (() => {
       for (const name of list2) if (name !== "*" && !own(nodeTypes, name)) fail3(`${label}: unknown node type ${name}`);
     };
     const checkReferences = (rule, label) => {
-      for (const [key, attr] of Object.entries(rule.attributes)) if (attr.type === "reference") knownNodes(attr.targets, `${label}.${key}`);
+      for (const [key2, attr] of Object.entries(rule.attributes)) if (attr.type === "reference") knownNodes(attr.targets, `${label}.${key2}`);
     };
     for (const [name, rule] of Object.entries(nodeTypes)) {
       if (rule.container) knownNodes(rule.contains, `${name}.contains`);
@@ -8157,7 +8157,7 @@ var arch = (() => {
       if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail3(`Unknown or cyclic relation type: ${name}`);
       identifier(name, "relation type");
       const raw = rawEdges[name];
-      keys(raw, ["extends", "from", "to", "style", "abstract", "allowSelf", "attributes", "outgoing", "incoming", "pairs", "acyclic", "referenceLabels", "referenceDisplay", "referenceOccurrences", ...documentationKeys], `relation type ${name}`);
+      keys(raw, ["extends", "from", "to", "directions", "style", "abstract", "allowSelf", "attributes", "outgoing", "incoming", "pairs", "acyclic", "referenceLabels", "referenceDisplay", "referenceOccurrences", ...documentationKeys], `relation type ${name}`);
       compiling.add(`e:${name}`);
       const baseNames = parentNames(raw.extends, `Base relationship of ${name}`), parents = baseNames.map(relation), parent = parents[0];
       const result = {
@@ -8170,6 +8170,9 @@ var arch = (() => {
         attributes: mergeAttributes(parents, raw.attributes, name)
       };
       if (raw.extends !== void 0) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
+      result.directions = names(raw.directions ?? parent?.directions, `${name}.directions`, ["forward"]);
+      if (result.directions.some((d) => !["forward", "both"].includes(d))) fail3(`${name}.directions must contain only forward or both`);
+      if (result.directions.includes("both") && ["composition", "generalization", "realization"].includes(result.style)) fail3(`${name}: ${result.style} does not support bidirectional relationships`);
       const referenceLabels = raw.referenceLabels ?? parent?.referenceLabels;
       if (raw.referenceDisplay !== void 0 || parent?.referenceDisplay !== void 0) {
         result.referenceDisplay = raw.referenceDisplay ?? parent.referenceDisplay;
@@ -8196,16 +8199,16 @@ var arch = (() => {
         result.pairs = pairs.map((pair) => {
           keys(pair, ["from", "to", "fromExclude", "toExclude"], `${name}.pairs`);
           const normalized = { from: names(pair.from, name), to: names(pair.to, name) };
-          for (const key of ["fromExclude", "toExclude"]) if (pair[key] !== void 0) normalized[key] = names(pair[key], name, [], true);
-          for (const [key, values] of Object.entries(normalized)) knownNodes(values, `${name}.${key}`);
+          for (const key2 of ["fromExclude", "toExclude"]) if (pair[key2] !== void 0) normalized[key2] = names(pair[key2], name, [], true);
+          for (const [key2, values] of Object.entries(normalized)) knownNodes(values, `${name}.${key2}`);
           return normalized;
         });
       }
       if (!EDGE_STYLES.includes(result.style)) fail3(`Unknown edge style for ${name}: ${result.style}`);
       if (typeof result.abstract !== "boolean" || typeof result.allowSelf !== "boolean") fail3(`${name}: abstract/allowSelf must be boolean`);
-      for (const key of ["outgoing", "incoming"]) {
-        const value2 = cardinality(raw[key] ?? parent?.[key], `${name}.${key}`);
-        if (value2) result[key] = value2;
+      for (const key2 of ["outgoing", "incoming"]) {
+        const value2 = cardinality(raw[key2] ?? parent?.[key2], `${name}.${key2}`);
+        if (value2) result[key2] = value2;
       }
       knownNodes(result.from, `${name}.from`);
       knownNodes(result.to, `${name}.to`);
@@ -8258,11 +8261,11 @@ var arch = (() => {
         result.references = raw.references.map((check) => {
           keys(check, ["nodes", "relations", "attributes"], `${name}.references`);
           if (check.nodes === void 0 === (check.relations === void 0)) fail3(`${name}: reference checks require nodes or relations`);
-          const key = check.nodes === void 0 ? "relations" : "nodes";
-          const value2 = { [key]: names(check[key], name), attributes: names(check.attributes, name) };
-          (key === "nodes" ? knownNodes : knownEdges)(value2[key], name);
-          if (value2[key].includes("*") || value2.attributes.includes("*")) fail3(`${name}: reference checks require explicit names`);
-          for (const type of value2[key]) for (const attr of value2.attributes) if ((key === "nodes" ? nodeTypes : relationTypes)[type].attributes[attr]?.type !== "reference") fail3(`${name}: ${type}.${attr} is not a reference attribute`);
+          const key2 = check.nodes === void 0 ? "relations" : "nodes";
+          const value2 = { [key2]: names(check[key2], name), attributes: names(check.attributes, name) };
+          (key2 === "nodes" ? knownNodes : knownEdges)(value2[key2], name);
+          if (value2[key2].includes("*") || value2.attributes.includes("*")) fail3(`${name}: reference checks require explicit names`);
+          for (const type of value2[key2]) for (const attr of value2.attributes) if ((key2 === "nodes" ? nodeTypes : relationTypes)[type].attributes[attr]?.type !== "reference") fail3(`${name}: ${type}.${attr} is not a reference attribute`);
           return value2;
         });
       }
@@ -8346,13 +8349,13 @@ var arch = (() => {
       if (rule.abstract) continue;
       const accepts = (source, target) => matches(source, rule.from, profile.nodeTypes) && matches(target, rule.to, profile.nodeTypes) && (!rule.pairs || rule.pairs.some((pair) => matchesPair(source, target, pair, profile.nodeTypes)));
       const targets = concrete.filter((other) => accepts(type, other)), sources = concrete.filter((other) => accepts(other, type));
-      const summary = { type: name, allowSelf: rule.allowSelf, acyclic: !!rule.acyclic };
+      const summary = { type: name, allowSelf: rule.allowSelf, acyclic: !!rule.acyclic, directions: rule.directions ?? ["forward"] };
       if (targets.length) outgoing.push({ ...summary, counterparts: targets });
       if (sources.length) incoming.push({ ...summary, counterparts: sources });
     }
     return { type, abstract: profile.nodeTypes[type].abstract, outgoing, incoming };
   }
-  function visibleNodeIds(model, view) {
+  function visibleNodeIds(model, view, respectDisplay = true) {
     const nodes = new Map(model.nodes.map((node) => [node.id, node]));
     const children = /* @__PURE__ */ new Map();
     for (const node of model.nodes) {
@@ -8369,7 +8372,8 @@ var arch = (() => {
       return ids;
     };
     const visible = view.include ? descendants(view.include) : new Set(nodes.keys());
-    for (const id of descendants(view.exclude ?? [])) visible.delete(id);
+    const hidden = respectDisplay ? Object.keys(view.styles ?? {}).filter((id) => nodes.has(id) && view.styles[id].display === "none") : [];
+    for (const id of descendants([...view.exclude ?? [], ...hidden])) visible.delete(id);
     if (view.include) for (const id of [...visible]) {
       const seen = /* @__PURE__ */ new Set();
       let parent = nodes.get(id)?.parent;
@@ -8411,7 +8415,7 @@ var arch = (() => {
       add(`Abstract ${kind} type cannot be instantiated: ${type}. ${detail} See ${help2}`, item, { elementId: item.id, candidates, help: help2 });
     };
     const checkAttributes = (item, rule, builtins) => {
-      const values = { ...Object.fromEntries(builtins.filter((key) => own(item, key)).map((key) => [key, item[key]])), ...item.attributes };
+      const values = { ...Object.fromEntries(builtins.filter((key2) => own(item, key2)).map((key2) => [key2, item[key2]])), ...item.attributes };
       for (const [name, value2] of Object.entries(values)) {
         const schema = rule.attributes[name];
         const location = { loc: item.attributeLocs?.[name] ?? item.loc };
@@ -8445,7 +8449,7 @@ var arch = (() => {
           }
         }
       }
-      for (const [name, schema] of Object.entries(rule.attributes)) if (schema.required && !own(values, name)) add(`${item.id}: Missing required attribute ${name}`, item, { elementId: item.id, attribute: name });
+      for (const [name, schema] of Object.entries(rule.attributes)) if (schema.required && !own(values, name)) add(`${item.id}: Missing required attribute ${name}`, item, { elementId: item.id, attribute: name, incomplete: true });
       for (const check of rule.comparisons ?? []) {
         const a = rule.attributes[check.left], b = rule.attributes[check.right];
         let left = values[check.left], right = values[check.right];
@@ -8480,6 +8484,9 @@ var arch = (() => {
         continue;
       }
       if (rule.abstract) abstractType(type, "relationship", profile.relationTypes, edge);
+      const direction = edge.direction ?? "forward";
+      if (!["forward", "both"].includes(direction)) add(`${edge.id}: direction must be forward or both`, edge, { elementId: edge.id, attribute: "direction" });
+      else if (!(rule.directions ?? ["forward"]).includes(direction)) add(`${edge.id}: ${type} does not allow direction ${direction}; allowed directions: ${(rule.directions ?? ["forward"]).join(", ")}`, edge, { elementId: edge.id, attribute: "direction" });
       if (!rule.allowSelf && edge.source === edge.target) add(`${type}: Self-relationships are not allowed`, edge, { elementId: edge.id });
       for (const [endpoint, types] of [["source", rule.from], ["target", rule.to]]) {
         const node = nodes.get(edge[endpoint]);
@@ -8502,7 +8509,7 @@ var arch = (() => {
         if (!counts.has(type)) counts.set(type, { source: /* @__PURE__ */ new Map(), target: /* @__PURE__ */ new Map() });
         for (const endpoint of ["source", "target"]) {
           const map = counts.get(type)[endpoint];
-          map.set(edge[endpoint], (map.get(edge[endpoint]) ?? 0) + 1);
+          for (const id of new Set(edge.direction === "both" ? [edge.source, edge.target] : [edge[endpoint]])) map.set(id, (map.get(id) ?? 0) + 1);
         }
         pending.push(...bases(profile.relationTypes[type]));
       }
@@ -8512,6 +8519,10 @@ var arch = (() => {
       for (const edge of model.edges) if (matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes)) {
         if (!adjacency.has(edge.source)) adjacency.set(edge.source, []);
         adjacency.get(edge.source).push(edge);
+        if (edge.direction === "both") {
+          if (!adjacency.has(edge.target)) adjacency.set(edge.target, []);
+          adjacency.get(edge.target).push({ ...edge, source: edge.target, target: edge.source });
+        }
       }
       let cycle;
       const visit = (id) => {
@@ -8532,17 +8543,17 @@ var arch = (() => {
       }
       if (cycle) add(`${type}: Cycles are not allowed`, cycle, { elementId: cycle.id });
     }
-    for (const [name, rule] of Object.entries(profile.relationTypes)) for (const key of ["outgoing", "incoming"]) if (rule[key]) {
-      const endpoint = key === "outgoing" ? "source" : "target", applicable = key === "outgoing" ? rule.from : rule.to;
-      for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes)) {
+    for (const [name, rule] of Object.entries(profile.relationTypes)) for (const key2 of ["outgoing", "incoming"]) if (rule[key2]) {
+      const endpoint = key2 === "outgoing" ? "source" : "target", applicable = key2 === "outgoing" ? rule.from : rule.to;
+      for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes) || counts.get(name)?.[endpoint].has(node.id)) {
         const count = counts.get(name)?.[endpoint].get(node.id) ?? 0;
-        if (count < rule[key].min || rule[key].max !== null && count > rule[key].max) add(`${node.id}: ${name}.${key} expected ${rule[key].min}–${rule[key].max ?? "∞"} relationships, found ${count}`, node, { elementId: node.id });
+        if (count < rule[key2].min || rule[key2].max !== null && count > rule[key2].max) add(`${node.id}: ${name}.${key2} expected ${rule[key2].min}–${rule[key2].max ?? "∞"} relationships, found ${count}`, node, { elementId: node.id, ...count < rule[key2].min ? { incomplete: true } : {} });
       }
     }
     for (const view of model.views) {
       if (view.meta !== void 0) continue;
       if (!view.viewpoint) {
-        if (profile.requireViewpoint) add(`View ${view.id} requires a viewpoint`, view, { viewId: view.id });
+        if (profile.requireViewpoint) add(`View ${view.id} requires a viewpoint`, view, { viewId: view.id, incomplete: true });
         continue;
       }
       const rule = profile.viewpoints[view.viewpoint];
@@ -8550,15 +8561,15 @@ var arch = (() => {
         add(`Unknown viewpoint: ${view.viewpoint}`, view, { viewId: view.id });
         continue;
       }
-      const visible = visibleNodeIds(model, view), selectedNodes = model.nodes.filter((node) => visible.has(node.id));
+      const visible = visibleNodeIds(model, view, false), selectedNodes = model.nodes.filter((node) => visible.has(node.id));
       const selectedEdges = model.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target));
       for (const node of selectedNodes) if (!matches(node.type, rule.nodes, profile.nodeTypes)) add(`${view.id}: node type ${node.type} is not allowed in viewpoint ${view.viewpoint}`, node, { elementId: node.id, viewId: view.id });
       for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Relationship type ${edge.type ?? profile.defaultRelation} is not allowed`, edge, { elementId: edge.id, viewId: view.id });
-      for (const type of rule.requiredNodes) if (!selectedNodes.some((node) => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id });
-      for (const type of rule.requiredRelations) if (!selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id });
+      for (const type of rule.requiredNodes) if (!selectedNodes.some((node) => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id, incomplete: true });
+      for (const type of rule.requiredRelations) if (!selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id, incomplete: true });
       for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)) {
-        const count = selectedEdges.filter((edge) => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) && (check.direction !== "incoming" && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes)) || check.direction !== "outgoing" && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))).length;
-        if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? "∞"} ${check.direction} connections (${check.relations.join(", ")}${check.counterparts ? `; counterpart: ${check.counterparts.join(", ")}` : ""}); found ${count}`, node, { elementId: node.id, viewId: view.id });
+        const count = selectedEdges.filter((edge) => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) && ((check.direction !== "incoming" || edge.direction === "both") && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes)) || (check.direction !== "outgoing" || edge.direction === "both") && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))).length;
+        if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? "∞"} ${check.direction} connections (${check.relations.join(", ")}${check.counterparts ? `; counterpart: ${check.counterparts.join(", ")}` : ""}); found ${count}`, node, { elementId: node.id, viewId: view.id, ...count < check.min ? { incomplete: true } : {} });
       }
       for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
         for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter((v) => typeof v === "string")) if (!visible.has(id))
@@ -8571,7 +8582,7 @@ var arch = (() => {
     title: "arch.js standard",
     version: "1",
     nodeTypes: Object.fromEntries(TEMPLATES.map((template) => [template, { template }])),
-    relationTypes: Object.fromEntries(EDGE_STYLES.map((style) => [style, { style }])),
+    relationTypes: Object.fromEntries(EDGE_STYLES.map((style) => [style, { style, directions: ["composition", "generalization", "realization"].includes(style) ? ["forward"] : ["forward", "both"] }])),
     defaultRelation: "flow"
   });
 
@@ -8584,1373 +8595,13 @@ var arch = (() => {
   }
   function validateMetaView(view) {
     if (view.meta === void 0) return false;
-    const fail8 = (message) => {
+    const fail11 = (message) => {
       throw new ArchError(`View ${view.id}: ${message}`, view.loc, "ARCH_META");
     };
-    if (!META_FORMATS.includes(view.meta)) fail8("meta must be json or dsl");
-    if (view.diagram || view.viewpoint || view.include !== void 0 || view.exclude !== void 0 || Object.keys(view.places).length || Object.keys(view.styles).length || Object.keys(view.routes).length || view.referenceRoutes?.length || view.routeDefaults !== void 0 || view.referenceDisplay !== void 0 || view.referenceOccurrences !== void 0 || view.direction !== "right" || view.spacing !== 80)
-      fail8("meta views support a source format and theme; model filters, viewpoints, diagrams and layout/style settings do not apply");
+    if (!META_FORMATS.includes(view.meta)) fail11("meta must be json or dsl");
+    if (view.diagram || view.trees || view.viewpoint || view.propertyFields !== void 0 || view.include !== void 0 || view.exclude !== void 0 || Object.keys(view.places).length || Object.keys(view.styles).length || Object.keys(view.routes).length || view.referenceRoutes?.length || view.routeDefaults !== void 0 || view.referenceDisplay !== void 0 || view.referenceOccurrences !== void 0 || view.direction !== "right" || view.spacing !== 80)
+      fail11("meta views support a source format and theme; model filters, viewpoints, diagrams and layout/style settings do not apply");
     return true;
-  }
-
-  // src/diagrams.js
-  var DIAGRAMS = ["connected", "sequence", "state", "activity", "matrix", "heatmap", "timeline", "class"];
-  var DIAGRAM_OPTIONS = {
-    connected: [],
-    sequence: ["participants", "messages", "asyncMessages", "returns"],
-    state: ["initial", "finals"],
-    activity: ["lanes", "laneAttribute", "initial", "finals", "decisions", "forks", "joins"],
-    matrix: ["rows", "columns", "relations"],
-    heatmap: ["valueAttribute", "parentAttribute", "min", "max", "colorLow", "colorHigh"],
-    timeline: ["startAttribute", "endAttribute"],
-    class: ["attributes", "methods", "functions", "interfaces", "ports", "parameters", "ownerAttribute", "signatureAttribute", "propertyFields"]
-  };
-  var fields2 = DIAGRAM_OPTIONS;
-  var lists = /* @__PURE__ */ new Set(["participants", "messages", "asyncMessages", "returns", "finals", "lanes", "decisions", "forks", "joins", "rows", "columns", "relations", "attributes", "methods", "functions", "interfaces", "ports", "parameters"]);
-  var members = ["attributes", "methods", "functions", "interfaces", "ports", "parameters"];
-  var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
-  var fail4 = (message, view) => {
-    throw new ArchError(`View ${view.id}: ${message}`, view.loc, "ARCH_VALIDATION");
-  };
-  var value = (node, name) => node.attributes?.[name] ?? node[name];
-  function selected(model, view) {
-    const ids = visibleNodeIds(model, view), nodes = model.nodes.filter((n) => ids.has(n.id));
-    return { nodes, edges: model.edges.filter((e) => ids.has(e.source) && ids.has(e.target)) };
-  }
-  function validateDiagramView(model, profile, view) {
-    if (validateMetaView(view)) return;
-    const c = view.diagram ?? { type: "connected" }, type = c.type;
-    if (!DIAGRAMS.includes(type)) fail4(`Unknown diagram type ${type}`, view);
-    const { nodes, edges } = selected(model, view), ids = new Set(nodes.map((n) => n.id)), edgeIds = new Set(edges.map((e) => e.id));
-    if (type !== "connected" && (view.referenceDisplay === "nodes" || view.referenceDisplay === "both")) fail4("graphical referenceDisplay requires the connected renderer", view);
-    if (type !== "connected" && view.routeDefaults !== void 0) fail4("routes defaults require the connected renderer", view);
-    if (type !== "connected" && view.referenceOccurrences !== void 0) fail4("referenceOccurrences requires the connected renderer", view);
-    if (type !== "connected" && Object.values(view.styles).some((style) => ["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"].some((key) => style[key] !== void 0))) fail4("node visibility style overrides require the connected renderer", view);
-    if (type !== "connected" && Object.values(view.styles).some((style) => style.iconPosition !== void 0)) fail4("iconPosition style overrides require the connected renderer", view);
-    if (type !== "connected" && Object.values(view.styles).some((style) => style.display === "logo")) fail4("logo display requires the connected renderer", view);
-    if (type !== "connected" && Object.values(view.styles).some((style) => ["fontSize", "width", "height"].some((field) => style[field] !== void 0))) fail4("fontSize/width/height style overrides require the connected renderer", view);
-    for (const [key, v] of Object.entries(c)) {
-      if (key === "type") continue;
-      if (!fields2[type].includes(key)) fail4(`Option ${key} does not apply to ${type}`, view);
-      if (key === "propertyFields") {
-        const allowed = /* @__PURE__ */ new Set(["id", "type", "title", "description", "technology", "stereotype", "tags", ...nodes.flatMap((n) => Object.keys(profile.nodeTypes[n.type]?.attributes ?? {}))]);
-        if (!Array.isArray(v) || v.length > 128 || v.some((x) => typeof x !== "string" || !allowed.has(x)) || new Set(v).size !== v.length) fail4("propertyFields requires unique declared attribute or public property names", view);
-      } else if (lists.has(key)) {
-        if (!Array.isArray(v) || v.some((x) => typeof x !== "string") || new Set(v).size !== v.length) fail4(`${key} requires a list of unique values`, view);
-        const allowed = ["messages", "asyncMessages", "returns"].includes(key) ? edgeIds : key === "relations" ? new Set(Object.keys(profile.relationTypes)) : ids;
-        for (const id of v) if (!allowed.has(id)) fail4(`${key}: unknown or invisible reference ${id}`, view);
-      } else if (["min", "max"].includes(key)) {
-        if (!Number.isFinite(v)) fail4(`${key} must be finite`, view);
-      } else if (typeof v !== "string") fail4(`${key} must be a string`, view);
-      if (key.startsWith("color") && !normalizeColor(v)) fail4(`Invalid color ${key}`, view);
-    }
-    if (Object.keys(view.places).length || Object.keys(view.routes).length || view.referenceRoutes?.length) {
-      if (type !== "connected") fail4("place/route are only supported for connected; this renderer determines the layout", view);
-    }
-    if (c.initial && !ids.has(c.initial)) fail4("initial is not visible", view);
-    if (type === "sequence") {
-      const participants = new Set(c.participants ?? nodes.map((n) => n.id)), messages = c.messages ?? edges.map((e) => e.id);
-      for (const id of messages) {
-        const e = edges.find((e2) => e2.id === id);
-        if (!participants.has(e.source) || !participants.has(e.target)) fail4(`Message ${id} requires both participants`, view);
-      }
-      for (const id of [...c.returns ?? [], ...c.asyncMessages ?? []]) if (!messages.includes(id)) fail4(`Message ${id} is not included in messages`, view);
-      if ((c.returns ?? []).some((id) => (c.asyncMessages ?? []).includes(id))) fail4("A message cannot be both return and async", view);
-    }
-    if (type === "matrix" && ((c.rows ?? nodes).length > 100 || (c.columns ?? nodes).length > 100)) fail4("Matrix supports at most 100 rows/columns", view);
-    if (type === "activity") {
-      const lanes = new Set(c.lanes ?? []), tasks = nodes.filter((n) => !lanes.has(n.id));
-      for (const n of tasks) if (lanes.size && !lanes.has(value(n, c.laneAttribute ?? "owner"))) fail4(`${n.id}: Missing valid lane assignment`, view);
-      const kinds = [...c.decisions ?? [], ...c.forks ?? [], ...c.joins ?? []];
-      if (new Set(kinds).size !== kinds.length) fail4("Activity has multiple control node kinds", view);
-      for (const id of c.decisions ?? []) if (edges.filter((e) => e.source === id).length < 2) fail4(`${id}: Decision requires at least two outgoing edges`, view);
-      for (const id of c.forks ?? []) if (edges.filter((e) => e.source === id).length < 2) fail4(`${id}: Fork requires at least two outgoing edges`, view);
-      for (const id of c.joins ?? []) if (edges.filter((e) => e.target === id).length < 2) fail4(`${id}: Join requires at least two incoming edges`, view);
-      for (const e of edges) if (lanes.has(e.source) || lanes.has(e.target)) fail4("Lane elements cannot be flow nodes", view);
-    }
-    if (["state", "activity"].includes(type)) {
-      if (c.initial && (c.finals ?? []).includes(c.initial)) fail4("Initial and final nodes must be different", view);
-      if (c.initial && edges.some((e) => e.target === c.initial)) fail4("Initial node cannot have incoming transitions", view);
-      if (edges.some((e) => (c.finals ?? []).includes(e.source))) fail4("Final nodes cannot have outgoing transitions", view);
-    }
-    if (type === "heatmap") {
-      const min = c.min ?? 0, max = c.max ?? 5;
-      if (min >= max) fail4("Heatmap requires min < max", view);
-      if (!c.valueAttribute) fail4("Missing valueAttribute", view);
-      const parents = /* @__PURE__ */ new Map();
-      for (const n of nodes) {
-        const v = value(n, c.valueAttribute);
-        if (v !== void 0 && (typeof v !== "number" || !Number.isFinite(v) || v < min || v > max)) fail4(`${n.id}: Heatmap value outside ${min}–${max}`, view);
-        const parent = c.parentAttribute ? value(n, c.parentAttribute) : n.parent;
-        if (parent !== void 0 && parent !== null) {
-          if (!ids.has(parent)) fail4(`${n.id}: Heatmap parent is not visible`, view);
-          parents.set(n.id, parent);
-        }
-      }
-      for (const n of nodes) {
-        const seen = /* @__PURE__ */ new Set();
-        let p = n.id;
-        while (parents.has(p)) {
-          if (seen.has(p) || seen.size >= 32) fail4("Heatmap hierarchy is cyclic or too deep", view);
-          seen.add(p);
-          p = parents.get(p);
-        }
-      }
-    }
-    if (type === "timeline") for (const n of nodes) {
-      const start = value(n, c.startAttribute ?? "start"), end = value(n, c.endAttribute ?? "end");
-      for (const v of [start, end]) {
-        const match = typeof v === "string" && v.match(/^(\d{4}-\d{2}-\d{2})(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/);
-        if (!match || !Number.isFinite(Date.parse(v)) || new Date(Date.parse(match[1])).toISOString().slice(0, 10) !== match[1]) fail4(`${n.id}: Valid ISO start/end values are required`, view);
-      }
-      if (Date.parse(start) > Date.parse(end)) fail4(`${n.id}: start is after end`, view);
-    }
-    if (type === "class") {
-      const all = members.flatMap((k) => c[k] ?? []), memberIds = new Set(all), byId = new Map(nodes.map((n) => [n.id, n]));
-      if (memberIds.size !== all.length) fail4("A detail belongs to multiple compartments", view);
-      for (const id of all) {
-        const owner = value(byId.get(id), c.ownerAttribute ?? "owner");
-        if (!byId.has(owner) || id === owner || memberIds.has(owner) && !(c.parameters ?? []).includes(id)) fail4(`${id}: Missing valid owner`, view);
-        if ((c.parameters ?? []).includes(id) && ![...c.methods ?? [], ...c.functions ?? []].includes(owner)) fail4(`${id}: Parameter requires a method/function as its owner`, view);
-      }
-    }
-  }
-  function scene(graph, theme, prefix) {
-    const { nodes, edges, view, profileRules } = graph, c = { ...view.diagram, colorLow: normalizeColor(view.diagram.colorLow), colorHigh: normalizeColor(view.diagram.colorHigh) }, type = c.type;
-    const dark = theme === "dark", bg = dark ? "#111827" : "#fafbfe", text = dark ? "#f1f5f9" : "#1e293b", border = dark ? "#8b9ab2" : "#64748b", muted = dark ? "#b4bfd0" : "#52627a";
-    const byId = new Map(nodes.map((n) => [n.id, n])), out = [];
-    let width = 900, height = 300;
-    const wrap2 = (s, limit) => {
-      const measure = (s2) => [...s2].reduce((sum, c2) => sum + (/[MW@%]/.test(c2) ? 1.6 : /[ilI.,:! ]/.test(c2) ? 0.5 : 1), 0);
-      const lines = [];
-      for (const paragraph of String(s ?? "").split("\n")) {
-        let line = "";
-        for (const word of paragraph.split(/\s+/)) {
-          if (line && measure(line + " " + word) > limit) {
-            lines.push(line);
-            line = "";
-          }
-          let part = "";
-          for (const ch of word) {
-            if (part && measure(part + ch) > limit) {
-              lines.push(part);
-              part = "";
-            }
-            part += ch;
-          }
-          line += (line ? " " : "") + part;
-        }
-        lines.push(line);
-      }
-      return lines;
-    };
-    const label = (s, x, y, w = 200, size = 13, color = text, anchor = "start") => {
-      const all = wrap2(s, Math.max(1, Math.floor(w / (size * 0.65)))), lines = all.slice(0, 2);
-      if (all.length > 2) lines[1] = lines[1].slice(0, -1) + "…";
-      out.push(`<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="${anchor}"><title>${esc(s)}</title>${lines.map((s2, i) => `<tspan x="${x}" dy="${i ? size * 1.4 : 0}">${esc(s2)}</tspan>`).join("")}</text>`);
-      return lines.length * size * 1.4;
-    };
-    const rect = (x, y, w, h, fill = bg, opacity = 1, rx = 6) => out.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" fill-opacity="${opacity}" stroke="${border}"/>`);
-    const path = (d, arrow = false, dashed = false) => out.push(`<path d="${d}" fill="none" stroke="${border}" stroke-width="1.5"${arrow ? ` marker-end="url(#${prefix}-${typeof arrow === "string" ? arrow : "arrow"})"` : ""}${dashed ? ' stroke-dasharray="6 5"' : ""}/>`);
-    const card = (n, x, y, w = 220, h = 90, body) => {
-      Object.assign(n, { x, y, width: w, height: h });
-      const fill = n.backgroundColor ?? (dark ? "#1e293b" : "#ffffff"), opacity = n.opacity ?? (n.backgroundColor ? 0.2 : 1), fg = foreground(composite(fill, bg, opacity));
-      out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" transform="translate(${x} ${y})"><title>${esc(n.title)}</title>`);
-      rect(0, 0, w, h, fill, opacity);
-      label(n.type, 14, 22, w - 28, 10, fg);
-      label(n.title, 14, 45, w - 28, 14, fg);
-      if (body) body(fg);
-      out.push("</g>");
-      return { x, y, width: w, height: h };
-    };
-    const edgeLabel = (e, x, y) => {
-      rect(x - 80, y - 14, 160, 20, bg, 1, 3);
-      label(e.title, x, y, 150, 11, muted, "middle");
-    };
-    if (type === "sequence") {
-      const participants = (c.participants ?? nodes.map((n) => n.id)).map((id) => byId.get(id));
-      const messages = (c.messages ?? edges.map((e) => e.id)).map((id) => edges.find((e) => e.id === id));
-      const gap = Math.max(280, ...participants.map((n) => n.title.length * 8 + 40));
-      width = Math.max(500, participants.length * gap + 160);
-      height = 180 + messages.reduce((sum, e) => sum + Math.max(90, Math.min(2, wrap2(e.title, 32).length) * 18 + 50), 0);
-      const xs = /* @__PURE__ */ new Map();
-      participants.forEach((n, i) => {
-        const x = 60 + i * gap;
-        xs.set(n.id, x + 110);
-        card(n, x, 25, 220, 90);
-        path(`M${x + 110} 115 V${height - 25}`, false, true);
-      });
-      let y = 155;
-      messages.forEach((e, i) => {
-        const a = xs.get(e.source), b = xs.get(e.target), ret = (c.returns ?? []).includes(e.id), async = (c.asyncMessages ?? []).includes(e.id);
-        out.push(`<g data-edge="${esc(e.id)}" data-message="${i + 1}" data-message-kind="${ret ? "return" : async ? "async" : "sync"}">`);
-        if (a === b) {
-          path(`M${a} ${y} h65 v35 h-65`, !async, ret);
-          if (async) path(`M${a + 10} ${y + 29} L${a} ${y + 35} l10 6`);
-          label(`${i + 1}. ${e.title}`, a + 10, y - 12, 220, 12);
-        } else {
-          path(`M${a} ${y} H${b}`, !async, ret);
-          if (async) path(`M${b + (b > a ? -10 : 10)} ${y - 6} L${b} ${y} l${b > a ? -10 : 10} 6`);
-          label(`${i + 1}. ${e.title}`, (a + b) / 2, y - 15, Math.abs(b - a) - 25, 12, text, "middle");
-        }
-        if (!ret && !async) rect(b - 4, y, 8, 35, dark ? "#64748b" : "#cbd5e1", 1, 0);
-        out.push("</g>");
-        y += Math.max(90, Math.min(2, wrap2(e.title, 32).length) * 18 + 50);
-      });
-    } else if (type === "matrix") {
-      const rows = (c.rows ?? nodes.map((n) => n.id)).map((id) => byId.get(id)), cols = (c.columns ?? nodes.map((n) => n.id)).map((id) => byId.get(id));
-      const cell = 110, left = 240, top = 130;
-      width = left + cols.length * cell + 40;
-      height = top + rows.length * 70 + 60;
-      cols.forEach((n, i) => label(n.title, left + i * cell + cell / 2, 35, cell - 12, 12, text, "middle"));
-      rows.forEach((n, r) => {
-        label(n.title, 10, top + r * 70 + 30, left - 25, 12);
-        cols.forEach((m, k) => {
-          const matching = edges.filter((e) => e.source === n.id && e.target === m.id && (!c.relations || matches(e.type, c.relations, profileRules.relationTypes)));
-          const x = left + k * cell, y = top + r * 70;
-          rect(x, y, cell, 70, matching.length ? dark ? "#134e4a" : "#ccfbf1" : bg, 1, 0);
-          out.push(`<g data-cell="${esc(n.id)}:${esc(m.id)}"><title>${esc(matching.map((e) => `${e.type}: ${e.title}`).join("\n") || "No relationship")}</title>`);
-          label(matching.length || "·", x + cell / 2, y + 40, cell, 16, text, "middle");
-          out.push("</g>");
-        });
-      });
-      label("Rows → columns · number of directed relationships", 10, height - 15, width - 20, 12, muted);
-    } else if (type === "heatmap") {
-      const parent = (n) => c.parentAttribute ? value(n, c.parentAttribute) : n.parent, children = (id) => nodes.filter((n) => (parent(n) ?? null) === id);
-      const leaves = (n) => Math.max(1, children(n.id).reduce((sum, k) => sum + leaves(k), 0));
-      const levels = (n) => 1 + Math.max(0, ...children(n.id).map(levels));
-      const roots = children(null);
-      width = Math.max(600, roots.reduce((sum, n) => sum + leaves(n) * 250, 0) + 40);
-      height = Math.max(270, ...roots.map((n) => levels(n) * 110 + 140));
-      const mix = (a, b, t) => composite(b, a, t), min = c.min ?? 0, max = c.max ?? 5;
-      const tile = (n, x2, y, w, h, backdrop = bg) => {
-        const v = value(n, c.valueAttribute), fill = v === void 0 ? dark ? "#64748b" : "#94a3b8" : mix(c.colorLow ?? "#fee2e2", c.colorHigh ?? "#16a34a", (v - min) / (max - min)), fg = foreground(composite(fill, backdrop, n.opacity ?? 0.2));
-        out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v ?? "No value")}</title>`);
-        rect(x2, y, w, h, fill, n.opacity ?? 0.2);
-        label(`${n.title} · ${v ?? "—"}`, x2 + 12, y + 25, w - 24, 13, fg);
-        out.push("</g>");
-        let cx = x2 + 12;
-        for (const k of children(n.id)) {
-          const kw = (w - 24) * leaves(k) / leaves(n);
-          tile(k, cx, y + 45, kw - 8, h - 57, composite(fill, backdrop, n.opacity ?? 0.2));
-          cx += kw;
-        }
-      };
-      let x = 20;
-      for (const n of roots) {
-        const w = leaves(n) * 250;
-        tile(n, x, 20, w - 15, height - 105);
-        x += w;
-      }
-      for (let i = 0; i <= 10; i++) rect(25 + i * 28, height - 55, 28, 18, mix(c.colorLow ?? "#fee2e2", c.colorHigh ?? "#16a34a", i / 10), 0.2, 0);
-      label(`${min} → ${max} · — = no value`, 25, height - 12, 450, 12, muted);
-    } else if (type === "timeline") {
-      const data = nodes.map((n) => ({ n, start: Date.parse(value(n, c.startAttribute ?? "start")), end: Date.parse(value(n, c.endAttribute ?? "end")) }));
-      const min = Math.min(...data.map((d) => d.start), 0 === data.length ? 0 : Infinity), max = Math.max(min + 864e5, ...data.map((d) => d.end));
-      width = 1200;
-      height = 130 + data.length * 90;
-      const scale = (t) => 260 + (t - min) / (max - min) * 850, ys = /* @__PURE__ */ new Map();
-      for (let i = 0; i <= 5; i++) {
-        const x = 260 + i * 170;
-        path(`M${x} 65 V${height - 25}`, false, true);
-        label(new Date(min + (max - min) * i / 5).toISOString().slice(0, 10), x, 35, 140, 11, text, "middle");
-      }
-      data.forEach(({ n, start, end }, i) => {
-        const y = 85 + i * 90;
-        ys.set(n.id, y + 20);
-        label(n.title, 10, y + 20, 230, 13);
-        out.push(`<g data-bar="${esc(n.id)}"><title>${esc(n.title)}: ${esc(value(n, c.startAttribute ?? "start"))} – ${esc(value(n, c.endAttribute ?? "end"))}</title>`);
-        const x = scale(start), w = scale(end) - x;
-        if (!w) out.push(`<path d="M${x} ${y} l12 20 -12 20 -12 -20Z" fill="${text}"/>`);
-        else rect(x, y, w, 40, n.backgroundColor ?? "#6366f1", n.opacity ?? 0.2);
-        out.push("</g>");
-        label(new Date(start).toISOString().slice(0, 10), x, y + 60, 160, 10, muted);
-      });
-      for (const e of edges) {
-        const a = data.find((d) => d.n.id === e.source), b = data.find((d) => d.n.id === e.target);
-        if (a && b) path(`M${scale(a.end)} ${ys.get(e.source)} H${scale(a.end) + 15} V${ys.get(e.target)} H${scale(b.start)}`, true);
-      }
-    } else if (type === "class") {
-      const memberIds = new Set(members.flatMap((k) => c[k] ?? [])), classes = nodes.filter((n) => !memberIds.has(n.id)), pos = /* @__PURE__ */ new Map(), portPositions = /* @__PURE__ */ new Map();
-      const owner = (n) => value(n, c.ownerAttribute ?? "owner"), signature = (n) => value(n, c.signatureAttribute ?? "signature") ?? n.title;
-      const memberText = (m) => {
-        const params = (c.parameters ?? []).map((id) => byId.get(id)).filter((p) => owner(p) === m.id).map(signature).join(", ");
-        const s = String(signature(m));
-        return params ? s.includes("()") ? s.replace("()", `(${params})`) : `${s} (${params})` : s;
-      };
-      const cardWidth = 380, cardBorder = dark ? "#37465d" : "#dce3ed";
-      const sectionColor = dark ? "#a9b6cc" : "#66758c";
-      const symbols = { properties: "·", attributes: "−", methods: "ƒ", functions: "ƒ", interfaces: "◇", ports: "□" };
-      let x = 30;
-      height = 220;
-      for (const n of classes) {
-        const sections = members.filter((k) => k !== "parameters").map((kind) => ({ kind, items: (c[kind] ?? []).map((id) => byId.get(id)).filter((m) => owner(m) === n.id) })).filter((s) => s.items.length);
-        const lines = sections.map((s) => ({ ...s, rows: s.items.map((m) => ({ id: m.id, full: memberText(m), lines: wrap2(memberText(m), 32) })) }));
-        const properties = (c.propertyFields ?? []).filter((key) => value(n, key) !== void 0).map((key) => {
-          const field = value(n, key), full = `${key}: ${Array.isArray(field) ? "[" + field.join(", ") + "]" : String(field)}`;
-          return { id: `${n.id}.${key}`, full, lines: wrap2(full, 32) };
-        });
-        if (properties.length) lines.unshift({ kind: "properties", rows: properties });
-        const ownPorts = (c.ports ?? []).map((id) => byId.get(id)).filter((p) => owner(p) === n.id);
-        const h = Math.max(148, 90 + ownPorts.length * 24, 110 + lines.reduce((sum, s) => sum + 50 + s.rows.reduce((count, r) => count + r.lines.length * 21, 0), 0));
-        const fill = n.backgroundColor ?? (dark ? "#1e293b" : "#ffffff"), opacity = n.opacity ?? (n.backgroundColor ? 0.2 : 1);
-        const visible = composite(fill, bg, opacity), fg = n.backgroundColor || n.opacity !== void 0 ? foreground(visible) : text;
-        const subdued = n.backgroundColor ? fg : sectionColor;
-        const accent = n.accent && contrast(n.accent, visible) >= 4.5 ? n.accent : n.backgroundColor ? fg : dark ? "#a5b4fc" : "#6366f1";
-        Object.assign(n, { x, y: 40, width: cardWidth, height: h });
-        pos.set(n.id, { x, y: 40, width: cardWidth, height: h });
-        out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" data-class-card="true" transform="translate(${x} 40)"><title>${esc(n.title)}</title>`);
-        out.push(`<rect width="${cardWidth}" height="${h}" rx="16" fill="${fill}" fill-opacity="${opacity}" stroke="${cardBorder}" filter="url(#${prefix}-class-shadow)"/>`);
-        out.push(`<path d="M16 1 H${cardWidth - 16} Q${cardWidth - 1} 1 ${cardWidth - 1} 16 V95 H1 V16 Q1 1 16 1Z" fill="${accent}" fill-opacity="0.055"/>`);
-        out.push(`<rect x="20" y="18" width="26" height="26" rx="7" fill="${accent}" fill-opacity="0.1"/><g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-weight="600">`);
-        label("{}", 33, 36, 24, 12, accent, "middle");
-        out.push('</g><g font-weight="600" letter-spacing="1">');
-        label(String(n.stereotype ?? n.type).toUpperCase(), 58, 35, cardWidth - 80, 10, subdued);
-        out.push('</g><g font-weight="650">');
-        label(n.title, 20, 65, cardWidth - 40, 18, fg);
-        out.push("</g>");
-        let y = 116;
-        for (const s of lines) {
-          out.push(`<g data-compartment="${s.kind}"><title>${esc(s.rows.map((row) => row.full).join("\n"))}</title>`);
-          out.push(`<path d="M20 ${y - 16} H${cardWidth - 20}" fill="none" stroke="${cardBorder}" stroke-width="0.8"/>`);
-          out.push('<g font-weight="600" letter-spacing="1.2">');
-          label(s.kind.toUpperCase(), 22, y, cardWidth - 85, 9.5, subdued);
-          out.push("</g>");
-          out.push(`<rect x="${cardWidth - 47}" y="${y - 12}" width="25" height="17" rx="8.5" fill="${subdued}" fill-opacity="0.08"/>`);
-          label(s.rows.length, cardWidth - 34.5, y, 22, 9, subdued, "middle");
-          y += 30;
-          for (const row of s.rows) {
-            out.push(`<g data-member="${esc(row.id)}"><title>${esc(row.full)}</title>`);
-            label(symbols[s.kind], 24, y, 16, 12, accent);
-            out.push('<g font-family="ui-monospace,SFMono-Regular,Consolas,monospace">');
-            for (const line of row.lines) {
-              label(line, 46, y, cardWidth - 68, 12.5, fg);
-              y += 21;
-            }
-            out.push("</g></g>");
-          }
-          y += 20;
-          out.push("</g>");
-        }
-        out.push("</g>");
-        ownPorts.forEach((p, index) => {
-          const py = 64 + index * 24;
-          out.push(`<g data-port="${esc(p.id)}"><title>${esc(p.title)}</title><rect x="${x + cardWidth - 6}" y="${py - 6}" width="12" height="12" rx="3" fill="${dark ? "#1e293b" : "#ffffff"}" stroke="${accent}" stroke-width="1.5"/><circle cx="${x + cardWidth}" cy="${py}" r="2" fill="${accent}"/></g>`);
-          portPositions.set(p.id, { x: x + cardWidth, y: py });
-        });
-        x += 470;
-        height = Math.max(height, h + 120);
-      }
-      width = Math.max(500, x);
-      for (const e of edges) {
-        const a = pos.get(e.source), b = pos.get(e.target), pa = portPositions.get(e.source), pb = portPositions.get(e.target);
-        if ((a || pa) && (b || pb)) {
-          const start = pa ?? { x: a.x + a.width, y: a.y + 56 }, end = pb ?? { x: b.x, y: b.y + 56 };
-          path(`M${start.x} ${start.y} L${end.x} ${end.y}`, ["generalization", "realization"].includes(e.style) ? "triangle" : !["association", "composition"].includes(e.style), ["dependency", "realization"].includes(e.style));
-          edgeLabel(e, (start.x + end.x) / 2, 25);
-        }
-      }
-    } else {
-      const laneIds = c.lanes ?? [], tasks = nodes.filter((n) => !laneIds.includes(n.id)), pos = /* @__PURE__ */ new Map();
-      const lanes = laneIds.length ? laneIds : [null];
-      width = Math.max(850, lanes.length * 330 + 160);
-      height = 130 + tasks.length * 145;
-      lanes.forEach((id, i) => {
-        if (id) {
-          rect(25 + i * 330, 20, 320, height - 45, bg, 1, 0);
-          label(byId.get(id).title, 40 + i * 330, 48, 290, 14);
-          path(`M${25 + i * 330} 65 h320`);
-        }
-      });
-      tasks.forEach((n, i) => {
-        const lane = laneIds.length ? lanes.indexOf(value(n, c.laneAttribute ?? "owner")) : 0, x = laneIds.length ? 65 + lane * 330 : Math.max(80, width / 2 - 110), y = 95 + i * 145;
-        pos.set(n.id, { x, y, width: 220, height: 80, inY: y + (n.id === c.initial ? 29 : (c.finals ?? []).includes(n.id) ? 20 : [...c.forks ?? [], ...c.joins ?? []].includes(n.id) ? 30 : 0), outY: y + (n.id === c.initial ? 51 : (c.finals ?? []).includes(n.id) ? 60 : [...c.forks ?? [], ...c.joins ?? []].includes(n.id) ? 42 : 80) });
-        out.push(`<g data-state="${esc(n.id)}">`);
-        if (n.id === c.initial || (c.finals ?? []).includes(n.id)) {
-          out.push(`<circle cx="${x + 110}" cy="${y + 40}" r="${n.id === c.initial ? 11 : 15}" fill="${text}"/>`);
-          if (n.id !== c.initial) out.push(`<circle cx="${x + 110}" cy="${y + 40}" r="20" fill="none" stroke="${text}"/>`);
-          label(n.title, x + 140, y + 44, 110, 11);
-        } else if ((c.decisions ?? []).includes(n.id)) {
-          out.push(`<path d="M${x + 110} ${y} l100 40 -100 40 -100 -40Z" fill="${bg}" stroke="${border}"/>`);
-          label(n.title, x + 110, y + 44, 150, 12, text, "middle");
-        } else if ([...c.forks ?? [], ...c.joins ?? []].includes(n.id)) {
-          rect(x, y + 30, 220, 12, text, 1, 0);
-          label(n.title, x, y + 70, 220, 11);
-        } else card(n, x, y, 220, 80);
-        out.push("</g>");
-      });
-      edges.forEach((e, index) => {
-        const a = pos.get(e.source), b = pos.get(e.target);
-        if (!a || !b) return;
-        out.push(`<g data-edge="${esc(e.id)}">`);
-        if (e.source === e.target) {
-          path(`M${a.x + 220} ${a.y + 20} h45 v50 h-45`, true);
-          edgeLabel(e, a.x + 300, a.y + 45);
-        } else if (b.y > a.y) {
-          const y = (a.outY + b.inY) / 2;
-          path(`M${a.x + 110} ${a.outY} V${y} H${b.x + 110} V${b.inY}`, true);
-          if (e.title) edgeLabel(e, (a.x + b.x) / 2 + 110, y - 4);
-        } else {
-          const x = 25 + index % 3 * 14;
-          path(`M${a.x} ${a.y + 40} H${x} V${b.y + 40} H${b.x}`, true);
-          if (e.title) edgeLabel(e, Math.max(110, a.x - 90), (a.y + b.y) / 2 + 40);
-        }
-        out.push("</g>");
-      });
-    }
-    return { body: out.join(""), width: Math.max(300, width), height: Math.max(180, height) };
-  }
-  function layoutDiagram(model, profile, view, nodes, edges) {
-    const graph = { title: model.title, description: model.description, profile: { id: profile.id, version: profile.version }, profileRules: profile, view, nodes, edges };
-    const result = scene(graph, view.theme, "measure");
-    graph.bounds = { x: -20, y: -20, width: result.width + 40, height: result.height + 40 };
-    return graph;
-  }
-  function toDiagramSVG(graph, { theme, idPrefix }) {
-    const result = scene(graph, theme, idPrefix), bg = theme === "dark" ? "#111827" : "#fafbfe", stroke = theme === "dark" ? "#8b9ab2" : "#64748b";
-    return `<svg xmlns="http://www.w3.org/2000/svg" id="${idPrefix}-diagram" data-arch-svg="${theme}" data-diagram="${graph.view.diagram.type}" role="img" aria-labelledby="${idPrefix}-title" width="${result.width + 40}" height="${result.height + 40}" viewBox="-20 -20 ${result.width + 40} ${result.height + 40}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:${bg}"><title id="${idPrefix}-title">${esc(graph.title)} — ${esc(graph.view.title)}</title><defs><filter id="${idPrefix}-class-shadow" x="-15%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="${theme === "dark" ? 0.22 : 0.07}"/></filter><marker id="${idPrefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9Z" fill="${stroke}"/></marker><marker id="${idPrefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 L11 6 L1 11Z" fill="${bg}" stroke="${stroke}"/></marker></defs><rect x="-20" y="-20" width="${result.width + 40}" height="${result.height + 40}" fill="${bg}"/>${result.body}</svg>`;
-  }
-
-  // src/json.js
-  var own2 = (o, k) => Object.hasOwn(o, k);
-  var record2 = (o) => o !== null && typeof o === "object" && !Array.isArray(o);
-  var child = (path, key) => `${path}/${String(key).replace(/~/g, "~0").replace(/\//g, "~1")}`;
-  var identifier2 = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
-  var maxSource = 2e6;
-  var isJSONDocument = (value2) => record2(value2) && (own2(value2, "architecture") || own2(value2, "@help"));
-  function jsonToDSL(input) {
-    const locations = /* @__PURE__ */ new Map();
-    const lineStarts = [0];
-    let source;
-    const error = (message, path = "", offset) => {
-      const loc = offset === void 0 ? locations.get(path) ?? { path } : position(offset, path);
-      throw new ArchError(message, loc, "ARCH_JSON");
-    };
-    const position = (offset, path) => {
-      let low = 0, high = lineStarts.length;
-      while (low + 1 < high) {
-        const mid = low + high >>> 1;
-        if (lineStarts[mid] <= offset) low = mid;
-        else high = mid;
-      }
-      return { path, line: low + 1, column: offset - lineStarts[low] + 1 };
-    };
-    if (typeof input === "string") source = input;
-    else {
-      const ancestors = /* @__PURE__ */ new Set();
-      const check = (value2, path, depth = 0) => {
-        if (depth > 128) error("JSON nesting exceeds 128 levels", path);
-        if (value2 === null || ["string", "boolean"].includes(typeof value2)) return;
-        if (typeof value2 === "number" && Number.isFinite(value2)) return;
-        if (typeof value2 !== "object" || !value2 || !Array.isArray(value2) && Object.getPrototypeOf(value2) !== null && Object.getPrototypeOf(Object.getPrototypeOf(value2)) !== null) error("Expected a JSON value", path);
-        if (ancestors.has(value2)) error("Cyclic JSON document", path);
-        ancestors.add(value2);
-        for (const key of Reflect.ownKeys(value2)) {
-          if (Array.isArray(value2) && key === "length") continue;
-          if (typeof key !== "string") error("JSON keys must be strings", path);
-          const descriptor = Object.getOwnPropertyDescriptor(value2, key);
-          if (!own2(descriptor, "value")) error("JSON properties must be data values", child(path, key));
-          check(descriptor.value, child(path, key), depth + 1);
-        }
-        ancestors.delete(value2);
-      };
-      check(input, "");
-      source = JSON.stringify(input);
-    }
-    if (source.length > maxSource) error("Source exceeds 2 MB");
-    for (let i = 0; i < source.length; i++) if (source[i] === "\n") lineStarts.push(i + 1);
-    try {
-      JSON.parse(source);
-    } catch (e) {
-      const nativePosition = e.message.match(/position (\d+)/), nativeLine = e.message.match(/line (\d+) column (\d+)/);
-      const at = nativePosition ? Number(nativePosition[1]) : nativeLine ? (lineStarts[Number(nativeLine[1]) - 1] ?? 0) + Number(nativeLine[2]) - 1 : source.length;
-      error(`Invalid JSON: ${e.message}`, "", at);
-    }
-    let cursor = 0;
-    const space = () => {
-      while (/\s/.test(source[cursor] ?? "") && cursor < source.length) cursor++;
-    };
-    const string = () => {
-      const start = cursor++;
-      while (source[cursor] !== '"') {
-        if (source[cursor] === "\\") cursor++;
-        cursor++;
-      }
-      cursor++;
-      return JSON.parse(source.slice(start, cursor));
-    };
-    const read = (path = "", depth = 0) => {
-      space();
-      locations.set(path, position(cursor, path));
-      if (depth > 128) error("JSON nesting exceeds 128 levels", path);
-      if (source[cursor] === "{") {
-        cursor++;
-        space();
-        const result = /* @__PURE__ */ Object.create(null);
-        while (source[cursor] !== "}") {
-          const start2 = cursor, key = string(), next = child(path, key);
-          if (own2(result, key)) error(`Duplicate JSON key: ${key}`, next, start2);
-          space();
-          cursor++;
-          result[key] = read(next, depth + 1);
-          space();
-          if (source[cursor] !== ",") break;
-          cursor++;
-          space();
-        }
-        cursor++;
-        return result;
-      }
-      if (source[cursor] === "[") {
-        cursor++;
-        space();
-        const result = [];
-        while (source[cursor] !== "]") {
-          result.push(read(child(path, result.length), depth + 1));
-          space();
-          if (source[cursor] !== ",") break;
-          cursor++;
-        }
-        cursor++;
-        return result;
-      }
-      if (source[cursor] === '"') return string();
-      const start = cursor;
-      while (cursor < source.length && !/[\s,}\]]/.test(source[cursor])) cursor++;
-      return JSON.parse(source.slice(start, cursor));
-    };
-    const document = read();
-    const obj = (value2, path) => {
-      if (!record2(value2)) error("Expected an object", path);
-      return value2;
-    };
-    const keys2 = (value2, allowed, path) => {
-      obj(value2, path);
-      for (const key of Object.keys(value2)) if (!allowed.includes(key)) error(`Unknown JSON field: ${key}`, child(path, key));
-    };
-    const id = (value2, path) => {
-      if (typeof value2 !== "string" || !identifier2.test(value2)) error("Expected an identifier", path);
-      return value2;
-    };
-    const text = (value2, path) => {
-      if (typeof value2 !== "string") error("Expected a string", path);
-      return JSON.stringify(value2);
-    };
-    const scalar = (value2, path) => {
-      if (Array.isArray(value2)) {
-        if (value2.length > 4e3) error("At most 4000 list entries are allowed", path);
-        if (value2.some((v) => Array.isArray(v))) error("Nested attribute lists are not allowed", path);
-        return `[${value2.map((v, i) => scalar(v, child(path, i))).join(", ")}]`;
-      }
-      if (typeof value2 === "string") return text(value2, path);
-      if (typeof value2 === "boolean" || typeof value2 === "number" && Number.isFinite(value2)) return String(value2);
-      error("Expected a string, finite number, boolean or flat list", path);
-    };
-    const list2 = (value2, path) => {
-      const values = Array.isArray(value2) ? value2 : [value2];
-      if (!values.length) error("Expected a nonempty list", path);
-      return values.map((v, i) => text(v, Array.isArray(value2) ? child(path, i) : path)).join(", ");
-    };
-    const point2 = (value2, path) => {
-      if (!Array.isArray(value2) || value2.length !== 2 || value2.some((v) => typeof v !== "number" || !Number.isFinite(v))) error("Expected a coordinate pair [x, y]", path);
-      return `(${value2.join(", ")})`;
-    };
-    const entries = (value2, path) => {
-      if (Array.isArray(value2)) return value2.map((v, i) => {
-        const p = child(path, i);
-        obj(v, p);
-        return [id(v.id, child(p, "id")), v, p];
-      });
-      return Object.entries(obj(value2, path)).map(([key, v]) => {
-        const p = child(path, key);
-        id(key, p);
-        obj(v, p);
-        if (own2(v, "id")) error("Use either an object key or an array entry with id", child(p, "id"));
-        return [key, v, p];
-      });
-    };
-    const lines = [], origins = [];
-    let generatedLength = 0;
-    const emit = (line, path) => {
-      generatedLength += line.length + 1;
-      if (generatedLength > maxSource) error("Normalized source exceeds 2 MB", path);
-      lines.push(line);
-      origins.push(locations.get(path) ?? { path });
-    };
-    const field = (key, value2, path) => emit(`${id(key, path)} ${scalar(value2, path)}`, path);
-    const attributes2 = (value2, path, reserved = []) => {
-      obj(value2, path);
-      for (const [key, v] of Object.entries(value2)) {
-        const p = child(path, key);
-        if (reserved.includes(key)) error(`Reserved attribute: ${key}`, p);
-        field(key, v, p);
-      }
-    };
-    const config = (value2, path) => {
-      obj(value2, path);
-      emit("config {", path);
-      for (const [key, v] of Object.entries(value2)) {
-        const p = child(path, key);
-        if (["type", "relation", "viewpoint", "styleGroup"].includes(key)) {
-          for (const [name, rule, rp] of entries(v, p)) {
-            emit(`${key} ${name} {`, rp);
-            for (const [attr, a] of Object.entries(rule)) {
-              if (attr === "id") continue;
-              const ap = child(rp, attr);
-              if (["attribute", "attributes"].includes(attr)) {
-                for (const [name2, schema, sp] of entries(a, ap)) {
-                  emit(`attribute ${name2} {`, sp);
-                  for (const [option, optionValue] of Object.entries(schema)) if (option !== "id") {
-                    const op = child(sp, option);
-                    let value3;
-                    if (option === "enum") {
-                      const values = Array.isArray(optionValue) ? optionValue : [optionValue];
-                      if (!values.length) error("Expected a nonempty enum list", op);
-                      value3 = values.map((v2, i) => scalar(v2, child(op, i))).join(", ");
-                    } else value3 = option === "targets" ? list2(optionValue, op) : scalar(optionValue, op);
-                    emit(`${id(option, op)} ${value3}`, op);
-                  }
-                  emit("}", sp);
-                }
-              } else if (["incoming", "outgoing"].includes(attr)) {
-                obj(a, ap);
-                emit(`${attr} {`, ap);
-                attributes2(a, ap);
-                emit("}", ap);
-              } else {
-                const asList = ["extends", "contains", "from", "to", "nodes", "relations", "requiredNodes", "requiredRelations"].includes(attr);
-                emit(`${id(attr, ap)} ${asList ? list2(a, ap) : scalar(a, ap)}`, ap);
-              }
-            }
-            emit("}", rp);
-          }
-        } else field(key, v, p);
-      }
-      emit("}", path);
-    };
-    let nodeCount = 0, edgeCount = 0;
-    const model = (value2, path, depth = 0) => {
-      keys2(value2, ["elements", "relations"], path);
-      for (const [key, collection2] of Object.entries(value2)) for (const [name, item, p] of entries(collection2, child(path, key))) {
-        if (key === "elements") {
-          if (++nodeCount > 1e3) error("At most 1000 elements are allowed", p);
-          if (depth > 32) error("Packages may be nested at most 32 levels deep", p);
-          emit(`${id(item.type, child(p, "type"))} ${name} ${text(item.name, child(p, "name"))} {`, p);
-        } else {
-          if (++edgeCount > 4e3) error("At most 4000 relationships are allowed", p);
-          emit(`relation ${name} ${id(item.from, child(p, "from"))} -> ${id(item.to, child(p, "to"))} ${text(item.name, child(p, "name"))} {`, p);
-        }
-        const reserved = key === "elements" ? ["id", "type", "name", "elements", "relations"] : ["id", "name", "from", "to"];
-        const written = /* @__PURE__ */ new Set();
-        const attribute = (attr, v, ap) => {
-          if (written.has(attr)) error(`Duplicate attribute: ${attr}`, ap);
-          written.add(attr);
-          field(attr, v, ap);
-        };
-        for (const [attr, v] of Object.entries(item)) {
-          const ap = child(p, attr);
-          if (reserved.includes(attr)) continue;
-          if (attr === "attributes") {
-            obj(v, ap);
-            for (const [a, av] of Object.entries(v)) attribute(a, av, child(ap, a));
-          } else attribute(attr, v, ap);
-        }
-        if (key === "elements" && (own2(item, "elements") || own2(item, "relations"))) {
-          const nested = /* @__PURE__ */ Object.create(null);
-          if (own2(item, "elements")) nested.elements = item.elements;
-          if (own2(item, "relations")) nested.relations = item.relations;
-          model(nested, p, depth + 1);
-        }
-        emit("}", p);
-      }
-    };
-    const routing = (value2, path) => {
-      obj(value2, path);
-      emit("{", path);
-      for (const [key, v] of Object.entries(value2)) {
-        const p = child(path, key);
-        if (key === "via") {
-          if (!Array.isArray(v) || !v.length) error("Expected a nonempty list of coordinate pairs", p);
-          emit(`via ${v.map((pair, i) => point2(pair, child(p, i))).join(", ")}`, p);
-        } else if (["from", "to", "label"].includes(key) && Array.isArray(v)) emit(`${key} ${point2(v, p)}`, p);
-        else if (key === "label" && v === "none") emit("label none", p);
-        else field(key, v, p);
-      }
-      emit("}", path);
-    };
-    const help2 = (command, path) => {
-      text(command, path);
-      let quoted = false;
-      for (let i = 0; i < command.length; i++) {
-        const c = command[i];
-        if (quoted && c === "\\") {
-          i++;
-          continue;
-        }
-        if (c === '"') quoted = !quoted;
-        if (/[\r\n]/.test(c) || !quoted && /[;}]/.test(c)) error("Expected a single help query without @help", path);
-      }
-      emit(`@help ${command}`, path);
-    };
-    const views = (value2, path) => {
-      for (const [name, view, p] of entries(value2, path)) {
-        emit(`view ${name} ${text(view.name, child(p, "name"))} {`, p);
-        for (const [key, v] of Object.entries(view)) {
-          const vp = child(p, key);
-          if (["id", "name"].includes(key)) continue;
-          if (["meta", "@meta"].includes(key)) {
-            if (!["json", "dsl"].includes(v)) error("meta must be json or dsl", vp);
-            emit(`@meta ${v}`, vp);
-          } else if (["place", "style", "route"].includes(key)) {
-            obj(v, vp);
-            for (const [target, rule] of Object.entries(v)) {
-              const rp = child(vp, target);
-              obj(rule, rp);
-              if (key === "route") {
-                const pair = target.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\s*->\s*([A-Za-z_][A-Za-z0-9_.-]*)$/);
-                emit(`route ${pair ? `${pair[1]} -> ${pair[2]}` : id(target, rp)}`, rp);
-                routing(rule, rp);
-              } else if (key === "place") {
-                keys2(rule, ["at", "size"], rp);
-                emit(`place ${id(target, rp)} at ${point2(rule.at, child(rp, "at"))}${own2(rule, "size") ? ` size ${point2(rule.size, child(rp, "size"))}` : ""}`, rp);
-              } else {
-                emit(`style ${id(target, rp)} {`, rp);
-                attributes2(rule, rp);
-                emit("}", rp);
-              }
-            }
-          } else if (key === "routes") {
-            emit("routes", vp);
-            routing(v, vp);
-          } else if (key === "diagram") {
-            if (typeof v === "string") emit(`diagram ${id(v, vp)}`, vp);
-            else {
-              obj(v, vp);
-              emit(`diagram ${id(v.type, child(vp, "type"))} {`, vp);
-              for (const [option, a] of Object.entries(v)) if (option !== "type") field(option, a, child(vp, option));
-              emit("}", vp);
-            }
-          } else if (["include", "exclude"].includes(key)) {
-            const values = Array.isArray(v) ? v : [v];
-            if (!values.length) error("Expected a nonempty identifier list", vp);
-            emit(`${key} ${values.map((a, i) => id(a, Array.isArray(v) ? child(vp, i) : vp)).join(", ")}`, vp);
-          } else if (["direction", "theme", "viewpoint", "referenceDisplay", "referenceOccurrences"].includes(key)) emit(`${key} ${id(v, vp)}`, vp);
-          else field(key, v, vp);
-        }
-        emit("}", p);
-      }
-    };
-    obj(document, "");
-    if (own2(document, "@help")) {
-      keys2(document, ["@help"], "");
-      help2(document["@help"], "/@help");
-    } else {
-      keys2(document, ["architecture"], "");
-      const a = obj(document.architecture, "/architecture");
-      keys2(a, ["name", "description", "config", "model", "views", "@help", "@meta"], "/architecture");
-      emit(`architecture ${text(a.name, "/architecture/name")} {`, "/architecture");
-      if (own2(a, "description")) emit(`description ${text(a.description, "/architecture/description")}`, "/architecture/description");
-      if (own2(a, "config")) config(a.config, "/architecture/config");
-      if (own2(a, "@help")) {
-        help2(a["@help"], "/architecture/@help");
-      }
-      if (own2(a, "model")) {
-        emit("model {", "/architecture/model");
-        model(a.model, "/architecture/model");
-        emit("}", "/architecture/model");
-      }
-      if (own2(a, "views")) views(a.views, "/architecture/views");
-      if (own2(a, "@meta")) {
-        const format = a["@meta"];
-        if (!["json", "dsl"].includes(format)) error("meta must be json or dsl", "/architecture/@meta");
-        emit(`@meta ${format}`, "/architecture/@meta");
-      }
-      emit("}", "/architecture");
-    }
-    return { source: lines.join("\n"), origin: (line) => origins[line - 1] ?? { path: "" } };
-  }
-
-  // src/parser.js
-  var dict = () => /* @__PURE__ */ Object.create(null);
-  var fail5 = (message, loc, code = "ARCH_VALIDATION") => {
-    throw new ArchError(message, loc, code);
-  };
-  function tokenize(source) {
-    const tokens2 = [];
-    let i = 0, line = 1, column = 1;
-    const advance = (n) => {
-      for (let j = 0; j < n; j++) {
-        if (source[i++] === "\n") {
-          line++;
-          column = 1;
-        } else column++;
-      }
-    };
-    while (i < source.length) {
-      const c = source[i], loc = { line, column };
-      if (/\s/.test(c) || c === ";") {
-        advance(1);
-        continue;
-      }
-      if (c === "#" || source.slice(i, i + 2) === "//") {
-        while (i < source.length && source[i] !== "\n") advance(1);
-        continue;
-      }
-      if (c === "@") {
-        let end = i, quoted = false;
-        while (end < source.length) {
-          const char = source[end];
-          if (quoted && char === "\\") {
-            end += 2;
-            continue;
-          }
-          if (char === '"') quoted = !quoted;
-          if (char === "\n" || !quoted && (";}".includes(char) || char === "#" || source.slice(end, end + 2) === "//")) break;
-          end++;
-        }
-        tokens2.push({ type: "directive", value: source.slice(i, end), ...loc });
-        advance(end - i);
-        continue;
-      }
-      if (source.slice(i, i + 2) === "->") {
-        tokens2.push({ type: "->", value: "->", ...loc });
-        advance(2);
-        continue;
-      }
-      if ("{}(),[]".includes(c)) {
-        tokens2.push({ type: c, value: c, ...loc });
-        advance(1);
-        continue;
-      }
-      if (c === '"') {
-        let end = i + 1;
-        while (end < source.length) {
-          if (source[end] === "\\") {
-            end += 2;
-            continue;
-          }
-          if (source[end] === '"') break;
-          end++;
-        }
-        if (end >= source.length) fail5("Unclosed string", loc, "ARCH_SYNTAX");
-        const raw = source.slice(i, end + 1);
-        let value2;
-        try {
-          value2 = JSON.parse(raw);
-        } catch {
-          fail5("Invalid string or escape sequence", loc, "ARCH_SYNTAX");
-        }
-        if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/u.test(value2) || [...value2].some((char) => {
-          const code = char.codePointAt(0);
-          return code >= 55296 && code <= 57343;
-        }))
-          fail5("String contains a Unicode character that is invalid in SVG", loc, "ARCH_SYNTAX");
-        tokens2.push({ type: "string", value: value2, ...loc });
-        advance(raw.length);
-        continue;
-      }
-      const number2 = source.slice(i).match(/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
-      if (number2) {
-        const value2 = Number(number2[0]);
-        if (!Number.isFinite(value2)) fail5("Number must be finite", loc);
-        tokens2.push({ type: "number", value: value2, ...loc });
-        advance(number2[0].length);
-        continue;
-      }
-      const word = source.slice(i).match(/^[A-Za-z_][A-Za-z0-9_.-]*/);
-      if (word) {
-        const value2 = word[0].replace(/-$/, (match) => source[i + word[0].length] === ">" ? "" : match);
-        tokens2.push({ type: "word", value: value2, ...loc });
-        advance(value2.length);
-        continue;
-      }
-      fail5(`Unexpected character ${JSON.stringify(c)}`, loc, "ARCH_SYNTAX");
-    }
-    tokens2.push({ type: "eof", value: "", line, column });
-    return tokens2;
-  }
-  function parseDocument(source) {
-    if (source === null || !["string", "object"].includes(typeof source)) fail5("Source must be a string or a JSON architecture object");
-    if (typeof source !== "string" || /^[\s\uFEFF]*[\[{]/.test(source)) {
-      const translated = jsonToDSL(source);
-      let model;
-      try {
-        model = parseDSLDocument(translated.source);
-      } catch (error) {
-        if (!(error instanceof ArchError)) throw error;
-        const message = error.message.replace(/ \(line \d+, column \d+\)$/, "");
-        throw new ArchError(message, translated.origin(error.line), error.code);
-      }
-      const seen = /* @__PURE__ */ new Set();
-      const relocate = (value2) => {
-        if (!value2 || typeof value2 !== "object" || seen.has(value2)) return;
-        seen.add(value2);
-        if (typeof value2.line === "number" && typeof value2.column === "number") Object.assign(value2, translated.origin(value2.line));
-        for (const child2 of Object.values(value2)) relocate(child2);
-      };
-      relocate(model);
-      return model;
-    }
-    return parseDSLDocument(source);
-  }
-  function parseDSLDocument(source) {
-    if (typeof source !== "string") fail5("Source must be a string");
-    if (source.length > 2e6) fail5("Source exceeds 2 MB");
-    const tokens2 = tokenize(source);
-    let cursor = 0;
-    const peek = () => tokens2[cursor];
-    const is = (value2) => peek().value === value2;
-    const take = () => tokens2[cursor++];
-    const expect = (value2) => {
-      if (!is(value2)) fail5(`Expected: ${value2}; found: ${peek().value || "end of input"}`, peek(), "ARCH_SYNTAX");
-      return take();
-    };
-    const typed = (type, label = type) => {
-      if (peek().type !== type) fail5(`Expected: ${label}; found: ${peek().value || "end of input"}`, peek(), "ARCH_SYNTAX");
-      return take();
-    };
-    const word = () => typed("word", "identifier").value;
-    const text = () => {
-      if (!["word", "string"].includes(peek().type)) fail5("Expected a string or word", peek(), "ARCH_SYNTAX");
-      return take().value;
-    };
-    const scalar = () => {
-      if (is("[")) {
-        take();
-        const values = [];
-        if (!is("]")) {
-          if (is("[")) fail5("Nested lists are not allowed", peek());
-          values.push(scalar());
-          while (is(",")) {
-            take();
-            if (is("[")) fail5("Nested lists are not allowed", peek());
-            values.push(scalar());
-            if (values.length > 4e3) fail5("At most 4000 list entries are allowed", peek());
-          }
-        }
-        expect("]");
-        return values;
-      }
-      if (peek().type === "number" || peek().type === "string") return take().value;
-      const value2 = word();
-      return value2 === "true" ? true : value2 === "false" ? false : value2;
-    };
-    const point2 = () => {
-      expect("(");
-      const x = typed("number");
-      expect(",");
-      const y = typed("number");
-      expect(")");
-      for (const token of [x, y]) if (Math.abs(token.value) > 1e7) fail5("Coordinate outside the range ±10000000", token);
-      return { x: x.value, y: y.value };
-    };
-    const list2 = (fn) => {
-      const result = [fn()];
-      while (is(",")) {
-        take();
-        result.push(fn());
-      }
-      return result;
-    };
-    const block = (fn) => {
-      expect("{");
-      while (!is("}")) {
-        if (peek().type === "eof") fail5("Unclosed block; expected: }", peek(), "ARCH_SYNTAX");
-        fn();
-      }
-      expect("}");
-    };
-    const property = (object, allowed) => {
-      const key = typed("word");
-      if (!allowed.includes(key.value)) fail5(`Unknown attribute: ${key.value}`, key);
-      if (Object.hasOwn(object, key.value)) fail5(`Duplicate attribute: ${key.value}`, key);
-      if (["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"].includes(key.value)) {
-        object[key.value] = scalar();
-        return;
-      }
-      object[key.value] = ["opacity", "fontSize", "width", "height"].includes(key.value) ? typed("number").value : text();
-    };
-    const modelProperty = (object, builtins, relation = false) => {
-      const key = typed("word");
-      object.attributes ?? (object.attributes = dict());
-      object.attributeLocs ?? (object.attributeLocs = dict());
-      if (Object.hasOwn(object.attributes, key.value) || (builtins.includes(key.value) || relation && key.value === "type") && Object.hasOwn(object, key.value))
-        fail5(`Duplicate attribute: ${key.value}`, key);
-      object.attributeLocs[key.value] = key;
-      if (builtins.includes(key.value) || relation && key.value === "type") object[key.value] = key.value === "opacity" ? typed("number").value : text();
-      else object.attributes[key.value] = scalar();
-    };
-    if (peek().type === "directive") {
-      const directive = take();
-      if (/^@meta\b/.test(directive.value)) fail5("@meta requires architecture source; place @meta json or @meta dsl inside an architecture or view", directive, "ARCH_META");
-      typed("eof", "end of input");
-      return helpDocument(parseHelpCommand(directive.value));
-    }
-    expect("architecture");
-    const model = { title: typed("string", "architecture title").value, description: "", nodes: [], edges: [], views: [] };
-    let hasModel = false, hasDescription = false;
-    const element = (parent = null, depth = 0) => {
-      if (depth > 32) fail5("Packages may be nested at most 32 levels deep", peek());
-      const token = typed("word");
-      if (token.value === "relation") {
-        const edge = { id: word(), source: word(), loc: token };
-        expect("->");
-        edge.target = word();
-        edge.title = typed("string", "relationship label").value;
-        if (is("{")) block(() => modelProperty(edge, EDGE_PROPERTIES, true));
-        model.edges.push(edge);
-        return;
-      }
-      const node = { type: token.value, id: word(), title: typed("string", "element title").value, parent, loc: token };
-      model.nodes.push(node);
-      if (is("{")) block(() => {
-        if (is("relation") || peek().type === "word" && tokens2[cursor + 1]?.type === "word" && tokens2[cursor + 2]?.type === "string") element(node.id, depth + 1);
-        else modelProperty(node, NODE_PROPERTIES);
-      });
-    };
-    const readRouting = (item, reference2 = false, defaults = false) => block(() => {
-      const attr = typed("word");
-      const allowed = reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel"];
-      if (!allowed.includes(attr.value)) fail5(`Unknown routing attribute: ${attr.value}`, attr);
-      if (Object.hasOwn(item, attr.value)) fail5(`Duplicate routing attribute: ${attr.value}`, attr);
-      if (["showIcon", "showLabel"].includes(attr.value)) item[attr.value] = scalar();
-      else if (attr.value === "via") item.via = list2(point2);
-      else if (attr.value === "to" && (reference2 || defaults && peek().type === "number")) item.to = typed("number", "position along the relationship (0 to 1)").value;
-      else if (attr.value === "label") {
-        if (is("none")) {
-          take();
-          item.label = "none";
-        } else item.label = point2();
-      } else if (["from", "to"].includes(attr.value) && is("(")) item[attr.value] = point2();
-      else item[attr.value] = text();
-    });
-    const readView = () => {
-      const token = expect("view");
-      const view = {
-        id: word(),
-        title: typed("string", "view title").value,
-        places: dict(),
-        styles: dict(),
-        routes: dict(),
-        loc: token
-      };
-      const seen = /* @__PURE__ */ new Set();
-      block(() => {
-        if (peek().type === "directive") {
-          const directive = take();
-          if (!/^@meta\b/.test(directive.value)) fail5("Only @meta directives are allowed inside a view", directive, "ARCH_META");
-          if (seen.has("meta")) fail5("Only one meta directive is allowed per view", directive, "ARCH_META");
-          seen.add("meta");
-          view.meta = metaCommand(directive.value, directive);
-          return;
-        }
-        const key = typed("word");
-        if (key.value === "route" && peek().type === "word" && tokens2[cursor + 1]?.type === "->") {
-          const nodeId = word();
-          expect("->");
-          const edgeId = word();
-          view.referenceRoutes ?? (view.referenceRoutes = []);
-          if (view.referenceRoutes.some((route2) => route2.nodeId === nodeId && route2.edgeId === edgeId))
-            fail5(`Duplicate reference route: ${nodeId} -> ${edgeId}`, key);
-          const route = { nodeId, edgeId, loc: key };
-          readRouting(route, true);
-          view.referenceRoutes.push(route);
-        } else if (["place", "style", "route"].includes(key.value)) {
-          const id = word(), collection2 = view[{ place: "places", style: "styles", route: "routes" }[key.value]];
-          if (Object.hasOwn(collection2, id)) fail5(`Duplicate ${key.value}-statement: ${id}`, key);
-          const item = { loc: key };
-          if (key.value === "place") {
-            expect("at");
-            item.at = point2();
-            if (is("size")) {
-              take();
-              item.size = point2();
-            }
-          } else if (key.value === "style") {
-            block(() => property(item, ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"]));
-          } else readRouting(item);
-          collection2[id] = item;
-        } else {
-          if (seen.has(key.value)) fail5(`Duplicate view option: ${key.value}`, key);
-          seen.add(key.value);
-          if (key.value === "meta") view.meta = text();
-          else if (key.value === "diagram") {
-            view.diagram = { type: word() };
-            if (is("{")) block(() => {
-              const option = typed("word");
-              if (Object.hasOwn(view.diagram, option.value)) fail5(`Duplicate diagram option: ${option.value}`, option);
-              view.diagram[option.value] = scalar();
-            });
-          } else if (key.value === "routes") {
-            view.routeDefaults = { loc: key };
-            readRouting(view.routeDefaults, false, true);
-          } else if (["include", "exclude"].includes(key.value)) view[key.value] = list2(word);
-          else if (key.value === "spacing") view.spacing = typed("number").value;
-          else if (["direction", "theme", "viewpoint", "referenceDisplay", "referenceOccurrences"].includes(key.value)) view[key.value] = word();
-          else fail5(`Unknown view option: ${key.value}`, key);
-        }
-      });
-      view.direction ?? (view.direction = "right");
-      view.theme ?? (view.theme = "light");
-      view.spacing ?? (view.spacing = 80);
-      model.views.push(view);
-    };
-    const readConfig = () => {
-      const loc = expect("config");
-      if (model.config) fail5("Only one config block is allowed", loc);
-      const definition = { id: "inline", nodeTypes: dict(), relationTypes: dict(), viewpoints: dict(), styleGroups: dict() };
-      const config = { loc, definition }, seen = /* @__PURE__ */ new Set();
-      const once = (object, key, loc2) => {
-        if (Object.hasOwn(object, key)) fail5(`Duplicate profile option: ${key}`, loc2);
-      };
-      const readAttribute = (attributes2, keyword) => {
-        const name = word();
-        once(attributes2, name, keyword);
-        const rule = dict();
-        block(() => {
-          const key = typed("word");
-          once(rule, key.value, key);
-          if (key.value === "enum") rule.enum = list2(scalar);
-          else if (key.value === "targets") rule.targets = list2(text);
-          else if (["type", "required", "min", "max", "minLength", "maxLength", "format", "many", "minItems", "maxItems", "uniqueItems"].includes(key.value)) rule[key.value] = scalar();
-          else fail5(`Unknown attribute rule: ${key.value}`, key);
-        });
-        attributes2[name] = rule;
-      };
-      block(() => {
-        const key = typed("word");
-        if (["type", "relation", "viewpoint", "styleGroup"].includes(key.value)) {
-          const name = word(), collection2 = definition[{ type: "nodeTypes", relation: "relationTypes", viewpoint: "viewpoints", styleGroup: "styleGroups" }[key.value]];
-          once(collection2, name, key);
-          const rule = dict();
-          block(() => {
-            const attr = typed("word");
-            if (attr.value === "attribute" && key.value !== "viewpoint") {
-              rule.attributes ?? (rule.attributes = dict());
-              readAttribute(rule.attributes, attr);
-            } else if (attr.value === "attributes" && key.value !== "viewpoint") {
-              once(rule, "attributes", attr);
-              rule.attributes = dict();
-              block(() => {
-                const keyword = expect("attribute");
-                readAttribute(rule.attributes, keyword);
-              });
-            } else if (["incoming", "outgoing"].includes(attr.value) && key.value === "relation") {
-              once(rule, attr.value, attr);
-              const count = dict();
-              block(() => {
-                const bound = typed("word");
-                once(count, bound.value, bound);
-                if (!["min", "max"].includes(bound.value)) fail5("Expected: min or max", bound);
-                count[bound.value] = typed("number").value;
-              });
-              rule[attr.value] = count;
-            } else {
-              once(rule, attr.value, attr);
-              const listKeys = key.value === "type" ? ["contains"] : key.value === "relation" ? ["from", "to"] : ["nodes", "relations", "requiredNodes", "requiredRelations"];
-              const scalarKeys = key.value === "type" ? ["extends", "template", "container", "abstract", "icon", "accent", "backgroundColor", "styleGroup"] : key.value === "relation" ? ["extends", "style", "abstract", "allowSelf", "acyclic"] : key.value === "styleGroup" ? ["backgroundColor"] : [];
-              if (attr.value === "extends") {
-                const parents = list2(text);
-                rule.extends = parents.length === 1 ? parents[0] : parents;
-              } else if (listKeys.includes(attr.value)) rule[attr.value] = list2(text);
-              else if (scalarKeys.includes(attr.value)) rule[attr.value] = scalar();
-              else fail5(`Unknown profile rule: ${attr.value}`, attr);
-            }
-          });
-          collection2[name] = rule;
-        } else {
-          if (seen.has(key.value)) fail5(`Duplicate profile option: ${key.value}`, key);
-          seen.add(key.value);
-          if (key.value === "profile") config.profile = text();
-          else if (key.value === "views") config.views = scalar();
-          else if (["id", "title", "version", "extends", "defaultRelation", "requireViewpoint"].includes(key.value)) definition[key.value] = scalar();
-          else fail5(`Unknown config option: ${key.value}`, key);
-        }
-      });
-      const hasDefinition = Object.keys(definition.nodeTypes).length || Object.keys(definition.relationTypes).length || Object.keys(definition.viewpoints).length || Object.keys(definition.styleGroups).length || definition.extends;
-      if (config.profile && (hasDefinition || [...seen].some((key) => !["profile", "views"].includes(key)))) fail5("Choose either config profile or an inline profile definition", loc);
-      if (config.profile || !hasDefinition && seen.size === 1 && seen.has("views")) delete config.definition;
-      model.config = config;
-    };
-    block(() => {
-      if (peek().type === "directive") {
-        const directive = take();
-        if (/^@meta\b/.test(directive.value)) {
-          const format = metaCommand(directive.value, directive);
-          model.views.push({
-            id: `meta-${format}`,
-            title: `Architecture as ${format.toUpperCase()}`,
-            meta: format,
-            direction: "right",
-            theme: "light",
-            spacing: 80,
-            places: dict(),
-            styles: dict(),
-            routes: dict(),
-            loc: directive
-          });
-          return;
-        }
-        if (model.help) fail5("Only one @help command is allowed per architecture", directive, "ARCH_HELP");
-        model.help = parseHelpCommand(directive.value);
-      } else if (is("description")) {
-        if (hasDescription) fail5("Duplicate architecture description", peek());
-        take();
-        model.description = text();
-        hasDescription = true;
-      } else if (is("model")) {
-        if (hasModel) fail5("Only one model block is allowed", peek());
-        take();
-        block(() => element());
-        hasModel = true;
-      } else if (is("view")) readView();
-      else if (is("config")) readConfig();
-      else fail5("Expected: model, view, config, description, @help or @meta", peek(), "ARCH_SYNTAX");
-    });
-    typed("eof", "end of input");
-    if (model.help) return { ...model, ...helpDocument(model.help), title: model.title, config: model.config };
-    if (!hasModel) fail5("Missing model block");
-    if (model.nodes.length > 1e3 || model.edges.length > 4e3) fail5("At most 1000 elements and 4000 relationships are allowed");
-    if (!model.views.length) model.views.push({
-      id: "default",
-      title: model.title,
-      direction: "right",
-      theme: "light",
-      spacing: 80,
-      places: dict(),
-      styles: dict(),
-      routes: dict()
-    });
-    return model;
-  }
-  function parse(source, options = {}) {
-    const model = parseDocument(source);
-    model.profile = resolveProfile(model, options);
-    for (const edge of model.edges) if (edge.type === void 0 && model.profile.defaultRelation !== null) edge.type = model.profile.defaultRelation;
-    validateModel(model);
-    return model;
-  }
-  function validateModel(model, options = {}) {
-    if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views) || !model.views.length)
-      fail5("Invalid model; use parse(source)");
-    const profile = resolveProfile(model, options);
-    if (model.kind === "help") {
-      request(model.help?.topic, model.help?.parameters);
-      return model;
-    }
-    const ids = /* @__PURE__ */ new Set(), nodes = new Map(model.nodes.map((n) => [n.id, n]));
-    for (const item of [...model.nodes, ...model.edges]) {
-      if (ids.has(item.id)) fail5(`Duplicate ID: ${item.id}`, item.loc);
-      ids.add(item.id);
-    }
-    for (const node of model.nodes) {
-      if (node.parent && !nodes.has(node.parent)) fail5(`Unknown container: ${node.parent}`, node.loc);
-      const ancestry = /* @__PURE__ */ new Set([node.id]);
-      let parent = nodes.get(node.parent);
-      while (parent) {
-        if (ancestry.has(parent.id)) fail5(`Cyclic package hierarchy: ${node.id}`, node.loc);
-        ancestry.add(parent.id);
-        parent = nodes.get(parent.parent);
-      }
-    }
-    for (const edge of model.edges) {
-      for (const id of [edge.source, edge.target]) if (!nodes.has(id)) fail5(`Unknown endpoint: ${id}`, edge.loc);
-    }
-    const views = /* @__PURE__ */ new Set();
-    for (const view of model.views) {
-      if (views.has(view.id)) fail5(`Duplicate view ID: ${view.id}`, view.loc);
-      views.add(view.id);
-      if (!["right", "down"].includes(view.direction)) fail5("direction must be right or down", view.loc);
-      if (!["light", "dark"].includes(view.theme)) fail5("theme must be light or dark", view.loc);
-      if (validateMetaView(view)) continue;
-      if (view.referenceDisplay !== void 0 && !["labels", "nodes", "both"].includes(view.referenceDisplay)) fail5("referenceDisplay must be labels, nodes or both", view.loc);
-      if (view.referenceOccurrences !== void 0 && !["shared", "perEdge"].includes(view.referenceOccurrences)) fail5("referenceOccurrences must be shared or perEdge", view.loc);
-      if (!Number.isFinite(view.spacing) || view.spacing < 24 || view.spacing > 400) fail5("spacing must be between 24 and 400", view.loc);
-      for (const key of ["include", "exclude"]) if (view[key] !== void 0 && (!Array.isArray(view[key]) || view[key].some((id) => typeof id !== "string")))
-        fail5(`${key} requires a list of element IDs`, view.loc);
-      for (const id of [...view.include ?? [], ...view.exclude ?? [], ...Object.keys(view.places), ...Object.keys(view.styles)])
-        if (!nodes.has(id)) fail5(`Unknown element in view ${view.id}: ${id}`, view.loc);
-      for (const [id, place] of Object.entries(view.places))
-        if (place.size && (place.size.x < 160 || place.size.y < 96)) fail5(`Size of ${id} must be at least (160, 96)`, place.loc);
-      for (const [id, style] of Object.entries(view.styles)) {
-        for (const [field, min, max] of [["fontSize", 6, 64], ["width", 160, 1e7], ["height", 96, 1e7]]) if (style[field] !== void 0 && (!Number.isFinite(style[field]) || style[field] < min || style[field] > max)) fail5(`${field} must be a number between ${min} and ${max}`, style.loc);
-        for (const key of ["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"]) if (style[key] !== void 0 && typeof style[key] !== "boolean") fail5(`${key} must be true or false`, style.loc);
-        if (style.iconPosition !== void 0 && !["top", "left", "bottom", "right"].includes(style.iconPosition)) fail5("iconPosition must be top, left, bottom or right", style.loc);
-        if (style.display !== void 0 && !["standard", "logo"].includes(style.display)) fail5("display must be standard or logo", style.loc);
-        if (style.display === "logo" && profile.nodeTypes[nodes.get(id).type]?.container) fail5("logo display is only supported for non-container elements", style.loc);
-        if (style.opacity !== void 0 && (!Number.isFinite(style.opacity) || style.opacity < 0 || style.opacity > 1)) fail5("opacity must be a number between 0 and 1", style.loc);
-        if (style.template !== void 0 && (!TEMPLATES.includes(style.template) || !!profile.nodeTypes[nodes.get(id).type]?.container !== (style.template === "package")))
-          fail5(`Invalid template for ${id}: ${style.template}`, style.loc);
-        if (style.accent !== void 0 && !normalizeColor(style.accent)) fail5("accent requires a hex color or CSS3 color name", style.loc);
-        if (style.backgroundColor !== void 0 && !normalizeColor(style.backgroundColor)) fail5("backgroundColor requires a hex color or CSS3 color name", style.loc);
-      }
-      const edges = new Map(model.edges.map((e) => [e.id, e]));
-      const referenceRoutes = view.referenceRoutes ?? [], referenceKeys = /* @__PURE__ */ new Set();
-      for (const route of referenceRoutes) {
-        if (!nodes.has(route.nodeId)) fail5(`Unknown reference element: ${route.nodeId}`, route.loc);
-        const edge = edges.get(route.edgeId);
-        if (!edge) fail5(`Unknown relationship: ${route.edgeId}`, route.loc);
-        const key = JSON.stringify([route.nodeId, route.edgeId]);
-        if (referenceKeys.has(key)) fail5(`Duplicate reference route: ${route.nodeId} -> ${route.edgeId}`, route.loc);
-        referenceKeys.add(key);
-        const rule = profile.relationTypes[edge.type ?? profile.defaultRelation] ?? {};
-        if (!relationshipReferences(edge, rule).some((item) => item.id === route.nodeId) || profile.nodeTypes[nodes.get(route.nodeId).type]?.container)
-          fail5(`Element ${route.nodeId} is not a graphical reference of relationship ${route.edgeId}`, route.loc);
-        if (route.to !== void 0 && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
-          fail5("Reference route to must be a number between 0 and 1", route.loc);
-      }
-      for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail5(`Unknown relationship: ${id}`, route.loc);
-      const checkRouting = (route, reference2 = false, defaults = false, combined = true) => {
-        if (!route) return;
-        for (const key of ["from", ...!reference2 ? ["to"] : []]) if (typeof route[key] === "string" && !["auto", "top", "right", "bottom", "left"].includes(route[key]))
-          fail5(`Unknown port: ${route[key]}`, route.loc);
-        if ((reference2 || defaults) && typeof route.to === "number" && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
-          fail5("Reference route to must be a number between 0 and 1", route.loc);
-        for (const key of ["showIcon", "showLabel"]) if (route[key] !== void 0 && typeof route[key] !== "boolean") fail5(`${key} must be true or false`, route.loc);
-        if (route.label !== void 0 && route.label !== "none" && (!route.label || typeof route.label !== "object" || !["x", "y"].every((key) => Number.isFinite(route.label[key]) && Math.abs(route.label[key]) <= 1e7))) fail5("label must be none or a point (X, Y)", route.loc);
-        if (route.icon !== void 0 && (typeof route.icon !== "string" || route.icon !== "none" && !/^[A-Za-z_][A-Za-z0-9_-]*\.[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(route.icon))) fail5("icon must be PACK.NAME or none", route.loc);
-        if (route.iconPosition !== void 0 && !["top", "left", "bottom", "right"].includes(route.iconPosition)) fail5("iconPosition must be top, left, bottom or right", route.loc);
-        if (route.curve !== void 0 && !["orthogonal", "straight", "rounded", "bezier"].includes(route.curve)) fail5(`Unknown curve: ${route.curve}`, route.loc);
-        if (combined && route.curve === "bezier" && route.via && route.via.length !== 2) fail5("bezier requires exactly two control points", route.loc);
-      };
-      checkRouting(view.routeDefaults, false, true, false);
-      for (const route of Object.values(view.routes)) checkRouting(route, false, false, false);
-      for (const route of referenceRoutes) checkRouting(route, true, false, false);
-      const referenceRouteMap = new Map(referenceRoutes.map((route) => [JSON.stringify([route.nodeId, route.edgeId]), route]));
-      for (const edge of model.edges) {
-        checkRouting(routingOptions(view, view.routes[edge.id]));
-        const rule = profile.relationTypes[edge.type ?? profile.defaultRelation] ?? {};
-        for (const item of relationshipReferences(edge, rule))
-          checkRouting(routingOptions(view, referenceRouteMap.get(JSON.stringify([item.id, edge.id])), true), true);
-      }
-    }
-    viewIds(model.config?.views, model.views, model.config?.loc);
-    const diagnostics = profileDiagnostics(model, profile);
-    if (diagnostics.length) {
-      const first = diagnostics[0], error = new ArchError(first.message, first, first.code);
-      error.diagnostics = diagnostics;
-      throw error;
-    }
-    for (const view of model.views) validateDiagramView(model, profile, view);
-    return model;
-  }
-  function validate(sourceOrModel, options = {}) {
-    let model, profile;
-    try {
-      model = typeof sourceOrModel === "string" || isJSONDocument(sourceOrModel) ? parseDocument(sourceOrModel) : sourceOrModel;
-      if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views))
-        throw new ArchError("Invalid model; use parse(source)", {}, "ARCH_VALIDATION");
-      profile = resolveProfile(model, options);
-      validateModel(model, { profile });
-      return { valid: true, profile: { id: profile.id, version: profile.version }, diagnostics: [] };
-    } catch (error) {
-      if (!(error instanceof ArchError)) throw error;
-      return {
-        valid: false,
-        profile: profile ? { id: profile.id, version: profile.version } : null,
-        diagnostics: error.diagnostics ?? [{ severity: "error", code: error.code, message: error.message, line: error.line, column: error.column, ...error.path !== void 0 ? { path: error.path } : {} }]
-      };
-    }
   }
 
   // src/reference-nodes.js
@@ -10036,7 +8687,7 @@ var arch = (() => {
     candidates.sort((a, b) => length(a) - length(b));
     return candidates.find((path) => !path.slice(1).some((p, i) => obstacles.some((box) => segmentHits(path[i], p, box)))) ?? candidates[0];
   }
-  function attachReferenceNodes(nodes, edges, view, wrapText, routeConnector) {
+  function attachReferenceNodes(nodes, edges, view, wrapText, routeConnector, resolveRoute = (route) => route) {
     const byId = new Map(nodes.map((n) => [n.id, n])), occurrences = [], boxes = nodes.filter((n) => !n.container && !n.referenceOnly);
     const containers = nodes.filter((n) => n.container), headers = containers.map((n) => ({ ...n, height: n.headerHeight }));
     for (const edge of edges) {
@@ -10054,11 +8705,11 @@ var arch = (() => {
       const rowWidth = edge.referenceItems.reduce((sum, item) => sum + byId.get(item.id).width, 0) + 28 * (edge.referenceItems.length - 1);
       let rowLeft = pointOnPath(samples, 0.5).x - rowWidth / 2;
       for (const [index, item] of edge.referenceItems.entries()) {
-        const route = routingOptions(view, routes.get(JSON.stringify([item.id, edge.id])), true);
+        const route = resolveRoute(routingOptions(view, routes.get(JSON.stringify([item.id, edge.id])), true));
         const original = byId.get(item.id), anchor = pointOnPath(samples, route?.to ?? (index + 1) / (edge.referenceItems.length + 1));
         const explicit = !original.referenceOnly;
-        const key = JSON.stringify([item.id, explicit || edge.referenceOccurrences !== "perEdge" ? null : edge.id]);
-        if (!groups.has(key)) groups.set(key, []);
+        const key2 = JSON.stringify([item.id, explicit || edge.referenceOccurrences !== "perEdge" ? null : edge.id]);
+        if (!groups.has(key2)) groups.set(key2, []);
         const occurrence = {
           edgeId: edge.id,
           attribute: item.attribute,
@@ -10069,7 +8720,7 @@ var arch = (() => {
           horizontal: horizontalPath(samples),
           preferredX: rowLeft
         };
-        groups.get(key).push(occurrence);
+        groups.get(key2).push(occurrence);
         occurrences.push(occurrence);
         rowLeft += original.width + 28;
       }
@@ -10130,11 +8781,655 @@ var arch = (() => {
     return occurrences;
   }
 
+  // src/placement.js
+  var POSITION_FIELDS = ["x", "y", "width", "height", "right", "bottom", "centerX", "centerY"];
+  var limit = 1e7;
+  var fail4 = (message, loc) => {
+    throw new ArchError(message, loc, "ARCH_PLACEMENT");
+  };
+  var dimension = (field) => ["x", "right", "centerX"].includes(field) ? "x" : ["y", "bottom", "centerY"].includes(field) ? "y" : null;
+  var fields2 = (field) => ({ right: ["x", "width"], bottom: ["y", "height"], centerX: ["x", "width"], centerY: ["y", "height"] })[field] ?? [field];
+  var key = (id, field) => JSON.stringify([id, field]);
+  var precedence = { "+": 1, "-": 1, "*": 2, "/": 2, neg: 3, pos: 3 };
+  function calculate(tokens2, reference2, loc) {
+    const stack = [];
+    for (const token of tokens2) {
+      if (!token.op) {
+        stack.push(token.ref === void 0 ? token.value : reference2(token));
+        continue;
+      }
+      const right = stack.pop(), left = ["neg", "pos"].includes(token.op) ? void 0 : stack.pop();
+      if (token.op === "/" && right === 0) fail4("Division by zero in placement coordinate", loc);
+      const result = token.op === "neg" ? right === void 0 ? void 0 : -right : token.op === "pos" ? right : left === void 0 || right === void 0 ? void 0 : token.op === "+" ? left + right : token.op === "-" ? left - right : token.op === "*" ? left * right : left / right;
+      if (result !== void 0 && !Number.isFinite(result)) fail4("Placement calculation must remain finite", loc);
+      stack.push(result);
+    }
+    return stack[0];
+  }
+  function coordinateTerms(value2, loc) {
+    if (typeof value2 === "number") {
+      if (!Number.isFinite(value2) || Math.abs(value2) > limit) fail4("Coordinate outside the range ±10000000", loc);
+      return [{ value: value2 }];
+    }
+    if (typeof value2 !== "string" || !value2.trim() || value2.length > 2048) fail4("Expected a placement coordinate: number or ID.x/ID.y with +, -, * or /", loc);
+    let rest = value2.trim(), operand = true, count = 0, depth = 0;
+    const terms = [], operators = [], source = [];
+    while (rest) {
+      const char = rest[0];
+      if (operand && char === "(") {
+        if (++depth > 16) fail4("At most 16 nested parentheses are allowed in a placement coordinate", loc);
+        operators.push("(");
+        source.push("(");
+        rest = rest.slice(1).trimStart();
+        continue;
+      }
+      if (!operand && char === ")") {
+        if (!depth--) fail4("Unmatched closing parenthesis in placement coordinate", loc);
+        while (operators.at(-1) !== "(") terms.push({ op: operators.pop() });
+        operators.pop();
+        source.push(")");
+        rest = rest.slice(1).trimStart();
+        continue;
+      }
+      if ("+-*/".includes(char)) {
+        if (operand && !"+-".includes(char)) fail4("Expected a placement coordinate operand after the operator", loc);
+        const op = operand ? char === "-" ? "neg" : "pos" : char;
+        while (operators.length && operators.at(-1) !== "(" && (precedence[operators.at(-1)] > precedence[op] || !operand && precedence[operators.at(-1)] === precedence[op])) terms.push({ op: operators.pop() });
+        operators.push(op);
+        source.push(char);
+        rest = rest.slice(1).trimStart();
+        operand = true;
+        continue;
+      }
+      if (!operand) fail4("Placement expressions require +, -, * or / between terms", loc);
+      const number2 = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
+      const reference2 = rest.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/);
+      if (number2) {
+        const value3 = Number(number2[0]);
+        if (!Number.isFinite(value3) || value3 > limit) fail4("Coordinate outside the range ±10000000", loc);
+        terms.push({ value: value3 });
+        source.push(String(value3));
+        rest = rest.slice(number2[0].length).trimStart();
+      } else if (reference2) {
+        terms.push({ ref: reference2[1], field: reference2[2] });
+        source.push(reference2[0]);
+        rest = rest.slice(reference2[0].length).trimStart();
+      } else fail4(`Invalid placement coordinate; use a number or ID.FIELD (${POSITION_FIELDS.join(", ")}) with +, -, * or /`, loc);
+      if (++count > 32) fail4("At most 32 terms are allowed in a placement coordinate", loc);
+      operand = false;
+    }
+    if (operand) fail4("Expected a placement coordinate operand after the operator", loc);
+    if (depth) fail4("Unclosed parenthesis in placement coordinate", loc);
+    while (operators.length) terms.push({ op: operators.pop() });
+    terms.source = source.join(" ").replace(/\(\s+/g, "(").replace(/\s+\)/g, ")");
+    calculate(terms, () => void 0, loc);
+    return terms;
+  }
+  function placementCoordinate(value2, loc) {
+    const terms = coordinateTerms(value2, loc);
+    if (terms.every((t) => t.ref === void 0)) {
+      const result = calculate(terms, () => void 0, loc);
+      coordinateTerms(result, loc);
+      return result;
+    }
+    return terms.source;
+  }
+  function evaluateCoordinate(value2, reference2, loc) {
+    const result = calculate(coordinateTerms(value2, loc), reference2, loc);
+    coordinateTerms(result, loc);
+    return result;
+  }
+  function boxCoordinate(box, field) {
+    return field === "right" ? box.x + box.width : field === "bottom" ? box.y + box.height : field === "centerX" ? box.x + box.width / 2 : field === "centerY" ? box.y + box.height / 2 : box[field];
+  }
+  function originCoefficients(tokens2) {
+    const stack = [];
+    for (const t of tokens2) {
+      if (!t.op) {
+        const axis = dimension(t.field);
+        stack.push({ constant: t.ref === void 0 ? t.value : void 0, x: axis === "x" ? -1 : 0, y: axis === "y" ? -1 : 0 });
+        continue;
+      }
+      const b = stack.pop(), unary = ["neg", "pos"].includes(t.op), a = unary ? void 0 : stack.pop(), c = {};
+      if (unary) {
+        for (const k of ["constant", "x", "y"]) c[k] = b[k] === void 0 ? void 0 : b[k] === null ? null : b[k] * (t.op === "neg" ? -1 : 1);
+      } else {
+        c.constant = a.constant === void 0 || b.constant === void 0 ? void 0 : calculate([{ value: a.constant }, { value: b.constant }, { op: t.op }], () => void 0);
+        for (const axis of ["x", "y"]) {
+          if (t.op === "+" || t.op === "-") c[axis] = a[axis] === null || b[axis] === null ? null : a[axis] + b[axis] * (t.op === "-" ? -1 : 1);
+          else if (t.op === "*") c[axis] = a.constant !== void 0 ? b[axis] === null ? null : a.constant * b[axis] : b.constant !== void 0 ? a[axis] === null ? null : b.constant * a[axis] : a[axis] === 0 && b[axis] === 0 ? 0 : null;
+          else c[axis] = b.constant !== void 0 ? a[axis] === null ? null : a[axis] / b.constant : a[axis] === 0 && b[axis] === 0 ? 0 : null;
+        }
+      }
+      for (const axis of ["x", "y"]) if (!Number.isFinite(c[axis])) c[axis] = null;
+      stack.push(c);
+    }
+    return stack[0];
+  }
+  function placementPlan(model, profile, view) {
+    const expressions = /* @__PURE__ */ new Map();
+    for (const [id, place] of Object.entries(view.places)) for (const axis of ["x", "y"]) {
+      const terms = coordinateTerms(place.at?.[axis], place.loc);
+      if (typeof place.at[axis] === "string") expressions.set(key(id, axis), terms);
+    }
+    if (!expressions.size) return null;
+    const visible = visibleNodeIds(model, view), items = new Map(model.nodes.filter((n) => visible.has(n.id)).map((n) => [n.id, { id: n.id, parent: n.parent, container: profile.nodeTypes[n.type]?.container }]));
+    const owners = /* @__PURE__ */ new Map(), groups = /* @__PURE__ */ new Map();
+    for (const [id, options] of Object.entries(view.trees ?? {})) {
+      const members2 = options.nodes.filter((id2) => items.has(id2));
+      if (!members2.length) continue;
+      const group = { id, parent: items.get(members2[0]).parent, group: true, options };
+      items.set(id, group);
+      groups.set(id, group);
+      for (const member of members2) {
+        owners.set(member, id);
+        items.get(member).parent = id;
+      }
+    }
+    const anchors = /* @__PURE__ */ new Map(), edges = model.edges.filter((e) => visible.has(e.source) && visible.has(e.target) && view.styles[e.id]?.display !== "none");
+    for (const item of items.values()) if (!item.group && !item.container && !item.parent && !view.places[item.id]) {
+      const link = edges.find((e) => e.source === item.id && owners.has(e.target) || e.target === item.id && owners.has(e.source));
+      if (!link) continue;
+      const member = link.source === item.id ? link.target : link.source, group = groups.get(owners.get(member));
+      if (group.parent) continue;
+      const vertical = ["up", "down"].includes(group.options.direction ?? group.options.orientation ?? "down");
+      anchors.set(key(item.id, "x"), { id: vertical ? group.id : member, field: "x" });
+      anchors.set(key(item.id, "y"), { id: vertical ? member : group.id, field: "y" });
+    }
+    const children = /* @__PURE__ */ new Map();
+    for (const item of items.values()) if (item.parent) {
+      if (!children.has(item.parent)) children.set(item.parent, []);
+      children.get(item.parent).push(item.id);
+    }
+    const dependencies = /* @__PURE__ */ new Map();
+    for (const item of items.values()) for (const field of ["x", "y", "width", "height"]) {
+      const cell = key(item.id, field), deps = /* @__PURE__ */ new Set(), terms = expressions.get(cell);
+      const dep = (id, field2) => deps.add(key(id, field2));
+      if (field === "x" || field === "y") {
+        if (terms) {
+          const coefficients = originCoefficients(terms), nonlinear = coefficients.x === null || coefficients.y === null;
+          const origin = { x: field === "x" ? 1 : 0, y: field === "y" ? 1 : 0 };
+          for (const term of terms) if (term.ref !== void 0) {
+            if (!items.has(term.ref)) fail4(`Unknown or hidden placement reference: ${term.ref}; use a visible node or tree group`, view.places[item.id]?.loc ?? view.loc);
+            for (const property of fields2(term.field)) dep(term.ref, property);
+            const axis = dimension(term.field);
+            if (nonlinear && axis) origin[axis] = 1;
+          }
+          if (!nonlinear) for (const axis of ["x", "y"]) origin[axis] += coefficients[axis];
+          if (item.parent) {
+            for (const axis of ["x", "y"]) if (origin[axis]) dep(item.parent, axis);
+          }
+        } else if (anchors.has(cell)) {
+          const a = anchors.get(cell);
+          dep(a.id, a.field);
+        } else if (item.parent) dep(item.parent, field);
+      } else if (item.container) {
+        const axis = field === "width" ? "x" : "y";
+        dep(item.id, axis);
+        for (const child2 of children.get(item.id) ?? []) {
+          dep(child2, axis);
+          dep(child2, field);
+        }
+      }
+      dependencies.set(cell, deps);
+    }
+    const users = /* @__PURE__ */ new Map(), pending = /* @__PURE__ */ new Map(), queue = [];
+    for (const [cell, deps] of dependencies) {
+      pending.set(cell, deps.size);
+      if (!deps.size) queue.push(cell);
+      for (const dep of deps) {
+        if (!users.has(dep)) users.set(dep, []);
+        users.get(dep).push(cell);
+      }
+    }
+    for (let i = 0; i < queue.length; i++) for (const user of users.get(queue[i]) ?? []) {
+      pending.set(user, pending.get(user) - 1);
+      if (pending.get(user) === 0) queue.push(user);
+    }
+    if (queue.length !== dependencies.size) {
+      let cell = [...pending].find(([, count]) => count > 0)[0];
+      const path = [], seen = /* @__PURE__ */ new Map();
+      while (!seen.has(cell)) {
+        seen.set(cell, path.length);
+        path.push(cell);
+        cell = [...dependencies.get(cell)].find((d) => pending.get(d) > 0);
+      }
+      const cycle = [...path.slice(seen.get(cell)), cell].map((c) => JSON.parse(c).join("."));
+      const id = JSON.parse(cell)[0];
+      fail4(`Circular placement dependency: ${cycle.join(" -> ")}. Anchor one coordinate with a number or an independent element.`, view.places[id]?.loc ?? view.loc);
+    }
+    return { items, owners, anchors, children, expressions, order: queue };
+  }
+  function resolvePlacements(model, profile, view, nodes, groupStates, plan = placementPlan(model, profile, view)) {
+    if (!plan) return;
+    const boxes = new Map([...nodes, ...groupStates.map((s) => s.proxy)].map((n) => [n.id, n]));
+    const initial = new Map([...boxes].map(([id, n]) => [id, { x: n.x, y: n.y, width: n.width, height: n.height }])), values = /* @__PURE__ */ new Map();
+    const value2 = (id, field) => values.get(key(id, field));
+    const origin = (item, axis, current = true) => {
+      if (!item.parent) return 0;
+      return (current ? value2(item.parent, axis) : initial.get(item.parent)[axis]) + (boxes.get(item.parent).contentOffset?.[axis] ?? 0);
+    };
+    for (const cell of plan.order) {
+      const [id, field] = JSON.parse(cell), item = plan.items.get(id), before = initial.get(id), terms = plan.expressions.get(cell);
+      let result = before[field];
+      if (field === "x" || field === "y") {
+        if (terms) {
+          const coefficients = originCoefficients(terms), nonlinear = coefficients.x === null || coefficients.y === null;
+          result = calculate(terms, (t) => {
+            const f = t.field;
+            let term = f === "right" ? value2(t.ref, "x") + value2(t.ref, "width") : f === "bottom" ? value2(t.ref, "y") + value2(t.ref, "height") : f === "centerX" ? value2(t.ref, "x") + value2(t.ref, "width") / 2 : f === "centerY" ? value2(t.ref, "y") + value2(t.ref, "height") / 2 : value2(t.ref, f);
+            const axis = dimension(f);
+            if (nonlinear && axis) term -= origin(item, axis);
+            return term;
+          }, view.places[id].loc);
+          if (nonlinear) result += origin(item, field);
+          else for (const axis of ["x", "y"]) {
+            const coefficient = coefficients[axis] + (field === axis ? 1 : 0);
+            if (coefficient) result += coefficient * origin(item, axis);
+          }
+          if (!Number.isFinite(result) || Math.abs(result) > limit) fail4(`Resolved placement ${id}.${field} is outside the range ±10000000`, view.places[id].loc);
+        } else if (plan.anchors.has(cell)) {
+          const a = plan.anchors.get(cell);
+          result = before[field] + value2(a.id, a.field) - initial.get(a.id)[a.field];
+        } else result = before[field] + origin(item, field) - origin(item, field, false);
+      } else if (item.container) {
+        const axis = field === "width" ? "x" : "y";
+        for (const child2 of plan.children.get(id) ?? []) result = Math.max(result, value2(child2, axis) - value2(id, axis) + value2(child2, field) + 28);
+      }
+      values.set(cell, result);
+    }
+    for (const [id, item] of plan.items) {
+      const box = boxes.get(id), old = initial.get(id);
+      for (const field of ["x", "y", "width", "height"]) box[field] = value2(id, field);
+      if (item.container && box.width !== old.width) {
+        const delta = box.width - old.width;
+        box.packageBadgeX += delta;
+        if (box.iconPosition === "right") box.iconBox.x += delta;
+        else if (["top", "bottom"].includes(box.iconPosition)) box.iconBox.x += delta / 2;
+      }
+      if (item.parent && plan.items.get(item.parent).container) {
+        const parent = boxes.get(item.parent);
+        if (box.x < parent.x + 28 - 1e-6 || box.y < parent.y + parent.headerHeight + 16 - 1e-6)
+          fail4(`Resolved placement ${id} falls outside parent ${item.parent} content. Move the parent or choose coordinates inside its content area.`, view.places[id]?.loc ?? view.loc);
+      }
+    }
+  }
+
+  // src/json.js
+  var own2 = (o, k) => Object.hasOwn(o, k);
+  var record2 = (o) => o !== null && typeof o === "object" && !Array.isArray(o);
+  var child = (path, key2) => `${path}/${String(key2).replace(/~/g, "~0").replace(/\//g, "~1")}`;
+  var identifier2 = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
+  var maxSource = 2e6;
+  var isJSONDocument = (value2) => record2(value2) && (own2(value2, "architecture") || own2(value2, "@help"));
+  function jsonToDSL(input) {
+    const locations = /* @__PURE__ */ new Map();
+    const lineStarts = [0];
+    let source;
+    const error = (message, path = "", offset) => {
+      const loc = offset === void 0 ? locations.get(path) ?? { path } : position(offset, path);
+      throw new ArchError(message, loc, "ARCH_JSON");
+    };
+    const position = (offset, path) => {
+      let low = 0, high = lineStarts.length;
+      while (low + 1 < high) {
+        const mid = low + high >>> 1;
+        if (lineStarts[mid] <= offset) low = mid;
+        else high = mid;
+      }
+      return { path, line: low + 1, column: offset - lineStarts[low] + 1 };
+    };
+    if (typeof input === "string") source = input;
+    else {
+      const ancestors = /* @__PURE__ */ new Set();
+      const check = (value2, path, depth = 0) => {
+        if (depth > 128) error("JSON nesting exceeds 128 levels", path);
+        if (value2 === null || ["string", "boolean"].includes(typeof value2)) return;
+        if (typeof value2 === "number" && Number.isFinite(value2)) return;
+        if (typeof value2 !== "object" || !value2 || !Array.isArray(value2) && Object.getPrototypeOf(value2) !== null && Object.getPrototypeOf(Object.getPrototypeOf(value2)) !== null) error("Expected a JSON value", path);
+        if (ancestors.has(value2)) error("Cyclic JSON document", path);
+        ancestors.add(value2);
+        for (const key2 of Reflect.ownKeys(value2)) {
+          if (Array.isArray(value2) && key2 === "length") continue;
+          if (typeof key2 !== "string") error("JSON keys must be strings", path);
+          const descriptor = Object.getOwnPropertyDescriptor(value2, key2);
+          if (!own2(descriptor, "value")) error("JSON properties must be data values", child(path, key2));
+          check(descriptor.value, child(path, key2), depth + 1);
+        }
+        ancestors.delete(value2);
+      };
+      check(input, "");
+      source = JSON.stringify(input);
+    }
+    if (source.length > maxSource) error("Source exceeds 2 MB");
+    for (let i = 0; i < source.length; i++) if (source[i] === "\n") lineStarts.push(i + 1);
+    try {
+      JSON.parse(source);
+    } catch (e) {
+      const nativePosition = e.message.match(/position (\d+)/), nativeLine = e.message.match(/line (\d+) column (\d+)/);
+      const at = nativePosition ? Number(nativePosition[1]) : nativeLine ? (lineStarts[Number(nativeLine[1]) - 1] ?? 0) + Number(nativeLine[2]) - 1 : source.length;
+      error(`Invalid JSON: ${e.message}`, "", at);
+    }
+    let cursor = 0;
+    const space = () => {
+      while (/\s/.test(source[cursor] ?? "") && cursor < source.length) cursor++;
+    };
+    const string = () => {
+      const start = cursor++;
+      while (source[cursor] !== '"') {
+        if (source[cursor] === "\\") cursor++;
+        cursor++;
+      }
+      cursor++;
+      return JSON.parse(source.slice(start, cursor));
+    };
+    const read = (path = "", depth = 0) => {
+      space();
+      locations.set(path, position(cursor, path));
+      if (depth > 128) error("JSON nesting exceeds 128 levels", path);
+      if (source[cursor] === "{") {
+        cursor++;
+        space();
+        const result = /* @__PURE__ */ Object.create(null);
+        while (source[cursor] !== "}") {
+          const start2 = cursor, key2 = string(), next = child(path, key2);
+          if (own2(result, key2)) error(`Duplicate JSON key: ${key2}`, next, start2);
+          space();
+          cursor++;
+          result[key2] = read(next, depth + 1);
+          space();
+          if (source[cursor] !== ",") break;
+          cursor++;
+          space();
+        }
+        cursor++;
+        return result;
+      }
+      if (source[cursor] === "[") {
+        cursor++;
+        space();
+        const result = [];
+        while (source[cursor] !== "]") {
+          result.push(read(child(path, result.length), depth + 1));
+          space();
+          if (source[cursor] !== ",") break;
+          cursor++;
+        }
+        cursor++;
+        return result;
+      }
+      if (source[cursor] === '"') return string();
+      const start = cursor;
+      while (cursor < source.length && !/[\s,}\]]/.test(source[cursor])) cursor++;
+      return JSON.parse(source.slice(start, cursor));
+    };
+    const document = read();
+    const obj = (value2, path) => {
+      if (!record2(value2)) error("Expected an object", path);
+      return value2;
+    };
+    const keys2 = (value2, allowed, path) => {
+      obj(value2, path);
+      for (const key2 of Object.keys(value2)) if (!allowed.includes(key2)) error(`Unknown JSON field: ${key2}`, child(path, key2));
+    };
+    const id = (value2, path) => {
+      if (typeof value2 !== "string" || !identifier2.test(value2)) error("Expected an identifier", path);
+      return value2;
+    };
+    const text = (value2, path) => {
+      if (typeof value2 !== "string") error("Expected a string", path);
+      return JSON.stringify(value2);
+    };
+    const scalar = (value2, path) => {
+      if (Array.isArray(value2)) {
+        if (value2.length > 4e3) error("At most 4000 list entries are allowed", path);
+        if (value2.some((v) => Array.isArray(v))) error("Nested attribute lists are not allowed", path);
+        return `[${value2.map((v, i) => scalar(v, child(path, i))).join(", ")}]`;
+      }
+      if (typeof value2 === "string") return text(value2, path);
+      if (typeof value2 === "boolean" || typeof value2 === "number" && Number.isFinite(value2)) return String(value2);
+      error("Expected a string, finite number, boolean or flat list", path);
+    };
+    const list2 = (value2, path) => {
+      const values = Array.isArray(value2) ? value2 : [value2];
+      if (!values.length) error("Expected a nonempty list", path);
+      return values.map((v, i) => text(v, Array.isArray(value2) ? child(path, i) : path)).join(", ");
+    };
+    const placementPoint = (value2, path) => {
+      if (!Array.isArray(value2) || value2.length !== 2) error("Expected a coordinate pair [x, y]", path);
+      return `(${value2.map((v, i) => placementCoordinate(v, { path: child(path, i) })).join(", ")})`;
+    };
+    const point2 = (value2, path) => {
+      if (!Array.isArray(value2) || value2.length !== 2 || value2.some((v) => typeof v !== "number" || !Number.isFinite(v))) error("Expected a coordinate pair [x, y]", path);
+      return `(${value2.join(", ")})`;
+    };
+    const entries = (value2, path) => {
+      if (Array.isArray(value2)) return value2.map((v, i) => {
+        const p = child(path, i);
+        obj(v, p);
+        return [id(v.id, child(p, "id")), v, p];
+      });
+      return Object.entries(obj(value2, path)).map(([key2, v]) => {
+        const p = child(path, key2);
+        id(key2, p);
+        obj(v, p);
+        if (own2(v, "id")) error("Use either an object key or an array entry with id", child(p, "id"));
+        return [key2, v, p];
+      });
+    };
+    const lines = [], origins = [];
+    let generatedLength = 0;
+    const emit = (line, path) => {
+      generatedLength += line.length + 1;
+      if (generatedLength > maxSource) error("Normalized source exceeds 2 MB", path);
+      lines.push(line);
+      origins.push(locations.get(path) ?? { path });
+    };
+    const field = (key2, value2, path) => emit(`${id(key2, path)} ${scalar(value2, path)}`, path);
+    const attributes2 = (value2, path, reserved = []) => {
+      obj(value2, path);
+      for (const [key2, v] of Object.entries(value2)) {
+        const p = child(path, key2);
+        if (reserved.includes(key2)) error(`Reserved attribute: ${key2}`, p);
+        field(key2, v, p);
+      }
+    };
+    const config = (value2, path) => {
+      obj(value2, path);
+      emit("config {", path);
+      for (const [key2, v] of Object.entries(value2)) {
+        const p = child(path, key2);
+        if (["type", "relation", "viewpoint", "styleGroup"].includes(key2)) {
+          for (const [name, rule, rp] of entries(v, p)) {
+            emit(`${key2} ${name} {`, rp);
+            for (const [attr, a] of Object.entries(rule)) {
+              if (attr === "id") continue;
+              const ap = child(rp, attr);
+              if (["attribute", "attributes"].includes(attr)) {
+                for (const [name2, schema, sp] of entries(a, ap)) {
+                  emit(`attribute ${name2} {`, sp);
+                  for (const [option, optionValue] of Object.entries(schema)) if (option !== "id") {
+                    const op = child(sp, option);
+                    let value3;
+                    if (option === "enum") {
+                      const values = Array.isArray(optionValue) ? optionValue : [optionValue];
+                      if (!values.length) error("Expected a nonempty enum list", op);
+                      value3 = values.map((v2, i) => scalar(v2, child(op, i))).join(", ");
+                    } else value3 = option === "targets" ? list2(optionValue, op) : scalar(optionValue, op);
+                    emit(`${id(option, op)} ${value3}`, op);
+                  }
+                  emit("}", sp);
+                }
+              } else if (["incoming", "outgoing"].includes(attr)) {
+                obj(a, ap);
+                emit(`${attr} {`, ap);
+                attributes2(a, ap);
+                emit("}", ap);
+              } else {
+                const asList = ["extends", "contains", "from", "to", "directions", "nodes", "relations", "requiredNodes", "requiredRelations"].includes(attr);
+                emit(`${id(attr, ap)} ${asList ? list2(a, ap) : scalar(a, ap)}`, ap);
+              }
+            }
+            emit("}", rp);
+          }
+        } else field(key2, v, p);
+      }
+      emit("}", path);
+    };
+    let nodeCount = 0, edgeCount = 0;
+    const model = (value2, path, depth = 0) => {
+      keys2(value2, ["elements", "relations"], path);
+      for (const [key2, collection2] of Object.entries(value2)) for (const [name, item, p] of entries(collection2, child(path, key2))) {
+        if (key2 === "elements") {
+          if (++nodeCount > 1e3) error("At most 1000 elements are allowed", p);
+          if (depth > 32) error("Packages may be nested at most 32 levels deep", p);
+          emit(`${id(item.type, child(p, "type"))} ${name} ${text(item.name, child(p, "name"))} {`, p);
+        } else {
+          if (++edgeCount > 4e3) error("At most 4000 relationships are allowed", p);
+          if (item.direction !== void 0 && !["forward", "both"].includes(item.direction)) error("direction must be forward or both", child(p, "direction"));
+          emit(`relation ${name} ${id(item.from, child(p, "from"))} ${item.direction === "both" ? "<->" : "->"} ${id(item.to, child(p, "to"))} ${text(item.name, child(p, "name"))} {`, p);
+        }
+        const reserved = key2 === "elements" ? ["id", "type", "name", "elements", "relations"] : ["id", "name", "from", "to", "direction"];
+        const written = /* @__PURE__ */ new Set();
+        const attribute = (attr, v, ap) => {
+          if (written.has(attr)) error(`Duplicate attribute: ${attr}`, ap);
+          written.add(attr);
+          field(attr, v, ap);
+        };
+        for (const [attr, v] of Object.entries(item)) {
+          const ap = child(p, attr);
+          if (reserved.includes(attr)) continue;
+          if (attr === "attributes") {
+            obj(v, ap);
+            for (const [a, av] of Object.entries(v)) attribute(a, av, child(ap, a));
+          } else attribute(attr, v, ap);
+        }
+        if (key2 === "elements" && (own2(item, "elements") || own2(item, "relations"))) {
+          const nested = /* @__PURE__ */ Object.create(null);
+          if (own2(item, "elements")) nested.elements = item.elements;
+          if (own2(item, "relations")) nested.relations = item.relations;
+          model(nested, p, depth + 1);
+        }
+        emit("}", p);
+      }
+    };
+    const routing = (value2, path) => {
+      obj(value2, path);
+      emit("{", path);
+      for (const [key2, v] of Object.entries(value2)) {
+        const p = child(path, key2);
+        if (key2 === "via") {
+          if (!Array.isArray(v) || !v.length) error("Expected a nonempty list of coordinate pairs", p);
+          emit(`via ${v.map((pair, i) => placementPoint(pair, child(p, i))).join(", ")}`, p);
+        } else if (["from", "to", "label"].includes(key2) && Array.isArray(v)) emit(`${key2} ${point2(v, p)}`, p);
+        else if (key2 === "label" && v === "none") emit("label none", p);
+        else field(key2, v, p);
+      }
+      emit("}", path);
+    };
+    const help2 = (command, path) => {
+      text(command, path);
+      let quoted = false;
+      for (let i = 0; i < command.length; i++) {
+        const c = command[i];
+        if (quoted && c === "\\") {
+          i++;
+          continue;
+        }
+        if (c === '"') quoted = !quoted;
+        if (/[\r\n]/.test(c) || !quoted && /[;}]/.test(c)) error("Expected a single help query without @help", path);
+      }
+      emit(`@help ${command}`, path);
+    };
+    const views = (value2, path) => {
+      for (const [name, view, p] of entries(value2, path)) {
+        emit(`view ${name} ${text(view.name, child(p, "name"))} {`, p);
+        for (const [key2, v] of Object.entries(view)) {
+          const vp = child(p, key2);
+          if (["id", "name"].includes(key2)) continue;
+          if (["meta", "@meta"].includes(key2)) {
+            if (!["json", "dsl"].includes(v)) error("meta must be json or dsl", vp);
+            emit(`@meta ${v}`, vp);
+          } else if (["place", "style", "route"].includes(key2)) {
+            obj(v, vp);
+            for (const [target, rule] of Object.entries(v)) {
+              const rp = child(vp, target);
+              obj(rule, rp);
+              if (key2 === "route") {
+                const pair = target.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\s*->\s*([A-Za-z_][A-Za-z0-9_.-]*)$/);
+                emit(`route ${pair ? `${pair[1]} -> ${pair[2]}` : id(target, rp)}`, rp);
+                routing(rule, rp);
+              } else if (key2 === "place") {
+                keys2(rule, ["at", "size"], rp);
+                emit(`place ${id(target, rp)} at ${placementPoint(rule.at, child(rp, "at"))}${own2(rule, "size") ? ` size ${point2(rule.size, child(rp, "size"))}` : ""}`, rp);
+              } else {
+                emit(`style ${id(target, rp)} {`, rp);
+                attributes2(rule, rp);
+                emit("}", rp);
+              }
+            }
+          } else if (key2 === "tree") {
+            for (const [id2, tree, tp] of entries(v, vp)) {
+              emit(`tree ${id2} {`, tp);
+              for (const [option, a] of Object.entries(tree)) if (option !== "id") field(option, a, child(tp, option));
+              emit("}", tp);
+            }
+          } else if (key2 === "routes") {
+            emit("routes", vp);
+            routing(v, vp);
+          } else if (key2 === "diagram") {
+            if (typeof v === "string") emit(`diagram ${id(v, vp)}`, vp);
+            else {
+              obj(v, vp);
+              emit(`diagram ${id(v.type, child(vp, "type"))} {`, vp);
+              for (const [option, a] of Object.entries(v)) if (option !== "type") field(option, a, child(vp, option));
+              emit("}", vp);
+            }
+          } else if (["include", "exclude"].includes(key2)) {
+            const values = Array.isArray(v) ? v : [v];
+            if (!values.length) error("Expected a nonempty identifier list", vp);
+            emit(`${key2} ${values.map((a, i) => id(a, Array.isArray(v) ? child(vp, i) : vp)).join(", ")}`, vp);
+          } else if (["direction", "theme", "viewpoint", "referenceDisplay", "referenceOccurrences"].includes(key2)) emit(`${key2} ${id(v, vp)}`, vp);
+          else field(key2, v, vp);
+        }
+        emit("}", p);
+      }
+    };
+    obj(document, "");
+    if (own2(document, "@help")) {
+      keys2(document, ["@help"], "");
+      help2(document["@help"], "/@help");
+    } else {
+      keys2(document, ["architecture"], "");
+      const a = obj(document.architecture, "/architecture");
+      keys2(a, ["name", "description", "config", "model", "views", "@help", "@meta"], "/architecture");
+      emit(`architecture ${text(a.name, "/architecture/name")} {`, "/architecture");
+      if (own2(a, "description")) emit(`description ${text(a.description, "/architecture/description")}`, "/architecture/description");
+      if (own2(a, "config")) config(a.config, "/architecture/config");
+      if (own2(a, "@help")) {
+        help2(a["@help"], "/architecture/@help");
+      }
+      if (own2(a, "model")) {
+        emit("model {", "/architecture/model");
+        model(a.model, "/architecture/model");
+        emit("}", "/architecture/model");
+      }
+      if (own2(a, "views")) views(a.views, "/architecture/views");
+      if (own2(a, "@meta")) {
+        const format = a["@meta"];
+        if (!["json", "dsl"].includes(format)) error("meta must be json or dsl", "/architecture/@meta");
+        emit(`@meta ${format}`, "/architecture/@meta");
+      }
+      emit("}", "/architecture");
+    }
+    return { source: lines.join("\n"), origin: (line) => origins[line - 1] ?? { path: "" } };
+  }
+
   // src/source.js
   var copy2 = (value2) => JSON.parse(JSON.stringify(value2));
-  var own3 = (value2, key) => Object.hasOwn(value2, key);
+  var own3 = (value2, key2) => Object.hasOwn(value2, key2);
   var sourceFormat = (source) => isJSONDocument(source) || typeof source === "string" && /^\s*[\[{]/.test(source) ? "json" : "dsl";
-  var clean = (value2) => JSON.parse(JSON.stringify(value2, (key, value3) => ["loc", "attributeLocs"].includes(key) ? void 0 : value3));
+  var clean = (value2) => JSON.parse(JSON.stringify(value2, (key2, value3) => ["loc", "attributeLocs"].includes(key2) ? void 0 : value3));
   var collection = (entries) => new Set(entries.map(([id]) => id)).size === entries.length ? Object.fromEntries(entries) : entries.map(([id, value2]) => ({ id, ...value2 }));
   function jsonSource(model) {
     if (model.kind === "help" && !model.config && model.title === "arch.js Help") {
@@ -10146,9 +9441,10 @@ var arch = (() => {
       const config = {}, original = model.config;
       if (own3(original, "profile")) config.profile = original.profile;
       if (own3(original, "views")) config.views = copy2(original.views);
+      if (own3(original, "validation")) config.validation = original.validation;
       if (original.definition) {
-        for (const [key, value2] of Object.entries(original.definition)) {
-          const mapped = { nodeTypes: "type", relationTypes: "relation", viewpoints: "viewpoint", styleGroups: "styleGroup" }[key];
+        for (const [key2, value2] of Object.entries(original.definition)) {
+          const mapped = { nodeTypes: "type", relationTypes: "relation", viewpoints: "viewpoint", styleGroups: "styleGroup" }[key2];
           if (mapped) {
             if (Object.keys(value2).length) config[mapped] = Object.fromEntries(Object.entries(value2).map(([name, rule]) => {
               const result = copy2(rule);
@@ -10158,7 +9454,7 @@ var arch = (() => {
               }
               return [name, result];
             }));
-          } else config[key] = copy2(value2);
+          } else config[key2] = copy2(value2);
         }
       }
       a.config = config;
@@ -10169,12 +9465,12 @@ var arch = (() => {
     }
     const props = (item, builtins, reserved) => {
       const result = /* @__PURE__ */ Object.create(null);
-      for (const key of builtins) if (own3(item, key)) result[key] = copy2(item[key]);
-      for (const [key, value2] of Object.entries(item.attributes ?? {})) {
-        if (reserved.includes(key)) {
+      for (const key2 of builtins) if (own3(item, key2)) result[key2] = copy2(item[key2]);
+      for (const [key2, value2] of Object.entries(item.attributes ?? {})) {
+        if (reserved.includes(key2)) {
           result.attributes ?? (result.attributes = /* @__PURE__ */ Object.create(null));
-          result.attributes[key] = copy2(value2);
-        } else result[key] = copy2(value2);
+          result.attributes[key2] = copy2(value2);
+        } else result[key2] = copy2(value2);
       }
       return result;
     };
@@ -10194,17 +9490,18 @@ var arch = (() => {
       to: e.target,
       name: e.title,
       ...e.type !== void 0 ? { type: e.type } : {},
-      ...props(e, EDGE_PROPERTIES, ["id", "from", "to", "name", "type", "attributes"])
+      ...props(e, EDGE_PROPERTIES, ["id", "from", "to", "name", "type", "direction", "attributes"])
     }]));
     a.views = collection(model.views.map((v) => {
       const result = { name: v.title };
       if (v.meta !== void 0) result["@meta"] = v.meta;
-      for (const key of ["direction", "theme", "spacing", "viewpoint", "include", "exclude", "referenceDisplay", "referenceOccurrences", "diagram"]) if (v[key] !== void 0) result[key] = clean(v[key]);
+      for (const key2 of ["direction", "theme", "spacing", "viewpoint", "include", "exclude", "referenceDisplay", "referenceOccurrences", "diagram", "propertyFields"]) if (v[key2] !== void 0) result[key2] = clean(v[key2]);
       if (Object.keys(v.places).length) result.place = Object.fromEntries(Object.entries(v.places).map(([id, p]) => [id, { at: [p.at.x, p.at.y], ...p.size ? { size: [p.size.x, p.size.y] } : {} }]));
       if (Object.keys(v.styles).length) result.style = clean(v.styles);
-      const route = (item) => Object.fromEntries(Object.entries(item).filter(([key]) => !["loc", "nodeId", "edgeId"].includes(key)).map(([key, value2]) => [
-        key,
-        key === "via" ? value2.map((p) => [p.x, p.y]) : value2 && typeof value2 === "object" && own3(value2, "x") ? [value2.x, value2.y] : value2
+      if (v.trees) result.tree = clean(v.trees);
+      const route = (item) => Object.fromEntries(Object.entries(item).filter(([key2]) => !["loc", "nodeId", "edgeId"].includes(key2)).map(([key2, value2]) => [
+        key2,
+        key2 === "via" ? value2.map((p) => [p.x, p.y]) : value2 && typeof value2 === "object" && own3(value2, "x") ? [value2.x, value2.y] : value2
       ]));
       if (v.routeDefaults) result.routes = route(v.routeDefaults);
       if (Object.keys(v.routes).length || v.referenceRoutes?.length) result.route = Object.fromEntries([
@@ -10248,11 +9545,11 @@ var arch = (() => {
     if (output.length > 2e6) throw new ArchError("Translated source exceeds 2 MB; split the architecture into smaller documents");
     return output;
   }
-  var styleKeys = ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"];
+  var styleKeys = ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology", "propertyFields"];
   var routingKeys = ["from", "to", "via", "curve", "path", "label", "icon", "iconPosition", "showIcon", "showLabel"];
-  var viewKeys = ["name", "@meta", "meta", "diagram", "direction", "theme", "spacing", "viewpoint", "include", "exclude", "place", "style", "routes", "route", "referenceDisplay", "referenceOccurrences"];
-  var configKeys = ["profile", "views", "id", "title", "version", "extends", "defaultRelation", "requireViewpoint", "type", "relation", "viewpoint", "styleGroup"];
-  var profileKeys = ["extends", "template", "container", "abstract", "contains", "attribute", "attributes", "icon", "accent", "backgroundColor", "styleGroup", "from", "to", "style", "allowSelf", "acyclic", "incoming", "outgoing", "nodes", "relations", "requiredNodes", "requiredRelations"];
+  var viewKeys = ["name", "@meta", "meta", "diagram", "tree", "direction", "theme", "spacing", "viewpoint", "include", "exclude", "place", "style", "routes", "route", "referenceDisplay", "referenceOccurrences", "propertyFields"];
+  var configKeys = ["profile", "views", "validation", "id", "title", "version", "extends", "defaultRelation", "requireViewpoint", "type", "relation", "viewpoint", "styleGroup"];
+  var profileKeys = ["extends", "template", "container", "abstract", "contains", "attribute", "attributes", "icon", "accent", "backgroundColor", "styleGroup", "from", "to", "directions", "style", "allowSelf", "acyclic", "incoming", "outgoing", "nodes", "relations", "requiredNodes", "requiredRelations"];
   function distance2(a, b) {
     a = String(a).slice(0, 100).toLowerCase();
     b = String(b).slice(0, 100).toLowerCase();
@@ -10269,6 +9566,7 @@ var arch = (() => {
     if (path === "/architecture/model") return ["elements", "relations"];
     if (path === "/architecture/config") return configKeys;
     if (/\/style\/[^/]+$/.test(path)) return styleKeys;
+    if (/\/tree\/[^/]+$/.test(path)) return ["nodes", ...DIAGRAM_OPTIONS.tree];
     if (/\/(?:route\/[^/]+|routes)$/.test(path)) return routingKeys;
     if (/\/place\/[^/]+$/.test(path)) return ["at", "size"];
     if (/\/views\/[^/]+$/.test(path)) return viewKeys;
@@ -10293,10 +9591,10 @@ var arch = (() => {
     if (unknownProfile) nearest(unknownProfile[1], getProfiles(), "Registered profile");
     const unknownKey = message.match(/Unknown (?:JSON field|view option|routing attribute|attribute rule|profile rule|config option|attribute): ([^\s(]+)/);
     if (unknownKey) {
-      const key = unknownKey[1], parent = diagnostic.path?.replace(/\/[^/]*$/, "");
+      const key2 = unknownKey[1], parent = diagnostic.path?.replace(/\/[^/]*$/, "");
       const contextual = message.includes("routing") ? routingKeys : message.includes("view option") ? viewKeys.filter((k) => k !== "name") : message.includes("config") ? configKeys : message.includes("attribute rule") ? ["type", "required", "enum", "min", "max", "minLength", "maxLength", "format", "targets", "many", "minItems", "maxItems", "uniqueItems"] : message.includes("profile rule") ? profileKeys : styleKeys;
       const values = format === "json" && diagnostic.path ? jsonKeys(parent) ?? contextual : contextual;
-      nearest(key, values, "Field");
+      nearest(key2, values, "Field");
     }
     const endpoint = message.match(/Unknown (?:endpoint|reference element|element in view [^:]+): ([^\s(]+)/);
     if (endpoint && model) nearest(endpoint[1], model.nodes.map((n) => n.id), "Element ID");
@@ -10308,9 +9606,12 @@ var arch = (() => {
       const serialized = JSON.stringify(rule?.many ? [value2] : value2);
       add(`Provide ${missing[1]}`, format === "json" ? `"${missing[1]}": ${serialized}` : `${missing[1]} ${serialized}`, "Check the attribute type and profile constraints.");
     }
-    for (const [term, values] of [["direction", ["right", "down"]], ["theme", ["light", "dark"]], ["iconPosition", ["top", "left", "bottom", "right"]], ["referenceDisplay", ["labels", "nodes", "both"]], ["referenceOccurrences", ["shared", "perEdge"]], ["curve", ["straight", "orthogonal", "rounded", "bezier"]]])
+    const edgeDirection = /forward or both|does not allow direction/.test(message) || /\/relations\//.test(diagnostic.path ?? "");
+    for (const [term, values] of [["validation", ["strict", "draft"]], ["parentDirection", ["auto", "source", "target"]], ["orientation", ["down", "right", "up", "left"]], ["direction", edgeDirection ? ["forward", "both"] : /must be.*up/.test(message) ? ["down", "right", "up", "left"] : ["right", "down"]], ["theme", ["light", "dark"]], ["iconPosition", ["top", "left", "bottom", "right"]], ["referenceDisplay", ["labels", "nodes", "both"]], ["referenceOccurrences", ["shared", "perEdge"]], ["curve", ["straight", "orthogonal", "rounded", "bezier"]]])
       if (message.includes(term) && (message.includes("must") || message.includes("Unknown"))) for (const value2 of values) add(`${term}: ${value2}`, format === "json" ? `"${term}": "${value2}"` : `${term} ${value2}`);
     if (/spacing must/.test(message)) add("Use spacing between 24 and 400", format === "json" ? '"spacing": 80' : "spacing 80");
+    const allowedDirections = message.match(/allowed directions: (forward|both)(?:, (forward|both))?/);
+    if (allowedDirections) for (const value2 of allowedDirections.slice(1).filter(Boolean)) add(`Use ${value2 === "both" ? "<->" : "->"}`, format === "json" ? `"direction": "${value2}"` : `relation LINK_ID SOURCE_ID ${value2 === "both" ? "<->" : "->"} TARGET_ID "Label"`, "Use a direction allowed by the selected relationship type.");
     if (/Unknown diagram type/.test(message)) nearest(message.split(" ").at(-1), DIAGRAMS, "Diagram");
     const diagramOption = message.match(/Option (\w+) does not apply to (\w+)/);
     if (diagramOption) nearest(diagramOption[1], DIAGRAM_OPTIONS[diagramOption[2]] ?? [], "Diagram field");
@@ -10331,6 +9632,18 @@ var arch = (() => {
     if (/Expected: (?:element title|architecture title|relationship label|view title)/.test(message)) add("Quote the title", '"Title"');
     if (/Expected: model, view, config/.test(message)) nearest(tokenAtError ?? "", ["model", "view", "config", "description"]);
     if (/Expected: at/.test(message)) add("Specify the placement position", "place elementId at (0, 0)");
+    if (/placement coordinate|Placement expressions require/.test(message)) {
+      add("Use a box field with an offset", format === "json" ? '"at": ["coverage.x + 20", "vision.y - 40"]' : "place elementId at (coverage.x + 20, vision.y - 40)", `Allowed fields: ${POSITION_FIELDS.join(", ")}. Operators: +, -, *, /; multiplication/division precede addition/subtraction. Parentheses group calculations.`);
+      add("Use fixed coordinates", format === "json" ? '"at": [0, 0]' : "place elementId at (0, 0)");
+      if (/Placement expressions require/.test(message)) add("Separate the two coordinates", ",", "Use (x, y), with a comma between coordinates; use +, -, * or / within an expression.");
+    }
+    if (/Division by zero/.test(message)) add("Choose a nonzero divisor", format === "json" ? '"at": ["coverage.x / 2", 0]' : "place elementId at (coverage.x / 2, 0)", "Check calculated denominators as well as literal zero.");
+    if (/calculation must remain finite/.test(message)) add("Reduce the calculation magnitude", "100 * 2", "Keep intermediate calculations finite and final coordinates within ±10000000.");
+    if (/Circular placement dependency/.test(message)) add("Break the dependency with a fixed coordinate", format === "json" ? '"at": [300, 0]' : "place elementId at (300, 0)", "Follow the coordinate chain in the error. Tree members depend on their group; package sizes depend on their children.");
+    const placementReference = message.match(/Unknown or hidden placement reference: ([^;]+)/);
+    if (placementReference && model) nearest(placementReference[1], [...model.nodes.map((n) => n.id), ...model.views.flatMap((v) => Object.keys(v.trees ?? {}))], "Visible element/group");
+    const viaReference = message.match(/(?:Unknown|Hidden or excluded|Unavailable) via reference: ([^;]+)/);
+    if (viaReference && model) nearest(viaReference[1], [...model.nodes.map((n) => n.id), ...model.views.flatMap((v) => Object.keys(v.trees ?? {}))], "Visible via anchor");
     if (/Expected: ->/.test(message)) add("Connect the endpoints with ->", 'relation flow sourceId -> targetId "Label"');
     if (/Expected an object/.test(message)) add("Use an object for this block", format === "json" ? "{}" : "model {}");
     if (/Expected a coordinate pair/.test(message)) add("Use two numeric coordinates", "[0, 0]");
@@ -10409,6 +9722,83 @@ var arch = (() => {
     const dark = theme === "dark", bg = dark ? "#111827" : "#fafbfe", card = dark ? "#172033" : "#fff", text = dark ? "#e2e8f0" : "#334155", muted = dark ? "#94a3b8" : "#64748b", border = dark ? "#334155" : "#e2e8f0";
     const { width, height } = graph.bounds;
     return `<svg xmlns="http://www.w3.org/2000/svg" id="${idPrefix}-diagram" data-arch-svg="${theme}" data-arch-meta="${graph.format}" data-diagram="meta" role="img" aria-labelledby="${idPrefix}-title ${idPrefix}-desc" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="max-width:100%;height:auto;background:${bg}"><title id="${idPrefix}-title">${escape(graph.title)} — ${escape(graph.view.title)}</title><desc id="${idPrefix}-desc">Architecture source as ${graph.format.toUpperCase()}</desc><rect width="${width}" height="${height}" fill="${bg}"/><rect x="16" y="16" width="${width - 32}" height="${height - 32}" rx="10" fill="${card}" stroke="${border}"/><text x="34" y="44" fill="${text}" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="650">${graph.format.toUpperCase()} · ${escape(graph.view.title)}</text><path d="M16 57 H${width - 16}" stroke="${border}"/><g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">${graph.rows.map((row) => `<g class="arch-meta-row" data-source-line="${row.line}">${row.continuation ? "" : `<text x="66" y="${row.y}" fill="${muted}" text-anchor="end">${row.line}</text>`}<text class="arch-meta-code" x="86" y="${row.y}" fill="${text}" xml:space="preserve">${escape(row.text)}</text></g>`).join("")}</g></svg>`;
+  }
+
+  // src/via.js
+  var fail5 = (message, loc) => {
+    throw new ArchError(message, loc, "ARCH_ROUTING");
+  };
+  function references(route) {
+    if (route?.via === void 0) return [];
+    if (!Array.isArray(route.via)) fail5("via requires a list of coordinate pairs", route.loc);
+    const refs = [];
+    for (const point2 of route.via) for (const axis of ["x", "y"]) {
+      if (!point2 || typeof point2 !== "object") fail5("via requires coordinate pairs (X, Y)", route.loc);
+      refs.push(...coordinateTerms(point2[axis], route.loc).filter((t) => t.ref !== void 0));
+    }
+    return refs;
+  }
+  function viaReferences(model, profile, view) {
+    const known = /* @__PURE__ */ new Set([...model.nodes.map((n) => n.id), ...Object.keys(view.trees ?? {})]);
+    for (const route of [view.routeDefaults, ...Object.values(view.routes), ...view.referenceRoutes ?? []]) for (const ref of references(route))
+      if (!known.has(ref.ref)) fail5(`Unknown via reference: ${ref.ref}; use a node or tree group ID`, route.loc);
+    const visible = visibleNodeIds(model, view), available = new Set(visible), targets = /* @__PURE__ */ new Set();
+    for (const [id, tree] of Object.entries(view.trees ?? {})) if (tree.nodes.some((n) => visible.has(n))) available.add(id);
+    const collect = (route) => {
+      if (route?.path !== void 0) return;
+      for (const ref of references(route)) {
+        if (!available.has(ref.ref)) fail5(`Hidden or excluded via reference: ${ref.ref}; use a visible node or tree group`, route.loc);
+        targets.add(ref.ref);
+      }
+    };
+    const nodes = new Map(model.nodes.map((n) => [n.id, n]));
+    const refRoutes = new Map((view.referenceRoutes ?? []).map((r) => [JSON.stringify([r.nodeId, r.edgeId]), r]));
+    for (const edge of model.edges) {
+      if (!visible.has(edge.source) || !visible.has(edge.target) || view.styles[edge.id]?.display === "none") continue;
+      collect(routingOptions(view, view.routes[edge.id]));
+      const rule = profile.relationTypes[edge.type ?? profile.defaultRelation];
+      if ((view.referenceDisplay ?? rule.referenceDisplay ?? "labels") === "labels") continue;
+      for (const item of relationshipReferences(edge, rule)) if (visible.has(item.id) && !profile.nodeTypes[nodes.get(item.id).type]?.container)
+        collect(routingOptions(view, refRoutes.get(JSON.stringify([item.id, edge.id])), true));
+    }
+    return targets;
+  }
+  function resolveVia(route, boxes) {
+    if (!route?.via || route.path !== void 0) return route;
+    const reference2 = (term) => {
+      const box = boxes.get(term.ref);
+      if (!box) fail5(`Unavailable via reference: ${term.ref}; use a visible node or tree group`, route.loc);
+      return boxCoordinate(box, term.field);
+    };
+    return { ...route, via: route.via.map((point2) => ({
+      x: evaluateCoordinate(point2.x, reference2, route.loc),
+      y: evaluateCoordinate(point2.y, reference2, route.loc)
+    })) };
+  }
+
+  // src/property-fields.js
+  var publicFields = ["id", "type", "title", "description", "technology", "stereotype", "tags"];
+  function validatePropertyFields(fields4, nodes, profile, loc) {
+    if (fields4 === void 0) return;
+    const allowed = /* @__PURE__ */ new Set([...publicFields, ...nodes.flatMap((n) => Object.keys(profile.nodeTypes[n.type]?.attributes ?? {}))]);
+    if (!Array.isArray(fields4) || fields4.length > 128 || fields4.some((f) => typeof f !== "string" || !allowed.has(f)) || new Set(fields4).size !== fields4.length)
+      throw new ArchError("propertyFields requires unique declared attribute or public property names", loc, "ARCH_VALIDATION");
+  }
+  function nodeProperties(node, view) {
+    const fields4 = view.styles[node.id]?.propertyFields ?? view.propertyFields ?? view.diagram?.propertyFields ?? [];
+    return fields4.flatMap((key2) => {
+      const value2 = node.attributes?.[key2] ?? node[key2];
+      if (value2 === void 0) return [];
+      return [{ key: key2, full: `${key2}: ${Array.isArray(value2) ? "[" + value2.join(", ") + "]" : String(value2)}` }];
+    });
+  }
+  function positionProperties(node, start, scale = 1) {
+    let y = start;
+    for (const row of node.propertyRows ?? []) {
+      row.y = y;
+      y += row.lines.length * 17 * scale + 6 * scale;
+    }
+    return node.propertyRows?.length ? y - 23 * scale : start;
   }
 
   // src/geometry.js
@@ -10674,6 +10064,40 @@ var arch = (() => {
     }
     return { ...edge, d, points, label };
   }
+  function treeGroupRoute(view, id, options) {
+    const route = { ...routingOptions(view, view.routes[id]) };
+    if (options?.showLabels !== void 0 && view.routes[id]?.showLabel === void 0) route.showLabel = options.showLabels;
+    if (options?.curve !== void 0 && view.routes[id]?.curve === void 0) route.curve = options.curve;
+    return route;
+  }
+  function edgeLabelMetrics(edge, route, profile, modelNodes) {
+    const result = {}, labelHidden = route.label === "none";
+    result.labelHidden = labelHidden;
+    result.labelExplicit = route.label !== void 0;
+    const omit = edge.referenceDisplay === "nodes" ? new Set(edge.referenceItems.map((item) => `${item.attribute}\0${item.id}`)) : /* @__PURE__ */ new Set();
+    const displayText = relationshipLabel(edge, profile.relationTypes[edge.type], modelNodes, omit);
+    result.labelLines = labelHidden || route.showLabel === false ? [] : wrap(displayText, displayText === edge.title ? 160 : 200, 11);
+    result.labelWidth = labelHidden ? 0 : Math.max(28, ...result.labelLines.map((line) => textLength(line) * 11 + 18));
+    result.labelHeight = labelHidden ? 0 : result.labelLines.length * 15 + 8;
+    result.labelTextOffset = { x: 0, y: 0 };
+    if (!labelHidden && route.showIcon !== false && route.icon && route.icon !== "none") {
+      result.labelIcon = route.icon;
+      result.labelIconPosition = route.iconPosition ?? "left";
+      result.labelIconLoc = route.loc;
+      const size = 16, hasText = result.labelLines.length > 0, gap = hasText ? 6 : 0, textWidth = hasText ? result.labelWidth - 18 : 0, textHeight = result.labelLines.length * 15;
+      const horizontal = ["left", "right"].includes(result.labelIconPosition), before = ["left", "top"].includes(result.labelIconPosition), sign = before ? 1 : -1;
+      const width = horizontal ? textWidth + size + gap : Math.max(textWidth, size), height = horizontal ? Math.max(textHeight, size) : textHeight + size + gap;
+      result.labelWidth = width + 18;
+      result.labelHeight = height + 8;
+      result.labelTextOffset = horizontal ? { x: sign * (size + gap) / 2, y: 0 } : { x: 0, y: sign * (size + gap) / 2 };
+      result.labelIconBox = { x: horizontal ? before ? -width / 2 : width / 2 - size : -size / 2, y: horizontal ? -size / 2 : before ? -height / 2 : height / 2 - size, size };
+    }
+    if (!result.labelLines.length && !result.labelIcon) {
+      result.labelWidth = 0;
+      result.labelHeight = 0;
+    }
+    return result;
+  }
   function layout(model, options = {}) {
     validateModel(model, options);
     const profile = resolveProfile(model, options);
@@ -10703,7 +10127,10 @@ var arch = (() => {
       textStyle.titleY = badgeLines.length ? Math.max(textTop + 44, textStyle.badgeY + textStyle.title + 11) : Math.max(textTop + textStyle.title, headerEnd + textStyle.title + 8);
       const titleEnd = titleLines.length ? textStyle.titleY + (titleLines.length - 1) * textStyle.titleLeading : headerEnd;
       textStyle.descriptionY = titleLines.length ? titleEnd + 25 * scale : headerEnd + textStyle.description + 12;
-      const bodyEnd = descLines.length ? textStyle.descriptionY + (descLines.length - 1) * textStyle.descriptionLeading : titleEnd;
+      let bodyEnd = descLines.length ? textStyle.descriptionY + (descLines.length - 1) * textStyle.descriptionLeading : titleEnd;
+      const propertyRows = style.display === "logo" ? [] : nodeProperties(n, view).map((row) => ({ ...row, lines: wrap(row.full, width - 40, textStyle.description) }));
+      textStyle.propertyDividerY = bodyEnd + 12 * scale;
+      if (propertyRows.length) bodyEnd = positionProperties({ propertyRows }, bodyEnd + 30 * scale, scale);
       const minHeight = style.height ?? view.places[n.id]?.size?.y ?? 0;
       const height = style.display === "logo" ? Math.max(minHeight, 96) : Math.max(
         minHeight,
@@ -10729,13 +10156,14 @@ var arch = (() => {
         badgeLines,
         descLines,
         technologyLines,
+        propertyRows,
         x: 0,
         y: 0
       };
     });
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const modelNodes = new Map(model.nodes.map((n) => [n.id, n]));
-    const edges = model.edges.filter((e) => visible.has(e.source) && visible.has(e.target)).map((edge) => {
+    const edges = model.edges.filter((e) => visible.has(e.source) && visible.has(e.target) && view.styles[e.id]?.display !== "none").map((edge) => {
       const type = edge.type ?? profile.defaultRelation;
       const rule = profile.relationTypes[type];
       const referenceDisplay = view.referenceDisplay ?? rule.referenceDisplay ?? "labels";
@@ -10743,14 +10171,33 @@ var arch = (() => {
       const referenceOccurrences = view.referenceOccurrences ?? rule.referenceOccurrences ?? "shared";
       return { ...edge, type, style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
     });
+    if (view.diagram?.type === "tree") return layoutTree(model, profile, view, nodes, edges);
     if (view.diagram && view.diagram.type !== "connected") return layoutDiagram(model, profile, view, nodes, edges);
+    const groupStates = [], treeEdges = /* @__PURE__ */ new Map();
+    const initialPlaces = Object.fromEntries(Object.entries(view.places).map(([id, p]) => [id, { ...p, at: { x: typeof p.at.x === "number" ? p.at.x : 0, y: typeof p.at.y === "number" ? p.at.y : 0 } }]));
+    for (const [id, options2] of Object.entries(view.trees ?? {})) {
+      const members2 = options2.nodes.map((id2) => byId.get(id2)).filter(Boolean);
+      if (!members2.length) continue;
+      const ids = new Set(members2.map((n) => n.id)), parents = new Map(members2.map((n) => [n.id, n.parent]));
+      const localEdges = edges.filter((e) => ids.has(e.source) && ids.has(e.target)).map((edge) => {
+        const route = treeGroupRoute(view, edge.id, options2);
+        return { ...edge, treeLabel: edgeLabelMetrics(edge, route, profile, modelNodes) };
+      });
+      const local = layoutTree(model, profile, { ...view, diagram: { type: "tree", ...options2 } }, members2, localEdges);
+      const proxy = { id, parent: parents.get(members2[0].id), virtualTreeGroup: true, container: false, width: local.bounds.width, height: local.bounds.height, x: 0, y: 0 };
+      for (const item of local.nodes) Object.assign(byId.get(item.id), item, { parent: id, treeGroup: id, x: item.x - local.bounds.x, y: item.y - local.bounds.y });
+      nodes.push(proxy);
+      byId.set(id, proxy);
+      groupStates.push({ id, options: options2, local, proxy, parents });
+    }
     const referenced = new Set(edges.flatMap((e) => e.referenceItems.map((item) => item.id)));
     const endpoints = new Set(edges.flatMap((e) => [e.source, e.target]));
-    for (const node of nodes) if (referenced.has(node.id) && !endpoints.has(node.id) && !node.parent && !node.container && !view.places[node.id]) node.referenceOnly = true;
+    const positions = placementPlan(model, profile, view), positionTargets = /* @__PURE__ */ new Set([...viaReferences(model, profile, view), ...[...positions?.expressions.values() ?? []].flatMap((terms) => terms.filter((t) => t.ref !== void 0).map((t) => t.ref))]);
+    for (const node of nodes) if (referenced.has(node.id) && !endpoints.has(node.id) && !node.parent && !node.container && !view.places[node.id] && !positionTargets.has(node.id)) node.referenceOnly = true;
     const process = (parent) => {
       const children = nodes.filter((n) => n.parent === parent && !n.referenceOnly);
       for (const child2 of children) if (child2.container) process(child2.id);
-      arrange(children, edges, view.direction, view.spacing, view.places, byId);
+      arrange(children, edges, view.direction, view.spacing, initialPlaces, byId);
       if (parent) {
         const box = byId.get(parent);
         const minX2 = Math.min(0, ...children.map((n) => n.x)), minY2 = Math.min(0, ...children.map((n) => n.y));
@@ -10769,9 +10216,13 @@ var arch = (() => {
         const textEnd = Math.max(17, box.packageBadge ? box.packageBadgeY : 0, box.titleLines.length ? box.packageTitleY + (box.titleLines.length - 1) * box.textStyle.titleLeading : 0);
         box.iconBox = { x: position === "left" ? 20 : position === "right" ? box.width - 42 : (box.width - 22) / 2, y: position === "bottom" ? textEnd + 12 : 17, size: 22 };
         box.headerHeight = Math.max(56, textEnd + 24, showIcon ? box.iconBox.y + box.iconBox.size + 17 : 0);
+        if (box.propertyRows.length) {
+          box.textStyle.propertyDividerY = box.headerHeight;
+          box.headerHeight = positionProperties(box, box.headerHeight + 26 * scale, scale) + 24;
+        }
         box.contentOffset = { x: 28 - minX2, y: box.headerHeight + 16 - minY2 };
         box.width = Math.max(box.width, ...children.map((n) => n.x + box.contentOffset.x + n.width + 28));
-        box.height = Math.max(box.height, ...children.map((n) => n.y + box.contentOffset.y + n.height + 28));
+        box.height = Math.max(box.height, box.headerHeight + 28, ...children.map((n) => n.y + box.contentOffset.y + n.height + 28));
       }
     };
     process(null);
@@ -10779,51 +10230,59 @@ var arch = (() => {
       for (const node of nodes.filter((n) => n.parent === parent)) {
         node.x += x;
         node.y += y;
-        if (node.container) absolute(node.id, node.x + node.contentOffset.x, node.y + node.contentOffset.y);
+        if (node.virtualTreeGroup) absolute(node.id, node.x, node.y);
+        else if (node.container) absolute(node.id, node.x + node.contentOffset.x, node.y + node.contentOffset.y);
       }
     };
     absolute(null, 0, 0);
+    const treeGroups = [];
+    for (const state of groupStates) {
+      const { id, options: options2, local, proxy, parents } = state, dx = proxy.x - local.bounds.x, dy = proxy.y - local.bounds.y;
+      for (const item of local.nodes) byId.get(item.id).parent = parents.get(item.id);
+      for (const edge of local.edges) {
+        const points = edge.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+        treeEdges.set(edge.id, { ...edge, points, d: polyPath(points, (options2.curve ?? "rounded") === "rounded"), label: { x: edge.label.x + dx, y: edge.label.y + dy }, treeGroup: id });
+      }
+      treeGroups.push({ id, parent: proxy.parent, nodes: local.nodes.map((n) => n.id), ...local.tree, bounds: { x: proxy.x, y: proxy.y, width: proxy.width, height: proxy.height } });
+      nodes.splice(nodes.indexOf(proxy), 1);
+      byId.delete(id);
+    }
+    for (const node of nodes) if (!node.treeGroup && !node.container && !node.parent && !view.places[node.id]) {
+      const link = edges.find((e) => e.source === node.id && byId.get(e.target)?.treeGroup || e.target === node.id && byId.get(e.source)?.treeGroup);
+      if (!link) continue;
+      const anchor = byId.get(link.source === node.id ? link.target : link.source), group = treeGroups.find((g) => g.id === anchor.treeGroup);
+      if (group.parent) continue;
+      const vertical = ["up", "down"].includes(group.orientation), gap = view.spacing;
+      node.x = vertical ? group.bounds.x - gap - node.width : anchor.x + (anchor.width - node.width) / 2;
+      node.y = vertical ? anchor.y + (anchor.height - node.height) / 2 : group.bounds.y + group.bounds.height + gap;
+      while (nodes.some((n) => n !== node && intersects(node, n))) if (vertical) node.y += node.height + gap;
+      else node.x += node.width + gap;
+    }
+    const groupOrigins = new Map(groupStates.map((s) => [s.id, { x: s.proxy.x, y: s.proxy.y }]));
+    resolvePlacements(model, profile, view, nodes, groupStates, positions);
+    for (const group of treeGroups) {
+      const proxy = groupStates.find((s) => s.id === group.id).proxy, old = groupOrigins.get(group.id), dx = proxy.x - old.x, dy = proxy.y - old.y;
+      group.bounds = { x: proxy.x, y: proxy.y, width: proxy.width, height: proxy.height };
+      for (const edge of treeEdges.values()) if (edge.treeGroup === group.id) {
+        edge.points = edge.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+        edge.label = { x: edge.label.x + dx, y: edge.label.y + dy };
+      }
+    }
     const parallel = /* @__PURE__ */ new Map();
+    const routeBoxes = new Map([...byId, ...treeGroups.map((g) => [g.id, g.bounds])]);
     const routedEdges = edges.map((edge) => {
-      const key = [edge.source, edge.target].sort().join("\0"), count = parallel.get(key) ?? 0;
-      parallel.set(key, count + 1);
-      const route = routingOptions(view, view.routes[edge.id]) ?? {};
+      const key2 = [edge.source, edge.target].sort().join("\0"), count = parallel.get(key2) ?? 0;
+      parallel.set(key2, count + 1);
+      const preset = treeEdges.get(edge.id), groupOptions = preset ? view.trees[preset.treeGroup] : null;
+      const route = resolveVia(groupOptions ? treeGroupRoute(view, edge.id, groupOptions) : routingOptions(view, view.routes[edge.id]) ?? {}, routeBoxes);
       const labelHidden = route.label === "none";
-      const result = routeEdge(edge, byId.get(edge.source), byId.get(edge.target), { ...route, label: labelHidden ? void 0 : route.label }, count);
-      result.labelHidden = labelHidden;
-      result.labelExplicit = route.label !== void 0;
-      const omit = edge.referenceDisplay === "nodes" ? new Set(edge.referenceItems.map((item) => `${item.attribute}\0${item.id}`)) : /* @__PURE__ */ new Set();
-      const displayText = relationshipLabel(edge, profile.relationTypes[edge.type], modelNodes, omit);
-      result.labelLines = labelHidden || route.showLabel === false ? [] : wrap(displayText, displayText === edge.title ? 160 : 200, 11);
-      result.labelWidth = labelHidden ? 0 : Math.max(28, ...result.labelLines.map((line) => textLength(line) * 11 + 18));
-      result.labelHeight = labelHidden ? 0 : result.labelLines.length * 15 + 8;
-      result.labelTextOffset = { x: 0, y: 0 };
-      if (!labelHidden && route.showIcon !== false && route.icon && route.icon !== "none") {
-        result.labelIcon = route.icon;
-        result.labelIconPosition = route.iconPosition ?? "left";
-        result.labelIconLoc = route.loc;
-        const size = 16, hasText = result.labelLines.length > 0, gap = hasText ? 6 : 0;
-        const textWidth = hasText ? result.labelWidth - 18 : 0, textHeight = result.labelLines.length * 15;
-        const horizontal = ["left", "right"].includes(result.labelIconPosition);
-        const before = ["left", "top"].includes(result.labelIconPosition), sign = before ? 1 : -1;
-        const width = horizontal ? textWidth + size + gap : Math.max(textWidth, size);
-        const height = horizontal ? Math.max(textHeight, size) : textHeight + size + gap;
-        result.labelWidth = width + 18;
-        result.labelHeight = height + 8;
-        result.labelTextOffset = horizontal ? { x: sign * (size + gap) / 2, y: 0 } : { x: 0, y: sign * (size + gap) / 2 };
-        result.labelIconBox = {
-          x: horizontal ? before ? -width / 2 : width / 2 - size : -size / 2,
-          y: horizontal ? -size / 2 : before ? -height / 2 : height / 2 - size,
-          size
-        };
-      }
-      if (!result.labelLines.length && !result.labelIcon) {
-        result.labelWidth = 0;
-        result.labelHeight = 0;
-      }
+      const manual = preset && ["from", "to", "via", "path"].some((key3) => route[key3] !== void 0) || route.curve === "bezier" || route.curve === "straight";
+      const result = preset && !manual ? { ...preset, label: route.label && route.label !== "none" ? route.label : preset.label } : routeEdge(edge, byId.get(edge.source), byId.get(edge.target), { ...route, label: labelHidden ? void 0 : route.label }, count);
+      if (preset && !manual) result.d = polyPath(preset.points, (route.curve ?? groupOptions.curve ?? "rounded") === "rounded");
+      Object.assign(result, edgeLabelMetrics(edge, route, profile, modelNodes));
       return result;
     });
-    const referenceNodes = attachReferenceNodes(nodes, routedEdges, view, wrap, (card, anchor, route) => routeEdge({}, card, { id: null, ...anchor, width: 0, height: 0 }, { ...route, to: { x: anchor.x, y: anchor.y } }, 0));
+    const referenceNodes = attachReferenceNodes(nodes, routedEdges, view, wrap, (card, anchor, route) => routeEdge({}, card, { id: null, ...anchor, width: 0, height: 0 }, { ...route, to: { x: anchor.x, y: anchor.y } }, 0), (route) => resolveVia(route, routeBoxes));
     const extents = nodes.flatMap((n) => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
     for (const occurrence of referenceNodes) {
       extents.push({ x: occurrence.node.x, y: occurrence.node.y }, { x: occurrence.node.x + occurrence.node.width, y: occurrence.node.y + occurrence.node.height }, ...occurrence.points);
@@ -10845,8 +10304,1378 @@ var arch = (() => {
       nodes,
       edges: routedEdges,
       referenceNodes,
+      ...treeGroups.length ? { treeGroups } : {},
       bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
     };
+  }
+
+  // src/tree.js
+  var fail7 = (message, view) => {
+    throw new ArchError(`View ${view.id}: ${message}`, view.loc, "ARCH_VALIDATION");
+  };
+  var TREE_OPTIONS = ["relations", "parentDirection", "orientation", "direction", "levelGap", "siblingGap", "showLabels", "curve"];
+  function validateTreeOptions(c, profile, view) {
+    for (const key2 of Object.keys(c)) if (!["type", "nodes", "loc", "propertyFields", ...TREE_OPTIONS].includes(key2)) fail7(`Unknown tree option: ${key2}`, view);
+    if (c.orientation !== void 0 && c.direction !== void 0) fail7("Choose direction or orientation for a tree, not both", view);
+    for (const [key2, allowed] of [["parentDirection", ["auto", "source", "target"]], ["orientation", ["down", "right", "up", "left"]], ["direction", ["down", "right", "up", "left"]], ["curve", ["orthogonal", "rounded"]]]) if (c[key2] !== void 0 && !allowed.includes(c[key2])) fail7(`${key2} must be ${allowed.join(" or ")}`, view);
+    for (const key2 of ["levelGap", "siblingGap"]) if (c[key2] !== void 0 && (!Number.isFinite(c[key2]) || c[key2] < 16 || c[key2] > 800)) fail7(`${key2} must be between 16 and 800`, view);
+    if (c.showLabels !== void 0 && typeof c.showLabels !== "boolean") fail7("showLabels must be true or false", view);
+    if (c.relations !== void 0) {
+      if (!Array.isArray(c.relations) || new Set(c.relations).size !== c.relations.length || c.relations.some((t) => typeof t !== "string" || !Object.hasOwn(profile.relationTypes, t))) fail7("Tree relations must be unique known relationship types", view);
+    }
+  }
+  function treeStructure(nodes, edges, profile, view) {
+    const c = view.diagram, order = new Map(nodes.map((n, i) => [n.id, i]));
+    const children = new Map(nodes.map((n) => [n.id, []])), parents = /* @__PURE__ */ new Map(), links = [];
+    for (const edge of edges) {
+      const type = edge.type ?? profile.defaultRelation;
+      if (c.relations && !matches(type, c.relations, profile.relationTypes)) continue;
+      if (edge.direction === "both") fail7(`Tree relationship ${edge.id} is bidirectional; use directed hierarchy relationships or diagram connected`, view);
+      const reverse = c.parentDirection === "target" || (!c.parentDirection || c.parentDirection === "auto") && profile.relationTypes[type].style === "generalization";
+      const parent = reverse ? edge.target : edge.source, child2 = reverse ? edge.source : edge.target;
+      if (parent === child2) fail7(`Tree relationship ${edge.id} is a self-link; hierarchy relationships must be acyclic`, view);
+      if (parents.has(child2)) {
+        const previous = parents.get(child2);
+        fail7(previous.parent === parent ? `Parallel tree relationships ${previous.edge.id} and ${edge.id}; filter relation types or hide one edge` : `Tree node ${child2} has multiple parents (${previous.parent}, ${parent}); select one hierarchy, hide an edge, or use diagram connected`, view);
+      }
+      const link = { edge, parent, child: child2, reverse };
+      parents.set(child2, link);
+      children.get(parent).push(child2);
+      links.push(link);
+    }
+    for (const list2 of children.values()) list2.sort((a, b) => order.get(a) - order.get(b));
+    const roots = nodes.filter((n) => !parents.has(n.id)).map((n) => n.id), topological = [...roots], depths = new Map(roots.map((id) => [id, 0]));
+    for (let i = 0; i < topological.length; i++) for (const child2 of children.get(topological[i])) {
+      depths.set(child2, depths.get(topological[i]) + 1);
+      topological.push(child2);
+    }
+    if (topological.length !== nodes.length) fail7("Tree hierarchy contains a cycle; correct the relationships or use diagram connected", view);
+    return { children, parents, links, roots, topological, depths };
+  }
+  function layoutTree(model, profile, view, inputNodes, inputEdges) {
+    const nodes = inputNodes.map((n) => ({ ...n, parent: null, container: false }));
+    const byId = new Map(nodes.map((n) => [n.id, n])), tree = treeStructure(nodes, inputEdges, profile, view), c = view.diagram;
+    const direction = c.direction ?? c.orientation ?? "down", down = ["down", "up"].includes(direction), flip = ["up", "left"].includes(direction), siblingGap = c.siblingGap ?? 48;
+    const labelData = new Map(tree.links.map(({ edge, child: child2 }) => {
+      if (edge.treeLabel) return [child2, { lines: edge.treeLabel.labelLines, width: edge.treeLabel.labelWidth, height: edge.treeLabel.labelHeight, metrics: edge.treeLabel }];
+      const lines = c.showLabels === false ? [] : wrap(edge.labelText ?? edge.title, Math.min(180, byId.get(child2).width - 38), 11);
+      const width = lines.length ? Math.min(198, byId.get(child2).width - 20) : 0, height = lines.length ? lines.length * 15 + 8 : 0;
+      return [child2, { lines, width, height }];
+    }));
+    const spans = /* @__PURE__ */ new Map(), centers = /* @__PURE__ */ new Map(), starts = /* @__PURE__ */ new Map();
+    const levelSizes = [], levelGaps = [];
+    for (const id of [...tree.topological].reverse()) {
+      const node = byId.get(id), children = tree.children.get(id), label = labelData.get(id);
+      const cross = Math.max(down ? node.width : node.height, (down ? label?.width : label?.height) ?? 0);
+      const major = down ? node.height : node.width, depth = tree.depths.get(id);
+      levelSizes[depth] = Math.max(levelSizes[depth] ?? 0, major);
+      if (label) levelGaps[depth - 1] = Math.max(levelGaps[depth - 1] ?? 0, 2 * (down ? label.height : label.width) + 56);
+      if (!children.length) {
+        spans.set(id, cross);
+        centers.set(id, cross / 2);
+        starts.set(id, []);
+        continue;
+      }
+      let cursor = 0;
+      const positions = children.map((child2) => {
+        const start = cursor;
+        cursor += spans.get(child2) + siblingGap;
+        return start;
+      });
+      const width = cursor - siblingGap, center = (positions[0] + centers.get(children[0]) + positions.at(-1) + centers.get(children.at(-1))) / 2;
+      const left = Math.min(0, center - cross / 2), right = Math.max(width, center + cross / 2);
+      spans.set(id, right - left);
+      centers.set(id, center - left);
+      starts.set(id, positions.map((x) => x - left));
+    }
+    const levels = [0];
+    for (let i = 1; i < levelSizes.length; i++) levels[i] = levels[i - 1] + levelSizes[i - 1] + Math.max(c.levelGap ?? 96, levelGaps[i - 1] ?? 0);
+    const origins = /* @__PURE__ */ new Map();
+    let forest = 0;
+    for (const root of tree.roots) {
+      origins.set(root, forest);
+      forest += spans.get(root) + siblingGap * 2;
+    }
+    for (const id of tree.topological) {
+      const node = byId.get(id), origin = origins.get(id), depth = tree.depths.get(id);
+      const cross = origin + centers.get(id) - (down ? node.width : node.height) / 2;
+      node.x = down ? cross : levels[depth];
+      node.y = down ? levels[depth] : cross;
+      node.treeDepth = depth;
+      node.treeParent = tree.parents.get(id)?.parent ?? null;
+      tree.children.get(id).forEach((child2, i) => origins.set(child2, origin + starts.get(id)[i]));
+    }
+    const majorEnd = Math.max(0, ...nodes.map((n) => down ? n.y + n.height : n.x + n.width));
+    if (flip) for (const node of nodes) if (down) node.y = majorEnd - node.y - node.height;
+    else node.x = majorEnd - node.x - node.width;
+    const edges = tree.links.map(({ edge, parent, child: child2, reverse }) => {
+      const p = byId.get(parent), n = byId.get(child2), siblings = tree.children.get(parent), index = siblings.indexOf(child2), fraction = (index + 1) / (siblings.length + 1);
+      const gap = levels[n.treeDepth] - levels[p.treeDepth] - levelSizes[p.treeDepth], baseBend = levels[n.treeDepth] - gap / 2, bend = flip ? majorEnd - baseBend : baseBend;
+      const a = down ? { x: p.x + p.width * fraction, y: p.y + (flip ? 0 : p.height) } : { x: p.x + (flip ? 0 : p.width), y: p.y + p.height * fraction };
+      const b = down ? { x: n.x + n.width / 2, y: n.y + (flip ? n.height : 0) } : { x: n.x + (flip ? n.width : 0), y: n.y + n.height / 2 };
+      const visual = down ? [a, { x: a.x, y: bend }, { x: b.x, y: bend }, b] : [a, { x: bend, y: a.y }, { x: bend, y: b.y }, b];
+      const points2 = reverse ? visual.reverse() : visual, info = labelData.get(child2);
+      const sign = flip ? 1 : -1, label = down ? { x: b.x, y: b.y + sign * (info.height / 2 + 14) } : { x: b.x + sign * (info.width / 2 + 14), y: b.y };
+      return { ...edge, points: points2, d: polyPath(points2, (c.curve ?? "rounded") === "rounded"), label, labelLines: info.lines, labelWidth: info.width, labelHeight: info.height, labelTextOffset: { x: 0, y: 0 }, ...info.metrics };
+    });
+    const points = nodes.flatMap((n) => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
+    for (const edge of edges) {
+      points.push(...edge.points);
+      if (edge.labelLines.length || edge.labelIcon) points.push({ x: edge.label.x - edge.labelWidth / 2, y: edge.label.y - edge.labelHeight / 2 }, { x: edge.label.x + edge.labelWidth / 2, y: edge.label.y + edge.labelHeight / 2 });
+    }
+    const minX = Math.min(0, ...points.map((p) => p.x)) - 48, minY = Math.min(0, ...points.map((p) => p.y)) - 48;
+    const maxX = Math.max(160, ...points.map((p) => p.x)) + 48, maxY = Math.max(96, ...points.map((p) => p.y)) + 48;
+    return {
+      title: model.title,
+      description: model.description,
+      profile: { id: profile.id, version: profile.version },
+      view,
+      nodes,
+      edges,
+      referenceNodes: [],
+      tree: { roots: tree.roots, orientation: direction, parentDirection: c.parentDirection ?? "auto" },
+      bounds: { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+    };
+  }
+
+  // src/class-placement.js
+  var compartments = ["attributes", "methods", "functions", "interfaces", "ports", "parameters"];
+  function classPlacementContext(model, profile, view) {
+    const c = view.diagram, visible = visibleNodeIds(model, view), members2 = new Set(compartments.flatMap((k) => c[k] ?? []));
+    for (const id of Object.keys(view.places)) if (members2.has(id)) throw new ArchError(`Class detail ${id} is positioned through its owner; place its class card instead`, view.places[id].loc, "ARCH_VALIDATION");
+    const cards = model.nodes.filter((n) => visible.has(n.id) && !members2.has(n.id)).map((n) => ({ ...n, parent: null })), cardIds = new Set(cards.map((n) => n.id));
+    const ports = model.nodes.filter((n) => visible.has(n.id) && (c.ports ?? []).includes(n.id)).flatMap((n) => {
+      const owner = n.attributes?.[c.ownerAttribute ?? "owner"] ?? n[c.ownerAttribute ?? "owner"];
+      return cardIds.has(owner) ? [{ ...n, parent: owner }] : [];
+    });
+    return { model: { ...model, nodes: [...cards, ...ports] }, profile: { ...profile, nodeTypes: Object.fromEntries(Object.entries(profile.nodeTypes).map(([id, r]) => [id, { ...r, container: false }])) }, view: { ...view, include: void 0, exclude: void 0 } };
+  }
+  function validateClassPlacement(model, profile, view) {
+    const context = classPlacementContext(model, profile, view);
+    return placementPlan(context.model, context.profile, context.view);
+  }
+  function positionClassCards(model, profile, view, cards) {
+    const context = classPlacementContext(model, profile, view), boxes = [];
+    for (const card of cards) {
+      const at = view.places[card.n.id]?.at;
+      if (at) {
+        card.n.x = typeof at.x === "number" ? at.x : 0;
+        card.n.y = typeof at.y === "number" ? at.y : 0;
+      }
+      boxes.push(card.n);
+      card.ownPorts.forEach((p, i) => boxes.push({ ...p, x: card.n.x + card.n.width - 6, y: card.n.y + 64 + i * 24 - 6, width: 12, height: 12 }));
+    }
+    resolvePlacements(context.model, context.profile, context.view, boxes, []);
+    return new Map(boxes.map((n) => [n.id, n]));
+  }
+
+  // src/diagrams.js
+  var DIAGRAMS = ["connected", "tree", "sequence", "state", "activity", "matrix", "heatmap", "timeline", "class"];
+  var DIAGRAM_OPTIONS = {
+    connected: ["propertyFields"],
+    sequence: ["participants", "messages", "asyncMessages", "returns"],
+    tree: [...TREE_OPTIONS, "propertyFields"],
+    state: ["initial", "finals"],
+    activity: ["lanes", "laneAttribute", "initial", "finals", "decisions", "forks", "joins"],
+    matrix: ["rows", "columns", "relations"],
+    heatmap: ["valueAttribute", "parentAttribute", "min", "max", "colorLow", "colorHigh"],
+    timeline: ["startAttribute", "endAttribute"],
+    class: ["attributes", "methods", "functions", "interfaces", "ports", "parameters", "ownerAttribute", "signatureAttribute", "propertyFields"]
+  };
+  var fields3 = DIAGRAM_OPTIONS;
+  var lists = /* @__PURE__ */ new Set(["participants", "messages", "asyncMessages", "returns", "finals", "lanes", "decisions", "forks", "joins", "rows", "columns", "relations", "attributes", "methods", "functions", "interfaces", "ports", "parameters"]);
+  var members = ["attributes", "methods", "functions", "interfaces", "ports", "parameters"];
+  var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
+  var fail8 = (message, view) => {
+    throw new ArchError(`View ${view.id}: ${message}`, view.loc, "ARCH_VALIDATION");
+  };
+  var value = (node, name) => node.attributes?.[name] ?? node[name];
+  function selected(model, view) {
+    const ids = visibleNodeIds(model, view, false), nodes = model.nodes.filter((n) => ids.has(n.id));
+    return { nodes, edges: model.edges.filter((e) => ids.has(e.source) && ids.has(e.target)) };
+  }
+  function validateDiagramView(model, profile, view) {
+    if (validateMetaView(view)) return;
+    const c = view.diagram ?? { type: "connected" }, type = c.type;
+    if (!DIAGRAMS.includes(type)) fail8(`Unknown diagram type ${type}`, view);
+    const { nodes, edges } = selected(model, view), ids = new Set(nodes.map((n) => n.id)), edgeIds = new Set(edges.map((e) => e.id));
+    const displayIds = visibleNodeIds(model, view);
+    const propertiesSupported = ["connected", "tree", "class"].includes(type);
+    if (view.propertyFields !== void 0 && !propertiesSupported) fail8("propertyFields requires the connected, tree or class renderer", view);
+    validatePropertyFields(view.propertyFields, nodes, profile, view.loc);
+    for (const [id, style] of Object.entries(view.styles)) if (style.propertyFields !== void 0) {
+      if (!propertiesSupported) fail8("propertyFields requires the connected, tree or class renderer", view);
+      validatePropertyFields(style.propertyFields, model.nodes.filter((n) => n.id === id), profile, style.loc);
+    }
+    if (["sequence", "state", "activity", "timeline"].includes(type) && edges.some((e) => e.direction === "both" && view.styles[e.id]?.display !== "none" && displayIds.has(e.source) && displayIds.has(e.target))) fail8(`Bidirectional relationships are not supported in ${type} views; use two directed relationships`, view);
+    if (type !== "connected" && (view.referenceDisplay === "nodes" || view.referenceDisplay === "both")) fail8("graphical referenceDisplay requires the connected renderer", view);
+    if (type !== "connected" && view.routeDefaults !== void 0) fail8("routes defaults require the connected renderer", view);
+    if (type !== "connected" && view.referenceOccurrences !== void 0) fail8("referenceOccurrences requires the connected renderer", view);
+    if (!["connected", "tree"].includes(type) && Object.values(view.styles).some((style) => ["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"].some((key2) => style[key2] !== void 0))) fail8("node visibility style overrides require the connected or tree renderer", view);
+    if (!["connected", "tree"].includes(type) && Object.values(view.styles).some((style) => style.iconPosition !== void 0)) fail8("iconPosition style overrides require the connected or tree renderer", view);
+    if (!["connected", "tree"].includes(type) && Object.values(view.styles).some((style) => style.display === "logo")) fail8("logo display requires the connected or tree renderer", view);
+    if (!["connected", "tree"].includes(type) && Object.values(view.styles).some((style) => ["fontSize", "width", "height"].some((field) => style[field] !== void 0))) fail8("fontSize/width/height style overrides require the connected or tree renderer", view);
+    for (const [key2, v] of Object.entries(c)) {
+      if (key2 === "type") continue;
+      if (!fields3[type].includes(key2)) fail8(`Option ${key2} does not apply to ${type}`, view);
+      if (key2 === "propertyFields") {
+        validatePropertyFields(v, nodes, profile, view.loc);
+      } else if (lists.has(key2)) {
+        if (!Array.isArray(v) || v.some((x) => typeof x !== "string") || new Set(v).size !== v.length) fail8(`${key2} requires a list of unique values`, view);
+        const allowed = ["messages", "asyncMessages", "returns"].includes(key2) ? edgeIds : key2 === "relations" ? new Set(Object.keys(profile.relationTypes)) : ids;
+        for (const id of v) if (!allowed.has(id)) fail8(`${key2}: unknown or invisible reference ${id}`, view);
+      } else if (key2 === "showLabels") {
+        if (typeof v !== "boolean") fail8("showLabels must be true or false", view);
+      } else if (["levelGap", "siblingGap"].includes(key2)) {
+        if (!Number.isFinite(v) || v < 16 || v > 800) fail8(`${key2} must be between 16 and 800`, view);
+      } else if (["min", "max"].includes(key2)) {
+        if (!Number.isFinite(v)) fail8(`${key2} must be finite`, view);
+      } else if (typeof v !== "string") fail8(`${key2} must be a string`, view);
+      if (key2.startsWith("color") && !normalizeColor(v)) fail8(`Invalid color ${key2}`, view);
+    }
+    if (Object.keys(view.places).length && !["connected", "class"].includes(type)) fail8("place/route are only supported for connected; this renderer determines the layout", view);
+    if ((Object.keys(view.routes).length || view.referenceRoutes?.length) && type !== "connected") fail8(type === "class" ? "route is only supported for connected; use place to position class cards" : "place/route are only supported for connected; this renderer determines the layout", view);
+    if (type === "tree") {
+      validateTreeOptions(c, profile, view);
+      treeStructure(nodes.filter((n) => displayIds.has(n.id)), edges.filter((e) => displayIds.has(e.source) && displayIds.has(e.target) && view.styles[e.id]?.display !== "none"), profile, view);
+    }
+    if (c.initial && !ids.has(c.initial)) fail8("initial is not visible", view);
+    if (type === "sequence") {
+      const participants = new Set(c.participants ?? nodes.map((n) => n.id)), messages = c.messages ?? edges.map((e) => e.id);
+      for (const id of messages) {
+        const e = edges.find((e2) => e2.id === id);
+        if (!participants.has(e.source) || !participants.has(e.target)) fail8(`Message ${id} requires both participants`, view);
+      }
+      for (const id of [...c.returns ?? [], ...c.asyncMessages ?? []]) if (!messages.includes(id)) fail8(`Message ${id} is not included in messages`, view);
+      if ((c.returns ?? []).some((id) => (c.asyncMessages ?? []).includes(id))) fail8("A message cannot be both return and async", view);
+    }
+    if (type === "matrix" && ((c.rows ?? nodes).length > 100 || (c.columns ?? nodes).length > 100)) fail8("Matrix supports at most 100 rows/columns", view);
+    if (type === "activity") {
+      const lanes = new Set(c.lanes ?? []), tasks = nodes.filter((n) => !lanes.has(n.id));
+      for (const n of tasks) if (lanes.size && !lanes.has(value(n, c.laneAttribute ?? "owner"))) fail8(`${n.id}: Missing valid lane assignment`, view);
+      const kinds = [...c.decisions ?? [], ...c.forks ?? [], ...c.joins ?? []];
+      if (new Set(kinds).size !== kinds.length) fail8("Activity has multiple control node kinds", view);
+      for (const id of c.decisions ?? []) if (edges.filter((e) => e.source === id).length < 2) fail8(`${id}: Decision requires at least two outgoing edges`, view);
+      for (const id of c.forks ?? []) if (edges.filter((e) => e.source === id).length < 2) fail8(`${id}: Fork requires at least two outgoing edges`, view);
+      for (const id of c.joins ?? []) if (edges.filter((e) => e.target === id).length < 2) fail8(`${id}: Join requires at least two incoming edges`, view);
+      for (const e of edges) if (lanes.has(e.source) || lanes.has(e.target)) fail8("Lane elements cannot be flow nodes", view);
+    }
+    if (["state", "activity"].includes(type)) {
+      if (c.initial && (c.finals ?? []).includes(c.initial)) fail8("Initial and final nodes must be different", view);
+      if (c.initial && edges.some((e) => e.target === c.initial)) fail8("Initial node cannot have incoming transitions", view);
+      if (edges.some((e) => (c.finals ?? []).includes(e.source))) fail8("Final nodes cannot have outgoing transitions", view);
+    }
+    if (type === "heatmap") {
+      const min = c.min ?? 0, max = c.max ?? 5;
+      if (min >= max) fail8("Heatmap requires min < max", view);
+      if (!c.valueAttribute) fail8("Missing valueAttribute", view);
+      const parents = /* @__PURE__ */ new Map();
+      for (const n of nodes) {
+        const v = value(n, c.valueAttribute);
+        if (v !== void 0 && (typeof v !== "number" || !Number.isFinite(v) || v < min || v > max)) fail8(`${n.id}: Heatmap value outside ${min}–${max}`, view);
+        const parent = c.parentAttribute ? value(n, c.parentAttribute) : n.parent;
+        if (parent !== void 0 && parent !== null) {
+          if (!ids.has(parent)) fail8(`${n.id}: Heatmap parent is not visible`, view);
+          parents.set(n.id, parent);
+        }
+      }
+      for (const n of nodes) {
+        const seen = /* @__PURE__ */ new Set();
+        let p = n.id;
+        while (parents.has(p)) {
+          if (seen.has(p) || seen.size >= 32) fail8("Heatmap hierarchy is cyclic or too deep", view);
+          seen.add(p);
+          p = parents.get(p);
+        }
+      }
+    }
+    if (type === "timeline") for (const n of nodes) {
+      const start = value(n, c.startAttribute ?? "start"), end = value(n, c.endAttribute ?? "end");
+      for (const v of [start, end]) {
+        const match = typeof v === "string" && v.match(/^(\d{4}-\d{2}-\d{2})(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/);
+        if (!match || !Number.isFinite(Date.parse(v)) || new Date(Date.parse(match[1])).toISOString().slice(0, 10) !== match[1]) fail8(`${n.id}: Valid ISO start/end values are required`, view);
+      }
+      if (Date.parse(start) > Date.parse(end)) fail8(`${n.id}: start is after end`, view);
+    }
+    if (type === "class") {
+      const all = members.flatMap((k) => c[k] ?? []), memberIds = new Set(all), byId = new Map(nodes.map((n) => [n.id, n]));
+      if (memberIds.size !== all.length) fail8("A detail belongs to multiple compartments", view);
+      for (const id of all) if (view.styles[id]?.propertyFields !== void 0) fail8(`Class detail ${id}: propertyFields styles apply to class cards`, view);
+      for (const id of all) {
+        const owner = value(byId.get(id), c.ownerAttribute ?? "owner");
+        if (!byId.has(owner) || id === owner || memberIds.has(owner) && !(c.parameters ?? []).includes(id)) fail8(`${id}: Missing valid owner`, view);
+        if ((c.parameters ?? []).includes(id) && ![...c.methods ?? [], ...c.functions ?? []].includes(owner)) fail8(`${id}: Parameter requires a method/function as its owner`, view);
+      }
+    }
+  }
+  function scene(graph, theme, prefix) {
+    const { nodes, edges, view, profileRules } = graph, c = { ...view.diagram, colorLow: normalizeColor(view.diagram.colorLow), colorHigh: normalizeColor(view.diagram.colorHigh) }, type = c.type;
+    const dark = theme === "dark", bg = dark ? "#111827" : "#fafbfe", text = dark ? "#f1f5f9" : "#1e293b", border = dark ? "#8b9ab2" : "#64748b", muted = dark ? "#b4bfd0" : "#52627a";
+    const byId = new Map(nodes.map((n) => [n.id, n])), out = [];
+    let width = 900, height = 300, explicitBounds;
+    if (!nodes.length) return { body: "", width: 300, height: 180 };
+    const wrap3 = (s, limit2) => {
+      const measure = (s2) => [...s2].reduce((sum, c2) => sum + (/[MW@%]/.test(c2) ? 1.6 : /[ilI.,:! ]/.test(c2) ? 0.5 : 1), 0);
+      const lines = [];
+      for (const paragraph of String(s ?? "").split("\n")) {
+        let line = "";
+        for (const word of paragraph.split(/\s+/)) {
+          if (line && measure(line + " " + word) > limit2) {
+            lines.push(line);
+            line = "";
+          }
+          let part = "";
+          for (const ch of word) {
+            if (part && measure(part + ch) > limit2) {
+              lines.push(part);
+              part = "";
+            }
+            part += ch;
+          }
+          line += (line ? " " : "") + part;
+        }
+        lines.push(line);
+      }
+      return lines;
+    };
+    const label = (s, x, y, w = 200, size = 13, color = text, anchor = "start") => {
+      const all = wrap3(s, Math.max(1, Math.floor(w / (size * 0.65)))), lines = all.slice(0, 2);
+      if (all.length > 2) lines[1] = lines[1].slice(0, -1) + "…";
+      out.push(`<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="${anchor}"><title>${esc(s)}</title>${lines.map((s2, i) => `<tspan x="${x}" dy="${i ? size * 1.4 : 0}">${esc(s2)}</tspan>`).join("")}</text>`);
+      return lines.length * size * 1.4;
+    };
+    const rect = (x, y, w, h, fill = bg, opacity = 1, rx = 6) => out.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" fill-opacity="${opacity}" stroke="${border}"/>`);
+    const path = (d, arrow = false, dashed = false, both = false) => out.push(`<path d="${d}" fill="none" stroke="${border}" stroke-width="1.5"${both ? ` marker-start="url(#${prefix}-arrow)"` : ""}${arrow ? ` marker-end="url(#${prefix}-${typeof arrow === "string" ? arrow : "arrow"})"` : ""}${dashed ? ' stroke-dasharray="6 5"' : ""}/>`);
+    const card = (n, x, y, w = 220, h = 90, body) => {
+      Object.assign(n, { x, y, width: w, height: h });
+      const fill = n.backgroundColor ?? (dark ? "#1e293b" : "#ffffff"), opacity = n.opacity ?? (n.backgroundColor ? 0.2 : 1), fg = foreground(composite(fill, bg, opacity));
+      out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" transform="translate(${x} ${y})"><title>${esc(n.title)}</title>`);
+      rect(0, 0, w, h, fill, opacity);
+      label(n.type, 14, 22, w - 28, 10, fg);
+      label(n.title, 14, 45, w - 28, 14, fg);
+      if (body) body(fg);
+      out.push("</g>");
+      return { x, y, width: w, height: h };
+    };
+    const edgeLabel = (e, x, y) => {
+      rect(x - 80, y - 14, 160, 20, bg, 1, 3);
+      label(e.title, x, y, 150, 11, muted, "middle");
+    };
+    if (type === "sequence") {
+      const participants = (c.participants ?? nodes.map((n) => n.id)).map((id) => byId.get(id));
+      const messages = (c.messages ?? edges.map((e) => e.id)).map((id) => edges.find((e) => e.id === id)).filter(Boolean);
+      const gap = Math.max(280, ...participants.map((n) => n.title.length * 8 + 40));
+      width = Math.max(500, participants.length * gap + 160);
+      height = 180 + messages.reduce((sum, e) => sum + Math.max(90, Math.min(2, wrap3(e.title, 32).length) * 18 + 50), 0);
+      const xs = /* @__PURE__ */ new Map();
+      participants.forEach((n, i) => {
+        const x = 60 + i * gap;
+        xs.set(n.id, x + 110);
+        card(n, x, 25, 220, 90);
+        path(`M${x + 110} 115 V${height - 25}`, false, true);
+      });
+      let y = 155;
+      messages.forEach((e, i) => {
+        const a = xs.get(e.source), b = xs.get(e.target), ret = (c.returns ?? []).includes(e.id), async = (c.asyncMessages ?? []).includes(e.id);
+        out.push(`<g data-edge="${esc(e.id)}" data-message="${i + 1}" data-message-kind="${ret ? "return" : async ? "async" : "sync"}">`);
+        if (a === b) {
+          path(`M${a} ${y} h65 v35 h-65`, !async, ret);
+          if (async) path(`M${a + 10} ${y + 29} L${a} ${y + 35} l10 6`);
+          label(`${i + 1}. ${e.title}`, a + 10, y - 12, 220, 12);
+        } else {
+          path(`M${a} ${y} H${b}`, !async, ret);
+          if (async) path(`M${b + (b > a ? -10 : 10)} ${y - 6} L${b} ${y} l${b > a ? -10 : 10} 6`);
+          label(`${i + 1}. ${e.title}`, (a + b) / 2, y - 15, Math.abs(b - a) - 25, 12, text, "middle");
+        }
+        if (!ret && !async) rect(b - 4, y, 8, 35, dark ? "#64748b" : "#cbd5e1", 1, 0);
+        out.push("</g>");
+        y += Math.max(90, Math.min(2, wrap3(e.title, 32).length) * 18 + 50);
+      });
+    } else if (type === "matrix") {
+      const rows = (c.rows ?? nodes.map((n) => n.id)).map((id) => byId.get(id)), cols = (c.columns ?? nodes.map((n) => n.id)).map((id) => byId.get(id));
+      const cell = 110, left = 240, top = 130;
+      width = left + cols.length * cell + 40;
+      height = top + rows.length * 70 + 60;
+      cols.forEach((n, i) => label(n.title, left + i * cell + cell / 2, 35, cell - 12, 12, text, "middle"));
+      rows.forEach((n, r) => {
+        label(n.title, 10, top + r * 70 + 30, left - 25, 12);
+        cols.forEach((m, k) => {
+          const matching = edges.filter((e) => (e.source === n.id && e.target === m.id || e.direction === "both" && e.target === n.id && e.source === m.id) && (!c.relations || matches(e.type, c.relations, profileRules.relationTypes)));
+          const x = left + k * cell, y = top + r * 70;
+          rect(x, y, cell, 70, matching.length ? dark ? "#134e4a" : "#ccfbf1" : bg, 1, 0);
+          out.push(`<g data-cell="${esc(n.id)}:${esc(m.id)}"><title>${esc(matching.map((e) => `${e.type}: ${e.title}`).join("\n") || "No relationship")}</title>`);
+          label(matching.length || "·", x + cell / 2, y + 40, cell, 16, text, "middle");
+          out.push("</g>");
+        });
+      });
+      label("Rows → columns · number of directed relationships", 10, height - 15, width - 20, 12, muted);
+    } else if (type === "heatmap") {
+      const parent = (n) => c.parentAttribute ? value(n, c.parentAttribute) : n.parent, children = (id) => nodes.filter((n) => (parent(n) ?? null) === id);
+      const leaves = (n) => Math.max(1, children(n.id).reduce((sum, k) => sum + leaves(k), 0));
+      const levels = (n) => 1 + Math.max(0, ...children(n.id).map(levels));
+      const roots = children(null);
+      width = Math.max(600, roots.reduce((sum, n) => sum + leaves(n) * 250, 0) + 40);
+      height = Math.max(270, ...roots.map((n) => levels(n) * 110 + 140));
+      const mix = (a, b, t) => composite(b, a, t), min = c.min ?? 0, max = c.max ?? 5;
+      const tile = (n, x2, y, w, h, backdrop = bg) => {
+        const v = value(n, c.valueAttribute), fill = v === void 0 ? dark ? "#64748b" : "#94a3b8" : mix(c.colorLow ?? "#fee2e2", c.colorHigh ?? "#16a34a", (v - min) / (max - min)), fg = foreground(composite(fill, backdrop, n.opacity ?? 0.2));
+        out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v ?? "No value")}</title>`);
+        rect(x2, y, w, h, fill, n.opacity ?? 0.2);
+        label(`${n.title} · ${v ?? "—"}`, x2 + 12, y + 25, w - 24, 13, fg);
+        out.push("</g>");
+        let cx = x2 + 12;
+        for (const k of children(n.id)) {
+          const kw = (w - 24) * leaves(k) / leaves(n);
+          tile(k, cx, y + 45, kw - 8, h - 57, composite(fill, backdrop, n.opacity ?? 0.2));
+          cx += kw;
+        }
+      };
+      let x = 20;
+      for (const n of roots) {
+        const w = leaves(n) * 250;
+        tile(n, x, 20, w - 15, height - 105);
+        x += w;
+      }
+      for (let i = 0; i <= 10; i++) rect(25 + i * 28, height - 55, 28, 18, mix(c.colorLow ?? "#fee2e2", c.colorHigh ?? "#16a34a", i / 10), 0.2, 0);
+      label(`${min} → ${max} · — = no value`, 25, height - 12, 450, 12, muted);
+    } else if (type === "timeline") {
+      const data = nodes.map((n) => ({ n, start: Date.parse(value(n, c.startAttribute ?? "start")), end: Date.parse(value(n, c.endAttribute ?? "end")) }));
+      const min = Math.min(...data.map((d) => d.start), 0 === data.length ? 0 : Infinity), max = Math.max(min + 864e5, ...data.map((d) => d.end));
+      width = 1200;
+      height = 130 + data.length * 90;
+      const scale = (t) => 260 + (t - min) / (max - min) * 850, ys = /* @__PURE__ */ new Map();
+      for (let i = 0; i <= 5; i++) {
+        const x = 260 + i * 170;
+        path(`M${x} 65 V${height - 25}`, false, true);
+        label(new Date(min + (max - min) * i / 5).toISOString().slice(0, 10), x, 35, 140, 11, text, "middle");
+      }
+      data.forEach(({ n, start, end }, i) => {
+        const y = 85 + i * 90;
+        ys.set(n.id, y + 20);
+        label(n.title, 10, y + 20, 230, 13);
+        out.push(`<g data-bar="${esc(n.id)}"><title>${esc(n.title)}: ${esc(value(n, c.startAttribute ?? "start"))} – ${esc(value(n, c.endAttribute ?? "end"))}</title>`);
+        const x = scale(start), w = scale(end) - x;
+        if (!w) out.push(`<path d="M${x} ${y} l12 20 -12 20 -12 -20Z" fill="${text}"/>`);
+        else rect(x, y, w, 40, n.backgroundColor ?? "#6366f1", n.opacity ?? 0.2);
+        out.push("</g>");
+        label(new Date(start).toISOString().slice(0, 10), x, y + 60, 160, 10, muted);
+      });
+      for (const e of edges) {
+        const a = data.find((d) => d.n.id === e.source), b = data.find((d) => d.n.id === e.target);
+        if (a && b) path(`M${scale(a.end)} ${ys.get(e.source)} H${scale(a.end) + 15} V${ys.get(e.target)} H${scale(b.start)}`, true);
+      }
+    } else if (type === "class") {
+      const memberIds = new Set(members.flatMap((k) => c[k] ?? [])), classes = nodes.filter((n) => !memberIds.has(n.id)), pos = /* @__PURE__ */ new Map(), portPositions = /* @__PURE__ */ new Map();
+      const owner = (n) => value(n, c.ownerAttribute ?? "owner"), signature = (n) => value(n, c.signatureAttribute ?? "signature") ?? n.title;
+      const memberText = (m) => {
+        const params = (c.parameters ?? []).map((id) => byId.get(id)).filter((p) => owner(p) === m.id).map(signature).join(", ");
+        const s = String(signature(m));
+        return params ? s.includes("()") ? s.replace("()", `(${params})`) : `${s} (${params})` : s;
+      };
+      const cardBorder = dark ? "#37465d" : "#dce3ed", cards = [];
+      const sectionColor = dark ? "#a9b6cc" : "#66758c";
+      const symbols = { properties: "·", attributes: "−", methods: "ƒ", functions: "ƒ", interfaces: "◇", ports: "□" };
+      let x = 30;
+      height = 220;
+      for (const n of classes) {
+        const cardWidth = Math.max(380, view.places[n.id]?.size?.x ?? 0);
+        const sections = members.filter((k) => k !== "parameters").map((kind) => ({ kind, items: (c[kind] ?? []).map((id) => byId.get(id)).filter((m) => owner(m) === n.id) })).filter((s) => s.items.length);
+        const lines = sections.map((s) => ({ ...s, rows: s.items.map((m) => ({ id: m.id, full: memberText(m), lines: wrap3(memberText(m), 32) })) }));
+        const properties = nodeProperties(n, view).map((row) => ({ id: `${n.id}.${row.key}`, full: row.full, lines: wrap3(row.full, 32) }));
+        if (properties.length) lines.unshift({ kind: "properties", rows: properties });
+        const ownPorts = (c.ports ?? []).map((id) => byId.get(id)).filter((p) => owner(p) === n.id);
+        const h = Math.max(148, view.places[n.id]?.size?.y ?? 0, 90 + ownPorts.length * 24, 110 + lines.reduce((sum, s) => sum + 50 + s.rows.reduce((count, r) => count + r.lines.length * 21, 0), 0));
+        Object.assign(n, { x, y: 40, width: cardWidth, height: h });
+        cards.push({ n, lines, h, ownPorts });
+        x += cardWidth + 90;
+        height = Math.max(height, h + 120);
+      }
+      const positioned = positionClassCards({ nodes, edges }, profileRules, view, cards), extents = [];
+      for (const box of positioned.values()) extents.push({ x: box.x, y: box.y }, { x: box.x + box.width, y: box.y + box.height });
+      for (const card2 of cards) {
+        const { n, lines, h, ownPorts } = card2, cardWidth = n.width, x2 = n.x, cardY = n.y;
+        const fill = n.backgroundColor ?? (dark ? "#1e293b" : "#ffffff"), opacity = n.opacity ?? (n.backgroundColor ? 0.2 : 1);
+        const visible = composite(fill, bg, opacity), fg = n.backgroundColor || n.opacity !== void 0 ? foreground(visible) : text;
+        const subdued = n.backgroundColor ? fg : sectionColor;
+        const accent = n.accent && contrast(n.accent, visible) >= 4.5 ? n.accent : n.backgroundColor ? fg : dark ? "#a5b4fc" : "#6366f1";
+        pos.set(n.id, { x: x2, y: cardY, width: cardWidth, height: h });
+        out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" data-class-card="true" transform="translate(${x2} ${cardY})"><title>${esc(n.title)}</title>`);
+        out.push(`<rect width="${cardWidth}" height="${h}" rx="16" fill="${fill}" fill-opacity="${opacity}" stroke="${cardBorder}" filter="url(#${prefix}-class-shadow)"/>`);
+        out.push(`<path d="M16 1 H${cardWidth - 16} Q${cardWidth - 1} 1 ${cardWidth - 1} 16 V95 H1 V16 Q1 1 16 1Z" fill="${accent}" fill-opacity="0.055"/>`);
+        out.push(`<rect x="20" y="18" width="26" height="26" rx="7" fill="${accent}" fill-opacity="0.1"/><g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-weight="600">`);
+        label("{}", 33, 36, 24, 12, accent, "middle");
+        out.push('</g><g font-weight="600" letter-spacing="1">');
+        label(String(n.stereotype ?? n.type).toUpperCase(), 58, 35, cardWidth - 80, 10, subdued);
+        out.push('</g><g font-weight="650">');
+        label(n.title, 20, 65, cardWidth - 40, 18, fg);
+        out.push("</g>");
+        let y = 116;
+        for (const s of lines) {
+          out.push(`<g data-compartment="${s.kind}"><title>${esc(s.rows.map((row) => row.full).join("\n"))}</title>`);
+          out.push(`<path d="M20 ${y - 16} H${cardWidth - 20}" fill="none" stroke="${cardBorder}" stroke-width="0.8"/>`);
+          out.push('<g font-weight="600" letter-spacing="1.2">');
+          label(s.kind.toUpperCase(), 22, y, cardWidth - 85, 9.5, subdued);
+          out.push("</g>");
+          out.push(`<rect x="${cardWidth - 47}" y="${y - 12}" width="25" height="17" rx="8.5" fill="${subdued}" fill-opacity="0.08"/>`);
+          label(s.rows.length, cardWidth - 34.5, y, 22, 9, subdued, "middle");
+          y += 30;
+          for (const row of s.rows) {
+            out.push(`<g data-member="${esc(row.id)}"><title>${esc(row.full)}</title>`);
+            label(symbols[s.kind], 24, y, 16, 12, accent);
+            out.push('<g font-family="ui-monospace,SFMono-Regular,Consolas,monospace">');
+            for (const line of row.lines) {
+              label(line, 46, y, cardWidth - 68, 12.5, fg);
+              y += 21;
+            }
+            out.push("</g></g>");
+          }
+          y += 20;
+          out.push("</g>");
+        }
+        out.push("</g>");
+        ownPorts.forEach((p, index) => {
+          const box = positioned.get(p.id), py = box.y + 6;
+          Object.assign(p, box);
+          out.push(`<g data-port="${esc(p.id)}"><title>${esc(p.title)}</title><rect x="${x2 + cardWidth - 6}" y="${py - 6}" width="12" height="12" rx="3" fill="${dark ? "#1e293b" : "#ffffff"}" stroke="${accent}" stroke-width="1.5"/><circle cx="${x2 + cardWidth}" cy="${py}" r="2" fill="${accent}"/></g>`);
+          portPositions.set(p.id, { x: x2 + cardWidth, y: py });
+        });
+      }
+      width = Math.max(500, x);
+      for (const e of edges) {
+        const a = pos.get(e.source), b = pos.get(e.target), pa = portPositions.get(e.source), pb = portPositions.get(e.target);
+        if ((a || pa) && (b || pb)) {
+          const anchor = (box, other) => {
+            const ox = other.x + (other.width ?? 0) / 2, oy = other.y + (other.height ?? 0) / 2, dx = ox - box.x - box.width / 2, dy = oy - box.y - box.height / 2;
+            return Math.abs(dx) >= Math.abs(dy) ? { x: box.x + (dx >= 0 ? box.width : 0), y: box.y + 56 } : { x: box.x + box.width / 2, y: box.y + (dy >= 0 ? box.height : 0) };
+          };
+          const start = pa ?? anchor(a, b ?? pb), end = pb ?? anchor(b, a ?? pa), lx = (start.x + end.x) / 2, ly = (start.y + end.y) / 2 - 31;
+          path(`M${start.x} ${start.y} L${end.x} ${end.y}`, e.direction === "both" || (["generalization", "realization"].includes(e.style) ? "triangle" : !["association", "composition"].includes(e.style)), ["dependency", "realization"].includes(e.style), e.direction === "both");
+          edgeLabel(e, lx, ly);
+          extents.push({ x: lx - 100, y: ly - 30 }, { x: lx + 100, y: ly + 30 });
+        }
+      }
+      const minX = Math.min(-20, ...extents.map((p) => p.x - 20)), minY = Math.min(-20, ...extents.map((p) => p.y - 20));
+      explicitBounds = { x: minX, y: minY, width: Math.max(width + 20, ...extents.map((p) => p.x + 20)) - minX, height: Math.max(height + 20, ...extents.map((p) => p.y + 20)) - minY };
+    } else {
+      const laneIds = c.lanes ?? [], tasks = nodes.filter((n) => !laneIds.includes(n.id)), pos = /* @__PURE__ */ new Map();
+      const lanes = laneIds.length ? laneIds : [null];
+      width = Math.max(850, lanes.length * 330 + 160);
+      height = 130 + tasks.length * 145;
+      lanes.forEach((id, i) => {
+        if (id) {
+          rect(25 + i * 330, 20, 320, height - 45, bg, 1, 0);
+          label(byId.get(id).title, 40 + i * 330, 48, 290, 14);
+          path(`M${25 + i * 330} 65 h320`);
+        }
+      });
+      tasks.forEach((n, i) => {
+        const lane = laneIds.length ? lanes.indexOf(value(n, c.laneAttribute ?? "owner")) : 0, x = laneIds.length ? 65 + lane * 330 : Math.max(80, width / 2 - 110), y = 95 + i * 145;
+        pos.set(n.id, { x, y, width: 220, height: 80, inY: y + (n.id === c.initial ? 29 : (c.finals ?? []).includes(n.id) ? 20 : [...c.forks ?? [], ...c.joins ?? []].includes(n.id) ? 30 : 0), outY: y + (n.id === c.initial ? 51 : (c.finals ?? []).includes(n.id) ? 60 : [...c.forks ?? [], ...c.joins ?? []].includes(n.id) ? 42 : 80) });
+        out.push(`<g data-state="${esc(n.id)}">`);
+        if (n.id === c.initial || (c.finals ?? []).includes(n.id)) {
+          out.push(`<circle cx="${x + 110}" cy="${y + 40}" r="${n.id === c.initial ? 11 : 15}" fill="${text}"/>`);
+          if (n.id !== c.initial) out.push(`<circle cx="${x + 110}" cy="${y + 40}" r="20" fill="none" stroke="${text}"/>`);
+          label(n.title, x + 140, y + 44, 110, 11);
+        } else if ((c.decisions ?? []).includes(n.id)) {
+          out.push(`<path d="M${x + 110} ${y} l100 40 -100 40 -100 -40Z" fill="${bg}" stroke="${border}"/>`);
+          label(n.title, x + 110, y + 44, 150, 12, text, "middle");
+        } else if ([...c.forks ?? [], ...c.joins ?? []].includes(n.id)) {
+          rect(x, y + 30, 220, 12, text, 1, 0);
+          label(n.title, x, y + 70, 220, 11);
+        } else card(n, x, y, 220, 80);
+        out.push("</g>");
+      });
+      edges.forEach((e, index) => {
+        const a = pos.get(e.source), b = pos.get(e.target);
+        if (!a || !b) return;
+        out.push(`<g data-edge="${esc(e.id)}">`);
+        if (e.source === e.target) {
+          path(`M${a.x + 220} ${a.y + 20} h45 v50 h-45`, true);
+          edgeLabel(e, a.x + 300, a.y + 45);
+        } else if (b.y > a.y) {
+          const y = (a.outY + b.inY) / 2;
+          path(`M${a.x + 110} ${a.outY} V${y} H${b.x + 110} V${b.inY}`, true);
+          if (e.title) edgeLabel(e, (a.x + b.x) / 2 + 110, y - 4);
+        } else {
+          const x = 25 + index % 3 * 14;
+          path(`M${a.x} ${a.y + 40} H${x} V${b.y + 40} H${b.x}`, true);
+          if (e.title) edgeLabel(e, Math.max(110, a.x - 90), (a.y + b.y) / 2 + 40);
+        }
+        out.push("</g>");
+      });
+    }
+    return { body: out.join(""), width: Math.max(300, width), height: Math.max(180, height), bounds: explicitBounds };
+  }
+  function layoutDiagram(model, profile, view, nodes, edges) {
+    const diagram = { ...view.diagram }, ids = new Set(nodes.map((n) => n.id));
+    if (diagram.type === "activity" && diagram.lanes) {
+      const hiddenLanes = new Set(diagram.lanes.filter((id) => !ids.has(id)));
+      nodes = nodes.filter((n) => !hiddenLanes.has(value(n, diagram.laneAttribute ?? "owner")));
+    }
+    if (diagram.type === "heatmap" && diagram.parentAttribute) {
+      let remaining = new Set(nodes.map((n) => n.id)), changed = true;
+      while (changed) {
+        changed = false;
+        nodes = nodes.filter((n) => {
+          const parent = value(n, diagram.parentAttribute);
+          if (parent !== void 0 && parent !== null && !remaining.has(parent)) {
+            remaining.delete(n.id);
+            changed = true;
+            return false;
+          }
+          return true;
+        });
+      }
+    }
+    const visible = new Set(nodes.map((n) => n.id));
+    edges = edges.filter((e) => visible.has(e.source) && visible.has(e.target));
+    const shownEdges = new Set(edges.map((e) => e.id));
+    for (const key2 of lists) if (diagram[key2] && key2 !== "relations") diagram[key2] = diagram[key2].filter((id) => (["messages", "asyncMessages", "returns"].includes(key2) ? shownEdges : visible).has(id));
+    if (diagram.initial && !visible.has(diagram.initial)) delete diagram.initial;
+    view = { ...view, diagram };
+    const graph = { title: model.title, description: model.description, profile: { id: profile.id, version: profile.version }, profileRules: profile, view, nodes, edges };
+    const result = scene(graph, view.theme, "measure");
+    graph.bounds = result.bounds ?? { x: -20, y: -20, width: result.width + 40, height: result.height + 40 };
+    return graph;
+  }
+  function toDiagramSVG(graph, { theme, idPrefix }) {
+    const result = scene(graph, theme, idPrefix), bg = theme === "dark" ? "#111827" : "#fafbfe", stroke = theme === "dark" ? "#8b9ab2" : "#64748b", b = result.bounds ?? { x: -20, y: -20, width: result.width + 40, height: result.height + 40 };
+    return `<svg xmlns="http://www.w3.org/2000/svg" id="${idPrefix}-diagram" data-arch-svg="${theme}" data-diagram="${graph.view.diagram.type}" role="img" aria-labelledby="${idPrefix}-title" width="${b.width}" height="${b.height}" viewBox="${b.x} ${b.y} ${b.width} ${b.height}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:${bg}"><title id="${idPrefix}-title">${esc(graph.title)} — ${esc(graph.view.title)}</title><defs><filter id="${idPrefix}-class-shadow" x="-15%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="${theme === "dark" ? 0.22 : 0.07}"/></filter><marker id="${idPrefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9Z" fill="${stroke}"/></marker><marker id="${idPrefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 L11 6 L1 11Z" fill="${bg}" stroke="${stroke}"/></marker></defs><rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${bg}"/>${result.body}</svg>`;
+  }
+
+  // src/validation-mode.js
+  function validationMode(model, options = {}) {
+    const mode = options.validation ?? model.validation ?? model.config?.validation ?? "strict";
+    if (!["strict", "draft"].includes(mode)) throw new ArchError("validation must be strict or draft", model.config?.loc, "ARCH_VALIDATION");
+    return mode;
+  }
+  function validationDiagnostics(diagnostics, mode) {
+    return diagnostics.map((d) => mode === "draft" && d.incomplete ? { ...d, severity: "warning" } : d);
+  }
+  var escape2 = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
+  var round = (n) => Math.round(n * 1e3) / 1e3;
+  function wrap2(text, columns) {
+    const lines = [];
+    let line = "", width = 0;
+    const measure = (s) => [...s].reduce((sum, ch) => sum + (ch.codePointAt(0) > 12287 ? 2 : 1), 0);
+    for (const ch of text) {
+      const cells2 = ch.codePointAt(0) > 12287 ? 2 : 1;
+      if (ch === "\n") {
+        lines.push(line);
+        line = "";
+        width = 0;
+        continue;
+      }
+      if (width + cells2 > columns) {
+        const space = line.lastIndexOf(" ");
+        lines.push(space > 0 ? line.slice(0, space) : line);
+        line = space > 0 ? line.slice(space + 1) : "";
+        width = measure(line);
+      }
+      if (ch !== "\n") {
+        line += ch;
+        width += cells2;
+      }
+    }
+    lines.push(line);
+    return lines;
+  }
+  function withValidationNotices(graph, diagnostics) {
+    const notices = diagnostics.filter((d) => d.severity === "warning");
+    if (!notices.length) return graph;
+    const width = Math.max(420, graph.bounds.width), columns = Math.max(20, Math.floor((width - 56) / 7));
+    const rows = notices.flatMap((d, index) => wrap2(`${index + 1}. ${d.message}${d.path ? ` [${d.path}]` : d.line ? ` (line ${d.line}, column ${d.column})` : ""}`, columns));
+    const noticeHeight = 62 + rows.length * 18;
+    return {
+      ...graph,
+      kind: "notices",
+      content: graph,
+      diagnostics: notices,
+      noticeRows: rows,
+      bounds: { x: 0, y: 0, width, height: graph.bounds.height + 24 + noticeHeight }
+    };
+  }
+  function noticesSVG(graph, renderContent, options = {}) {
+    const theme = options.theme ?? graph.view.theme, dark = theme === "dark", bg = dark ? "#111827" : "#fafbfe", fg = dark ? "#fde68a" : "#78350f";
+    const { width, height } = graph.bounds, y = graph.content.bounds.height + 24;
+    const content = renderContent(graph.content, options).replace(/^<svg\b/, '<svg x="0" y="0"');
+    return `<svg xmlns="http://www.w3.org/2000/svg" data-arch-svg="${escape2(theme)}" data-arch-validation="draft" role="img" aria-label="${escape2(graph.title)} — draft with ${graph.diagnostics.length} validation notices" viewBox="0 0 ${round(width)} ${round(height)}" width="${round(width)}" height="${round(height)}" style="max-width:100%;height:auto;background:${bg}"><rect width="${round(width)}" height="${round(height)}" fill="${bg}"/>${content}<g class="arch-validation-notices" role="group" aria-label="Validation notices"><rect x="8" y="${round(y)}" width="${round(width - 16)}" height="${round(height - y - 8)}" rx="8" fill="${dark ? "#422006" : "#fffbeb"}" stroke="${dark ? "#a16207" : "#f59e0b"}"/><g fill="${fg}" font-family="ui-monospace,Consolas,monospace"><text x="24" y="${round(y + 28)}" font-size="14" font-weight="700">Draft — ${graph.diagnostics.length} validation notices</text>${graph.noticeRows.map((text, index) => `<text class="arch-validation-notice" x="24" y="${round(y + 52 + index * 18)}" font-size="12" xml:space="preserve">${escape2(text)}</text>`).join("")}</g></g></svg>`;
+  }
+
+  // src/tree-groups.js
+  function validateTreeGroups(model, profile, view) {
+    if (view.trees === void 0) return;
+    const fail11 = (message) => {
+      throw new ArchError(`View ${view.id}: ${message}`, view.loc, "ARCH_VALIDATION");
+    };
+    if ((view.diagram?.type ?? "connected") !== "connected") fail11("Named tree groups require the connected renderer");
+    if (!view.trees || typeof view.trees !== "object" || Array.isArray(view.trees) || Object.keys(view.trees).length > 128) fail11("Expected at most 128 named tree groups");
+    const nodes = new Map(model.nodes.map((n) => [n.id, n])), allIds = /* @__PURE__ */ new Set([...nodes.keys(), ...model.edges.map((e) => e.id)]), members2 = /* @__PURE__ */ new Set();
+    const semantic = visibleNodeIds(model, view, false), display = visibleNodeIds(model, view);
+    for (const [id, tree] of Object.entries(view.trees)) {
+      if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(id) || allIds.has(id)) fail11(`Invalid or conflicting tree group ID: ${id}`);
+      if (!tree || typeof tree !== "object" || Array.isArray(tree)) fail11(`Tree ${id} requires an options object`);
+      if (Object.keys(tree).some((k) => !["nodes", "loc", ...TREE_OPTIONS].includes(k))) fail11(`Tree ${id} accepts nodes and tree layout options only`);
+      validateTreeOptions(tree, profile, view);
+      if (!Array.isArray(tree.nodes) || !tree.nodes.length || new Set(tree.nodes).size !== tree.nodes.length) fail11(`Tree ${id} requires a nonempty list of unique nodes`);
+      let parent;
+      for (const nodeId of tree.nodes) {
+        const node = nodes.get(nodeId);
+        if (!node || !semantic.has(nodeId)) fail11(`Tree ${id}: unknown or excluded node ${nodeId}`);
+        if (members2.has(nodeId)) fail11(`Node ${nodeId} belongs to more than one tree group`);
+        members2.add(nodeId);
+        if (profile.nodeTypes[node.type]?.container) fail11(`Tree ${id}: containers cannot be members; group sibling non-container nodes`);
+        if (parent === void 0) parent = node.parent ?? null;
+        else if (parent !== (node.parent ?? null)) fail11(`Tree ${id}: members must share the same model container`);
+        if (view.places[nodeId]) fail11(`Tree member ${nodeId} is positioned automatically; place ${id} or an external node instead`);
+      }
+      if (view.places[id]?.size) fail11(`Tree group ${id} has automatic dimensions; place does not accept size`);
+      const shown = new Set(tree.nodes.filter((n) => display.has(n)));
+      treeStructure(model.nodes.filter((n) => shown.has(n.id)), model.edges.filter((e) => shown.has(e.source) && shown.has(e.target) && view.styles[e.id]?.display !== "none"), profile, { ...view, diagram: tree });
+    }
+  }
+
+  // src/parser.js
+  var dict = () => /* @__PURE__ */ Object.create(null);
+  var fail9 = (message, loc, code = "ARCH_VALIDATION") => {
+    throw new ArchError(message, loc, code);
+  };
+  function tokenize(source) {
+    const tokens2 = [];
+    let i = 0, line = 1, column = 1;
+    const advance = (n) => {
+      for (let j = 0; j < n; j++) {
+        if (source[i++] === "\n") {
+          line++;
+          column = 1;
+        } else column++;
+      }
+    };
+    while (i < source.length) {
+      const c = source[i], loc = { line, column };
+      if (/\s/.test(c) || c === ";") {
+        advance(1);
+        continue;
+      }
+      if (c === "#" || source.slice(i, i + 2) === "//") {
+        while (i < source.length && source[i] !== "\n") advance(1);
+        continue;
+      }
+      if (c === "@") {
+        let end = i, quoted = false;
+        while (end < source.length) {
+          const char = source[end];
+          if (quoted && char === "\\") {
+            end += 2;
+            continue;
+          }
+          if (char === '"') quoted = !quoted;
+          if (char === "\n" || !quoted && (";}".includes(char) || char === "#" || source.slice(end, end + 2) === "//")) break;
+          end++;
+        }
+        tokens2.push({ type: "directive", value: source.slice(i, end), ...loc });
+        advance(end - i);
+        continue;
+      }
+      if (source.slice(i, i + 3) === "<->") {
+        tokens2.push({ type: "<->", value: "<->", ...loc });
+        advance(3);
+        continue;
+      }
+      if (source.slice(i, i + 2) === "->") {
+        tokens2.push({ type: "->", value: "->", ...loc });
+        advance(2);
+        continue;
+      }
+      if ("{}(),[]+*/".includes(c) || c === "-" && !/[\d.]/.test(source[i + 1] ?? "")) {
+        tokens2.push({ type: c, value: c, ...loc });
+        advance(1);
+        continue;
+      }
+      if (c === '"') {
+        let end = i + 1;
+        while (end < source.length) {
+          if (source[end] === "\\") {
+            end += 2;
+            continue;
+          }
+          if (source[end] === '"') break;
+          end++;
+        }
+        if (end >= source.length) fail9("Unclosed string", loc, "ARCH_SYNTAX");
+        const raw = source.slice(i, end + 1);
+        let value2;
+        try {
+          value2 = JSON.parse(raw);
+        } catch {
+          fail9("Invalid string or escape sequence", loc, "ARCH_SYNTAX");
+        }
+        if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/u.test(value2) || [...value2].some((char) => {
+          const code = char.codePointAt(0);
+          return code >= 55296 && code <= 57343;
+        }))
+          fail9("String contains a Unicode character that is invalid in SVG", loc, "ARCH_SYNTAX");
+        tokens2.push({ type: "string", value: value2, ...loc });
+        advance(raw.length);
+        continue;
+      }
+      const number2 = source.slice(i).match(/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
+      if (number2) {
+        const value2 = Number(number2[0]);
+        if (!Number.isFinite(value2)) fail9("Number must be finite", loc);
+        tokens2.push({ type: "number", value: value2, ...loc });
+        advance(number2[0].length);
+        continue;
+      }
+      const word = source.slice(i).match(/^[A-Za-z_][A-Za-z0-9_.-]*/);
+      if (word) {
+        const value2 = word[0].replace(/-$/, (match) => source[i + word[0].length] === ">" ? "" : match);
+        tokens2.push({ type: "word", value: value2, ...loc });
+        advance(value2.length);
+        continue;
+      }
+      fail9(`Unexpected character ${JSON.stringify(c)}`, loc, "ARCH_SYNTAX");
+    }
+    tokens2.push({ type: "eof", value: "", line, column });
+    return tokens2;
+  }
+  function parseDocument(source) {
+    if (source === null || !["string", "object"].includes(typeof source)) fail9("Source must be a string or a JSON architecture object");
+    if (typeof source !== "string" || /^[\s\uFEFF]*[\[{]/.test(source)) {
+      const translated = jsonToDSL(source);
+      let model;
+      try {
+        model = parseDSLDocument(translated.source);
+      } catch (error) {
+        if (!(error instanceof ArchError)) throw error;
+        const message = error.message.replace(/ \(line \d+, column \d+\)$/, "");
+        throw new ArchError(message, translated.origin(error.line), error.code);
+      }
+      const seen = /* @__PURE__ */ new Set();
+      const relocate = (value2) => {
+        if (!value2 || typeof value2 !== "object" || seen.has(value2)) return;
+        seen.add(value2);
+        if (typeof value2.line === "number" && typeof value2.column === "number") Object.assign(value2, translated.origin(value2.line));
+        for (const child2 of Object.values(value2)) relocate(child2);
+      };
+      relocate(model);
+      return model;
+    }
+    return parseDSLDocument(source);
+  }
+  function parseDSLDocument(source) {
+    if (typeof source !== "string") fail9("Source must be a string");
+    if (source.length > 2e6) fail9("Source exceeds 2 MB");
+    const tokens2 = tokenize(source);
+    let cursor = 0;
+    const peek = () => tokens2[cursor];
+    const is = (value2) => peek().value === value2;
+    const take = () => tokens2[cursor++];
+    const expect = (value2) => {
+      if (!is(value2)) fail9(`Expected: ${value2}; found: ${peek().value || "end of input"}`, peek(), "ARCH_SYNTAX");
+      return take();
+    };
+    const typed = (type, label = type) => {
+      if (peek().type !== type) fail9(`Expected: ${label}; found: ${peek().value || "end of input"}`, peek(), "ARCH_SYNTAX");
+      return take();
+    };
+    const word = () => typed("word", "identifier").value;
+    const text = () => {
+      if (!["word", "string"].includes(peek().type)) fail9("Expected a string or word", peek(), "ARCH_SYNTAX");
+      return take().value;
+    };
+    const scalar = () => {
+      if (is("[")) {
+        take();
+        const values = [];
+        if (!is("]")) {
+          if (is("[")) fail9("Nested lists are not allowed", peek());
+          values.push(scalar());
+          while (is(",")) {
+            take();
+            if (is("[")) fail9("Nested lists are not allowed", peek());
+            values.push(scalar());
+            if (values.length > 4e3) fail9("At most 4000 list entries are allowed", peek());
+          }
+        }
+        expect("]");
+        return values;
+      }
+      if (peek().type === "number" || peek().type === "string") return take().value;
+      const value2 = word();
+      return value2 === "true" ? true : value2 === "false" ? false : value2;
+    };
+    const placementPoint = () => {
+      const coordinate = () => {
+        const loc = peek(), parts = [];
+        let depth = 0;
+        while (peek().type !== "eof" && !(depth === 0 && [",", ")"].includes(peek().type))) {
+          if (!["word", "number", "+", "-", "*", "/", "(", ")"].includes(peek().type)) fail9("Expected a placement coordinate expression", peek(), "ARCH_SYNTAX");
+          if (peek().type === "(") depth++;
+          else if (peek().type === ")") depth--;
+          parts.push(String(take().value));
+          if (parts.length > 128) fail9("Placement coordinate expression is too long", loc);
+        }
+        return placementCoordinate(parts.join(" "), loc);
+      };
+      expect("(");
+      const x = coordinate();
+      expect(",");
+      const y = coordinate();
+      expect(")");
+      return { x, y };
+    };
+    const point2 = () => {
+      expect("(");
+      const x = typed("number");
+      expect(",");
+      const y = typed("number");
+      expect(")");
+      for (const token of [x, y]) if (Math.abs(token.value) > 1e7) fail9("Coordinate outside the range ±10000000", token);
+      return { x: x.value, y: y.value };
+    };
+    const list2 = (fn) => {
+      const result = [fn()];
+      while (is(",")) {
+        take();
+        result.push(fn());
+      }
+      return result;
+    };
+    const block = (fn) => {
+      expect("{");
+      while (!is("}")) {
+        if (peek().type === "eof") fail9("Unclosed block; expected: }", peek(), "ARCH_SYNTAX");
+        fn();
+      }
+      expect("}");
+    };
+    const property = (object, allowed) => {
+      const key2 = typed("word");
+      if (!allowed.includes(key2.value)) fail9(`Unknown attribute: ${key2.value}`, key2);
+      if (Object.hasOwn(object, key2.value)) fail9(`Duplicate attribute: ${key2.value}`, key2);
+      if (["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology", "propertyFields"].includes(key2.value)) {
+        object[key2.value] = scalar();
+        return;
+      }
+      object[key2.value] = ["opacity", "fontSize", "width", "height"].includes(key2.value) ? typed("number").value : text();
+    };
+    const modelProperty = (object, builtins, relation = false) => {
+      const key2 = typed("word");
+      object.attributes ?? (object.attributes = dict());
+      object.attributeLocs ?? (object.attributeLocs = dict());
+      if (Object.hasOwn(object.attributes, key2.value) || (builtins.includes(key2.value) || relation && key2.value === "type") && Object.hasOwn(object, key2.value))
+        fail9(`Duplicate attribute: ${key2.value}`, key2);
+      object.attributeLocs[key2.value] = key2;
+      if (builtins.includes(key2.value) || relation && key2.value === "type") object[key2.value] = key2.value === "opacity" ? typed("number").value : text();
+      else object.attributes[key2.value] = scalar();
+    };
+    if (peek().type === "directive") {
+      const directive = take();
+      if (/^@meta\b/.test(directive.value)) fail9("@meta requires architecture source; place @meta json or @meta dsl inside an architecture or view", directive, "ARCH_META");
+      typed("eof", "end of input");
+      return helpDocument(parseHelpCommand(directive.value));
+    }
+    expect("architecture");
+    const model = { title: typed("string", "architecture title").value, description: "", nodes: [], edges: [], views: [] };
+    let hasModel = false, hasDescription = false;
+    const element = (parent = null, depth = 0) => {
+      if (depth > 32) fail9("Packages may be nested at most 32 levels deep", peek());
+      const token = typed("word");
+      if (token.value === "relation") {
+        const edge = { id: word(), source: word(), loc: token };
+        if (is("<->")) {
+          take();
+          edge.direction = "both";
+        } else expect("->");
+        edge.target = word();
+        edge.title = typed("string", "relationship label").value;
+        if (is("{")) block(() => modelProperty(edge, EDGE_PROPERTIES, true));
+        model.edges.push(edge);
+        return;
+      }
+      const node = { type: token.value, id: word(), title: typed("string", "element title").value, parent, loc: token };
+      model.nodes.push(node);
+      if (is("{")) block(() => {
+        if (is("relation") || peek().type === "word" && tokens2[cursor + 1]?.type === "word" && tokens2[cursor + 2]?.type === "string") element(node.id, depth + 1);
+        else modelProperty(node, NODE_PROPERTIES);
+      });
+    };
+    const readRouting = (item, reference2 = false, defaults = false) => block(() => {
+      const attr = typed("word");
+      const allowed = reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel"];
+      if (!allowed.includes(attr.value)) fail9(`Unknown routing attribute: ${attr.value}`, attr);
+      if (Object.hasOwn(item, attr.value)) fail9(`Duplicate routing attribute: ${attr.value}`, attr);
+      if (["showIcon", "showLabel"].includes(attr.value)) item[attr.value] = scalar();
+      else if (attr.value === "via") item.via = list2(placementPoint);
+      else if (attr.value === "to" && (reference2 || defaults && peek().type === "number")) item.to = typed("number", "position along the relationship (0 to 1)").value;
+      else if (attr.value === "label") {
+        if (is("none")) {
+          take();
+          item.label = "none";
+        } else item.label = point2();
+      } else if (["from", "to"].includes(attr.value) && is("(")) item[attr.value] = point2();
+      else item[attr.value] = text();
+    });
+    const readView = () => {
+      const token = expect("view");
+      const view = {
+        id: word(),
+        title: typed("string", "view title").value,
+        places: dict(),
+        styles: dict(),
+        routes: dict(),
+        loc: token
+      };
+      const seen = /* @__PURE__ */ new Set();
+      block(() => {
+        if (peek().type === "directive") {
+          const directive = take();
+          if (!/^@meta\b/.test(directive.value)) fail9("Only @meta directives are allowed inside a view", directive, "ARCH_META");
+          if (seen.has("meta")) fail9("Only one meta directive is allowed per view", directive, "ARCH_META");
+          seen.add("meta");
+          view.meta = metaCommand(directive.value, directive);
+          return;
+        }
+        const key2 = typed("word");
+        if (key2.value === "tree") {
+          const id = word();
+          view.trees ?? (view.trees = dict());
+          if (Object.hasOwn(view.trees, id)) fail9(`Duplicate tree group: ${id}`, key2);
+          const tree = { loc: key2 };
+          block(() => {
+            const option = typed("word");
+            if (Object.hasOwn(tree, option.value)) fail9(`Duplicate tree option: ${option.value}`, option);
+            tree[option.value] = scalar();
+          });
+          view.trees[id] = tree;
+        } else if (key2.value === "route" && peek().type === "word" && tokens2[cursor + 1]?.type === "->") {
+          const nodeId = word();
+          expect("->");
+          const edgeId = word();
+          view.referenceRoutes ?? (view.referenceRoutes = []);
+          if (view.referenceRoutes.some((route2) => route2.nodeId === nodeId && route2.edgeId === edgeId))
+            fail9(`Duplicate reference route: ${nodeId} -> ${edgeId}`, key2);
+          const route = { nodeId, edgeId, loc: key2 };
+          readRouting(route, true);
+          view.referenceRoutes.push(route);
+        } else if (["place", "style", "route"].includes(key2.value)) {
+          const id = word(), collection2 = view[{ place: "places", style: "styles", route: "routes" }[key2.value]];
+          if (Object.hasOwn(collection2, id)) fail9(`Duplicate ${key2.value}-statement: ${id}`, key2);
+          const item = { loc: key2 };
+          if (key2.value === "place") {
+            expect("at");
+            item.at = placementPoint();
+            if (is("size")) {
+              take();
+              item.size = point2();
+            }
+          } else if (key2.value === "style") {
+            block(() => property(item, ["template", "accent", "icon", "iconPosition", "backgroundColor", "opacity", "display", "fontSize", "width", "height", "showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology", "propertyFields"]));
+          } else readRouting(item);
+          collection2[id] = item;
+        } else {
+          if (seen.has(key2.value)) fail9(`Duplicate view option: ${key2.value}`, key2);
+          seen.add(key2.value);
+          if (key2.value === "meta") view.meta = text();
+          else if (key2.value === "diagram") {
+            view.diagram = { type: word() };
+            if (is("{")) block(() => {
+              const option = typed("word");
+              if (Object.hasOwn(view.diagram, option.value)) fail9(`Duplicate diagram option: ${option.value}`, option);
+              view.diagram[option.value] = scalar();
+            });
+          } else if (key2.value === "routes") {
+            view.routeDefaults = { loc: key2 };
+            readRouting(view.routeDefaults, false, true);
+          } else if (["include", "exclude"].includes(key2.value)) view[key2.value] = list2(word);
+          else if (key2.value === "spacing") view.spacing = typed("number").value;
+          else if (key2.value === "propertyFields") view.propertyFields = scalar();
+          else if (["direction", "theme", "viewpoint", "referenceDisplay", "referenceOccurrences"].includes(key2.value)) view[key2.value] = word();
+          else fail9(`Unknown view option: ${key2.value}`, key2);
+        }
+      });
+      view.direction ?? (view.direction = "right");
+      view.theme ?? (view.theme = "light");
+      view.spacing ?? (view.spacing = 80);
+      model.views.push(view);
+    };
+    const readConfig = () => {
+      const loc = expect("config");
+      if (model.config) fail9("Only one config block is allowed", loc);
+      const definition = { id: "inline", nodeTypes: dict(), relationTypes: dict(), viewpoints: dict(), styleGroups: dict() };
+      const config = { loc, definition }, seen = /* @__PURE__ */ new Set();
+      const once = (object, key2, loc2) => {
+        if (Object.hasOwn(object, key2)) fail9(`Duplicate profile option: ${key2}`, loc2);
+      };
+      const readAttribute = (attributes2, keyword) => {
+        const name = word();
+        once(attributes2, name, keyword);
+        const rule = dict();
+        block(() => {
+          const key2 = typed("word");
+          once(rule, key2.value, key2);
+          if (key2.value === "enum") rule.enum = list2(scalar);
+          else if (key2.value === "targets") rule.targets = list2(text);
+          else if (["type", "required", "min", "max", "minLength", "maxLength", "format", "many", "minItems", "maxItems", "uniqueItems"].includes(key2.value)) rule[key2.value] = scalar();
+          else fail9(`Unknown attribute rule: ${key2.value}`, key2);
+        });
+        attributes2[name] = rule;
+      };
+      block(() => {
+        const key2 = typed("word");
+        if (["type", "relation", "viewpoint", "styleGroup"].includes(key2.value)) {
+          const name = word(), collection2 = definition[{ type: "nodeTypes", relation: "relationTypes", viewpoint: "viewpoints", styleGroup: "styleGroups" }[key2.value]];
+          once(collection2, name, key2);
+          const rule = dict();
+          block(() => {
+            const attr = typed("word");
+            if (attr.value === "attribute" && key2.value !== "viewpoint") {
+              rule.attributes ?? (rule.attributes = dict());
+              readAttribute(rule.attributes, attr);
+            } else if (attr.value === "attributes" && key2.value !== "viewpoint") {
+              once(rule, "attributes", attr);
+              rule.attributes = dict();
+              block(() => {
+                const keyword = expect("attribute");
+                readAttribute(rule.attributes, keyword);
+              });
+            } else if (["incoming", "outgoing"].includes(attr.value) && key2.value === "relation") {
+              once(rule, attr.value, attr);
+              const count = dict();
+              block(() => {
+                const bound = typed("word");
+                once(count, bound.value, bound);
+                if (!["min", "max"].includes(bound.value)) fail9("Expected: min or max", bound);
+                count[bound.value] = typed("number").value;
+              });
+              rule[attr.value] = count;
+            } else {
+              once(rule, attr.value, attr);
+              const listKeys = key2.value === "type" ? ["contains"] : key2.value === "relation" ? ["from", "to", "directions"] : ["nodes", "relations", "requiredNodes", "requiredRelations"];
+              const scalarKeys = key2.value === "type" ? ["extends", "template", "container", "abstract", "icon", "accent", "backgroundColor", "styleGroup"] : key2.value === "relation" ? ["extends", "style", "abstract", "allowSelf", "acyclic"] : key2.value === "styleGroup" ? ["backgroundColor"] : [];
+              if (attr.value === "extends") {
+                const parents = list2(text);
+                rule.extends = parents.length === 1 ? parents[0] : parents;
+              } else if (attr.value === "directions" && key2.value === "relation" && is("[")) rule.directions = scalar();
+              else if (listKeys.includes(attr.value)) rule[attr.value] = list2(text);
+              else if (scalarKeys.includes(attr.value)) rule[attr.value] = scalar();
+              else fail9(`Unknown profile rule: ${attr.value}`, attr);
+            }
+          });
+          collection2[name] = rule;
+        } else {
+          if (seen.has(key2.value)) fail9(`Duplicate profile option: ${key2.value}`, key2);
+          seen.add(key2.value);
+          if (key2.value === "profile") config.profile = text();
+          else if (key2.value === "views") config.views = scalar();
+          else if (key2.value === "validation") config.validation = text();
+          else if (["id", "title", "version", "extends", "defaultRelation", "requireViewpoint"].includes(key2.value)) definition[key2.value] = scalar();
+          else fail9(`Unknown config option: ${key2.value}`, key2);
+        }
+      });
+      const hasDefinition = Object.keys(definition.nodeTypes).length || Object.keys(definition.relationTypes).length || Object.keys(definition.viewpoints).length || Object.keys(definition.styleGroups).length || definition.extends;
+      if (config.profile && (hasDefinition || [...seen].some((key2) => !["profile", "views", "validation"].includes(key2)))) fail9("Choose either config profile or an inline profile definition", loc);
+      if (config.profile || !hasDefinition && seen.size === 1 && seen.has("views")) delete config.definition;
+      model.config = config;
+    };
+    block(() => {
+      if (peek().type === "directive") {
+        const directive = take();
+        if (/^@meta\b/.test(directive.value)) {
+          const format = metaCommand(directive.value, directive);
+          model.views.push({
+            id: `meta-${format}`,
+            title: `Architecture as ${format.toUpperCase()}`,
+            meta: format,
+            direction: "right",
+            theme: "light",
+            spacing: 80,
+            places: dict(),
+            styles: dict(),
+            routes: dict(),
+            loc: directive
+          });
+          return;
+        }
+        if (model.help) fail9("Only one @help command is allowed per architecture", directive, "ARCH_HELP");
+        model.help = parseHelpCommand(directive.value);
+      } else if (is("description")) {
+        if (hasDescription) fail9("Duplicate architecture description", peek());
+        take();
+        model.description = text();
+        hasDescription = true;
+      } else if (is("model")) {
+        if (hasModel) fail9("Only one model block is allowed", peek());
+        take();
+        block(() => element());
+        hasModel = true;
+      } else if (is("view")) readView();
+      else if (is("config")) readConfig();
+      else fail9("Expected: model, view, config, description, @help or @meta", peek(), "ARCH_SYNTAX");
+    });
+    typed("eof", "end of input");
+    if (model.help) return { ...model, ...helpDocument(model.help), title: model.title, config: model.config };
+    if (!hasModel) fail9("Missing model block");
+    if (model.nodes.length > 1e3 || model.edges.length > 4e3) fail9("At most 1000 elements and 4000 relationships are allowed");
+    if (!model.views.length) model.views.push({
+      id: "default",
+      title: model.title,
+      direction: "right",
+      theme: "light",
+      spacing: 80,
+      places: dict(),
+      styles: dict(),
+      routes: dict()
+    });
+    return model;
+  }
+  function parse(source, options = {}) {
+    const model = parseDocument(source);
+    model.profile = resolveProfile(model, options);
+    if (options.validation !== void 0) model.validation = options.validation;
+    for (const edge of model.edges) if (edge.type === void 0 && model.profile.defaultRelation !== null) edge.type = model.profile.defaultRelation;
+    validateModel(model, options);
+    return model;
+  }
+  function validateModel(model, options = {}) {
+    if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views) || !model.views.length)
+      fail9("Invalid model; use parse(source)");
+    const profile = resolveProfile(model, options);
+    const mode = validationMode(model, options);
+    if (model.kind === "help") {
+      request(model.help?.topic, model.help?.parameters);
+      return model;
+    }
+    const ids = /* @__PURE__ */ new Set(), nodes = new Map(model.nodes.map((n) => [n.id, n]));
+    for (const item of [...model.nodes, ...model.edges]) {
+      if (ids.has(item.id)) fail9(`Duplicate ID: ${item.id}`, item.loc);
+      ids.add(item.id);
+    }
+    for (const node of model.nodes) {
+      if (node.parent && !nodes.has(node.parent)) fail9(`Unknown container: ${node.parent}`, node.loc);
+      const ancestry = /* @__PURE__ */ new Set([node.id]);
+      let parent = nodes.get(node.parent);
+      while (parent) {
+        if (ancestry.has(parent.id)) fail9(`Cyclic package hierarchy: ${node.id}`, node.loc);
+        ancestry.add(parent.id);
+        parent = nodes.get(parent.parent);
+      }
+    }
+    for (const edge of model.edges) {
+      for (const id of [edge.source, edge.target]) if (!nodes.has(id)) fail9(`Unknown endpoint: ${id}`, edge.loc);
+    }
+    const views = /* @__PURE__ */ new Set();
+    for (const view of model.views) {
+      if (views.has(view.id)) fail9(`Duplicate view ID: ${view.id}`, view.loc);
+      views.add(view.id);
+      if (!["right", "down"].includes(view.direction)) fail9("direction must be right or down", view.loc);
+      if (!["light", "dark"].includes(view.theme)) fail9("theme must be light or dark", view.loc);
+      if (validateMetaView(view)) continue;
+      if (view.referenceDisplay !== void 0 && !["labels", "nodes", "both"].includes(view.referenceDisplay)) fail9("referenceDisplay must be labels, nodes or both", view.loc);
+      if (view.referenceOccurrences !== void 0 && !["shared", "perEdge"].includes(view.referenceOccurrences)) fail9("referenceOccurrences must be shared or perEdge", view.loc);
+      if (!Number.isFinite(view.spacing) || view.spacing < 24 || view.spacing > 400) fail9("spacing must be between 24 and 400", view.loc);
+      for (const key2 of ["include", "exclude"]) if (view[key2] !== void 0 && (!Array.isArray(view[key2]) || view[key2].some((id) => typeof id !== "string")))
+        fail9(`${key2} requires a list of element IDs`, view.loc);
+      for (const id of [...view.include ?? [], ...view.exclude ?? []])
+        if (!nodes.has(id)) fail9(`Unknown element in view ${view.id}: ${id}`, view.loc);
+      for (const id of Object.keys(view.places)) if (!nodes.has(id) && !Object.hasOwn(view.trees ?? {}, id)) fail9(`Unknown element or tree group in view ${view.id}: ${id}`, view.loc);
+      const edges = new Map(model.edges.map((e) => [e.id, e]));
+      for (const [id, place] of Object.entries(view.places))
+        if (place.size && (place.size.x < 160 || place.size.y < 96)) fail9(`Size of ${id} must be at least (160, 96)`, place.loc);
+      for (const [id, style] of Object.entries(view.styles)) {
+        if (!nodes.has(id)) {
+          if (!edges.has(id)) fail9(`Unknown element or relationship in view ${view.id}: ${id}`, style.loc);
+          if (Object.keys(style).some((k) => !["loc", "display"].includes(k)) || !["none", "standard"].includes(style.display)) fail9("Relationship styles support only display none or standard", style.loc);
+          continue;
+        }
+        for (const [field, min, max] of [["fontSize", 6, 64], ["width", 160, 1e7], ["height", 96, 1e7]]) if (style[field] !== void 0 && (!Number.isFinite(style[field]) || style[field] < min || style[field] > max)) fail9(`${field} must be a number between ${min} and ${max}`, style.loc);
+        for (const key2 of ["showIcon", "showLabel", "showStereotype", "showDescription", "showTechnology"]) if (style[key2] !== void 0 && typeof style[key2] !== "boolean") fail9(`${key2} must be true or false`, style.loc);
+        if (style.iconPosition !== void 0 && !["top", "left", "bottom", "right"].includes(style.iconPosition)) fail9("iconPosition must be top, left, bottom or right", style.loc);
+        if (style.display !== void 0 && !["standard", "logo", "none"].includes(style.display)) fail9("display must be standard, logo or none", style.loc);
+        if (style.display === "logo" && profile.nodeTypes[nodes.get(id).type]?.container) fail9("logo display is only supported for non-container elements", style.loc);
+        if (style.opacity !== void 0 && (!Number.isFinite(style.opacity) || style.opacity < 0 || style.opacity > 1)) fail9("opacity must be a number between 0 and 1", style.loc);
+        if (style.template !== void 0 && (!TEMPLATES.includes(style.template) || !!profile.nodeTypes[nodes.get(id).type]?.container !== (style.template === "package")))
+          fail9(`Invalid template for ${id}: ${style.template}`, style.loc);
+        if (style.accent !== void 0 && !normalizeColor(style.accent)) fail9("accent requires a hex color or CSS3 color name", style.loc);
+        if (style.backgroundColor !== void 0 && !normalizeColor(style.backgroundColor)) fail9("backgroundColor requires a hex color or CSS3 color name", style.loc);
+      }
+      const referenceRoutes = view.referenceRoutes ?? [], referenceKeys = /* @__PURE__ */ new Set();
+      for (const route of referenceRoutes) {
+        if (!nodes.has(route.nodeId)) fail9(`Unknown reference element: ${route.nodeId}`, route.loc);
+        const edge = edges.get(route.edgeId);
+        if (!edge) fail9(`Unknown relationship: ${route.edgeId}`, route.loc);
+        const key2 = JSON.stringify([route.nodeId, route.edgeId]);
+        if (referenceKeys.has(key2)) fail9(`Duplicate reference route: ${route.nodeId} -> ${route.edgeId}`, route.loc);
+        referenceKeys.add(key2);
+        const rule = profile.relationTypes[edge.type ?? profile.defaultRelation] ?? {};
+        if (!relationshipReferences(edge, rule).some((item) => item.id === route.nodeId) || profile.nodeTypes[nodes.get(route.nodeId).type]?.container)
+          fail9(`Element ${route.nodeId} is not a graphical reference of relationship ${route.edgeId}`, route.loc);
+        if (route.to !== void 0 && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
+          fail9("Reference route to must be a number between 0 and 1", route.loc);
+      }
+      for (const [id, route] of Object.entries(view.routes)) if (!edges.has(id)) fail9(`Unknown relationship: ${id}`, route.loc);
+      const checkRouting = (route, reference2 = false, defaults = false, combined = true) => {
+        if (!route) return;
+        for (const key2 of ["from", ...!reference2 ? ["to"] : []]) if (typeof route[key2] === "string" && !["auto", "top", "right", "bottom", "left"].includes(route[key2]))
+          fail9(`Unknown port: ${route[key2]}`, route.loc);
+        if ((reference2 || defaults) && typeof route.to === "number" && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
+          fail9("Reference route to must be a number between 0 and 1", route.loc);
+        for (const key2 of ["showIcon", "showLabel"]) if (route[key2] !== void 0 && typeof route[key2] !== "boolean") fail9(`${key2} must be true or false`, route.loc);
+        if (route.label !== void 0 && route.label !== "none" && (!route.label || typeof route.label !== "object" || !["x", "y"].every((key2) => Number.isFinite(route.label[key2]) && Math.abs(route.label[key2]) <= 1e7))) fail9("label must be none or a point (X, Y)", route.loc);
+        if (route.icon !== void 0 && (typeof route.icon !== "string" || route.icon !== "none" && !/^[A-Za-z_][A-Za-z0-9_-]*\.[A-Za-z0-9_][A-Za-z0-9_-]*$/.test(route.icon))) fail9("icon must be PACK.NAME or none", route.loc);
+        if (route.iconPosition !== void 0 && !["top", "left", "bottom", "right"].includes(route.iconPosition)) fail9("iconPosition must be top, left, bottom or right", route.loc);
+        if (route.curve !== void 0 && !["orthogonal", "straight", "rounded", "bezier"].includes(route.curve)) fail9(`Unknown curve: ${route.curve}`, route.loc);
+        if (combined && route.curve === "bezier" && route.via && route.via.length !== 2) fail9("bezier requires exactly two control points", route.loc);
+      };
+      checkRouting(view.routeDefaults, false, true, false);
+      for (const route of Object.values(view.routes)) checkRouting(route, false, false, false);
+      for (const route of referenceRoutes) checkRouting(route, true, false, false);
+      const referenceRouteMap = new Map(referenceRoutes.map((route) => [JSON.stringify([route.nodeId, route.edgeId]), route]));
+      for (const edge of model.edges) {
+        checkRouting(routingOptions(view, view.routes[edge.id]));
+        const rule = profile.relationTypes[edge.type ?? profile.defaultRelation] ?? {};
+        for (const item of relationshipReferences(edge, rule))
+          checkRouting(routingOptions(view, referenceRouteMap.get(JSON.stringify([item.id, edge.id])), true), true);
+      }
+    }
+    viewIds(model.config?.views, model.views, model.config?.loc);
+    const diagnostics = validationDiagnostics(profileDiagnostics(model, profile), mode);
+    const errors = diagnostics.filter((d) => d.severity === "error");
+    if (errors.length) {
+      const first = errors[0], error = new ArchError(first.message, first, first.code);
+      error.diagnostics = diagnostics;
+      throw error;
+    }
+    for (const view of model.views) {
+      validateTreeGroups(model, profile, view);
+      validateDiagramView(model, profile, view);
+      if (view.meta === void 0) {
+        if (view.diagram?.type === "class") validateClassPlacement(model, profile, view);
+        else placementPlan(model, profile, view);
+        viaReferences(model, profile, view);
+      }
+    }
+    return model;
+  }
+  function validate(sourceOrModel, options = {}) {
+    let model, profile;
+    try {
+      model = typeof sourceOrModel === "string" || isJSONDocument(sourceOrModel) ? parseDocument(sourceOrModel) : sourceOrModel;
+      if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views))
+        throw new ArchError("Invalid model; use parse(source)", {}, "ARCH_VALIDATION");
+      profile = resolveProfile(model, options);
+      validateModel(model, { ...options, profile });
+      const diagnostics = validationDiagnostics(profileDiagnostics(model, profile), validationMode(model, options));
+      return { valid: true, profile: { id: profile.id, version: profile.version }, diagnostics, ...diagnostics.length ? { conformant: false } : {} };
+    } catch (error) {
+      if (!(error instanceof ArchError)) throw error;
+      return {
+        valid: false,
+        profile: profile ? { id: profile.id, version: profile.version } : null,
+        diagnostics: error.diagnostics ?? [{ severity: "error", code: error.code, message: error.message, line: error.line, column: error.column, ...error.path !== void 0 ? { path: error.path } : {} }]
+      };
+    }
   }
 
   // src/iconify.js
@@ -11046,64 +11875,64 @@ var arch = (() => {
       if (!tags.has(tag)) throw Error(`Unsupported SVG element: ${tag}`);
       const node = { tag, attrs: /* @__PURE__ */ Object.create(null), children: [] }, refs = [];
       links.set(node, refs);
-      const apply = (key, value2, override = false) => {
-        if (key === "xlink:href") key = "href";
-        if (key.startsWith("data-")) return;
+      const apply = (key2, value2, override = false) => {
+        if (key2 === "xlink:href") key2 = "href";
+        if (key2.startsWith("data-")) return;
         if (override) {
-          delete node.attrs[key];
-          for (let i = refs.length - 1; i >= 0; i--) if (refs[i].key === key) refs.splice(i, 1);
+          delete node.attrs[key2];
+          for (let i = refs.length - 1; i >= 0; i--) if (refs[i].key === key2) refs.splice(i, 1);
         }
         if (/^url\(#[^\s\"'()<>]+$/.test(value2)) value2 += ")";
         const local = value2.match(/^url\(\s*([\"'])(#[^\s\"'()<>]+)\1\s*\)$/);
         if (local) value2 = `url(${local[2]})`;
-        if (key === "xmlns" || key === "xmlns:xlink") {
-          if (value2 !== (key === "xmlns" ? "http://www.w3.org/2000/svg" : "http://www.w3.org/1999/xlink")) throw Error("Invalid SVG namespace");
+        if (key2 === "xmlns" || key2 === "xmlns:xlink") {
+          if (value2 !== (key2 === "xmlns" ? "http://www.w3.org/2000/svg" : "http://www.w3.org/1999/xlink")) throw Error("Invalid SVG namespace");
           return;
         }
-        if (key.startsWith("xmlns:")) return;
-        if (key === "xml:space" && ["default", "preserve"].includes(value2)) return;
-        if (tag === "svg" && key === "version" && ["1.0", "1.1", "2.0"].includes(value2)) return;
-        if (key === "class") return;
-        if (key === "id") {
+        if (key2.startsWith("xmlns:")) return;
+        if (key2 === "xml:space" && ["default", "preserve"].includes(value2)) return;
+        if (tag === "svg" && key2 === "version" && ["1.0", "1.1", "2.0"].includes(value2)) return;
+        if (key2 === "class") return;
+        if (key2 === "id") {
           if (!value2 || /[\s"'()<>]/.test(value2) || ids.has(value2)) throw Error("Invalid/duplicate SVG ID");
           ids.set(value2, node);
-        } else if (key === "d") {
+        } else if (key2 === "d") {
           const path = (0, import_svgpath2.default)(value2);
           if (path.err) throw Error(path.err);
           value2 = path.round(6).toString();
-        } else if (numeric.has(key)) {
-          const v = value2.trim().replace(lengths.has(key) ? /(?:px|%)$/ : /%$/, "");
+        } else if (numeric.has(key2)) {
+          const v = value2.trim().replace(lengths.has(key2) ? /(?:px|%)$/ : /%$/, "");
           numbers(v);
-          if (numbers(v).length !== 1) throw Error(`Invalid ${key}`);
-        } else if (vectors.has(key)) {
+          if (numbers(v).length !== 1) throw Error(`Invalid ${key2}`);
+        } else if (vectors.has(key2)) {
           const n = numbers(value2);
-          if (key === "viewBox" && n.length !== 4) throw Error("Invalid viewBox");
-          if (key === "points" && (n.length < 4 || n.length % 2)) throw Error("Invalid points");
-        } else if (transforms.has(key)) transform(value2);
-        else if (key === "enable-background") value2 = enableBackground(value2);
-        else if (own4(enums, key)) {
-          if (!enums[key].includes(value2)) throw Error(`Invalid SVG ${key}`);
-        } else if (key === "preserveAspectRatio") {
+          if (key2 === "viewBox" && n.length !== 4) throw Error("Invalid viewBox");
+          if (key2 === "points" && (n.length < 4 || n.length % 2)) throw Error("Invalid points");
+        } else if (transforms.has(key2)) transform(value2);
+        else if (key2 === "enable-background") value2 = enableBackground(value2);
+        else if (own4(enums, key2)) {
+          if (!enums[key2].includes(value2)) throw Error(`Invalid SVG ${key2}`);
+        } else if (key2 === "preserveAspectRatio") {
           if (!/^(none|x(?:Min|Mid|Max)Y(?:Min|Mid|Max)(?:\s+(?:meet|slice))?)$/.test(value2)) throw Error("Invalid preserveAspectRatio");
-        } else if (["in", "in2", "result"].includes(key)) {
+        } else if (["in", "in2", "result"].includes(key2)) {
           if (!/^[\w.-]+$/.test(value2)) throw Error("Invalid filter input");
-        } else if (paints.has(key) || reference.has(key)) {
+        } else if (paints.has(key2) || reference.has(key2)) {
           if (/^url\(#[^\s"'()<>]+\)$/.test(value2)) {
             const id = value2.slice(5, -1);
-            refs.push({ key, id });
-          } else if (["href", "xlink:href"].includes(key) && /^#[^\s"'()<>]+$/.test(value2)) refs.push({ key, id: value2.slice(1) });
-          else if (paints.has(key)) {
+            refs.push({ key: key2, id });
+          } else if (["href", "xlink:href"].includes(key2) && /^#[^\s"'()<>]+$/.test(value2)) refs.push({ key: key2, id: value2.slice(1) });
+          else if (paints.has(key2)) {
             value2 = iconPaint(value2);
-            if (!value2) throw Error(`Invalid SVG paint: ${key}`);
-          } else if (value2 !== "none") throw Error(`External/invalid SVG reference: ${key}`);
-        } else throw Error(`Unsupported SVG attribute: ${key}`);
-        if (own4(node.attrs, key)) throw Error(`Duplicate SVG attribute: ${key}`);
-        node.attrs[key] = value2;
+            if (!value2) throw Error(`Invalid SVG paint: ${key2}`);
+          } else if (value2 !== "none") throw Error(`External/invalid SVG reference: ${key2}`);
+        } else throw Error(`Unsupported SVG attribute: ${key2}`);
+        if (own4(node.attrs, key2)) throw Error(`Duplicate SVG attribute: ${key2}`);
+        node.attrs[key2] = value2;
       };
       for (const attribute of Array.from(element.attributes)) if (attribute.name !== "style") apply(attribute.name, attribute.value);
       const classes = new Set((element.getAttribute("class") ?? "").split(/\s+/));
-      for (const rule of rules) if (rule.classes.some((c) => classes.has(c))) for (const [key, value2] of rule.declarations) apply(key, value2, true);
-      if (element.hasAttribute("style")) for (const [key, value2] of declarations(element.getAttribute("style"))) apply(key, value2, true);
+      for (const rule of rules) if (rule.classes.some((c) => classes.has(c))) for (const [key2, value2] of rule.declarations) apply(key2, value2, true);
+      if (element.hasAttribute("style")) for (const [key2, value2] of declarations(element.getAttribute("style"))) apply(key2, value2, true);
       for (const child2 of Array.from(element.childNodes)) {
         if (child2.nodeType === 1) {
           if (!styles.has(child2)) node.children.push(read(child2, depth + 1));
@@ -11122,11 +11951,11 @@ var arch = (() => {
       state.set(node, 1);
       let size = 1;
       for (const child2 of node.children) if (typeof child2 !== "string") size += visit(child2);
-      for (const { id, key } of links.get(node)) {
+      for (const { id, key: key2 } of links.get(node)) {
         const target = ids.get(id);
         if (!target) continue;
         const allowed = { fill: ["linearGradient", "radialGradient", "pattern"], stroke: ["linearGradient", "radialGradient", "pattern"], "clip-path": ["clipPath"], mask: ["mask"], filter: ["filter"] };
-        if (allowed[key] && !allowed[key].includes(target.tag)) throw Error("Invalid SVG reference target");
+        if (allowed[key2] && !allowed[key2].includes(target.tag)) throw Error("Invalid SVG reference target");
         size += visit(target);
       }
       if (size > 1e5) throw Error("SVG reference expansion exceeds limit");
@@ -11139,10 +11968,10 @@ var arch = (() => {
   }
   function merged(parent, child2) {
     const out = { ...parent };
-    for (const key of ["left", "top", "width", "height"]) if (child2[key] !== void 0) out[key] = child2[key];
-    for (const key of ["hFlip", "vFlip"]) if (child2[key] !== void 0) {
-      if (typeof child2[key] !== "boolean") throw Error(`Invalid ${key}`);
-      out[key] = !!parent[key] !== child2[key];
+    for (const key2 of ["left", "top", "width", "height"]) if (child2[key2] !== void 0) out[key2] = child2[key2];
+    for (const key2 of ["hFlip", "vFlip"]) if (child2[key2] !== void 0) {
+      if (typeof child2[key2] !== "boolean") throw Error(`Invalid ${key2}`);
+      out[key2] = !!parent[key2] !== child2[key2];
     }
     if (child2.rotate !== void 0) {
       if (!Number.isSafeInteger(child2.rotate)) throw Error("Invalid icon rotation");
@@ -11165,8 +11994,8 @@ var arch = (() => {
         if (!record3(icon)) throw Error(`Invalid icon ${id}`);
         const tree = parseBody(icon.body), full = tree.children.length === 1 && tree.children[0].tag === "svg" ? tree.children[0] : null;
         const viewBox = full?.attrs.viewBox?.trim().split(/[\s,]+/).map(Number);
-        const absolute = (key) => {
-          const raw = full?.attrs[key];
+        const absolute = (key2) => {
+          const raw = full?.attrs[key2];
           return raw && /^[-+\d.eE]+(?:px)?$/.test(raw) ? Number(raw.replace(/px$/, "")) : void 0;
         };
         const defaults = { left: 0, top: 0, width: absolute("width") ?? viewBox?.[2] ?? 16, height: absolute("height") ?? viewBox?.[3] ?? 16, rotate: 0, hFlip: false, vFlip: false };
@@ -11174,14 +12003,14 @@ var arch = (() => {
           full.attrs.width = "100%";
           full.attrs.height = "100%";
         }
-        const props = Object.fromEntries(Object.keys(defaults).map((key) => [key, icon[key] ?? pack[key] ?? defaults[key]]));
+        const props = Object.fromEntries(Object.keys(defaults).map((key2) => [key2, icon[key2] ?? pack[key2] ?? defaults[key2]]));
         data = { ...merged({}, props), tree };
       } else {
         const alias = pack.aliases?.[id];
         if (!record3(alias) || typeof alias.parent !== "string") throw Error(`Unknown Iconify alias parent: ${id}`);
         data = merged(resolve(alias.parent, depth + 1), alias);
       }
-      for (const key of ["left", "top", "width", "height"]) if (!Number.isFinite(data[key]) || Math.abs(data[key]) > 4096 || ["width", "height"].includes(key) && data[key] <= 0) throw Error(`Invalid Iconify dimension: ${id}.${key}`);
+      for (const key2 of ["left", "top", "width", "height"]) if (!Number.isFinite(data[key2]) || Math.abs(data[key2]) > 4096 || ["width", "height"].includes(key2) && data[key2] <= 0) throw Error(`Invalid Iconify dimension: ${id}.${key2}`);
       pending.delete(id);
       resolved.set(id, data);
       return data;
@@ -11206,8 +12035,8 @@ var arch = (() => {
     let next = 0;
     const collect = (node) => {
       if (own4(node.attrs, "id") && !ids.has(node.attrs.id)) ids.set(node.attrs.id, `${scope}-${next++}`);
-      for (const [key, v] of Object.entries(node.attrs)) {
-        const ref = /^url\(#/.test(v) ? v.slice(5, -1) : ["href", "xlink:href"].includes(key) && v.startsWith("#") ? v.slice(1) : null;
+      for (const [key2, v] of Object.entries(node.attrs)) {
+        const ref = /^url\(#/.test(v) ? v.slice(5, -1) : ["href", "xlink:href"].includes(key2) && v.startsWith("#") ? v.slice(1) : null;
         if (ref && !ids.has(ref)) ids.set(ref, `${scope}-${next++}`);
       }
       node.children.filter((c) => typeof c !== "string").forEach(collect);
@@ -11215,11 +12044,11 @@ var arch = (() => {
     collect(icon.tree);
     const write = (node) => {
       if (typeof node === "string") return esc2(node);
-      const attrs = Object.entries(node.attrs).map(([key, v]) => {
-        if (key === "id") v = ids.get(v);
+      const attrs = Object.entries(node.attrs).map(([key2, v]) => {
+        if (key2 === "id") v = ids.get(v);
         else if (/^url\(#/.test(v)) v = `url(#${ids.get(v.slice(5, -1))})`;
-        else if (["href", "xlink:href"].includes(key) && v.startsWith("#")) v = `#${ids.get(v.slice(1))}`;
-        return ` ${key === "xlink:href" ? "href" : key}="${esc2(v)}"`;
+        else if (["href", "xlink:href"].includes(key2) && v.startsWith("#")) v = `#${ids.get(v.slice(1))}`;
+        return ` ${key2 === "xlink:href" ? "href" : key2}="${esc2(v)}"`;
       }).join("");
       const tag = node === icon.tree ? "g" : node.tag;
       return `<${tag}${attrs}>${node.children.map(write).join("")}</${tag}>`;
@@ -11265,17 +12094,17 @@ var arch = (() => {
       if (!Array.isArray(icon.paths) || !icon.paths.length || icon.paths.length > 64) error(`Invalid paths for icon: ${id}`);
       const paths = icon.paths.map((path) => {
         const value2 = typeof path === "string" ? { d: path } : path;
-        if (!value2 || typeof value2 !== "object" || Object.keys(value2).some((key) => !["d", ...paintKeys].includes(key)))
+        if (!value2 || typeof value2 !== "object" || Object.keys(value2).some((key2) => !["d", ...paintKeys].includes(key2)))
           error(`Invalid path object: ${id}`);
         inspectPath(value2.d);
-        const paint = Object.fromEntries(paintKeys.map((key) => [key, value2[key] ?? paintDefaults[key]]));
-        for (const key of ["fill", "stroke"]) {
-          const color = iconPaint(paint[key]);
-          if (!color) error(`Invalid icon color: ${id}.${key}`);
-          paint[key] = color;
+        const paint = Object.fromEntries(paintKeys.map((key2) => [key2, value2[key2] ?? paintDefaults[key2]]));
+        for (const key2 of ["fill", "stroke"]) {
+          const color = iconPaint(paint[key2]);
+          if (!color) error(`Invalid icon color: ${id}.${key2}`);
+          paint[key2] = color;
         }
         if (!["butt", "round", "square"].includes(paint.linecap) || !["miter", "round", "bevel"].includes(paint.linejoin) || !["nonzero", "evenodd"].includes(paint.fillRule)) error(`Invalid paint style: ${id}`);
-        if (!Number.isFinite(paint.strokeWidth) || paint.strokeWidth < 0 || paint.strokeWidth > 64 || ["opacity", "fillOpacity", "strokeOpacity"].some((key) => !Number.isFinite(paint[key]) || paint[key] < 0 || paint[key] > 1))
+        if (!Number.isFinite(paint.strokeWidth) || paint.strokeWidth < 0 || paint.strokeWidth > 64 || ["opacity", "fillOpacity", "strokeOpacity"].some((key2) => !Number.isFinite(paint[key2]) || paint[key2] < 0 || paint[key2] > 1))
           error(`Invalid stroke width or opacity: ${id}`);
         return Object.freeze({ d: value2.d, ...paint });
       });
@@ -11318,7 +12147,7 @@ var arch = (() => {
   var defaultIcon = (type) => `core.${type === "application" ? "browser" : type}`;
 
   // src/svg.js
-  var escape2 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
+  var escape3 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[c]);
   var serial = 0;
   var iconSerial = 0;
   var accents = {
@@ -11338,16 +12167,16 @@ var arch = (() => {
   };
   function iconMarkup(name, x, y, size, loc, scope = `arch-icon-${++iconSerial}`) {
     const icon = getIcon(name, loc), scale = size / Math.max(icon.width, icon.height);
-    return `<g data-icon="${escape2(name)}" transform="translate(${num(x)} ${num(y)}) scale(${num(scale)})">${icon.tree ? iconifyMarkup(icon, scope) : icon.paths.map((p) => `<path d="${escape2(p.d)}" fill="${p.fill}" stroke="${p.stroke}" stroke-width="${p.strokeWidth}" stroke-linecap="${p.linecap}" stroke-linejoin="${p.linejoin}" fill-rule="${p.fillRule}" opacity="${p.opacity}" fill-opacity="${p.fillOpacity}" stroke-opacity="${p.strokeOpacity}"/>`).join("")}</g>`;
+    return `<g data-icon="${escape3(name)}" transform="translate(${num(x)} ${num(y)}) scale(${num(scale)})">${icon.tree ? iconifyMarkup(icon, scope) : icon.paths.map((p) => `<path d="${escape3(p.d)}" fill="${p.fill}" stroke="${p.stroke}" stroke-width="${p.strokeWidth}" stroke-linecap="${p.linecap}" stroke-linejoin="${p.linejoin}" fill-rule="${p.fillRule}" opacity="${p.opacity}" fill-opacity="${p.fillOpacity}" stroke-opacity="${p.strokeOpacity}"/>`).join("")}</g>`;
   }
   function renderIconToString(name, { size = 24, title = name, idPrefix = `arch-icon-${++iconSerial}` } = {}) {
     if (!Number.isFinite(size) || size <= 0 || size > 512) throw new ArchError("icon size must be greater than 0 and at most 512");
     if (typeof idPrefix !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(idPrefix)) throw new ArchError("Invalid idPrefix");
     const icon = getIcon(name), longest = Math.max(icon.width, icon.height);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${icon.width} ${icon.height}" width="${num(size * icon.width / longest)}" height="${num(size * icon.height / longest)}" role="img" aria-label="${escape2(title)}"><title>${escape2(title)}</title>${iconMarkup(name, 0, 0, longest, void 0, idPrefix)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${icon.width} ${icon.height}" width="${num(size * icon.width / longest)}" height="${num(size * icon.height / longest)}" role="img" aria-label="${escape3(title)}"><title>${escape3(title)}</title>${iconMarkup(name, 0, 0, longest, void 0, idPrefix)}</svg>`;
   }
   function linesMarkup(lines, x, y, size, color, weight = 400, lineHeight = 17, anchor = "start") {
-    return `<text x="${num(x)}" y="${num(y)}" fill="${color}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}">${lines.map((line, i) => `<tspan x="${num(x)}" dy="${i ? lineHeight : 0}">${escape2(line)}</tspan>`).join("")}</text>`;
+    return `<text x="${num(x)}" y="${num(y)}" fill="${color}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}">${lines.map((line, i) => `<tspan x="${num(x)}" dy="${i ? lineHeight : 0}">${escape3(line)}</tspan>`).join("")}</text>`;
   }
   function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = prefix) {
     const { width: w, height: h } = node;
@@ -11364,8 +12193,8 @@ var arch = (() => {
       if (contrast(accent, visibleColor) < 4.5 || contrast(accent, composite(accent, visibleColor, 0.1)) < 4.5) accent = text;
     }
     const fillOpacity = node.backgroundColor || node.opacity !== void 0 ? ` fill-opacity="${num(opacity)}"` : "";
-    const title = `<title>${escape2(node.title)} — ${escape2(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape2(node.stereotype)}]` : ""}${node.description ? `: ${escape2(node.description)}` : ""}</title>`;
-    const attrs = `data-node="${escape2(node.id)}" data-type="${escape2(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition ?? (node.display === "logo" ? "center" : "left")}" transform="translate(${num(node.x)} ${num(node.y)})"`;
+    const title = `<title>${escape3(node.title)} — ${escape3(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape3(node.stereotype)}]` : ""}${node.description ? `: ${escape3(node.description)}` : ""}</title>`;
+    const attrs = `data-node="${escape3(node.id)}" data-type="${escape3(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition ?? (node.display === "logo" ? "center" : "left")}" transform="translate(${num(node.x)} ${num(node.y)})"`;
     const iconName = node.icon ?? defaultIcon(node.template);
     if (node.display === "logo") {
       let logo = "";
@@ -11376,7 +12205,7 @@ var arch = (() => {
         const y = node.iconPosition === "top" ? 16 : node.iconPosition === "bottom" ? h - 16 - height : (h - height) / 2;
         logo = `<g color="${accent}">${iconMarkup(iconName, x, y, Math.max(width, height), node.loc, `${iconScope}-${node.id}-logo`)}</g>`;
       }
-      return `<g class="arch-node" ${attrs} data-display="logo" tabindex="0" role="group" aria-label="${escape2(`${node.title}, ${node.type}`)}">${title}
+      return `<g class="arch-node" ${attrs} data-display="logo" tabindex="0" role="group" aria-label="${escape3(`${node.title}, ${node.type}`)}">${title}
       <g filter="url(#${prefix}-shadow)"><rect x="0.75" y="0.75" width="${num(w - 1.5)}" height="${num(h - 1.5)}" rx="13" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/></g>${logo}</g>`;
     }
     const iconBox = node.iconBox;
@@ -11385,6 +12214,7 @@ var arch = (() => {
       const shapeIcon = getIcon(iconName, node.loc), glyphSize = node.container ? 22 : 17, glyphScale = glyphSize / Math.max(shapeIcon.width, shapeIcon.height);
       nodeIcon = iconMarkup(iconName, iconBox.x + (iconBox.size - shapeIcon.width * glyphScale) / 2, iconBox.y + (iconBox.size - shapeIcon.height * glyphScale) / 2, glyphSize, node.loc, `${iconScope}-${node.id}-icon`);
     }
+    const propertyMarkup = () => node.propertyRows?.length ? `<g data-node-properties="true"><path d="M20 ${num(node.textStyle.propertyDividerY)} H${num(w - 20)}" stroke="${palette.border}"/>${node.propertyRows.map((row) => `<g data-property="${escape3(row.key)}"><title>${escape3(row.full)}</title>${linesMarkup(row.lines, 20, row.y, node.textStyle.description, palette.text, 400, node.textStyle.descriptionLeading)}</g>`).join("")}</g>` : "";
     if (node.container) {
       return `<g class="arch-package" ${attrs}>${title}
       <rect width="${num(w)}" height="${num(h)}" rx="18" fill="${palette.package}"${fillOpacity} stroke="${palette.border}" stroke-dasharray="5 4"/>
@@ -11392,6 +12222,7 @@ var arch = (() => {
       <g color="${accent}">${nodeIcon}</g>
       ${node.titleLines.length ? linesMarkup(node.titleLines, node.packageTitleX, node.packageTitleY, node.packageTitleSize, palette.text, 650, node.textStyle.titleLeading) : ""}
       ${node.packageBadge ? linesMarkup([node.packageBadge], node.packageBadgeX, node.packageBadgeY, node.textStyle.badge, palette.muted, 600, 17, "end") : ""}
+      ${propertyMarkup()}
     </g>`;
     }
     let shape;
@@ -11423,8 +12254,8 @@ var arch = (() => {
       node: `<circle cx="${num(w - 18)}" cy="22" r="3" fill="${accent}"/>`
     }[node.template] ?? "";
     const fonts = node.textStyle;
-    const badge = node.badgeLines.length ? `<text data-node-badge="true" x="${num(fonts.badgeX)}" y="${num(fonts.badgeY)}" fill="${accent}" font-size="${num(fonts.badge)}" font-weight="650"><title>${escape2(node.badgeText)}</title>${node.badgeLines.map((line) => `<tspan x="${num(fonts.badgeX)}" dy="0">${escape2(line)}</tspan>`).join("")}</text>` : "";
-    return `<g class="arch-node" ${attrs} tabindex="0" role="group" aria-label="${escape2(`${node.title}, ${node.type}`)}">${title}
+    const badge = node.badgeLines.length ? `<text data-node-badge="true" x="${num(fonts.badgeX)}" y="${num(fonts.badgeY)}" fill="${accent}" font-size="${num(fonts.badge)}" font-weight="650"><title>${escape3(node.badgeText)}</title>${node.badgeLines.map((line) => `<tspan x="${num(fonts.badgeX)}" dy="0">${escape3(line)}</tspan>`).join("")}</text>` : "";
+    return `<g class="arch-node" ${attrs} tabindex="0" role="group" aria-label="${escape3(`${node.title}, ${node.type}`)}">${title}
     <g filter="url(#${prefix}-shadow)">${shape}</g>${extras}
     ${node.showIcon !== false ? `<rect x="${num(iconBox.x)}" y="${num(iconBox.y)}" width="27" height="27" rx="7" fill="${accent}" opacity=".1"/>` : ""}
     <g color="${accent}">${nodeIcon}</g>
@@ -11432,6 +12263,7 @@ var arch = (() => {
     ${node.titleLines.length ? linesMarkup(node.titleLines, 20, fonts.titleY, fonts.title, palette.text, 650, fonts.titleLeading) : ""}
     ${node.descLines.length ? linesMarkup(node.descLines, 20, fonts.descriptionY, fonts.description, palette.muted, 400, fonts.descriptionLeading) : ""}
     ${node.technologyLines.length ? linesMarkup(node.technologyLines, 20, fonts.technologyY, fonts.technology, accent, 500, fonts.technologyLeading) : ""}
+    ${propertyMarkup()}
   </g>`;
   }
   function toSVG(graph, options = {}) {
@@ -11440,7 +12272,7 @@ var arch = (() => {
     const prefix = options.idPrefix ?? `arch-${++serial}`;
     if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(prefix)) throw new ArchError("Invalid idPrefix");
     if (graph.kind === "meta") return metaSVG(graph, { theme, idPrefix: prefix });
-    if (graph.view.diagram && graph.view.diagram.type !== "connected") return toDiagramSVG(graph, { theme, idPrefix: prefix });
+    if (graph.view.diagram && !["connected", "tree"].includes(graph.view.diagram.type)) return toDiagramSVG(graph, { theme, idPrefix: prefix });
     const palette = theme === "dark" ? { dark: true, bg: "#111827", card: "#1e293b", package: "#162032", border: "#3b4960", text: "#f1f5f9", muted: "#a4b2c7", edge: "#9caac0" } : { bg: "#fafbfe", card: "#ffffff", package: "#f0f3fa", border: "#d8dfec", text: "#1e293b", muted: "#738198", edge: "#94a3b8" };
     const b = graph.bounds;
     const nodeById = new Map(graph.nodes.map((node) => [node.id, node])), backdrops = /* @__PURE__ */ new Map();
@@ -11459,9 +12291,9 @@ var arch = (() => {
   </defs>`;
     const edgePaths = graph.edges.map((edge) => {
       const dash = ["dependency", "realization"].includes(edge.style) ? ' stroke-dasharray="6 5"' : "";
-      const start = edge.style === "composition" ? ` marker-start="url(#${prefix}-diamond)"` : "";
-      const end = ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${prefix}-${["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow"})"`;
-      return `<g class="arch-edge" data-edge="${escape2(edge.id)}" data-type="${escape2(edge.type)}" data-style="${edge.style}"><title>${escape2(edge.labelText || edge.title || edge.type)}</title><path d="${escape2(edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${start}${end}/></g>`;
+      const start = edge.direction === "both" ? ` marker-start="url(#${prefix}-arrow)"` : edge.style === "composition" ? ` marker-start="url(#${prefix}-diamond)"` : "";
+      const end = edge.direction !== "both" && ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${prefix}-${["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow"})"`;
+      return `<g class="arch-edge" data-edge="${escape3(edge.id)}" data-type="${escape3(edge.type)}" data-style="${edge.style}"><title>${escape3(edge.labelText || edge.title || edge.type)}</title><path d="${escape3(edge.d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round"${dash}${start}${end}/></g>`;
     }).join("");
     const edgeLabels = graph.edges.filter((e) => e.labelLines.length || e.labelIcon).map((edge) => {
       const { x, y } = edge.label, offset = edge.labelTextOffset ?? { x: 0, y: 0 };
@@ -11471,13 +12303,13 @@ var arch = (() => {
         const ix = x + box.x + (box.size - shape.width * scale) / 2, iy = y + box.y + (box.size - shape.height * scale) / 2;
         icon = `<g class="arch-edge-label-icon" aria-hidden="true" color="${palette.muted}">${iconMarkup(edge.labelIcon, ix, iy, box.size, edge.labelIconLoc, `${prefix}-edge-${edge.id}-icon`)}</g>`;
       }
-      const position = edge.labelIcon ? ` data-icon-position="${edge.labelIconPosition}" aria-label="${escape2(edge.labelText || edge.title || edge.type)}"` : "";
+      const position = edge.labelIcon ? ` data-icon-position="${edge.labelIconPosition}" aria-label="${escape3(edge.labelText || edge.title || edge.type)}"` : "";
       const text = edge.labelLines.length ? linesMarkup(edge.labelLines, x + offset.x, y + offset.y - (edge.labelLines.length - 1) * 7.5 + 3.5, 11, palette.muted, 450, 15, "middle") : "";
-      return `<g class="arch-edge-label" data-label-for="${escape2(edge.id)}"${position}><rect x="${num(x - edge.labelWidth / 2)}" y="${num(y - edge.labelHeight / 2)}" width="${num(edge.labelWidth)}" height="${num(edge.labelHeight)}" rx="5" fill="${palette.bg}" stroke="${palette.border}" stroke-width=".6"/>${icon}${text}</g>`;
+      return `<g class="arch-edge-label" data-label-for="${escape3(edge.id)}"${position}><rect x="${num(x - edge.labelWidth / 2)}" y="${num(y - edge.labelHeight / 2)}" width="${num(edge.labelWidth)}" height="${num(edge.labelHeight)}" rx="5" fill="${palette.bg}" stroke="${palette.border}" stroke-width=".6"/>${icon}${text}</g>`;
     }).join("");
     const referenceConnectors = (graph.referenceNodes ?? []).map((occurrence) => {
       const d = occurrence.d ?? occurrence.points.map((p, i) => `${i ? "L" : "M"} ${num(p.x)} ${num(p.y)}`).join(" ");
-      return `<path class="arch-reference-connector" data-reference-for="${escape2(occurrence.edgeId)}" data-reference-node="${escape2(occurrence.nodeId)}" d="${escape2(d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#${prefix}-arrow)"/>`;
+      return `<path class="arch-reference-connector" data-reference-for="${escape3(occurrence.edgeId)}" data-reference-node="${escape3(occurrence.nodeId)}" d="${escape3(d)}" fill="none" stroke="${palette.edge}" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#${prefix}-arrow)"/>`;
     }).join("");
     const renderedCards = /* @__PURE__ */ new Set();
     const referenceCards = (graph.referenceNodes ?? []).filter((occurrence) => {
@@ -11486,12 +12318,12 @@ var arch = (() => {
       return true;
     }).map((occurrence, index) => {
       const card = occurrence.node, identity = card.referenceIdentityLines ?? [];
-      const footer = identity.length ? `<g data-reference-id="${escape2(occurrence.nodeId)}"><rect x="${num(card.x)}" y="${num(card.y + card.referenceContentHeight)}" width="${num(card.width)}" height="${num(card.height - card.referenceContentHeight)}" rx="4" fill="${palette.bg}" stroke="${palette.border}"/>${linesMarkup(identity, card.x + 10, card.y + card.referenceContentHeight + 16, 11, palette.text, 500, 16)}</g>` : "";
-      return `<g class="arch-edge-reference" data-reference-for="${escape2(occurrence.edgeIds.join(" "))}" data-reference-node="${escape2(occurrence.nodeId)}" data-reference-attribute="${escape2(occurrence.attribute)}">${nodeMarkup({ ...card, height: card.referenceContentHeight ?? card.height }, palette, prefix, palette.bg, `${prefix}-reference-${index}`)}${footer}</g>`;
+      const footer = identity.length ? `<g data-reference-id="${escape3(occurrence.nodeId)}"><rect x="${num(card.x)}" y="${num(card.y + card.referenceContentHeight)}" width="${num(card.width)}" height="${num(card.height - card.referenceContentHeight)}" rx="4" fill="${palette.bg}" stroke="${palette.border}"/>${linesMarkup(identity, card.x + 10, card.y + card.referenceContentHeight + 16, 11, palette.text, 500, 16)}</g>` : "";
+      return `<g class="arch-edge-reference" data-reference-for="${escape3(occurrence.edgeIds.join(" "))}" data-reference-node="${escape3(occurrence.nodeId)}" data-reference-attribute="${escape3(occurrence.attribute)}">${nodeMarkup({ ...card, height: card.referenceContentHeight ?? card.height }, palette, prefix, palette.bg, `${prefix}-reference-${index}`)}${footer}</g>`;
     }).join("");
-    return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
-    <title id="${prefix}-title">${escape2(graph.title)} — ${escape2(graph.view.title)}</title>
-    <desc id="${prefix}-desc">${escape2(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
+    return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree ? ' data-diagram="tree"' : ""} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
+    <title id="${prefix}-title">${escape3(graph.title)} — ${escape3(graph.view.title)}</title>
+    <desc id="${prefix}-desc">${escape3(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
     ${definitions}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
     <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${palette.bg}"/>
     ${graph.nodes.filter((n) => n.container).map((n) => nodeMarkup(n, palette, prefix, backdropFor(n))).join("")}
@@ -11510,7 +12342,7 @@ var arch = (() => {
       y += headingHeight + graph.bounds.height + gap;
       return section;
     });
-    const unique = (key) => [...new Map(layouts.flatMap((graph) => graph[key]).map((item) => [item.id, item])).values()];
+    const unique = (key2) => [...new Map(layouts.flatMap((graph) => graph[key2]).map((item) => [item.id, item])).values()];
     return {
       kind: "views",
       title: model.title,
@@ -11533,15 +12365,15 @@ var arch = (() => {
     const sections = graph.sections.map((section, index) => {
       const { graph: child2, x, y, titleLines, headingHeight } = section;
       const childTheme = options.theme ?? child2.view.theme, dark = childTheme === "dark";
-      const childSVG = toSVG(child2, { ...options, idPrefix: `${prefix}-view-${index + 1}` }).replace(/^<svg\b/, `<svg x="${num(x)}" y="${num(y + headingHeight)}" data-view-id="${escape2(child2.view.id)}"`);
-      const heading = titleLines.map((line, row) => `<tspan x="${num(x + 12)}" dy="${row ? 22 : 0}">${escape2(line)}</tspan>`).join("");
-      return `<g data-arch-view="${escape2(child2.view.id)}"><rect x="${num(x)}" y="${num(y)}" width="${num(b.width - 48)}" height="${num(headingHeight + child2.bounds.height)}" fill="${dark ? "#111827" : "#fafbfe"}"/><text x="${num(x + 12)}" y="${num(y + 21)}" font-size="16" font-weight="650" fill="${dark ? "#e2e8f0" : "#334155"}">${heading}</text>${childSVG}</g>`;
+      const childSVG = toSVG(child2, { ...options, idPrefix: `${prefix}-view-${index + 1}` }).replace(/^<svg\b/, `<svg x="${num(x)}" y="${num(y + headingHeight)}" data-view-id="${escape3(child2.view.id)}"`);
+      const heading = titleLines.map((line, row) => `<tspan x="${num(x + 12)}" dy="${row ? 22 : 0}">${escape3(line)}</tspan>`).join("");
+      return `<g data-arch-view="${escape3(child2.view.id)}"><rect x="${num(x)}" y="${num(y)}" width="${num(b.width - 48)}" height="${num(headingHeight + child2.bounds.height)}" fill="${dark ? "#111827" : "#fafbfe"}"/><text x="${num(x + 12)}" y="${num(y + 21)}" font-size="16" font-weight="650" fill="${dark ? "#e2e8f0" : "#334155"}">${heading}</text>${childSVG}</g>`;
     }).join("");
-    return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}" data-arch-views="${graph.layouts.length}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="0 0 ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${bg}"><title id="${prefix}-title">${escape2(graph.title)}</title><desc id="${prefix}-desc">${escape2(graph.description || `${graph.layouts.length} selected architecture views`)}</desc><rect width="${num(b.width)}" height="${num(b.height)}" fill="${bg}"/>${sections}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}" data-arch-views="${graph.layouts.length}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="0 0 ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${bg}"><title id="${prefix}-title">${escape3(graph.title)}</title><desc id="${prefix}-desc">${escape3(graph.description || `${graph.layouts.length} selected architecture views`)}</desc><rect width="${num(b.width)}" height="${num(b.height)}" fill="${bg}"/>${sections}</svg>`;
   }
 
   // src/help.js
-  var fail7 = (message) => {
+  var fail10 = (message) => {
     throw new ArchError(message, {}, "ARCH_HELP");
   };
   var list = (values) => values?.length ? values.join(", ") : "(none)";
@@ -11554,30 +12386,30 @@ var arch = (() => {
     return id && id !== "." ? getProfile(id) : profile;
   }
   function helpContent(model, options = {}) {
-    if (!model || model.kind !== "help" || !model.help || typeof model.help.topic !== "string" || !Array.isArray(model.help.parameters)) fail7('Invalid help document; use parse("@help").');
+    if (!model || model.kind !== "help" || !model.help || typeof model.help.topic !== "string" || !Array.isArray(model.help.parameters)) fail10('Invalid help document; use parse("@help").');
     const { topic, parameters: args } = request(model.help?.topic, model.help?.parameters);
     const profile = profileFor(model, options), sections = [];
     const section = (title, ...lines) => sections.push({ title, lines: lines.flat() });
     const selectProfile = () => profileFor(model, options, args[0]);
-    const definitions = (key, label) => {
-      const p = selectProfile(), entries = Object.entries(p[key]);
+    const definitions = (key2, label) => {
+      const p = selectProfile(), entries = Object.entries(p[key2]);
       const target = args[0] || ".";
       section(`Profile ${p.id} · ${p.version}`, `Usage: ${syntax(topic)}`, `Without PROFILE, use the selected document/API profile (default: default). ${entries.length} ${label}.`);
       if (args[1]) {
-        const rule = p[key][args[1]];
-        if (!Object.hasOwn(p[key], args[1])) fail7(`Unknown name in ${label}: ${args[1]}. Use @help ${topic} ${target}.`);
-        if (key === "nodeTypes") section("Allowed relationships", `@help connections ${target} ${args[1]}`);
-        if (key !== "viewpoints" && rule.abstract) {
-          const candidates = concreteSubtypes(args[1], p[key]);
-          section("Concrete subtypes", candidates.length ? candidates.map((name) => key === "nodeTypes" ? `${name} ID "Title"  · template ${p[key][name].template}` : `relation ID SOURCE -> TARGET "Label" { type ${name} }`) : ["No concrete subtypes are defined in this profile."]);
+        const rule = p[key2][args[1]];
+        if (!Object.hasOwn(p[key2], args[1])) fail10(`Unknown name in ${label}: ${args[1]}. Use @help ${topic} ${target}.`);
+        if (key2 === "nodeTypes") section("Allowed relationships", `@help connections ${target} ${args[1]}`);
+        if (key2 !== "viewpoints" && rule.abstract) {
+          const candidates = concreteSubtypes(args[1], p[key2]);
+          section("Concrete subtypes", candidates.length ? candidates.map((name) => key2 === "nodeTypes" ? `${name} ID "Title"  · template ${p[key2][name].template}` : `relation ID SOURCE -> TARGET "Label" { type ${name} }`) : ["No concrete subtypes are defined in this profile."]);
           section("Candidate details", `@help ${topic} ${target} NAME`, "These candidates are concrete descendants. Attribute, container, endpoint and viewpoint rules still apply.");
         }
         section(args[1], JSON.stringify(rule, null, 2).split("\n"));
-        if (key !== "viewpoints") section("Built-in attributes", key === "nodeTypes" ? list(NODE_PROPERTIES) : list(EDGE_PROPERTIES), "Additional attributes and constraints are listed above under attributes.");
+        if (key2 !== "viewpoints") section("Built-in attributes", key2 === "nodeTypes" ? list(NODE_PROPERTIES) : list(EDGE_PROPERTIES), "Additional attributes and constraints are listed above under attributes.");
       } else {
-        section(label, entries.length ? entries.map(([name, rule]) => key === "nodeTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · template ${rule.template}${rule.container ? " · container" : ""}` : key === "relationTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · style ${rule.style}` : `${name}${rule.title ? ` · ${rule.title}` : ""}`) : ["(none)"]);
+        section(label, entries.length ? entries.map(([name, rule]) => key2 === "nodeTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · template ${rule.template}${rule.container ? " · container" : ""}` : key2 === "relationTypes" ? `${name}${rule.abstract ? " [abstract]" : ""} · style ${rule.style} · directions ${(rule.directions ?? ["forward"]).join(", ")}` : `${name}${rule.title ? ` · ${rule.title}` : ""}`) : ["(none)"]);
         section("Show details", `@help ${topic} ${target} NAME`, "Use . as PROFILE to inspect the selected document/API profile, including inline definitions.", "Abstract types support inheritance and cannot be instantiated directly.");
-        if (key === "relationTypes") section("Filter by node type", `@help connections ${target} NODE_TYPE`);
+        if (key2 === "relationTypes") section("Filter by node type", `@help connections ${target} NODE_TYPE`);
       }
     };
     if (!topic) {
@@ -11588,7 +12420,7 @@ var arch = (() => {
         "Square brackets in this reference indicate optional parameters. Names are case-sensitive.",
         `Selected profile: ${profile.id} · ${profile.version}`
       );
-      section("Topics", Object.entries(topics).map(([key, [description]]) => `${syntax(key)}  —  ${description}`));
+      section("Topics", Object.entries(topics).map(([key2, [description]]) => `${syntax(key2)}  —  ${description}`));
       section("Examples", "@help iconpacks", "@help iconpacks core", "@help profiles", "@help types default service", "@help connections default service", "@help diagrams sequence");
     } else if (topic === "meta") {
       section(
@@ -11655,9 +12487,11 @@ var arch = (() => {
         "Packages nest elements and relations inside the container element. All identifiers and model limits remain unchanged.",
         "Model properties such as description, technology and conveyed are direct fields. An attributes object handles custom names that collide with JSON structure.",
         "place: { ID: { at: [x,y], size: [width,height] } }; style: { ID: { ... } }.",
+        'Coordinate expressions are strings: at: ["coverage.x + 20", "vision.y - 40"], via: [["source.right + 40", "target.centerY"]]. size, endpoint and label points remain numeric.',
         "routes: { ... } defines shared defaults; route: { RELATION_ID: { ... } } overrides individual fields.",
         'Reference route key: "ELEMENT_ID -> RELATION_ID". via is [[x,y],[x,y]], label is [x,y] or "none".',
         'diagram: { type: "sequence", participants: ["user","api"] }; include/exclude use ID arrays.',
+        'tree: { hierarchy: { nodes: ["phase","vision","goal"], direction: "up" } } defines named layout groups in a connected view.',
         "Inline config uses type, relation, viewpoint, styleGroup and attribute objects keyed by name, matching DSL keywords.",
         'Help: { "@help": "json" } or architecture-level "@help": "profiles". A help query omits the @help prefix.'
       );
@@ -11677,6 +12511,7 @@ var arch = (() => {
         'Attribute value lists: ["A", "B"]. Include/exclude and routing lists: a, b.'
       );
       section("Complete starter example (default profile)", 'architecture "Portal" {', "  model {", '    person user "User"', '    application app "Portal"', '    relation uses user -> app "Uses" { type flow }', "  }", '  view overview "Overview" { direction right theme light }', "}");
+      section("Bidirectional syntax", 'relation exchange a <-> b "Exchange"', "The selected relationship type must allow direction both. Details: @help model and @help relations . TYPE.");
       section("Learn more", "@help model", "@help views", "@help config", "@help json");
     } else if (topic === "model") {
       section(
@@ -11687,6 +12522,15 @@ var arch = (() => {
         `Default relationship type: ${profile.defaultRelation ?? "(none; set type explicitly)"}`
       );
       section(
+        "Bidirectional relationships",
+        'relation exchange a <-> b "Exchange" { type flow }',
+        'One relationship ID, label and shared attributes/references, with arrowheads at both ends. JSON uses direction: "both"; direction: "forward" is the default.',
+        "The relationship profile rule must allow directions [forward, both] (or [both] to require it). Custom rules default to [forward]; inherited rules retain their directions.",
+        "from/to and pairs describe the written endpoint roles. Both endpoints count once as incoming and outgoing. A bidirectional link creates a directed cycle, so acyclic rules reject it.",
+        "Connected/class views draw both arrowheads; matrices count the relationship in both directions. Sequence, state, activity and timeline views require separate directed relationships.",
+        "Default flow, dependency, association and access types allow both; composition, generalization and realization remain forward-only. Inspect @help relations . TYPE."
+      );
+      section(
         "Built-in attributes",
         `Nodes: ${list(NODE_PROPERTIES)}`,
         `Relationships: ${list(EDGE_PROPERTIES)}; also type to select the relationship type.`,
@@ -11695,6 +12539,14 @@ var arch = (() => {
         "icon uses PACK.NAME, for example core.service. tags is a string."
       );
       section("Carried information", "Profiles can configure relationship referenceLabels, for example conveyed → Conveys.", "Connected views support referenceDisplay labels | nodes | both. referenceOccurrences shared (default) reuses one card across edges; perEdge repeats cards with visible element IDs. Graphical cards point to the carrying edge and reuse the original node styles; these connectors are visual annotations, not model relationships.");
+      section(
+        "Draft validation",
+        "config { validation draft }",
+        "Default: validation strict. Draft mode renders incomplete profiles and appends validation notices below the diagram, including SVG exports.",
+        "Warnings: missing required attributes/viewpoints, missing required viewpoint types/relationships, and unmet minimum incoming/outgoing/connection counts.",
+        'Unknown/abstract types, invalid values/references, maximum counts, cycles, syntax and structural/renderer errors still block rendering. API validation: "draft" | "strict" overrides config.',
+        'validate() returns valid: true, conformant: false and warning diagnostics for an incomplete draft. Use validation: "strict" for a conformance check.'
+      );
       section("Containers", 'package platform "Platform" { service api "API" }', "Only container types in the selected profile support nesting.", "IDs are document-wide. Relationships reference element IDs.");
     } else if (topic === "profiles") {
       if (!args.length) section("Registered profiles", getProfiles().map((id) => {
@@ -11732,12 +12584,13 @@ var arch = (() => {
       section(`Profile ${p.id} · ${p.version}`, `Usage: ${syntax(topic)}`, "Use . as PROFILE for the selected document/API profile, including inline definitions.");
       if (!args[1]) section("Choose a node type", `@help connections ${target} NODE_TYPE`, `Available node types: ${list(Object.keys(p.nodeTypes).sort())}`);
       else {
-        if (!Object.hasOwn(p.nodeTypes, args[1])) fail7(`Unknown node type: ${args[1]}. Use @help types ${target}.`);
+        if (!Object.hasOwn(p.nodeTypes, args[1])) fail10(`Unknown node type: ${args[1]}. Use @help types ${target}.`);
         const connections = typeConnections(args[1], p);
         section(
           "Selected node type",
           `${connections.type}${connections.abstract ? " [abstract; choose a concrete subtype to instantiate]" : ""}`,
-          "The lists include concrete relationship types and concrete counterpart node types, accounting for inheritance and pair exclusions."
+          "The lists include concrete relationship types and concrete counterpart node types, accounting for inheritance and pair exclusions.",
+          "Source/target lists describe the written from/to roles. A type allowing both also permits reverse flow on that same relationship."
         );
         section(
           "Relationship overview",
@@ -11747,7 +12600,7 @@ var arch = (() => {
         for (const direction of ["outgoing", "incoming"]) {
           const lines = connections[direction].flatMap((item) => [
             direction === "outgoing" ? `${item.type}: ${connections.type} -> ${list(item.counterparts)}` : `${item.type}: ${list(item.counterparts)} -> ${connections.type}`,
-            `  allowSelf: ${item.allowSelf}; acyclic: ${item.acyclic}; details: @help relations ${target} ${item.type}`
+            `  allowSelf: ${item.allowSelf}; acyclic: ${item.acyclic}; directions: ${item.directions.join(", ")}; details: @help relations ${target} ${item.type}`
           ]);
           section(direction === "outgoing" ? "Outgoing relationships (this type is the source)" : "Incoming relationships (this type is the target)", lines.length ? lines : ["(none)"]);
         }
@@ -11764,11 +12617,11 @@ var arch = (() => {
       if (!args.length) section("Registered icon packs", names2.map((name) => `${name} · ${getIconNames(name).length} icons and aliases`));
       else {
         const [name, filter = "*", page = "1"] = args;
-        if (!names2.includes(name)) fail7(`Unknown icon pack: ${name}. Registered: ${list(names2)}.`);
-        if (!/^[1-9][0-9]*$/.test(page) || !Number.isSafeInteger(Number(page))) fail7("PAGE must be a positive integer.");
+        if (!names2.includes(name)) fail10(`Unknown icon pack: ${name}. Registered: ${list(names2)}.`);
+        if (!/^[1-9][0-9]*$/.test(page) || !Number.isSafeInteger(Number(page))) fail10("PAGE must be a positive integer.");
         const icons = getIconNames(name).filter((id) => filter === "*" || id.toLowerCase().includes(filter.toLowerCase()));
         const pages = Math.max(1, Math.ceil(icons.length / pageSize)), current = Number(page);
-        if (current > pages) fail7(`Page ${page} does not exist. Valid range: 1–${pages}.`);
+        if (current > pages) fail10(`Page ${page} does not exist. Valid range: 1–${pages}.`);
         section(`Icon pack ${name}`, `${icons.length} matches · Filter: ${filter} · Page ${current}/${pages} · up to ${pageSize} names per page.`);
         section("Valid icon references", icons.length ? icons.slice((current - 1) * pageSize, current * pageSize).map((id) => `${name}.${id}`) : ["(no matches)"]);
         if (current < pages) section("Next page", `@help iconpacks ${name} ${JSON.stringify(filter)} ${current + 1}`);
@@ -11784,19 +12637,30 @@ var arch = (() => {
       );
     } else if (topic === "diagrams") {
       const selected2 = args.length ? [args[0]] : DIAGRAMS;
-      if (selected2.some((type) => !DIAGRAMS.includes(type))) fail7(`Unknown diagram type. Valid types: ${list(DIAGRAMS)}.`);
+      if (selected2.some((type) => !DIAGRAMS.includes(type))) fail10(`Unknown diagram type. Valid types: ${list(DIAGRAMS)}.`);
       const notes = {
-        connected: ["Default renderer. Use place, style and route to control the presentation."],
+        connected: ["Default renderer. Use place, style and route to control the presentation.", "propertyFields [expression, unit, value] adds actual property rows to cards; place and route remain available.", "Named tree groups arrange selected sibling nodes automatically within this view. See @help views."],
+        tree: [
+          "Automatic taxonomy/forest layout: parents centered across their ordered children. No place/route blocks in a whole-view tree.",
+          "relations: optional relationship-type list (includes subtypes); other edges are omitted from this view.",
+          "parentDirection: auto (default; generalization target is parent, otherwise source), source or target.",
+          "direction: down (default), up, right or left; orientation is an alias. Choose only one. Direction describes parent-to-child layout, independently of arrow direction.",
+          "levelGap/siblingGap: 16–800 pixels (defaults 96/48); level gaps grow for edge labels.",
+          "showLabels: true (default) or false. curve: rounded (default) or orthogonal.",
+          "Node styles, icons, visibility and minimum sizes work as in connected views. Packages are flat cards; containment is not the hierarchy.",
+          "A visible node has at most one hierarchy parent; cycles, self-links, parallel hierarchy links and bidirectional links are errors. Use relations/include/exclude/display none to select a tree, or diagram connected for multiple inheritance.",
+          "For mixed layouts use tree ID { nodes [a, b, c] direction up } inside a connected view. External nodes remain visible and can be positioned separately; see @help views."
+        ],
         sequence: ["participants/messages: ordered lists of node/edge IDs.", "asyncMessages/returns: subsets of messages; a message cannot be both async and return."],
         state: ["initial: node ID; finals: list of node IDs. Initial has no incoming edges; finals have no outgoing edges."],
         activity: ["lanes: list of node IDs; laneAttribute: assignment attribute (default owner).", "decisions/forks require at least two outgoing edges; joins require at least two incoming edges."],
-        matrix: ["rows/columns: lists of node IDs (at most 100 each); relations: relationship types.", "Without a selection, uses all visible elements/relationships. Cells count directed relationships."],
+        matrix: ["rows/columns: lists of node IDs (at most 100 each); relations: relationship types.", "Without a selection, uses all visible elements/relationships. Cells count relationships in each direction; bidirectional links appear in both cells."],
         heatmap: ["valueAttribute is required; numeric values between min and max (defaults 0 and 5).", "parentAttribute is optional; otherwise uses the model hierarchy. colorLow/colorHigh: hex or CSS3 name."],
         timeline: ["startAttribute/endAttribute: attribute names (defaults start/end).", "Both ISO date values are required; start must not be after end."],
-        class: ["attributes/methods/functions/interfaces/ports/parameters: lists of element IDs.", "ownerAttribute/signatureAttribute: attribute names (defaults owner/signature).", "Parameters belong to methods/functions; other details belong to classes.", "propertyFields [FIELD, FIELD]: display actual attribute values/reference IDs on each class card; different from member element IDs."]
+        class: ["attributes/methods/functions/interfaces/ports/parameters: lists of element IDs.", "ownerAttribute/signatureAttribute: attribute names (defaults owner/signature).", "Parameters belong to methods/functions; other details belong to classes.", "propertyFields [FIELD, FIELD]: display actual attribute values/reference IDs on each class card; different from member element IDs.", "place CLASS_ID at (X, Y) supports numeric or calculated absolute view coordinates. Optional size sets minimum dimensions (cards remain at least 380 wide and grow for contents). Unplaced cards keep their automatic row positions.", "Ports move with their owner and can be coordinate anchors. Details cannot be placed individually. Packages are flat class cards here. Tree groups, route/routes, via and graphical reference connectors remain connected-only."]
       };
       for (const type of selected2) section(type, `diagram ${type}${DIAGRAM_OPTIONS[type].length ? " { ... }" : ""}`, `Valid options: ${list(DIAGRAM_OPTIONS[type])}`, notes[type]);
-      section("Lists and layout", "Diagram lists use square brackets: participants [user, app].", "All referenced elements must be visible.", "place and route apply only to connected; style is also available in other diagrams.");
+      section("Lists and layout", "Diagram lists use square brackets: participants [user, app].", "All referenced elements must be visible.", "place applies to connected and class; route applies to connected only. style is also available in other diagrams.");
     } else if (topic === "views") {
       section(
         "View",
@@ -11813,9 +12677,38 @@ var arch = (() => {
         "diagram TYPE { ... }  // default connected"
       );
       section("Rendered views", "config { views all }  // all views in declaration order", "config { views [detail, overview] }  // selected IDs in this order", "config { views overview }  // one view", "Without a selection, the first view is rendered. Multiple views are stacked with headings inside one standalone SVG.", "API precedence: options.view, then options.views, then config.views, then the first view. The preview dropdown offers Configured views and individual views.");
+      section(
+        "Named tree layout groups (connected only)",
+        "tree hierarchy { nodes [phase, vision, goalA, goalB] direction up }",
+        "place hierarchy at (300, 0)  // optional group position",
+        "place capability at (0, 250)  // optional external card position",
+        "Each group has its own direction: down (default), up, left or right. orientation is an alias. parentDirection auto/source/target selects hierarchy parents independently of arrow direction.",
+        "Other options: relations, levelGap, siblingGap, curve rounded/orthogonal, showLabels. relations selects hierarchy edges; other visible relationships remain drawn and routable.",
+        "Multiple groups are allowed. Members must be unique, visible non-container siblings; one node belongs to at most one group. Use include to select view contents and nodes to select group members.",
+        "Groups are invisible layout regions, not model elements or packages. Group dimensions are automatic; place GROUP sets its bounding-box origin, relative to the parent package content if nested. Do not place individual members.",
+        "External cards use normal connected layout; directly linked top-level cards are aligned beside the group when unplaced. Internal hierarchy edges use automatic tree paths; route overrides remain available.",
+        "Route precedence: individual route properties, then group curve/showLabels, then view routes defaults. showLabels controls text; label none hides the entire label. See @help diagrams tree for hierarchy constraints."
+      );
       section("Selection", "Including a container includes its descendants. Required ancestor containers are added automatically.", "Edges appear only when both endpoints are visible.", "Without a view block, the default view is created automatically.", "@help routing", "@help styles", "@help diagrams");
     } else if (topic === "routing") {
-      section("Position and size (connected only)", "place ID at (X, Y)", "place ID at (X, Y) size (WIDTH, HEIGHT)", "Coordinates: ±10000000; minimum size (160, 96). Positions inside containers are relative to their content.");
+      section("Position and size (connected and class)", "place ID at (X, Y)", "place ID at (X, Y) size (WIDTH, HEIGHT)", "Coordinates: ±10000000; minimum size (160, 96). Connected positions inside containers are relative to their content. Class cards are flat, use absolute coordinates, remain at least 380 wide and grow for contents; details move with their owner.");
+      section(
+        "Coordinate references and offsets",
+        "place maritime at (coverage.x + 20, vision.y - 40)",
+        "place maritime at (hierarchy.x - maritime.width - 80, vision.y)",
+        "place second at (first.right + 40, first.y)",
+        "Reference fields: x, y (top-left corner), width, height, right, bottom, centerX, centerY. Use visible node or tree group IDs from the same view, including automatically positioned tree members.",
+        "Each coordinate supports numbers, references and +, -, *, /. Multiplication/division precede addition/subtraction; equal-precedence operators evaluate left to right. Parentheses override precedence, unary + and - are supported. At most 32 operands and 16 nested parentheses; no executable code. Expressions work in place at and route via; size, endpoint and label points stay numeric.",
+        "place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)",
+        "place second at ((first.x + first.right) / 2, first.y + 20 * 3)",
+        "Division by zero and nonfinite calculations are errors. Constant zero divisors are rejected during validation; divisors depending on layout values are checked when positions resolve.",
+        "References are evaluated in the target parent content coordinate space. At top level this is the view coordinate space. A single reference plus an offset aligns to the referenced absolute position even across containers; plain numeric coordinates retain their local meaning.",
+        "Automatic layout runs once. Symbolic placements then resolve before edge/reference routing; they do not trigger collision avoidance or reflow. Coordinates and references are local to each view.",
+        "Forward references work independently of declaration order. Circular coordinate chains are errors, also in draft mode; the error lists the chain. A tree member depends on its group, and package sizes depend on their contents. Anchor at least one coordinate independently.",
+        "Package content may expand right/down after placement. A result outside the parent left/top content area is an error; move the parent or choose an inside position. A graphical reference card used as a coordinate anchor becomes a canonical card in normal layout.",
+        'JSON: "at": ["coverage.x + 20", "vision.y - 40"]. Expressions remain symbolic in JSON/DSL/meta exports.'
+      );
+      section("Tree groups", "place TREE_GROUP_ID at (X, Y)", "Positions the complete automatic tree; size and individual member placement are not supported. Outside nodes accept ordinary place. Internal edges accept route overrides, including label icons. @help views");
       section(
         "Routing defaults (connected only)",
         "routes {",
@@ -11839,8 +12732,26 @@ var arch = (() => {
         "curve: orthogonal | straight | rounded | bezier. With via, bezier requires exactly two control points.",
         'path "M 0 0 L 100 100" replaces the calculated path; label (X, Y) positions the edge label; label none hides its text, frame and icon.'
       );
+      section(
+        "Calculated via points",
+        "route EDGE_ID { via (source.right + 40, source.centerY), (target.x - 40, target.centerY) }",
+        "route information -> EDGE_ID { via (information.centerX, information.y - 40), (target.x - 40, target.centerY) curve bezier }",
+        "routes { via ((source.x + target.x) / 2, source.y - 60) }",
+        "via accepts the same node/group fields, +, -, *, /, parentheses and numeric limits as place. Literal numbers and expressions may be mixed. Defaults resolve after specific route overrides; a local via replaces the whole default point list.",
+        "All via values are absolute view coordinates, including inside packages. Nodes, package sizes and tree groups resolve first; via resolves immediately before routing. Explicit path replaces via. Endpoint points, label positions and size remain numeric.",
+        "Only visible nodes and groups in this view can be used; relationship IDs and other routes are not coordinate anchors. Graphical reference cards used as anchors become canonical cards in normal layout, also with perEdge occurrences. Other reference cards retain automatic placement.",
+        "A hidden carrying edge or a hidden reference card does not evaluate its unused via. Unknown IDs and invalid arithmetic are still rejected in stored routes. Constant zero divisors fail validation; layout-dependent zero divisors fail during rendering.",
+        'JSON: "via": [["source.right + 40", "target.y - 20"], ["target.x - 40", "target.centerY"]]. Source/meta exports preserve expressions.'
+      );
       section("Independent label fields", "routes { icon core.cloud showIcon true showLabel false }", "route EDGE_ID { showIcon false showLabel true }", "showIcon and showLabel are booleans (default true). showLabel controls visible text; showIcon controls the configured icon. Both false removes the label frame. label none hides the entire label regardless of these switches.");
       section("Hide relationship labels", "routes { label none }", "route EDGE_ID { label none }", "A local label (X, Y) overrides a global label none and shows the label again, including any inherited icon. Hidden labels occupy no layout space; relationship titles and references remain in the model and edge tooltip.");
+      section(
+        "Hide entire relationships",
+        "style EDGE_ID { display none }",
+        "style EDGE_ID { display standard }",
+        "View-local presentation only: hide the path, label/icon and carried reference connectors. Hidden relationships still count for profile/model constraints. Matrices omit their cells; explicit sequence message lists skip hidden messages.",
+        "Relationship styles accept only display none or standard. Other presentation fields belong in route EDGE_ID."
+      );
       section(
         "Icons on relationship labels",
         "routes { icon core.cloud iconPosition left }",
@@ -11865,6 +12776,24 @@ var arch = (() => {
       );
     } else if (topic === "styles") {
       section(
+        "Property fields on cards",
+        "propertyFields [expression, unit, value]  // view-wide",
+        "style criterion { propertyFields [expression] }",
+        "style measure { propertyFields [unit, value] }",
+        "Available in connected, tree and class views. diagram connected/tree/class { propertyFields [...] } supplies diagram defaults. Precedence: node style, view, diagram. [] clears a selection.",
+        "Names are declared attributes or public properties (id, type, title, description, technology, stereotype, tags). Each card shows only values it has, including 0, false and lists. Unknown names are errors. Text wraps and cards grow before placement/routing; packages reserve header space for their rows.",
+        "Connected cards retain templates, icons, place, routes, tree groups and reference cards. Logo display hides all text including properties. Property visibility is independent of showLabel/showDescription. Class details cannot have their own propertyFields style; configure the owner card.",
+        "Class cards retain compartments and accept place with calculated coordinates. Routes remain automatic; route/routes/via are not supported in class views."
+      );
+      section(
+        "Hide nodes, packages or relationships",
+        "style ELEMENT_ID { display none }",
+        "style ELEMENT_ID { display standard }",
+        "Node hiding removes the card and all incident relationships. Packages also hide their descendants, even when explicitly included. Hidden reference cards/connectors are omitted.",
+        "Relationship hiding removes the line, label/icon and carried reference connectors. It does not remove the relationship from model/profile validation.",
+        "Presentation only, local to the view; structural renderer and profile requirements still apply. Node display none works in all diagram renderers. Other relationship styles belong in route EDGE_ID."
+      );
+      section(
         "View style",
         "style NODE_ID {",
         "  template component",
@@ -11873,7 +12802,7 @@ var arch = (() => {
         "  backgroundColor Gold",
         "  opacity 0.45",
         "}",
-        "Valid fields: template, icon, iconPosition, accent, backgroundColor, opacity, display, fontSize, width, height, showIcon, showLabel, showStereotype, showDescription, showTechnology.",
+        "Valid fields: template, icon, iconPosition, accent, backgroundColor, opacity, display, fontSize, width, height, showIcon, showLabel, showStereotype, showDescription, showTechnology, propertyFields.",
         "fontSize: title size from 6 to 64 (default 15); other node texts scale proportionally. width/height: minimum dimensions (at least 160/96). These overrides require a connected view and take precedence over place size; content may increase height.",
         "The type/stereotype badge stays on one line with an ellipsis when needed; its tooltip keeps the complete text.",
         "display logo: connected view, non-container elements; show only a rectangle and an aspect-preserving icon. Centered by default; iconPosition aligns it inside the padded rectangle. display standard restores the usual card. Accessible title/type remain present.",
@@ -11882,6 +12811,7 @@ var arch = (() => {
         "Default: 0.2 with an explicit background, otherwise 1."
       );
       section("Node icon placement and visible fields", "style NODE_ID { iconPosition right showStereotype false showDescription false }", "iconPosition: top | left | bottom | right. Default: existing template placement; logo display stays centered unless a side is chosen. Package icons stay inside the header. Text and card/header sizes adapt to the placement.", "showIcon, showLabel, showStereotype, showDescription, showTechnology: true | false (default true). showLabel controls the node title. Hidden fields reserve no text space; model values and accessible tooltips remain present.", "Use standard display for independent text/icon visibility. Logo display still hides all text; showIcon false leaves its rectangle. These options require connected views and also apply to graphical reference cards.");
+      section("Tree projection", "Tree views also accept node fontSize, width/height, iconPosition, showIcon/showLabel/showStereotype/showDescription/showTechnology and logo display. Placement and routing are automatic. See @help diagrams tree.");
       section("Precedence", "View style overrides type presentation. Background: view, then type color, then style group, then theme.", "A model icon overrides the type icon; a view icon has the highest priority.", "Colors: hex (3/6 digits, quoted) or a CSS3 color name.", "@help colors", "@help templates");
     } else if (topic === "colors") {
       const filter = (args[0] ?? "").toLowerCase(), colors = Object.entries(CSS3_COLORS).sort(([a], [b]) => a.localeCompare(b)).filter(([name]) => name.includes(filter));
@@ -11917,13 +12847,14 @@ var arch = (() => {
         "Inline rule fields",
         "Profile: id, title, version, extends, defaultRelation, requireViewpoint.",
         "type: extends, template, container, abstract, contains, icon, accent, backgroundColor, styleGroup, attribute/attributes.",
-        "relation: extends, style, abstract, from, to, allowSelf, acyclic, incoming/outgoing { min ... max ... }, attribute/attributes.",
+        "relation: extends, style, abstract, from, to, directions [forward, both], allowSelf, acyclic, incoming/outgoing { min ... max ... }, attribute/attributes.",
         "attribute: type, required, enum, min, max, minLength, maxLength, format, many, minItems, maxItems, uniqueItems, targets.",
         "Attribute types: string, number, integer, boolean, reference. Formats: date, date-time, uri.",
         "viewpoint: nodes, relations, requiredNodes, requiredRelations. styleGroup: backgroundColor.",
         "Multiple inheritance: extends A, B. Profile extends has exactly one registered parent.",
         "JSON profiles also support comparisons, pairs and connections. Details: @help types/relations/viewpoints PROFILE NAME."
       );
+      section("Validation mode", "config { profile naf41-uaf validation draft }", "validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.");
     } else if (topic === "api") {
       section(
         "Queries and rendering",
@@ -11937,18 +12868,18 @@ var arch = (() => {
         "arch.renderMarkdown(markdown, options) → HTML with inline SVG"
       );
       section("Registration", "arch.registerProfile(name, definition)", "arch.getProfiles() → registered IDs", "arch.getProfile(name) → independent profile copy", "arch.registerIconPack(name, data)  // Iconify or converted paths", "arch.getIconPacks() → registered pack names", 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
-      section("Options", "profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.", "view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.", "theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.", "Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.");
+      section("Options", "profile: registered profile ID or profile object; also applies to @help types/relations/viewpoints without an explicit ID.", "validation: strict | draft; overrides config.validation. Incomplete drafts have warning diagnostics and conformant: false; layout returns kind notices with content and enlarged bounds.", "view: one view ID; views: all, a view ID or an array of IDs. Precedence: view > views > config.views > first view.", "theme: light | dark (overrides all selected views); idPrefix: unique SVG ID prefix. Multiple views return one SVG. layout returns kind views with layouts/sections and overall bounds; single-view layout stays unchanged.", "Help uses the help view. Registration does not load URLs. renderAll isolates errors per block.");
     }
     return { topic, profile, title: topic ? `Help · ${topic}` : "arch.js · Help", sections };
   }
   function help(query = "", options = {}) {
-    if (typeof query !== "string") fail7("Help query must be a string.");
+    if (typeof query !== "string") fail10("Help query must be a string.");
     const model = parseHelp(`@help${query ? ` ${query}` : ""}`, options), content = helpContent(model, options);
     return [content.title, ...content.sections.flatMap((s) => ["", s.title, ...s.lines])].join("\n");
   }
   function layoutHelp(model, options = {}) {
     const content = helpContent(model, options);
-    if (options.view !== void 0 && options.view !== "help") fail7(`Unknown view: ${options.view}`);
+    if (options.view !== void 0 && options.view !== "help") fail10(`Unknown view: ${options.view}`);
     const rows = [];
     let y = 112;
     const clean2 = (text) => String(text).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/gu, "�");
@@ -11997,20 +12928,20 @@ var arch = (() => {
   var serial3 = 0;
   function helpSVG(graph, options = {}) {
     const theme = options.theme ?? graph.view.theme;
-    if (!["light", "dark"].includes(theme)) fail7("theme must be light or dark");
+    if (!["light", "dark"].includes(theme)) fail10("theme must be light or dark");
     const prefix = options.idPrefix ?? `arch-help-${++serial3}`;
-    if (typeof prefix !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(prefix)) fail7("Invalid idPrefix");
+    if (typeof prefix !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(prefix)) fail10("Invalid idPrefix");
     const dark = theme === "dark", bg = dark ? "#111827" : "#fafbfe", card = dark ? "#1e293b" : "#ffffff", text = dark ? "#e2e8f0" : "#334155", muted = dark ? "#a4b2c7" : "#64748b", accent = dark ? "#a5b4fc" : "#4338ca";
     const { width, height } = graph.bounds;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" data-arch-svg="${theme}" data-arch-help="${escape2(graph.topic || "overview")}">
-<title id="${prefix}-title">${escape2(graph.title)}</title><desc id="${prefix}-desc">arch.js language reference and registered extensions. Text can be selected and copied.</desc>
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" data-arch-svg="${theme}" data-arch-help="${escape3(graph.topic || "overview")}">
+<title id="${prefix}-title">${escape3(graph.title)}</title><desc id="${prefix}-desc">arch.js language reference and registered extensions. Text can be selected and copied.</desc>
 <rect width="${width}" height="${height}" rx="18" fill="${bg}"/>
 <rect x="16" y="16" width="${width - 32}" height="${height - 32}" rx="14" fill="${card}" stroke="${dark ? "#3b4960" : "#d8dfec"}"/>
 <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" xml:space="preserve">
 <text x="40" y="49" font-size="11" font-weight="700" letter-spacing="1.5" fill="${muted}">ARCH.JS / REFERENCE</text>
-<text x="40" y="85" font-size="26" font-weight="700" fill="${accent}">${escape2(graph.title)}</text>
+<text x="40" y="85" font-size="26" font-weight="700" fill="${accent}">${escape3(graph.title)}</text>
 <path d="M40 104H920" stroke="${dark ? "#3b4960" : "#e2e8f0"}"/>
-${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" font-size="${row.kind === "heading" ? 17 : 13}" font-weight="${row.kind === "heading" ? 650 : 400}" fill="${row.kind === "heading" ? accent : text}">${escape2(row.text)}</text>`).join("\n")}
+${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" font-size="${row.kind === "heading" ? 17 : 13}" font-weight="${row.kind === "heading" ? 650 : 400}" fill="${row.kind === "heading" ? accent : text}">${escape3(row.text)}</text>`).join("\n")}
 </g></svg>`;
   }
 
@@ -12021,7 +12952,8 @@ ${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" fon
     if (model?.kind === "help") return layoutHelp(model, options);
     const ids = selectedViewIds(model, options);
     const layouts = ids.map((view) => layout(model, { ...options, view }));
-    return layouts.length === 1 ? layouts[0] : stackViews(model, layouts);
+    const graph = layouts.length === 1 ? layouts[0] : stackViews(model, layouts);
+    return withValidationNotices(graph, validationDiagnostics(profileDiagnostics(model, resolveProfile(model, options)), validationMode(model, options)));
   }
   function validate2(sourceOrModel, options = {}) {
     let profile;
@@ -12048,7 +12980,8 @@ ${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" fon
   function renderToString(sourceOrModel, options = {}) {
     const model = typeof sourceOrModel === "string" || isJSONDocument(sourceOrModel) ? parse(sourceOrModel, options) : sourceOrModel;
     const graph = layout2(model, options);
-    return graph.kind === "help" ? helpSVG(graph, options) : graph.kind === "views" ? viewsSVG(graph, options) : toSVG(graph, options);
+    const renderGraph = (graph2, options2) => graph2.kind === "notices" ? noticesSVG(graph2, renderGraph, options2) : graph2.kind === "help" ? helpSVG(graph2, options2) : graph2.kind === "views" ? viewsSVG(graph2, options2) : toSVG(graph2, options2);
+    return renderGraph(graph, options);
   }
   function render(target, sourceOrModel, options = {}) {
     const element = typeof target === "string" ? globalThis.document?.querySelector(target) : target;
@@ -12085,7 +13018,7 @@ ${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" fon
     const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
     const html = [], paragraph = [];
     const flush = () => {
-      if (paragraph.length) html.push(`<p>${escape2(paragraph.splice(0).join(" "))}</p>`);
+      if (paragraph.length) html.push(`<p>${escape3(paragraph.splice(0).join(" "))}</p>`);
     };
     for (let i = 0; i < lines.length; i++) {
       const fence = lines[i].match(/^\s{0,3}(`{3,}|~{3,})\s*([\w-]*)\s*$/);
@@ -12095,11 +13028,11 @@ ${graph.rows.map((row) => `<text x="40" y="${row.y}" style="white-space:pre" fon
         while (++i < lines.length && !new RegExp(`^\\s{0,3}${char}{${length},}\\s*$`).test(lines[i])) body.push(lines[i]);
         if (i >= lines.length) throw new ArchError("Unclosed Markdown code block", { line: opening + 1, column: 1 });
         if (fence[2] === "arch") html.push(`<figure class="arch-diagram">${renderToString(body.join("\n"), options)}</figure>`);
-        else html.push(`<pre><code class="language-${escape2(fence[2])}">${escape2(body.join("\n"))}</code></pre>`);
+        else html.push(`<pre><code class="language-${escape3(fence[2])}">${escape3(body.join("\n"))}</code></pre>`);
       } else if (/^#{1,6} /.test(lines[i])) {
         flush();
         const heading = lines[i].match(/^(#{1,6}) (.*)$/);
-        html.push(`<h${heading[1].length}>${escape2(heading[2])}</h${heading[1].length}>`);
+        html.push(`<h${heading[1].length}>${escape3(heading[2])}</h${heading[1].length}>`);
       } else if (!lines[i].trim()) flush();
       else paragraph.push(lines[i]);
     }

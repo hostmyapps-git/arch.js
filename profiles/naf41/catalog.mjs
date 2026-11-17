@@ -24,6 +24,8 @@ function view(id, title, page, description, nodes, relations, requiredNodes = ''
 }
 
 // Capability concepts missing as independently editable elements in UAF 1.0.
+// NAF's C2 example labels these «Goal»; UAF and the ADMBw MDG call the concept EnterpriseGoal.
+node('Goal', 'EnterpriseGoal', 91, 'NAF C2 Goal, mapped as a concrete subtype of UAF EnterpriseGoal. Existing goal relationships, attributes and viewpoint rules apply to both names.');
 node('Effect', 'ActualState', 96, 'A desired change in the world. Use DesiredEffect from a capability to this state.');
 node('AssessmentCriterion', 'PropertySet', 98, 'A criterion characterizing capability performance.', { attributes: { expression: text(true) } });
 node('EffectivenessCriterion', 'AssessmentCriterion', 96, 'A criterion for assessing an intended effect.');
@@ -39,6 +41,8 @@ edge('GroupsCapability', 'CapabilityGroup', 'Capability', 88, 'Group to member c
 edge('RequiresCapability', 'EnterpriseVision', 'Capability', 90, 'Vision to required capability.');
 edge('SpecifiesGoal', 'EnterpriseVision', 'EnterpriseGoal', 90, 'Vision to its goals.');
 edge('DesiresCapability', 'EnterprisePhase ActualEnterprisePhase', 'Capability', 90, 'Enterprise phase to desired capability.');
+edge('DesiresVision', 'EnterprisePhase ActualEnterprisePhase', 'EnterpriseVision', 90, 'Enterprise phase to desired vision, as shown in the C2 cut-out and the p.91 example.');
+edge('DesiresGoal', 'EnterprisePhase ActualEnterprisePhase', 'EnterpriseGoal', 90, 'Enterprise phase to desired goal, as shown in the C2 cut-out.');
 edge('CharacterizesCapability', 'AssessmentCriterion', 'Capability', 98, 'Performance criterion to the capability characterized, following the C7 cut-out direction.');
 edge('EvaluatesCriterion', 'Measure', 'AssessmentCriterion', 98, 'Measure to evaluated criterion.');
 edge('SpecifiesEffectiveness', 'Capability', 'EffectivenessCriterion', 96, 'Capability to effectiveness criterion.');
@@ -202,10 +206,12 @@ view('C1', 'Capability Taxonomy', 88, 'Capability specialization and whole/part 
   'Capability CapabilityGroup AssessmentCriterion Measure', 'CapabilityGeneralization CapabilityAggregation GroupsCapability CharacterizesCapability EvaluatesCriterion', 'Capability');
 view('C2', 'Enterprise Vision', 90, 'Vision, goals, enterprise phases and capabilities linked to them.',
   'EnterpriseVision VisionStatement EnterpriseGoal EnterprisePhase ActualEnterprisePhase Capability Effect EnduringTask ActualEnduringTask',
-  'RequiresCapability SpecifiesGoal DesiresCapability DesiredEffect CapabilityForTask Exhibits', 'EnterpriseVision EnterpriseGoal EnterprisePhase Capability', 'RequiresCapability SpecifiesGoal DesiresCapability',
-  [connect('EnterpriseVision','RequiresCapability'), connect('EnterpriseVision','SpecifiesGoal'), connect('EnterprisePhase','DesiresCapability'), connect('Capability','RequiresCapability DesiresCapability','incoming'), connect('EnterpriseGoal','SpecifiesGoal','incoming')], [],
-  ['EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states.']);
-view('C3', 'Capability Dependencies', 92, 'Dependencies between capabilities.', 'Capability CapabilityGroup', 'CapabilityDependency CapabilityGeneralization CapabilityAggregation GroupsCapability', 'Capability', 'CapabilityDependency', [connect('Capability','CapabilityDependency','either')]);
+  'RequiresCapability SpecifiesGoal DesiresCapability DesiresVision DesiresGoal DesiredEffect CapabilityForTask Exhibits', 'EnterpriseVision EnterpriseGoal EnterprisePhase Capability', 'RequiresCapability SpecifiesGoal',
+  [connect('EnterpriseVision','RequiresCapability'), connect('EnterpriseVision','SpecifiesGoal'), connect('EnterprisePhase','DesiresCapability DesiresVision DesiresGoal'), connect('Capability','RequiresCapability DesiresCapability','incoming'), connect('EnterpriseGoal','SpecifiesGoal','incoming')], [],
+  ['EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states.',
+    'The C2 cut-out permits desires from an enterprise phase to a capability, vision or goal. Every planning phase requires at least one of these links; a direct DesiresCapability is not mandatory when DesiresVision/DesiresGoal is present.']);
+view('C3', 'Capability Dependencies', 92, 'Dependencies between capabilities, with optional specialization and grouping context.', 'Capability CapabilityGroup', 'CapabilityDependency CapabilityGeneralization CapabilityAggregation GroupsCapability', 'Capability', 'CapabilityDependency', [], [],
+  ['Not every displayed capability must have a CapabilityDependency: specialization/grouping context is allowed, as SAR demonstrates in the p.93 example. The view requires at least one dependency; completeness of relevant real-world dependencies cannot be checked automatically.']);
 view('C4', 'Standard Processes', 94, 'Operational activities supporting capabilities.', 'OperationalActivity Capability', 'MapsToCapability', 'OperationalActivity Capability', 'MapsToCapability', [connect('OperationalActivity','MapsToCapability'), connect('Capability','MapsToCapability','incoming')]);
 view('C5', 'Effects', 96, 'Effects desired by capabilities and optional effectiveness criteria.', 'Capability Effect EffectivenessCriterion Measure', 'DesiredEffect SpecifiesEffectiveness CharacterizesEffect EvaluatesCriterion', 'Capability Effect', 'DesiredEffect', [connect('Capability','DesiredEffect'), connect('Effect','DesiredEffect','incoming')]);
 view('C7', 'Performance Criteria', 98, 'Capabilities characterized by criteria that are evaluated by measures.', 'Capability AssessmentCriterion Measure Effect', 'CharacterizesCapability EvaluatesCriterion SpecifiesEffectiveness CharacterizesEffect', 'Capability AssessmentCriterion Measure', 'CharacterizesCapability EvaluatesCriterion', [connect('Capability','CharacterizesCapability','incoming'), connect('AssessmentCriterion','CharacterizesCapability'), connect('AssessmentCriterion','EvaluatesCriterion','incoming'), connect('Measure','EvaluatesCriterion')]);
@@ -265,7 +271,7 @@ relationTypes.LogicalInteraction.sources.push(source(132));
 relationTypes.LogicalInteraction.description += ' The default connected presentation uses reference cards attached to the flow, following the example on page 132 with the original arch.js templates and colors.';
 
 export const definition = {
-  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.1', extends: 'uaf',
+  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.4', extends: 'uaf',
   description: 'All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.',
   sources: [source('78–82, 88–190'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — inherited UAF 1.0 catalog', 'ReferenceDocs/nafv4/NAFv4-ADMBw-MDG-2026.05.xml — supporting comparison only; its declared foundation is NAF 4.0'],
   limitations: [mappingLimit, 'No certification or complete NAF/UAF conformance is claimed. All 47 IDs are covered structurally, not all normative semantics.', 'The inherited UAF coverage report still applies, including deferred native constraints. Application adapters are identified in type help.', 'Only included view elements/links count toward viewpoint connection rules. Typed references resolve in the model; designated structural references must also be visible.', 'NAF methodology, stakeholder approval, full state/sequence execution semantics and qualitative completeness require human review. See profiles/naf41/COVERAGE.md.'],

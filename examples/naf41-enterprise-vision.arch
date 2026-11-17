@@ -1,0 +1,73 @@
+architecture "C2 · Enterprise Vision" {
+    description "C2 with a directed tree layout group and an external capability, plus full-tree and manual alternatives."
+    config { profile naf41-uaf }
+    model {
+        EnterprisePhase horizon "Horizon 2030"
+        EnterpriseVision vision "Improved SAR Safety & Effectiveness"
+        Capability maritime "Maritime SAR"
+        Goal manpower "Reduce Manpower"
+        Goal coverage "Increase Coverage"
+        Goal response "Improve Response Times"
+        relation desires horizon -> vision "desires" { type DesiresVision }
+        relation requires vision -> maritime "requires" { type RequiresCapability }
+        relation specifiesManpower vision -> manpower "specifies" { type SpecifiesGoal }
+        relation specifiesCoverage vision -> coverage "specifies" { type SpecifiesGoal }
+        relation specifiesResponse vision -> response "specifies" { type SpecifiesGoal }
+    }
+    view grouped "C2 · Tree group with external capability" {
+        viewpoint C2
+        tree hierarchy {
+            nodes [horizon, vision, manpower, coverage, response]
+            direction up
+            parentDirection source
+        }
+        routes { curve rounded }
+        route requires { from left to right }
+    }
+    view positioned "C2 · Positioned group and capability" {
+        viewpoint C2
+        tree hierarchy {
+            nodes [horizon, vision, manpower, coverage, response]
+            direction up
+        }
+        place hierarchy at (300, 0)
+        place maritime at (0, 250)
+        route requires { from left to right curve rounded }
+    }
+    view relative "C2 · Relative capability placement" {
+        viewpoint C2
+        tree hierarchy {
+            nodes [horizon, vision, manpower, coverage, response]
+            direction up
+        }
+        place hierarchy at (300, 0)
+        place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)
+        route requires {
+            from left to right
+            via (vision.x - 40, vision.centerY), (maritime.right + 40, maritime.centerY)
+            curve rounded
+        }
+    }
+    view tree "C2 · Entire model as a tree" {
+        viewpoint C2
+        diagram tree {
+            parentDirection source
+            relations [DesiresVision, RequiresCapability, SpecifiesGoal]
+        }
+    }
+    view source "C2 · Source-like placement" {
+        viewpoint C2
+        place manpower at (0, 0)
+        place coverage at (300, 0)
+        place response at (600, 0)
+        place maritime at (0, 270)
+        place vision at (300, 270)
+        place horizon at (300, 490)
+        routes { curve rounded }
+        route desires { from top to bottom }
+        route requires { from left to right }
+        route specifiesManpower { from top to bottom via (410, 185), (110, 185) }
+        route specifiesCoverage { from top to bottom }
+        route specifiesResponse { from top to bottom via (410, 185), (710, 185) }
+    }
+}

@@ -187,15 +187,33 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.1`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.4`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 72 zusätzliche Knotentypen und
-92 zusätzliche Relationen ergeben mit dem Basisprofil 285 Knoten- und
-135 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter: 73 zusätzliche Knotentypen und
+94 zusätzliche Relationen ergeben mit dem Basisprofil 286 Knoten- und
+137 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
+
+`Goal` bildet die C2-Bezeichnung aus dem NAFv4.1-Beispiel (S.91) als konkreten
+Untertyp von `EnterpriseGoal` ab. Beide Bezeichnungen sind zulässig;
+`SpecifiesGoal`, Attribute und C2-Regeln gelten durch Typvererbung. Die
+ADMBw-MDG-XML definiert ebenfalls `EnterpriseGoal`, keinen eigenen `Goal`-Typ.
+Dieser Vokabularadapter importiert keine Bundeswehr-Erweiterungen; dafür wäre
+ein eigenes Anwendungsprofil mit expliziter Basis angemessen (die MDG nennt
+NAF 4.0, nicht NAFv4.1).
+
+Der C2-Cut-out auf S.90 zeigt `desires` von EnterprisePhase zu Capability,
+EnterpriseVision und Goal. Dafür stehen `DesiresCapability`, `DesiresVision`
+und `DesiresGoal` bereit. Pro EnterprisePhase ist mindestens eine dieser
+Verbindungen erforderlich; ein direkter Capability-Link ist nicht zusätzlich
+verpflichtend. Das Beispiel auf S.91 ist deshalb mit Phase → Vision gültig.
+Diese Baumstruktur kann mit `diagram tree` automatisch angeordnet werden.
+Die im PDF gemischten Richtungen erfordern für eine entsprechende Anordnung
+eine Connected-View mit manuellen Positionen. Beide Varianten stehen in
+`examples/naf41-enterprise-vision.arch`.
 
 `scripts/build-naf41.mjs` prüft die Quellenhashes und erzeugt aus
 `profiles/naf41/catalog.mjs` das Runtime-Profil und Abdeckungsberichte. Die
@@ -407,6 +425,9 @@ architecture "Customer platform" {
   Im Standardprofil ist das `package`. Beziehungen dürfen im Modell oder
   innerhalb von Packages stehen, die Endpunkte sind immer globale IDs.
 - Beziehung: `relation ID QUELLE -> ZIEL "Titel" { type TYP }`.
+  `<->` setzt `edge.direction = "both"`; ohne Angabe gilt `forward`.
+  Alternativ ist `{ direction both }` auf einer `->`-Beziehung möglich.
+  Die Profilregel `directions` muss die gewählte Richtung erlauben.
   Leere Beschriftung `""` ist erlaubt. Attribute sind optional. Ohne expliziten
   Typ gilt die `defaultRelation` des Profils; ohne diese ist `type` erforderlich.
 - Modellattribute: `description`, `technology`, `icon`, `stereotype`, `tags`
@@ -423,6 +444,30 @@ architecture "Customer platform" {
   Dreieck, Realisierung ein gestricheltes.
 
 ### Ansichten und Layout
+
+- `style EDGE_ID { display none }` blendet Beziehung, Label/Icon und grafische
+  Referenzzuordnungen aus. `display standard` ist sichtbar. Andere Felder in
+  einem Beziehungs-Style sind Fehler; Routenoptionen bleiben in `route`.
+  Modell-/Profilprüfung zählt ausgeblendete Beziehungen weiterhin; Matrizen und
+  explizite Sequenznachrichten lassen sie in der Darstellung weg.
+- `style NODE_ID { display none }` entfernt die Karte, angrenzende Beziehungen
+  und Referenzzuordnungen aus der View. Packages entfernen alle Nachkommen,
+  auch bei explizitem `include`. `standard` stellt die Karte wieder her.
+  Die vollständige Modell-/Profil-/Rendererprüfung ignoriert diese reinen
+  Darstellungshides. Fachrenderer filtern explizite Teilnehmer-/Detail-Listen
+  anhand der verbleibenden Elemente; leere Views liefern ein gültiges SVG.
+  Aktivitäts-Lanes/Heatmap-Eltern verbergen auch ihre zugeordneten Inhalte.
+- `config { validation strict|draft }` und API `validation: "strict"|"draft"`:
+  API vor Konfiguration, Standard `strict`. Draft stuft ausdrücklich als
+  `incomplete` markierte Diagnosen zu Warnungen herab: fehlende Pflichtattribute,
+  Viewpoints, erforderliche Viewpoint-Typen/Beziehungen und unterschrittene
+  Kardinalitäts-/Verbindungsminima. Alle anderen Fehler bleiben blockierend.
+  `validate()` liefert dann `valid: true`, `conformant: false`, Warnungsdiagnosen.
+  Layout ergänzt `kind: "notices"`, `content` (eigentliches Layout), `diagnostics`,
+  `noticeRows` und um den Footer erweiterte `bounds`. Bei gestapelten Views steht
+  der Hinweisbereich einmal unter allen Views. SVG-/Markdown-/DOM-Ausgaben
+  enthalten dieselben Hinweise und Quellpositionen. Fertige Entwürfe erzeugen
+  unveränderte normale Layouts ohne Footer.
 
 - `direction right|down`, `theme light|dark`, `spacing ZAHL` (24–400; Standard 80).
 - Optional `viewpoint ID` bindet eine View an Regeln des ausgewählten Profils.
@@ -446,6 +491,53 @@ architecture "Customer platform" {
   Negative Kinderkoordinaten erweitern den inneren Ursprung um ihren negativen
   Mindestwert; die relativen Abstände der Kinder bleiben erhalten. Top-Level ist
   absolut. Package-Größen wachsen mindestens bis zu ihren sichtbaren Kindern.
+- `place`-Koordinaten akzeptieren Rechnungen mit `+`, `-`, `*`, `/` aus Zahlen und
+  `ID.x`, `.y`, `.width`, `.height`, `.right`, `.bottom`, `.centerX`, `.centerY`.
+  Beispiel: `place maritime at (coverage.x + 20, vision.y - 40)`.
+  Referenzen gelten für sichtbare Nodes/Tree-Gruppen derselben View, inklusive
+  automatisch angeordneter Mitglieder. Punkt vor Strich; gleichrangige Operatoren
+  werden linksassoziativ ausgewertet. Klammern und unäre Vorzeichen sind möglich.
+  Maximal 32 Operanden und 16 Klammer-Ebenen pro Koordinate; keine Codeausführung.
+  Nur `at` unterstützt
+  Ausdrücke; zusätzlich unterstützt `via` dieselbe Grammatik. `size`, Endpunkt-
+  und Labelpunkte bleiben numerisch. Reine Zahlenarithmetik wird
+  zu Zahlen normalisiert, symbolische Ausdrücke bleiben im Quellmodell erhalten.
+  Division durch null und nichtendliche Zwischenwerte sind Fehler. Konstante
+  Nenner werden beim Einlesen geprüft, layoutabhängige Nenner beim Auflösen.
+  Parser/Auswertung verwenden eine begrenzte iterative Postfix-Darstellung.
+  Translationen werden bei affinen Rechnungen berücksichtigt; nichtlineare
+  Positionsprodukte/-quotienten hängen konservativ vom Inhaltsursprung ab.
+  In JSON: `"at": ["coverage.x + 20", "vision.y - 40"]`.
+  `src/placement.js` erstellt einen gerichteten Graphen pro Koordinate/Dimension,
+  einschließlich Package-Translation/-Größe, Tree-Mitgliedschaft und automatischer
+  externer Tree-Ausrichtung. Topologische Auflösung ist iterativ; Zyklen werden
+  auch in `draft` mit konkreter Abhängigkeitskette abgewiesen. Unbekannte oder
+  unsichtbare Referenzziele sind Fehler. Achsen werden unabhängig geprüft.
+  Das automatische Ausgangslayout wird einmal berechnet; anschließend werden
+  Referenzpositionen vor dem Kanten-/Referenzrouting aufgelöst. Es gibt keinen
+  iterativen Reflow und keine erneute Kollisionsvermeidung für manuelle Positionen.
+  Referenzkoordinaten werden in den Inhaltskoordinatenraum des Zielparents
+  umgerechnet; Maße bleiben Maße. Ein einzelner Positionsanker plus Offset richtet
+  auch über Package-Grenzen absolut aus. Zahlen behalten ihre lokale Bedeutung.
+  Packages wachsen nach rechts/unten. Aufgelöste Positionen außerhalb des linken/
+  oberen Inhaltsrands werden als Layoutfehler gemeldet, statt Packages zu verschieben.
+  Automatische grafische Referenzkarten, die als Anker verwendet werden, erhalten
+  eine kanonische Position im normalen Layout. Aufgelöste symbolische Koordinaten
+  müssen endlich und im Bereich ±10.000.000 liegen.
+- `via (AUSDRUCK, AUSDRUCK), …` unterstützt dieselben Felder, Operatoren,
+  Klammern und Grenzen für normale Routen, Zuordnungslinien und `routes`-Vorgaben.
+  `src/via.js` prüft Referenzen und löst effektive Routen nach Platzierung/Package-
+  Größen/Tree-Gruppen unmittelbar vor dem Routing auf. Alle Werte sind absolute
+  View-Koordinaten, auch für Nodes in Packages. Eine lokale `via`-Liste ersetzt
+  die komplette Vorgabe; `path` ersetzt die gesamte Route einschließlich `via`.
+  Ausdrücke bleiben im Quellmodell/JSON/Meta erhalten; Graphpunkte sind numerisch.
+  Via-Anker sind sichtbare Nodes oder Gruppen derselben View, keine Beziehungen
+  oder anderen Routen. Übersteuerte/ausgeblendete Routen verlangen keine Geometrie
+  ihrer ungenutzten Ziele; unbekannte IDs und ungültige Ausdrücke in gespeicherten
+  Routen bleiben Fehler. Ein Anker auf eine automatische grafische Referenzkarte
+  macht diese zur kanonischen Karte im normalen Layout, auch bei `perEdge`.
+  Die Routingphase weist keine Nodepositionen zu und erzeugt damit keinen neuen
+  Positions-Rückkopplungskreis. Bestehende Platzierungszyklen werden weiter geprüft.
 - `style ID { template TYP; accent "#rrggbb"; icon PACK.NAME }` überschreibt
   ausschließlich die Darstellung. Die 13 Standardtypen sind zugleich die
   verfügbaren Templates. Fachliche Typen wählen im Profil ein Template;
@@ -724,8 +816,9 @@ direkten Packvergleich und bietet JSON-Downloads. Das Beispiel
 Weitere Beispiele: `examples/profiles.arch` (Inline-Definition) und
 `examples/external-profile.arch` (registriertes JSON), jeweils zwei Views.
 `examples/uaf.arch` ergänzt neun UAF-/NAF-Ansichten; `examples/naf41.arch`
-ergänzt neun weitere NAFv4.1-Ansichten. Insgesamt stehen zwölf Modelle mit
-46 Views und zusätzlich `examples/help.arch` als dreizehnter Eintrag bereit.
+ergänzt neun weitere NAFv4.1-Ansichten. `examples/taxonomy.arch` ergänzt zwei
+automatische C1-Tree-Ansichten. Insgesamt stehen dreizehn Modelle mit
+48 Views und zusätzlich `examples/help.arch` als vierzehnter Eintrag bereit.
 Profile `uaf`, `naf4-uaf` und `naf41-uaf` sind im PROFILE-Selektor verfügbar.
 Die Seite lädt `profiles/profiles.js` und bietet oben einen PROFILE-Selektor,
 der den API-Parameter demonstriert. Fehler erhalten den letzten gültigen
@@ -764,10 +857,10 @@ Die beschriebene Version ist implementiert. Prüfung am 16.11.2026 mit Node.js
 Chromium auf macOS/ARM64. Browserbundles ohne externe Laufzeitscripts; der Node-Quellimport verwendet
 @xmldom/xmldom und svgpath als gepinnte npm-Abhängigkeiten.
 
-- 195 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
+- 256 Unit-/Integrationstestgruppen erfolgreich, einschließlich Parserfehlern,
   deterministischer/isolierter Layouts, Routing, Iconpacks, Unicode, Escaping,
   Markdown und Vergleich beider Bundles.
-- Alle zwölf Modellbeispiele mit 46 Ansichten sowie die eingebaute Hilfe im
+- Alle dreizehn Modellbeispiele mit 48 Ansichten sowie die eingebaute Hilfe im
   echten Browser geprüft.
 - Profilregistry, JSON-/Inline-Definitionen, Parameterpriorität, unveränderliche
   Snapshots, Vererbung, Datentypen, Attribute, Container, Kardinalitäten und
@@ -810,14 +903,14 @@ unverändert. Das Arbeitsprotokoll steht in `PROGRESS.md`.
 
 View-Syntax: `diagram TYPE { OPTION WERT … }`; Listen werden als `[ID, ID]`
 angegeben. Ohne Einstellung gilt weiterhin `connected`. Zusätzlich sind
-`sequence`, `state`, `activity`, `matrix`, `heatmap`, `timeline`, `class` enthalten.
+`tree`, `sequence`, `state`, `activity`, `matrix`, `heatmap`, `timeline`, `class` enthalten.
 Das JSON-Modell speichert die Einstellung in `view.diagram: { type, … }`.
 Die existierenden APIs wählen weiterhin die View über `options.view`.
 
 Parser und generische Validierung weisen unbekannte Typen/Einstellungen,
 ungültige Referenzen und lokale Diagrammfehler zurück. Profilregeln bleiben
 wirksam. Die spezialisierten Layouts liefern Bounds und semantische Knoten/
-Beziehungen; deren Kanten sind keine gerouteten Connected-SVG-Pfade.
+Beziehungen; außer bei `tree` sind deren Kanten keine gerouteten Connected-SVG-Pfade.
 `place` und `route` sind bei Spezialdiagrammen nicht erlaubt.
 
 `src/diagrams.js` implementiert die unabhängigen Layouts und sicheren SVG-
@@ -828,7 +921,38 @@ Vollständige Syntax, Defaults, Prüfregeln und bewusste semantische Grenzen
 stehen in [DIAGRAMS.md](DIAGRAMS.md). Das Beispiel `examples/diagrams.arch` enthält
 sieben Views. Es gibt keine automatische vollständige UML-/BPMN-/NAF-Konformität.
 
-Die Klassenansicht verwendet 380 Einheiten breite Karten mit abgerundeten Ecken,
+`src/tree.js` implementiert automatische Bäume/Wälder. Optionen:
+`relations` (Typfilter einschließlich Vererbung), `parentDirection auto|source|target`,
+`direction down|up|left|right` (Alias `orientation`, nicht gleichzeitig),
+`levelGap`/`siblingGap` (16–800, Standard 96/48),
+`curve rounded|orthogonal`, `showLabels` (Boolean, Standard true).
+`auto` verwendet bei Generalisierungen das Ziel als Elternteil, sonst die Quelle.
+Modellrichtung und Marker bleiben erhalten. Eltern sind über ihren geordneten
+Kindern zentriert; variable Karten- und Labelmaße gehen in die Abstände ein.
+Node-Styles, Icons/Templates, Sichtbarkeit, Farben und Größen werden über die
+bestehenden Connected-Karten gerendert. Packages sind flache Karten, keine
+verschachtelten Boxen. Zyklen, Selbstkanten, mehrere Eltern, parallele und
+bidirektionale Hierarchiekanten sind Fehler. Keine neuen Abhängigkeiten und
+keine rekursive Layouttraversierung: 1.000 Ebenen werden unterstützt.
+
+Connected-Views unterstützen benannte `tree ID { nodes [ID, …] direction up }`
+als unsichtbare Layoutgruppen. AST: `view.trees`; JSON-Quelle: View-`tree` nach ID.
+`src/tree-groups.js` prüft Mitgliedschaft/Optionen; `src/geometry.js` integriert
+die automatischen Teilbäume als atomare Layoutbereiche. `layout().treeGroups`
+enthält ID, Parent, Mitglieder, Wurzeln, Ausrichtung und Bounding Box; virtuelle
+Layoutknoten erscheinen nicht in `nodes`/SVG. Modellparent/Identität bleiben erhalten.
+Gruppen unterstützen alle Tree-Optionen; Filter betreffen ausschließlich die
+Hierarchiebildung, andere Kanten bleiben Connected-Kanten. `route` und grafische
+Referenzen funktionieren auch an internen Kanten. Konkrete Routen übersteuern
+Gruppen-`curve`/`showLabels`, diese übersteuern entsprechende `routes`-Vorgaben.
+Mitglieder: eindeutige sichtbare Nicht-Container unter demselben Modellparent,
+höchstens eine Gruppe pro Node. Gruppen dürfen in Packages liegen. `place GRUPPE`
+setzt den Bounding-Box-Ursprung; keine individuelle Mitgliederposition/Größenvorgabe
+für Gruppen. Mehrere Gruppen, vier Richtungen, externe automatische/manuelle Karten
+sind möglich. Keine Modellsemantik, keine Gruppenstyles/-umrandung und keine
+Untergruppen; Details und Beispiel in [DIAGRAMS.md](DIAGRAMS.md).
+
+Die Klassenansicht verwendet mindestens 380 Einheiten breite Karten mit abgerundeten Ecken,
 zum Theme passenden Schatten, abgesetztem Kopfbereich, Anzahl-Badges pro Detailbereich
 und Monospace-Signaturen. Die Höhe wächst mit den Einträgen; Ports bleiben
 als Beziehungsendpunkte am Kartenrand sichtbar.
@@ -837,6 +961,27 @@ mehrwertigen Eigenschaften/Referenz-IDs des jeweiligen Knotens. Das ist von
 `attributes [ID, ID]` für eigenständige, zugeordnete Modellelemente getrennt.
 Unbekannte Eigenschaftsnamen werden abgewiesen, fehlende optionale Werte nicht
 angezeigt; 0/false bleiben sichtbar und alle Werte werden escaped.
+
+`propertyFields` ist auf View-Ebene und in Node-Styles für Connected/Tree/Class
+verfügbar. Rangfolge Style → View → Diagramm; `[]` leert die Auswahl. Diagramm-
+Connected und -Tree akzeptieren ebenfalls Vorgaben. `src/property-fields.js`
+prüft deklarierte Attribute/öffentliche Properties (maximal 128, eindeutig).
+Globale Auswahl wird gegen die Union der projizierten Typen geprüft, Node-Styles
+gegen ihren eigenen Typ. Normale Karten umbrechen Zeilen bei skaliertem
+Beschreibungsschriftgrad und wachsen vor Layout, `place`-/`via`-Auflösung und
+Routing. Package-Header und grafische Referenzkarten reservieren ebenfalls Platz.
+Logo-Anzeige unterdrückt alle Texte; Modelleigenschaften bleiben unverändert.
+
+Class unterstützt `place` mit numerischen/berechneten Koordinaten und optionalem
+Mindest-`size`. `src/class-placement.js` bildet Karten/Ports für achsenweise
+Zyklusprüfung und Auflösung ab. Die Projektion ist flach, unabhängig vom
+Modellcontainment; Koordinaten sind absolut. Ports folgen ihrem Owner und sind
+Koordinatenanker. Details erhalten weder individuelles `place` noch eigene
+Property-Auswahl. Unplatzierte Karten behalten ihre Reihenposition; Überlappungen
+sind möglich. Negative Koordinaten und verschobene Ports/Karten/Labels fließen
+in die Bounding Box ein. Kanten folgen den endgültigen Positionen automatisch.
+`route`/`routes`/`via`, Tree-Gruppen und grafische Referenzkarten bleiben für Class
+unzulässig. Beispiel: `examples/property-fields.arch`.
 
 View-`style` unterstützt `opacity ZAHL` im Bereich 0–1, ausschließlich für die
 Füllung. Standard: 0,2 bei benannten/Hex-Hintergründen, sonst 1. Text, Icons und

@@ -117,7 +117,7 @@ try {
   await page.locator('#source').fill('@help'); await page.locator('#render-button').click();
 
   const overflow = [];
-  for (const id of ['platform', 'manual', 'capabilities', 'iconpacks', 'profiles', 'external-profile', 'uaf', 'minimal']) {
+  for (const id of ['platform', 'manual', 'capabilities', 'iconpacks', 'profiles', 'external-profile', 'uaf', 'taxonomy', 'minimal']) {
     await page.locator(`[data-example="${id}"]`).click();
     const views = await page.locator('#view-select option').evaluateAll(options => options.map(o => o.value).filter(id=>id!=='@meta'));
     for (const view of views) {
@@ -398,6 +398,140 @@ try {
   await page.locator('#source').fill(naf41Source); await page.locator('#render-button').click();
   console.log('✓ NAFv4.1: 47 scenarios in both themes, nine editable views, help and live error recovery');
 
+  const goalTaxonomy=await readFile('tests/fixtures/naf41/goal-taxonomy.arch','utf8');
+  const goalC2=naf41Document('C2',naf41Cases.C2.replace('EnterpriseGoal goal "Save lives"','Goal goal "Increase Coverage"')+
+    ' Goal response "Improve Response Times" Goal manpower "Reduce Manpower"'+
+    ' relation responseGoal vision -> response "Specifies" {type SpecifiesGoal} relation manpowerGoal vision -> manpower "Specifies" {type SpecifiesGoal}');
+  const goalIssues=await page.evaluate(sources=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const [index,source]of sources.entries())for(const theme of ['light','dark']) {
+      if(!arch.validate(source,{validation:'strict'}).valid)issues.push(`Invalid Goal source: ${index}`);
+      const svg=arch.render(host,source,{theme});
+      if(index===0&&svg.querySelectorAll('[data-node]').length!==6)issues.push('C1 projected the wrong elements');
+      if(index===1&&svg.querySelectorAll('[data-type="Goal"]').length!==3)issues.push('C2 Goal nodes missing');
+    }
+    if(!arch.help('types naf41-uaf Goal').includes('EnterpriseGoal')||!arch.help('connections naf41-uaf Goal').includes('SpecifiesGoal'))issues.push('Goal help is missing the inherited mapping');
+    host.remove();return issues;
+  },[goalTaxonomy,goalC2]);
+  assert.deepEqual(goalIssues,[]);
+  await page.locator('#source').fill(goalTaxonomy);await page.locator('#render-button').click();assert.equal(await page.locator('#error').isVisible(),false);
+  await page.screenshot({path:'test-results/naf41-goal-taxonomy.png',fullPage:true});
+  console.log('✓ NAF Goal vocabulary adapter: three C2 goals, inherited rules/help and original C1 tree in both themes');
+
+  const c2VisionSource=await readFile('examples/naf41-enterprise-vision.arch','utf8');
+  const c2VisionIssues=await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const view of ['grouped','positioned','relative','tree','source']) {
+      const report=arch.validate(source,{validation:'strict'});if(!report.valid)issues.push(...report.diagnostics.map(d=>d.message));
+      const graph=arch.layout(source,{view,theme}),svg=arch.render(host,source,{view,theme});
+      if(svg.querySelectorAll('.arch-node').length!==6||svg.querySelectorAll('.arch-edge').length!==5)issues.push('Incomplete C2 view');
+      if(view==='tree') {
+        if(graph.tree.roots.join(',')!=='horizon')issues.push('C2 tree root is not the enterprise phase');
+        if(graph.nodes.find(n=>n.id==='vision').treeParent!=='horizon')issues.push('Vision was not assigned to its phase');
+        for(const id of ['maritime','manpower','coverage','response'])if(graph.nodes.find(n=>n.id===id).treeParent!=='vision')issues.push(`Incorrect vision child: ${id}`);
+      }
+      if(view==='grouped'||view==='positioned'||view==='relative') {
+        const group=graph.treeGroups[0],byId=new Map(graph.nodes.map(n=>[n.id,n])),vision=byId.get('vision'),maritime=byId.get('maritime');
+        if(group.orientation!=='up'||group.nodes.includes('maritime'))issues.push('Wrong C2 tree membership/direction');
+        if(!(byId.get('horizon').y>vision.y&&vision.y>byId.get('coverage').y))issues.push('C2 group does not grow upward');
+        if(view==='grouped'&&!(maritime.x+maritime.width<group.bounds.x&&maritime.y+maritime.height/2===vision.y+vision.height/2))issues.push('Automatic C2 context placement failed');
+        if(view==='positioned'&&(group.bounds.x!==300||maritime.x!==0||maritime.y!==250))issues.push('Explicit C2 group/context placement failed');
+        if(view==='relative'&&(maritime.x!==group.bounds.x-maritime.width-80||maritime.y+maritime.height/2!==vision.y+vision.height/2))issues.push('Relative C2 group/member placement failed');
+        const json=arch.translate(source);if(arch.renderToString(json,{view,theme,idPrefix:'same'})!==arch.renderToString(source,{view,theme,idPrefix:'same'}))issues.push('Tree group JSON differs');
+        for(const n of graph.nodes) {
+          const card=svg.querySelector(`[data-node="${n.id}"]`);
+          for(const text of card.querySelectorAll('text')){const b=text.getBBox();if(b.x<0||b.y<0||b.x+b.width>n.width+1||b.y+b.height>n.height+1)issues.push(`C2 card text overflow: ${n.id}`);}
+        }
+      }
+      const bounds=svg.viewBox.baseVal;
+      for(const group of svg.querySelectorAll('.arch-node,.arch-edge-label')) {const box=group.getBBox();if(group.classList.contains('arch-edge-label')&&(box.x<bounds.x||box.y<bounds.y||box.x+box.width>bounds.x+bounds.width+1||box.y+box.height>bounds.y+bounds.height+1))issues.push('C2 label clipped');}
+    }
+    const symbolic='architecture "Offsets" {model{service a "A" service b "B" relation flow a -> b "Flow"}view v "V"{place a at (b.right + 20 * 2,b.centerY - a.height / 2 - 20) place b at (100,200)}}';
+    for(const theme of ['light','dark']) {
+      const graph=arch.layout(symbolic),a=graph.nodes.find(n=>n.id==='a'),b=graph.nodes.find(n=>n.id==='b'),svg=arch.render(host,symbolic,{theme});
+      if(a.x!==b.x+b.width+40||a.y!==b.y-20)issues.push('Coordinate arithmetic failed');
+      if(svg.querySelector('[data-node="a"]').getAttribute('transform')!==`translate(${a.x} ${a.y})`)issues.push('Resolved SVG translation differs');
+    }
+    const cycle=arch.validate(symbolic.replace('place b at (100,200)','place b at (a.x,200)'));
+    if(cycle.valid||!cycle.diagnostics[0].message.includes('Circular placement dependency'))issues.push('Missing coordinate cycle diagnostic');
+    try {arch.layout(symbolic.replace('a.height / 2','a.height / 0'));issues.push('Division by zero was accepted');}catch(error){if(!error.message.includes('Division by zero'))issues.push(error.message);}
+    host.remove();return issues;
+  },c2VisionSource);
+  assert.deepEqual(c2VisionIssues,[]);
+  await page.locator('#source').fill(c2VisionSource);await page.locator('#render-button').click();assert.equal(await page.locator('#error').isVisible(),false);
+  await page.selectOption('#view-select','grouped');await page.screenshot({path:'test-results/naf41-c2-grouped.png',fullPage:true});
+  const groupExport=await page.evaluate(source=>arch.renderToString(source,{view:'grouped',idPrefix:'group-export'}),c2VisionSource);
+  const groupPage=await browser.newPage({viewport:{width:1300,height:950}});await groupPage.setContent(groupExport);await groupPage.locator('svg').screenshot({path:'test-results/naf41-c2-grouped-export.png'});await groupPage.close();
+  await page.selectOption('#view-select','positioned');await page.screenshot({path:'test-results/naf41-c2-positioned.png',fullPage:true});
+  await page.selectOption('#view-select','relative');await page.screenshot({path:'test-results/naf41-c2-relative.png',fullPage:true});
+  await page.selectOption('#view-select','tree');await page.screenshot({path:'test-results/naf41-c2-tree.png',fullPage:true});
+  await page.selectOption('#view-select','source');await page.screenshot({path:'test-results/naf41-c2-source.png',fullPage:true});
+  console.log('✓ C2 desires: upward tree groups, automatic/manual/relative context, coordinate arithmetic/cycles, JSON, both themes and SVG export');
+
+  const c3Context=await readFile('tests/fixtures/naf41/c3-specialization.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const report=arch.validate(source);if(!report.valid||report.diagnostics.length)issues.push('C3 specialization context rejected');
+      const svg=arch.render(host,source,{theme});if(svg.querySelectorAll('.arch-node').length!==5||svg.querySelectorAll('.arch-edge').length!==4||svg.querySelector('.arch-validation-notices'))issues.push('C3 rendering is incomplete or has spurious notices');
+    }
+    host.remove();return issues;
+  },c3Context),[]);
+  console.log('✓ C3 specialization context: SAR has no dependency requirement; strict validation and both themes render without notices');
+
+  assert.deepEqual(await page.evaluate(()=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    const profile={defaultRelation:'exchange',nodeTypes:{service:{template:'service'},document:{template:'artifact'}},relationTypes:{exchange:{style:'flow',attributes:{payload:{type:'reference',targets:['document'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
+    const source='architecture "Via" {model{service a "A" service b "B" document info "Report" relation e a -> b "Exchange" {payload [info]}}view v "V"{place a at (20,40) place b at (a.right + 300,a.y + 200) place info at (a.x - 40,a.bottom + 150) route e {via (a.right + 40,a.y - 50), (b.x - 40,b.centerY) curve bezier} route info -> e {via (info.centerX,info.y - 40), (b.x - 60,a.centerY) curve bezier}}}';
+    for(const theme of ['light','dark']) {
+      const g=arch.layout(source,{profile}),svg=arch.render(host,source,{profile,theme}),a=g.nodes.find(n=>n.id==='a'),b=g.nodes.find(n=>n.id==='b'),info=g.nodes.find(n=>n.id==='info');
+      if(g.edges[0].points[1].x!==a.x+a.width+40||g.edges[0].points[2].y!==b.y+b.height/2)issues.push('Edge via expression failed');
+      if(g.referenceNodes[0].points[1].x!==info.x+info.width/2||g.referenceNodes[0].points[1].y!==info.y-40)issues.push('Reference via expression failed');
+      if(!svg.querySelector('.arch-reference-connector')?.getAttribute('d').includes(' C '))issues.push('Missing calculated reference bezier');
+      if(/NaN|Infinity|undefined/.test(svg.outerHTML))issues.push('Nonfinite via SVG');
+      const json=arch.translate(source);if(arch.renderToString(json,{profile,theme,idPrefix:'via'})!==arch.renderToString(source,{profile,theme,idPrefix:'via'}))issues.push('Via JSON differs');
+    }
+    const bad=arch.validate(source.replace('a.right + 40','missing.x'),{profile});if(bad.valid||!bad.diagnostics[0].message.includes('Unknown via reference'))issues.push('Missing via error');
+    host.remove();return issues;
+  }),[]);
+  console.log('✓ Calculated via: final node positions, ordinary/reference bezier paths, both themes, JSON and diagnostics');
+
+  const propertySource=await readFile('examples/property-fields.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const view of ['cards','classes']) {
+      const g=arch.layout(source,{view}),svg=arch.render(host,source,{view,theme}),byId=new Map(g.nodes.map(n=>[n.id,n]));
+      if(!svg.querySelector('[data-node="timeToFind"]').textContent.includes('Elapsed time in minutes'))issues.push('Criterion properties missing');
+      if(!svg.querySelector('[data-node="elapsed"]').textContent.includes('value: 25'))issues.push('Measure properties missing');
+      if(byId.get('elapsed').y!==byId.get('timeToFind').y+byId.get('timeToFind').height+100)issues.push('Property-aware relative placement failed');
+      for(const n of g.nodes)for(const text of svg.querySelector(`[data-node="${n.id}"]`).querySelectorAll('text')) {
+        const b=text.getBBox();if(b.x<-1||b.y<-1||b.x+b.width>n.width+1||b.y+b.height>n.height+1)issues.push(`Property text overflow: ${view}/${n.id}/${text.textContent}`);
+      }
+      const json=arch.translate(source);if(arch.renderToString(json,{view,theme,idPrefix:'props'})!==arch.renderToString(source,{view,theme,idPrefix:'props'}))issues.push('Properties JSON differs');
+    }
+    const shifted=source.replaceAll('place sar at (0, 0)','place sar at (-300, -200)');
+    const svg=arch.render(host,shifted,{view:'classes'}),b=svg.getBoundingClientRect();
+    for(const el of svg.querySelectorAll('text,rect,path'))if(!el.closest('defs')){const r=el.getBoundingClientRect();if(r.width&&(r.left<b.left-2||r.top<b.top-2||r.right>b.right+2||r.bottom>b.bottom+2))issues.push('Negative class placement clipped');}
+    host.remove();return issues;
+  },propertySource),[]);
+  for(const view of ['cards','classes']) {
+    const svg=await page.evaluate(({source,view})=>arch.renderToString(source,{view,idPrefix:'property-export'}),{source:propertySource,view});
+    const propPage=await browser.newPage({viewport:{width:1700,height:1100}});await propPage.setContent(svg);await propPage.locator('svg').screenshot({path:`test-results/property-fields-${view}.png`});await propPage.close();
+  }
+  assert.deepEqual(await page.evaluate(()=>{
+    const templates=['package','person','system','service','database','queue','component','node','artifact','interface','process','capability'],profile={nodeTypes:{}},issues=[];
+    for(const template of templates)profile.nodeTypes[template]={template,...(template==='package'?{container:true}:{}),attributes:{expression:{}}};
+    const text='Time until confirmed localization. '+ '漢字 Überwachung 🙂 '.repeat(8),nodes=templates.map((t,i)=>`${t} n${i} "${t}" {expression ${JSON.stringify(text)}}`).join(' ');
+    const host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const iconPosition of ['left','right','top','bottom']) {
+      const styles=templates.map((_,i)=>`style n${i} {width 180 fontSize 20 iconPosition ${iconPosition}}`).join(' '),source=`architecture "Property bounds"{model{${nodes}}view v "V"{propertyFields [expression] ${styles}}}`;
+      const g=arch.layout(source,{profile}),svg=arch.render(host,source,{profile,theme});
+      for(const n of g.nodes)for(const text of svg.querySelector(`[data-node="${n.id}"]`).querySelectorAll('text')){const b=text.getBBox();if(b.x<-1||b.y<-1||b.x+b.width>n.width+1||b.y+b.height>n.height+1)issues.push(`Property/icon bounds: ${theme}/${iconPosition}/${n.id}/${text.textContent}`);}
+    }
+    host.remove();return issues;
+  }),[]);
+  console.log('✓ Properties on normal/tree/package cards and freely positioned class cards: fields, bounds, relative placement, themes, templates, icons, JSON and SVG export');
+
   assert.deepEqual(await page.evaluate(() => arch.getIconPacks()), ['core', 'bootstrap', 'lucide', 'tabler']);
   assert.equal(await page.locator('.iconpack-card svg').count(), 18);
   await page.locator('#show-icon-example').click();
@@ -527,6 +661,100 @@ try {
   await page.locator('#raw-iconify-gallery').evaluate(e=>e.remove());
   console.log('✓ Direct original Iconify packs, colored logos, local IDs and raster fidelity');
 
+
+  const treeSource=await readFile('examples/taxonomy.arch','utf8');
+  await page.locator('[data-example="taxonomy"]').click();
+  assert.equal(await page.locator('#error').isVisible(),false);
+  const treeIssues=await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const input of [source,arch.translate(source)])for(const theme of ['light','dark'])for(const view of ['taxonomy','horizontal']) {
+      const graph=arch.layout(input,{view,theme}),svg=arch.render(host,input,{view,theme});
+      if(svg.dataset.diagram!=='tree')issues.push('Missing tree marker');
+      if(svg.querySelectorAll('.arch-node').length!==6||svg.querySelectorAll('.arch-edge').length!==5)issues.push('Missing tree elements');
+      const root=graph.nodes.find(n=>n.id==='c_SAR');if(root.treeDepth!==0)issues.push('Wrong root');
+      const bounds=svg.viewBox.baseVal;
+      for(const node of graph.nodes) {
+        const group=[...svg.querySelectorAll('[data-node]')].find(g=>g.dataset.node===node.id);
+        for(const text of group.querySelectorAll(':scope > text')) {
+          const b=text.getBBox();if(b.x<0||b.y<0||b.x+b.width>node.width+1||b.y+b.height>node.height+1)issues.push(`Tree text clipped: ${view}/${node.id}/${text.textContent}`);
+        }
+        if(node.treeParent) {
+          const parent=graph.nodes.find(n=>n.id===node.treeParent);
+          if(view==='taxonomy'?node.y<parent.y+parent.height:node.x<parent.x+parent.width)issues.push('Wrong hierarchy direction');
+        }
+      }
+      for(const label of svg.querySelectorAll('.arch-edge-label')) {
+        const b=label.getBBox();if(b.x<bounds.x||b.y<bounds.y||b.x+b.width>bounds.x+bounds.width+1||b.y+b.height>bounds.y+bounds.height+1)issues.push('Tree label outside SVG');
+        const rect=label.querySelector('rect').getBBox();for(const text of label.querySelectorAll('text')){const t=text.getBBox();if(t.x<rect.x||t.y<rect.y||t.x+t.width>rect.x+rect.width+1||t.y+t.height>rect.y+rect.height+1)issues.push('Tree edge label overflow');}
+      }
+      for(const edge of svg.querySelectorAll('.arch-edge path'))if(!edge.getAttribute('marker-end')?.includes('triangle'))issues.push('Generalization marker missing');
+    }
+    host.remove();return issues;
+  },treeSource);
+  assert.deepEqual(treeIssues,[]);
+  await page.screenshot({path:'test-results/tree-taxonomy.png',fullPage:true});
+  await page.locator('#toggle-theme').click();await page.screenshot({path:'test-results/tree-taxonomy-dark.png',fullPage:true});await page.locator('#toggle-theme').click();
+  const treeExport=await page.evaluate(source=>arch.renderToString(source,{idPrefix:'tree-export'}),treeSource);
+  await import('node:fs/promises').then(fs=>fs.writeFile('test-results/tree-taxonomy.svg',treeExport));
+  const treePage=await browser.newPage({viewport:{width:1100,height:900}});
+  await treePage.setContent(treeExport);await treePage.locator('svg').screenshot({path:'test-results/tree-taxonomy-export.png'});await treePage.close();
+  console.log('✓ Tree taxonomy: automatic parents/ranks, C1 profiles, both orientations/themes, JSON, node/label bounds and SVG export');
+
+  const bidirectionalSource=await readFile('examples/bidirectional.arch','utf8');
+  await page.locator('#source').fill(bidirectionalSource);await page.locator('#render-button').click();
+  assert.equal(await page.locator('#error').isVisible(),false);
+  const bidirectionalIssues=await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const input of [source,arch.translate(source)]) {
+      const svg=arch.render(host,input,{view:'overview',theme});
+      const edge=svg.querySelector('[data-edge="exchange"] path');
+      if(!edge?.hasAttribute('marker-start')||!edge?.hasAttribute('marker-end'))issues.push('Missing bidirectional markers');
+      const marker=svg.querySelector('marker[id$="-arrow"]');if(marker?.getAttribute('orient')!=='auto-start-reverse')issues.push('Wrong start arrow orientation');
+      if(svg.querySelectorAll('[data-edge="exchange"]').length!==1)issues.push('Relationship was duplicated');
+      const outer=svg.querySelector('[data-node="enterprise"] rect'),inner=svg.querySelector('[data-node="datacenter"] rect');
+      if(inner?.getAttribute('fill')!=='#dbeafe'||inner?.getAttribute('fill-opacity')!=='1')issues.push('Package background lost');
+      const a=outer.getBoundingClientRect(),b=inner.getBoundingClientRect();
+      if(b.left<a.left||b.top<a.top||b.right>a.right||b.bottom>a.bottom)issues.push('Nested package outside parent');
+      const matrix=arch.render(host,input,{view:'matrix',theme});
+      for(const cell of ['a:b','b:a'])if(matrix.querySelector(`[data-cell="${cell}"] tspan`)?.textContent!=='1')issues.push(`Missing matrix direction ${cell}`);
+    }
+    host.remove();return issues;
+  },bidirectionalSource);
+  assert.deepEqual(bidirectionalIssues,[]);
+  await page.screenshot({path:'test-results/bidirectional-packages.png',fullPage:true});
+  console.log('✓ Bidirectional edges: both markers, one ID, DSL/JSON, both themes, matrices and nested styled packages');
+
+  const draftSource=await readFile('examples/draft.arch','utf8');
+  await page.locator('#source').fill(draftSource);await page.locator('#render-button').click();
+  assert.equal(await page.locator('#error').isVisible(),false);
+  const draftIssues=await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark'])for(const input of [source,arch.translate(source)]) {
+      const svg=arch.render(host,input,{theme}),graph=arch.layout(input,{theme});
+      if(svg.dataset.archValidation!=='draft')issues.push('Missing draft wrapper');
+      if(svg.querySelectorAll('.arch-node').length!==3)issues.push('Draft nodes were not rendered');
+      if(svg.querySelector('[data-edge="exchange"]'))issues.push('Hidden edge was rendered');
+      const footer=svg.querySelector('.arch-validation-notices'),box=footer?.getBBox(),bounds=svg.viewBox.baseVal;
+      if(!box||box.y<graph.content.bounds.height||box.x<0||box.x+box.width>bounds.width+1||box.y+box.height>bounds.height+1)issues.push('Draft footer overflow');
+      if(!footer?.textContent.includes('found 0'))issues.push('Missing correction message');
+      const report=arch.validate(input);if(!report.valid||report.conformant!==false||report.diagnostics.some(d=>d.severity!=='warning'))issues.push('Wrong draft validation status');
+      if(arch.validate(input,{validation:'strict'}).valid)issues.push('Strict override did not reject incomplete model');
+      const completed=JSON.parse(arch.translate(source));completed.architecture.model.relations.extra={from:'pending',to:'a',name:'New exchange',direction:'both'};
+      if(arch.renderToString(completed,{theme}).includes('arch-validation-notices'))issues.push('Resolved warnings did not disappear');
+    }
+    const escaped=arch.render(host,source.replace('Draft with pending connections','& <Draft>'),{theme:'dark'});
+    if(escaped.querySelector('script'))issues.push('Unescaped source');
+    const hiddenNodes=JSON.parse(arch.translate(source));hiddenNodes.architecture.views.draft.style.pending={display:'none'};
+    const hidden=arch.render(host,hiddenNodes);
+    if(hidden.querySelector('[data-node="pending"]')||hidden.querySelectorAll('.arch-node').length!==2)issues.push('Node display none was ignored');
+    if(arch.validate(hiddenNodes).diagnostics.length!==arch.validate(source).diagnostics.length)issues.push('Node hiding changed semantic requirements');
+    host.remove();return issues;
+  },draftSource);
+  assert.deepEqual(draftIssues,[]);
+  await page.screenshot({path:'test-results/draft-validation.png',fullPage:true});
+  const draftExport=await page.evaluate(source=>arch.renderToString(source,{theme:'dark',idPrefix:'draft-export'}),draftSource);
+  await import('node:fs/promises').then(fs=>fs.writeFile('test-results/draft-validation.svg',draftExport));
+  console.log('✓ Draft mode: visible model, correction footer/bounds, strict override, recovery, JSON, hidden edges and SVG export');
 
   const edgeIconSource=await readFile('examples/edge-label-icons.arch','utf8');
   await page.locator('#source').fill(edgeIconSource);await page.locator('#render-button').click();

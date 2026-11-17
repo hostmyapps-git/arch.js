@@ -5,6 +5,8 @@ import { selectedViewIds } from './view-selection.js';
 import { stackViews, viewsSVG } from './multi-view.js';
 import { helpContent, layoutHelp, helpSVG } from './help.js';
 import { isJSONDocument } from './json.js';
+import { profileDiagnostics, resolveProfile } from './profiles.js';
+import { validationMode, validationDiagnostics, withValidationNotices, noticesSVG } from './validation-mode.js';
 export { ArchError, parse };
 export { help } from './help.js';
 export { registerProfile, getProfiles, getProfile } from './profiles.js';
@@ -18,7 +20,8 @@ export function layout(model, options = {}) {
   if (model?.kind === 'help') return layoutHelp(model, options);
   const ids = selectedViewIds(model, options);
   const layouts = ids.map(view => layoutArchitecture(model, {...options, view}));
-  return layouts.length === 1 ? layouts[0] : stackViews(model, layouts);
+  const graph=layouts.length === 1 ? layouts[0] : stackViews(model, layouts);
+  return withValidationNotices(graph,validationDiagnostics(profileDiagnostics(model,resolveProfile(model,options)),validationMode(model,options)));
 }
 
 export function validate(sourceOrModel, options = {}) {
@@ -42,7 +45,8 @@ export function validate(sourceOrModel, options = {}) {
 export function renderToString(sourceOrModel, options = {}) {
   const model = typeof sourceOrModel === 'string' || isJSONDocument(sourceOrModel) ? parse(sourceOrModel, options) : sourceOrModel;
   const graph = layout(model, options);
-  return graph.kind === 'help' ? helpSVG(graph, options) : graph.kind === 'views' ? viewsSVG(graph, options) : toSVG(graph, options);
+  const renderGraph=(graph,options)=>graph.kind==='notices'?noticesSVG(graph,renderGraph,options):graph.kind === 'help' ? helpSVG(graph, options) : graph.kind === 'views' ? viewsSVG(graph, options) : toSVG(graph, options);
+  return renderGraph(graph,options);
 }
 
 export function render(target, sourceOrModel, options = {}) {

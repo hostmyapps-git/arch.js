@@ -32,6 +32,7 @@ for (const [id, title, subtitle] of [
   ['external-profile', 'Reusable JSON profile', 'One profile, many models'],
   ['uaf', 'NAF · UAF architecture', 'Capabilities to implementation'],
   ['naf41', 'NAFv4.1 · Search & Rescue', 'Criteria, needlines & typed flows'],
+  ['taxonomy', 'Capability taxonomy', 'Automatic C1 trees & forests'],
   ['diagrams', 'Seven diagram renderers', 'Behavior, matrices, maps & details'],
   ['json-architecture', 'JSON architecture', 'The same model, written as JSON'],
   ['meta', 'Architecture source views', 'Diagrams, JSON & DSL in one SVG'],

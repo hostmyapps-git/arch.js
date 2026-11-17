@@ -72,9 +72,11 @@ andere Notation einschließlich Fehlerstellen und Korrekturkandidaten.
 | `view logical "Interactions" { viewpoint L3 }` | `"views": { "logical": { "name": "Interactions", "viewpoint": "L3" } }` |
 | `include a, b` / `exclude c` | `"include": ["a", "b"]` / `"exclude": ["c"]` |
 | `place a at (0, 20) size (280, 160)` | `"place": { "a": { "at": [0, 20], "size": [280, 160] } }` |
+| `place a at (b.right + 40, c.y - 20)` | `"place": { "a": { "at": ["b.right + 40", "c.y - 20"] } }` |
 | `style a { iconPosition right showLabel false }` | `"style": { "a": { "iconPosition": "right", "showLabel": false } }` |
 | `routes { curve straight }` | `"routes": { "curve": "straight" }` |
 | `route control { from right to left }` | `"route": { "control": { "from": "right", "to": "left" } }` |
+| `route control { via (source.right + 40, target.y / 2) }` | `"route": { "control": { "via": [["source.right + 40", "target.y / 2"]] } }` |
 | `route information -> control { to 0.5 }` | `"route": { "information -> control": { "to": 0.5 } }` |
 | `diagram sequence { participants [c, f] }` | `"diagram": { "type": "sequence", "participants": ["c", "f"] }` |
 | `view source "JSON" { @meta json }` | `"views": { "source": { "name": "JSON", "@meta": "json" } }` |
@@ -92,6 +94,29 @@ Darstellung, Auswahl, Grenzen und Abgrenzung zur interaktiven Editoransicht:
 [META.md](META.md).
 
 ### Attribute und verschachtelte Packages
+
+Beziehungen verwenden optional `"direction": "both"` für `<->`; fehlend oder
+`"forward"` entspricht `->`. Beispiel eines Eintrags in `model.relations`:
+
+```json
+"exchange": {
+  "from": "a", "to": "b", "name": "Exchange",
+  "type": "flow", "direction": "both"
+}
+```
+
+Der Relationstyp muss diese Richtung erlauben. Inline-Profile verwenden
+`config.relation.exchange.directions: ["forward", "both"]`; registrierte
+Profil-JSONs verwenden `relationTypes.exchange.directions`.
+`direction` ist ein eingebautes Beziehungsfeld.
+
+`config.validation` akzeptiert `"strict"` (Standard) oder `"draft"`. Der
+Entwurfsmodus rendert trotz fehlender Pflichtangaben/Mindestverbindungen und
+zeigt Warnungen unter dem Diagramm; andere Fehler bleiben blockierend.
+`views.VIEW_ID.style.EDGE_ID: {"display": "none"}` blendet eine Beziehung nur in
+dieser View aus; `"standard"` zeigt sie. JSON/DSL-Übersetzungen erhalten beides.
+Dasselbe Feld an einer Node-ID blendet die Node und angrenzende Kanten aus;
+Packages verbergen ihren gesamten Inhalt. Die Modellvalidierung bleibt aktiv.
 
 Standardattribute und eigene Profilattribute stehen direkt am Element oder an
 der Beziehung. Beispielsweise entspricht `"conveyed": ["information"]` dem
@@ -161,10 +186,68 @@ Icon. Weggelassene Eigenschaften verwenden die gemeinsamen Vorgaben.
 Konkrete `route`-Felder überschreiben `routes` feldweise. `"showIcon": false`
 und `"showLabel": false` sind unabhängig voneinander.
 
-Alle acht Renderer und ihre Einstellungen sind verfügbar; `"diagram": "matrix"`
-ist die Kurzform ohne weitere Einstellungen. Die Connected-spezifischen
-Routing-/Stylefelder bleiben in Spezialrenderern unzulässig. Genaue Regeln:
+Alle neun Renderer und ihre Einstellungen sind verfügbar; `"diagram": "matrix"`
+ist die Kurzform ohne weitere Einstellungen. Tree-Views akzeptieren beispielsweise
+`"diagram": {"type": "tree", "relations": ["CapabilityGeneralization"],
+"direction": "down", "parentDirection": "auto", "showLabels": true}`.
+`direction` akzeptiert `down`, `up`, `left`, `right`; `orientation` ist ein Alias.
+Sie unterstützen die vorhandenen Node-Styles, ordnen und routen automatisch.
+Manuelle Routingfelder bleiben auf Connected-Views begrenzt. Genaue Regeln:
 [DIAGRAMS.md](DIAGRAMS.md), [HELP.md](HELP.md).
+
+Benannte Tree-Gruppen in Connected-Views verwenden das DSL-Schlüsselwort `tree`:
+
+```json
+{
+  "tree": {
+    "hierarchy": {
+      "nodes": ["horizon", "vision", "manpower", "coverage", "response"],
+      "direction": "up"
+    }
+  },
+  "place": {
+    "hierarchy": {"at": [300, 0]},
+    "maritime": {"at": [0, 250]}
+  }
+}
+```
+
+Dies ist ein Ausschnitt einer View. `place` ist optional; mehrere Gruppen erhalten
+eigene IDs und Richtungen. Mitglieder sind eindeutige Nicht-Container mit demselben
+Modellparent. Einzelne Mitglieder und Gruppengrößen werden automatisch bestimmt.
+`relations` filtert hier nur die Hierarchie; Querbeziehungen bleiben gerendert.
+
+### Koordinatenreferenzen
+
+In `place.at` können beide Koordinaten unabhängig Zahlen oder Ausdrucksstrings
+sein. Strings unterstützen dieselben Referenzen und `+`, `-`, `*`, `/` wie die DSL;
+`width`, `height`, `right`, `bottom`, `centerX`, `centerY` ergänzen `x`/`y`.
+IDs verweisen auf sichtbare Nodes oder Tree-Gruppen derselben View.
+Reine Zahlenarithmetik wird normalisiert. Symbolische Ausdrücke bleiben bei
+JSON-/DSL-Übersetzung und in Meta-Views erhalten. Die Übersetzung speichert
+keine bereits berechneten Layoutkoordinaten anstelle der Ausdrücke.
+Beispiel: `"at": ["hierarchy.x - maritime.width - 80",
+"vision.centerY - maritime.height / 2"]`. Punkt vor Strich und Klammern gelten
+wie in der DSL; Division durch null ist ein Fehler.
+`via` unterstützt ebenfalls Ausdrucksstrings in seinen Koordinatenpaaren:
+`"via": [["source.right + 40", "target.y - 20"], ["target.x - 40", "target.centerY"]]`.
+Dies funktioniert in `route`, `routes` und Zuordnungsrouten mit Schlüssel
+`"information -> edge"`. Via verwendet absolute Diagrammkoordinaten nach
+Auflösung der Node-/Gruppenpositionen, auch innerhalb von Packages. Lokale
+Listen ersetzen die komplette Vorgabe; ein explizites `path` ersetzt `via`.
+`size`, `route.from`/`to` und Labelpositionen bleiben numerisch.
+Zirkelbezüge sind auch im Entwurfsmodus Fehler. Grenzen und Koordinatenräume:
+[SPEC.md](SPEC.md), Hilfe: `@help routing`.
+
+### Property-Auswahl und Class-Positionierung
+
+View-Auswahl: `"propertyFields": ["expression", "unit", "value"]`.
+Pro Node: `"style": {"criterion": {"propertyFields": ["expression"]}}`.
+Diagrammvorgaben: `"diagram": {"type": "class", "propertyFields": ["expression"]}`;
+auch Connected/Tree unterstützen diese Option. Rangfolge Style → View → Diagramm;
+`[]` leert die Auswahl. Class unterstützt `place` mit numerischen oder berechneten
+Koordinaten und optionalem `size`. Details folgen ihren Ownern; Routen bleiben
+automatisch. Syntax und Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
 
 ### Inline-Profile und Hilfe
 

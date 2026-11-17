@@ -150,15 +150,77 @@ Profil. Es gibt keinen globalen „aktiven“ Profilzustand.
 
 ## Profilformat
 
+### NAF-Bezeichnung Goal und ADMBw-Abgrenzung
+
+In `naf41-uaf` ist `Goal` ein dokumentierter Anwendungsadapter mit
+`extends: ["EnterpriseGoal"]`. Damit funktionieren die Bezeichnung aus dem
+NAFv4.1-C2-Beispiel und der native UAF-Name gleichermaßen. Pflichtinhalte und
+Verbindungen in C2, `SpecifiesGoal` und geerbte Attribute werden gemeinsam geprüft.
+Der native Katalog `uaf` bleibt bei `EnterpriseGoal`.
+
+Die Referenz `NAFv4-ADMBw-MDG-2026.05.xml` definiert `EnterpriseGoal`, keinen
+separaten `Goal`-Stereotyp. Für diese Namensabbildung wird kein eigenes Profil
+benötigt. Bundeswehr-spezifische Typen, Endpunktregeln und Abweichungen gehören
+hingegen in ein separates ADMBw-Anwendungsprofil mit ausdrücklich festgelegter
+Basis. Die MDG nennt NAF 4.0; sie ist keine unveränderte NAFv4.1-Definition.
+Sparx-Toolboxen, Shape Scripts und andere MDG-Werkzeugfunktionen werden nicht
+durch die Deklaration eines arch.js-Profils importiert.
+
+Der NAFv4.1-C2-Cut-out (S.90) erlaubt drei `desires`-Endpunkttypen:
+EnterprisePhase → Capability (`DesiresCapability`), → EnterpriseVision
+(`DesiresVision`) und → EnterpriseGoal/Goal (`DesiresGoal`). Die C2-Regeln
+fordern pro Planungsphase mindestens eine Verbindung aus dieser Gruppe.
+So ist das Phase→Vision-Beispiel auf S.91 ohne zusätzlichen direkten
+Phase→Capability-Link zulässig. `CapabilityGeneralization` bleibt auf
+Capability→Capability begrenzt.
+
 | Bereich | Unterstützte Einstellungen |
 | --- | --- |
 | Profil | `styleGroups`, `id`, `title`, `version`, `extends`, `defaultRelation`, `requireViewpoint` |
 | `nodeTypes.NAME` | `extends`, `template`, `abstract`, `container`, `contains`, `attributes`, `icon`, `accent`, `styleGroup`, `backgroundColor`, `comparisons` |
-| `relationTypes.NAME` | `extends`, `from`, `to`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic`, `referenceLabels`, `referenceDisplay`, `referenceOccurrences` |
+| `relationTypes.NAME` | `extends`, `from`, `to`, `directions`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic`, `referenceLabels`, `referenceDisplay`, `referenceOccurrences` |
 | `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections`, `references` |
 
 Profile, Typen und Viewpoints können außerdem `title`, `description`, `sources`
 und `limitations` für Registry und englische Laufzeithilfe enthalten.
+
+### Richtung und unvollständige Modelle
+
+```arch
+config {
+  extends default
+  relation exchange {
+    from service
+    to service
+    style flow
+    directions [forward, both]
+  }
+}
+```
+
+Im Profil-JSON heißt die Einstellung `"directions": ["forward", "both"]`.
+Ohne Angabe gilt `["forward"]`; bei Typvererbung wird die Einstellung vom
+ersten Elternteil geerbt. `["both"]` verlangt `<->`, `["forward"]` verlangt
+`->`. Eigene lokale Angaben ersetzen die Liste. Das Standardprofil erlaubt
+beide Richtungsarten für `flow`, `dependency`, `access` und `association`.
+Die Zeichenstile `composition`, `generalization` und `realization` sind nur
+vorwärts gerichtet; eine Profilfreigabe von `both` wäre ein Fehler.
+
+`from`/`to` und `pairs` prüfen die geschriebenen Endpunktrollen. Eine
+bidirektionale Beziehung hat gemeinsame Attribute/Referenzen, zählt an beiden
+Endpunkten einmal eingehend und einmal ausgehend und bildet einen gerichteten
+Zyklus. `acyclic` lehnt sie deshalb ab. Kardinalitätsgrenzen gelten außerdem
+für tatsächlich beteiligte Rückrichtungs-Endpunkte; Viewpoint-`connections`
+zählt bei `either` dieselbe Beziehung nur einmal. Unterschiedliche Informationen
+je Übertragungsrichtung benötigen zwei getrennte Beziehungen.
+
+`config { validation draft }` ändert keine Profilregeln: Fehlende Pflichtattribute,
+Viewpoints, erforderliche Viewpoint-Typen/Beziehungen und unterschrittene
+Mindestanzahlen werden als Warnungen dargestellt. Überschreitungen von Maxima,
+ungültige Typen/Werte/Referenzen, Zyklen und Renderer-/Strukturfehler bleiben
+Fehler. Mit `validation strict` oder API `{validation: "strict"}` lässt sich
+die vollständige Konformität prüfen. `style EDGE_ID {display none}` ist reine
+Darstellung und nimmt Beziehungen nicht aus der Modellprüfung heraus.
 
 - Profil-/Typ-/Viewpoint-Namen verwenden die DSL-Bezeichnergrammatik.
 - Ohne ID erhält ein als Parameter übergebenes Objekt die ID `parameter`, ein

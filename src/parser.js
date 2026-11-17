@@ -7,6 +7,11 @@ import { relationshipReferences } from './relationship-labels.js';
 import { validateDiagramView } from './diagrams.js';
 import { jsonToDSL, isJSONDocument } from './json.js';
 import { metaCommand, validateMetaView } from './meta-syntax.js';
+import { validationMode, validationDiagnostics } from './validation-mode.js';
+import {validateTreeGroups} from './tree-groups.js';
+import {placementCoordinate,placementPlan} from './placement.js';
+import {viaReferences} from './via.js';
+import {validateClassPlacement} from './class-placement.js';
 import { TEMPLATES, EDGE_STYLES, NODE_PROPERTIES, EDGE_PROPERTIES, resolveProfile, profileDiagnostics } from './profiles.js';
 export { ArchError };
 export const TYPES = TEMPLATES;
@@ -43,10 +48,13 @@ function tokenize(source) {
       }
       tokens.push({ type: 'directive', value: source.slice(i, end), ...loc }); advance(end - i); continue;
     }
+    if (source.slice(i, i + 3) === '<->') {
+      tokens.push({ type: '<->', value: '<->', ...loc }); advance(3); continue;
+    }
     if (source.slice(i, i + 2) === '->') {
       tokens.push({ type: '->', value: '->', ...loc }); advance(2); continue;
     }
-    if ('{}(),[]'.includes(c)) { tokens.push({ type: c, value: c, ...loc }); advance(1); continue; }
+    if ('{}(),[]+*/'.includes(c)||c==='-'&&!/[\d.]/.test(source[i+1]??'')) { tokens.push({ type: c, value: c, ...loc }); advance(1); continue; }
     if (c === '"') {
       let end = i + 1;
       while (end < source.length) {
@@ -143,6 +151,18 @@ function parseDSLDocument(source) {
     const value = word();
     return value === 'true' ? true : value === 'false' ? false : value;
   };
+  const placementPoint = () => {
+    const coordinate=()=>{
+      const loc=peek(),parts=[];let depth=0;
+      while(peek().type!=='eof'&&!(depth===0&&[',',')'].includes(peek().type))) {
+        if(!['word','number','+','-','*','/','(',')'].includes(peek().type))fail('Expected a placement coordinate expression',peek(),'ARCH_SYNTAX');
+        if(peek().type==='(')depth++;else if(peek().type===')')depth--;
+        parts.push(String(take().value));if(parts.length>128)fail('Placement coordinate expression is too long',loc);
+      }
+      return placementCoordinate(parts.join(' '),loc);
+    };
+    expect('(');const x=coordinate();expect(',');const y=coordinate();expect(')');return {x,y};
+  };
   const point = () => {
     expect('('); const x = typed('number'); expect(','); const y = typed('number'); expect(')');
     for (const token of [x, y]) if (Math.abs(token.value) > 1e7) fail('Coordinate outside the range ±10000000', token);
@@ -161,7 +181,7 @@ function parseDSLDocument(source) {
     const key = typed('word');
     if (!allowed.includes(key.value)) fail(`Unknown attribute: ${key.value}`, key);
     if (Object.hasOwn(object, key.value)) fail(`Duplicate attribute: ${key.value}`, key);
-    if (['showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology'].includes(key.value)) { object[key.value] = scalar(); return; }
+    if (['showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology','propertyFields'].includes(key.value)) { object[key.value] = scalar(); return; }
     object[key.value] = ['opacity', 'fontSize', 'width', 'height'].includes(key.value) ? typed('number').value : text();
   };
   const modelProperty = (object, builtins, relation = false) => {
@@ -187,7 +207,8 @@ function parseDSLDocument(source) {
     const token = typed('word');
     if (token.value === 'relation') {
       const edge = { id: word(), source: word(), loc: token };
-      expect('->'); edge.target = word(); edge.title = typed('string', 'relationship label').value;
+      if(is('<->')) { take(); edge.direction='both'; } else expect('->');
+      edge.target = word(); edge.title = typed('string', 'relationship label').value;
       if (is('{')) block(() => modelProperty(edge, EDGE_PROPERTIES, true));
       model.edges.push(edge); return;
     }
@@ -204,7 +225,7 @@ function parseDSLDocument(source) {
     if (!allowed.includes(attr.value)) fail(`Unknown routing attribute: ${attr.value}`, attr);
     if (Object.hasOwn(item, attr.value)) fail(`Duplicate routing attribute: ${attr.value}`, attr);
     if (['showIcon', 'showLabel'].includes(attr.value)) item[attr.value] = scalar();
-    else if (attr.value === 'via') item.via = list(point);
+    else if (attr.value === 'via') item.via = list(placementPoint);
     else if (attr.value === 'to' && (reference || defaults && peek().type === 'number')) item.to = typed('number', 'position along the relationship (0 to 1)').value;
     else if (attr.value === 'label') {
       if (is('none')) { take(); item.label = 'none'; }
@@ -226,7 +247,10 @@ function parseDSLDocument(source) {
         seen.add('meta');view.meta=metaCommand(directive.value,directive);return;
       }
       const key = typed('word');
-      if (key.value === 'route' && peek().type === 'word' && tokens[cursor + 1]?.type === '->') {
+      if(key.value==='tree') {
+        const id=word();view.trees??=dict();if(Object.hasOwn(view.trees,id))fail(`Duplicate tree group: ${id}`,key);
+        const tree={loc:key};block(()=>{const option=typed('word');if(Object.hasOwn(tree,option.value))fail(`Duplicate tree option: ${option.value}`,option);tree[option.value]=scalar();});view.trees[id]=tree;
+      } else if (key.value === 'route' && peek().type === 'word' && tokens[cursor + 1]?.type === '->') {
         const nodeId = word(); expect('->'); const edgeId = word();
         view.referenceRoutes ??= [];
         if (view.referenceRoutes.some(route => route.nodeId === nodeId && route.edgeId === edgeId))
@@ -238,10 +262,10 @@ function parseDSLDocument(source) {
         if (Object.hasOwn(collection, id)) fail(`Duplicate ${key.value}-statement: ${id}`, key);
         const item = { loc: key };
         if (key.value === 'place') {
-          expect('at'); item.at = point();
+          expect('at'); item.at = placementPoint();
           if (is('size')) { take(); item.size = point(); }
         } else if (key.value === 'style') {
-          block(() => property(item, ['template', 'accent', 'icon', 'iconPosition', 'backgroundColor', 'opacity', 'display', 'fontSize', 'width', 'height', 'showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology']));
+          block(() => property(item, ['template', 'accent', 'icon', 'iconPosition', 'backgroundColor', 'opacity', 'display', 'fontSize', 'width', 'height', 'showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology','propertyFields']));
         } else readRouting(item);
         collection[id] = item;
       } else {
@@ -259,6 +283,7 @@ function parseDSLDocument(source) {
         else if (key.value === 'routes') { view.routeDefaults = {loc: key}; readRouting(view.routeDefaults, false, true); }
         else if (['include', 'exclude'].includes(key.value)) view[key.value] = list(word);
         else if (key.value === 'spacing') view.spacing = typed('number').value;
+        else if (key.value === 'propertyFields') view.propertyFields=scalar();
         else if (['direction', 'theme', 'viewpoint', 'referenceDisplay', 'referenceOccurrences'].includes(key.value)) view[key.value] = word();
         else fail(`Unknown view option: ${key.value}`, key);
       }
@@ -303,9 +328,10 @@ function parseDSLDocument(source) {
             rule[attr.value] = count;
           } else {
             once(rule, attr.value, attr);
-            const listKeys = key.value === 'type' ? ['contains'] : key.value === 'relation' ? ['from', 'to'] : ['nodes', 'relations', 'requiredNodes', 'requiredRelations'];
+            const listKeys = key.value === 'type' ? ['contains'] : key.value === 'relation' ? ['from', 'to', 'directions'] : ['nodes', 'relations', 'requiredNodes', 'requiredRelations'];
             const scalarKeys = key.value === 'type' ? ['extends', 'template', 'container', 'abstract', 'icon', 'accent', 'backgroundColor', 'styleGroup'] : key.value === 'relation' ? ['extends', 'style', 'abstract', 'allowSelf', 'acyclic'] : key.value === 'styleGroup' ? ['backgroundColor'] : [];
             if (attr.value === 'extends') { const parents = list(text); rule.extends = parents.length === 1 ? parents[0] : parents; }
+            else if (attr.value==='directions'&&key.value==='relation'&&is('[')) rule.directions=scalar();
             else if (listKeys.includes(attr.value)) rule[attr.value] = list(text);
             else if (scalarKeys.includes(attr.value)) rule[attr.value] = scalar();
             else fail(`Unknown profile rule: ${attr.value}`, attr);
@@ -317,12 +343,13 @@ function parseDSLDocument(source) {
         seen.add(key.value);
         if (key.value === 'profile') config.profile = text();
         else if (key.value === 'views') config.views = scalar();
+        else if (key.value === 'validation') config.validation = text();
         else if (['id', 'title', 'version', 'extends', 'defaultRelation', 'requireViewpoint'].includes(key.value)) definition[key.value] = scalar();
         else fail(`Unknown config option: ${key.value}`, key);
       }
     });
     const hasDefinition = Object.keys(definition.nodeTypes).length || Object.keys(definition.relationTypes).length || Object.keys(definition.viewpoints).length || Object.keys(definition.styleGroups).length || definition.extends;
-    if (config.profile && (hasDefinition || [...seen].some(key => !['profile', 'views'].includes(key)))) fail('Choose either config profile or an inline profile definition', loc);
+    if (config.profile && (hasDefinition || [...seen].some(key => !['profile', 'views', 'validation'].includes(key)))) fail('Choose either config profile or an inline profile definition', loc);
     if (config.profile || !hasDefinition && seen.size === 1 && seen.has('views')) delete config.definition;
     model.config = config;
   };
@@ -359,8 +386,9 @@ function parseDSLDocument(source) {
 export function parse(source, options = {}) {
   const model = parseDocument(source);
   model.profile = resolveProfile(model, options);
+  if(options.validation!==undefined)model.validation=options.validation;
   for (const edge of model.edges) if (edge.type === undefined && model.profile.defaultRelation !== null) edge.type = model.profile.defaultRelation;
-  validateModel(model);
+  validateModel(model,options);
   return model;
 }
 
@@ -368,6 +396,7 @@ export function validateModel(model, options = {}) {
   if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views) || !model.views.length)
     fail('Invalid model; use parse(source)');
   const profile = resolveProfile(model, options);
+  const mode=validationMode(model,options);
   if (model.kind === 'help') { helpRequest(model.help?.topic, model.help?.parameters); return model; }
   const ids = new Set(), nodes = new Map(model.nodes.map(n => [n.id, n]));
   for (const item of [...model.nodes, ...model.edges]) {
@@ -398,16 +427,23 @@ export function validateModel(model, options = {}) {
     if (!Number.isFinite(view.spacing) || view.spacing < 24 || view.spacing > 400) fail('spacing must be between 24 and 400', view.loc);
     for (const key of ['include', 'exclude']) if (view[key] !== undefined && (!Array.isArray(view[key]) || view[key].some(id => typeof id !== 'string')))
       fail(`${key} requires a list of element IDs`, view.loc);
-    for (const id of [...(view.include ?? []), ...(view.exclude ?? []), ...Object.keys(view.places), ...Object.keys(view.styles)])
+    for (const id of [...(view.include ?? []), ...(view.exclude ?? [])])
       if (!nodes.has(id)) fail(`Unknown element in view ${view.id}: ${id}`, view.loc);
+    for(const id of Object.keys(view.places))if(!nodes.has(id)&&!Object.hasOwn(view.trees??{},id))fail(`Unknown element or tree group in view ${view.id}: ${id}`,view.loc);
+    const edges = new Map(model.edges.map(e => [e.id, e]));
     for (const [id, place] of Object.entries(view.places))
       if (place.size && (place.size.x < 160 || place.size.y < 96)) fail(`Size of ${id} must be at least (160, 96)`, place.loc);
     for (const [id, style] of Object.entries(view.styles)) {
+      if(!nodes.has(id)) {
+        if(!edges.has(id))fail(`Unknown element or relationship in view ${view.id}: ${id}`,style.loc);
+        if(Object.keys(style).some(k=>!['loc','display'].includes(k))||!['none','standard'].includes(style.display))fail('Relationship styles support only display none or standard',style.loc);
+        continue;
+      }
       for (const [field,min,max] of [['fontSize',6,64],['width',160,1e7],['height',96,1e7]]) if (style[field] !== undefined &&
         (!Number.isFinite(style[field]) || style[field] < min || style[field] > max)) fail(`${field} must be a number between ${min} and ${max}`,style.loc);
       for (const key of ['showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology']) if (style[key] !== undefined && typeof style[key] !== 'boolean') fail(`${key} must be true or false`, style.loc);
       if (style.iconPosition !== undefined && !['top', 'left', 'bottom', 'right'].includes(style.iconPosition)) fail('iconPosition must be top, left, bottom or right', style.loc);
-      if (style.display !== undefined && !['standard', 'logo'].includes(style.display)) fail('display must be standard or logo', style.loc);
+      if (style.display !== undefined && !['standard', 'logo', 'none'].includes(style.display)) fail('display must be standard, logo or none', style.loc);
       if (style.display === 'logo' && profile.nodeTypes[nodes.get(id).type]?.container) fail('logo display is only supported for non-container elements', style.loc);
       if (style.opacity !== undefined && (!Number.isFinite(style.opacity) || style.opacity < 0 || style.opacity > 1)) fail('opacity must be a number between 0 and 1', style.loc);
       if (style.template !== undefined && (!TEMPLATES.includes(style.template) || !!profile.nodeTypes[nodes.get(id).type]?.container !== (style.template === 'package')))
@@ -415,7 +451,6 @@ export function validateModel(model, options = {}) {
       if (style.accent !== undefined && !normalizeColor(style.accent)) fail('accent requires a hex color or CSS3 color name', style.loc);
       if (style.backgroundColor !== undefined && !normalizeColor(style.backgroundColor)) fail('backgroundColor requires a hex color or CSS3 color name', style.loc);
     }
-    const edges = new Map(model.edges.map(e => [e.id, e]));
     const referenceRoutes = view.referenceRoutes ?? [], referenceKeys = new Set();
     for (const route of referenceRoutes) {
       if (!nodes.has(route.nodeId)) fail(`Unknown reference element: ${route.nodeId}`, route.loc);
@@ -456,13 +491,14 @@ export function validateModel(model, options = {}) {
     }
   }
   viewIds(model.config?.views, model.views, model.config?.loc);
-  const diagnostics = profileDiagnostics(model, profile);
-  if (diagnostics.length) {
-    const first = diagnostics[0], error = new ArchError(first.message, first, first.code);
+  const diagnostics = validationDiagnostics(profileDiagnostics(model, profile),mode);
+  const errors=diagnostics.filter(d=>d.severity==='error');
+  if (errors.length) {
+    const first = errors[0], error = new ArchError(first.message, first, first.code);
     error.diagnostics = diagnostics;
     throw error;
   }
-  for (const view of model.views) validateDiagramView(model, profile, view);
+  for (const view of model.views) {validateTreeGroups(model,profile,view);validateDiagramView(model, profile, view);if(view.meta===undefined){if(view.diagram?.type==='class')validateClassPlacement(model,profile,view);else placementPlan(model,profile,view);viaReferences(model,profile,view);}}
   return model;
 }
 
@@ -473,8 +509,9 @@ export function validate(sourceOrModel, options = {}) {
     if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views))
       throw new ArchError('Invalid model; use parse(source)', {}, 'ARCH_VALIDATION');
     profile = resolveProfile(model, options);
-    validateModel(model, { profile });
-    return { valid: true, profile: { id: profile.id, version: profile.version }, diagnostics: [] };
+    validateModel(model, { ...options, profile });
+    const diagnostics=validationDiagnostics(profileDiagnostics(model,profile),validationMode(model,options));
+    return { valid: true, profile: { id: profile.id, version: profile.version }, diagnostics, ...(diagnostics.length?{conformant:false}:{}) };
   } catch (error) {
     if (!(error instanceof ArchError)) throw error;
     return { valid: false, profile: profile ? { id: profile.id, version: profile.version } : null,

@@ -1,0 +1,30 @@
+architecture "NAFv4 Example" {
+    config {
+        profile naf41-uaf
+        validation draft
+        views all
+    }
+    model {
+        Capability c_SAR "SAR"
+        Capability c_maritimeSAR "Martime SAR"
+        Capability c_landSAR "Land SAR"
+        Capability c_highMountainsSAR "High Mountains SAR"
+        Capability c_highSeaMaritimeSAR "High Sea Maritime SAR"
+        Capability c_nearShoreMaritimeSAR "Near-Shore Maritime SAR"
+        EnterprisePhase enterprisePhase_Horizon2030 "Horizon 2030"
+        EnterpriseVision enterpriseVision_improvedSAR "Improved SAR Safey & Effectiveness"
+        Goal goal_increaseCoverage "Increase Coverage"
+        Goal goal_improveResponseTimes "Improve Response Times"
+        Goal goal_reduceManpower "Reduce Manpower"
+        relation c0 c_maritimeSAR -> c_SAR "is kind of" {type CapabilityGeneralization}
+        relation c0.1 c_highSeaMaritimeSAR -> c_maritimeSAR "is kind of" {type CapabilityGeneralization}
+        relation c0.2 c_nearShoreMaritimeSAR -> c_maritimeSAR "is kind of" {type CapabilityGeneralization}
+        relation c1 c_landSAR -> c_SAR "is kind of" {type CapabilityGeneralization}
+        relation c1.1 c_highMountainsSAR -> c_landSAR "is kind of" {type CapabilityGeneralization}
+    }
+    view c1 "C1" {
+        include c_SAR,c_maritimeSAR,c_landSAR,c_highMountainsSAR,c_highSeaMaritimeSAR,c_nearShoreMaritimeSAR
+        viewpoint C1
+        diagram tree
+    }
+}

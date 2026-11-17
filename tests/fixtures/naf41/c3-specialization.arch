@@ -1,0 +1,18 @@
+architecture "C3 · Specialization context" {
+    config { profile naf41-uaf }
+    model {
+        Capability c_SAR "SAR"
+        Capability c_maritimeSAR "Maritime SAR"
+        Capability c_SAR_C2 "SAR C2"
+        Capability c_distressMonitoringSignal "Distress Monitoring Signal"
+        CapabilityGroup capabilityGroup_c2 "C2"
+        relation c1.1 c_maritimeSAR -> c_SAR "is kind of" { type CapabilityGeneralization }
+        relation c3.2 c_maritimeSAR -> c_SAR_C2 "depends on" { type CapabilityDependency }
+        relation c3.3 c_maritimeSAR -> c_distressMonitoringSignal "depends on" { type CapabilityDependency }
+        relation c3.4 capabilityGroup_c2 -> c_SAR_C2 "aggregates" { type GroupsCapability }
+    }
+    view c3 "C3" {
+        viewpoint C3
+        tree g { nodes [c_SAR, c_maritimeSAR, c_SAR_C2, c_distressMonitoringSignal] }
+    }
+}

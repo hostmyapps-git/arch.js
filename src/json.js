@@ -1,4 +1,5 @@
 import { ArchError } from './errors.js';
+import {placementCoordinate} from './placement.js';
 
 const own = (o, k) => Object.hasOwn(o, k);
 const record = o => o !== null && typeof o === 'object' && !Array.isArray(o);
@@ -115,6 +116,10 @@ export function jsonToDSL(input) {
     if (!values.length) error('Expected a nonempty list', path);
     return values.map((v, i) => text(v, Array.isArray(value) ? child(path, i) : path)).join(', ');
   };
+  const placementPoint = (value,path) => {
+    if(!Array.isArray(value)||value.length!==2)error('Expected a coordinate pair [x, y]',path);
+    return `(${value.map((v,i)=>placementCoordinate(v,{path:child(path,i)})).join(', ')})`;
+  };
   const point = (value, path) => {
     if (!Array.isArray(value) || value.length !== 2 || value.some(v => typeof v !== 'number' || !Number.isFinite(v))) error('Expected a coordinate pair [x, y]', path);
     return `(${value.join(', ')})`;
@@ -171,7 +176,7 @@ export function jsonToDSL(input) {
             } else if (['incoming', 'outgoing'].includes(attr)) {
               obj(a, ap); emit(`${attr} {`, ap); attributes(a, ap); emit('}', ap);
             } else {
-              const asList = ['extends', 'contains', 'from', 'to', 'nodes', 'relations', 'requiredNodes', 'requiredRelations'].includes(attr);
+              const asList = ['extends', 'contains', 'from', 'to', 'directions', 'nodes', 'relations', 'requiredNodes', 'requiredRelations'].includes(attr);
               emit(`${id(attr, ap)} ${asList ? list(a, ap) : scalar(a, ap)}`, ap);
             }
           }
@@ -191,9 +196,10 @@ export function jsonToDSL(input) {
         emit(`${id(item.type, child(p, 'type'))} ${name} ${text(item.name, child(p, 'name'))} {`, p);
       } else {
         if (++edgeCount > 4000) error('At most 4000 relationships are allowed', p);
-        emit(`relation ${name} ${id(item.from, child(p, 'from'))} -> ${id(item.to, child(p, 'to'))} ${text(item.name, child(p, 'name'))} {`, p);
+        if(item.direction!==undefined&&!['forward','both'].includes(item.direction))error('direction must be forward or both',child(p,'direction'));
+        emit(`relation ${name} ${id(item.from, child(p, 'from'))} ${item.direction==='both'?'<->':'->'} ${id(item.to, child(p, 'to'))} ${text(item.name, child(p, 'name'))} {`, p);
       }
-      const reserved = key === 'elements' ? ['id', 'type', 'name', 'elements', 'relations'] : ['id', 'name', 'from', 'to'];
+      const reserved = key === 'elements' ? ['id', 'type', 'name', 'elements', 'relations'] : ['id', 'name', 'from', 'to', 'direction'];
       const written = new Set();
       const attribute = (attr, v, ap) => {
         if (written.has(attr)) error(`Duplicate attribute: ${attr}`, ap);
@@ -222,7 +228,7 @@ export function jsonToDSL(input) {
       const p = child(path, key);
       if (key === 'via') {
         if (!Array.isArray(v) || !v.length) error('Expected a nonempty list of coordinate pairs', p);
-        emit(`via ${v.map((pair, i) => point(pair, child(p, i))).join(', ')}`, p);
+        emit(`via ${v.map((pair, i) => placementPoint(pair, child(p, i))).join(', ')}`, p);
       } else if (['from', 'to', 'label'].includes(key) && Array.isArray(v)) emit(`${key} ${point(v, p)}`, p);
       else if (key === 'label' && v === 'none') emit('label none', p);
       else field(key, v, p);
@@ -259,11 +265,13 @@ export function jsonToDSL(input) {
               emit(`route ${pair ? `${pair[1]} -> ${pair[2]}` : id(target, rp)}`, rp); routing(rule, rp);
             } else if (key === 'place') {
               keys(rule, ['at', 'size'], rp);
-              emit(`place ${id(target, rp)} at ${point(rule.at, child(rp, 'at'))}${own(rule, 'size') ? ` size ${point(rule.size, child(rp, 'size'))}` : ''}`, rp);
+              emit(`place ${id(target, rp)} at ${placementPoint(rule.at, child(rp, 'at'))}${own(rule, 'size') ? ` size ${point(rule.size, child(rp, 'size'))}` : ''}`, rp);
             } else {
               emit(`style ${id(target, rp)} {`, rp); attributes(rule, rp); emit('}', rp);
             }
           }
+        } else if(key==='tree') {
+          for(const [id,tree,tp]of entries(v,vp)) {emit(`tree ${id} {`,tp);for(const [option,a]of Object.entries(tree))if(option!=='id')field(option,a,child(tp,option));emit('}',tp);}
         } else if (key === 'routes') { emit('routes', vp); routing(v, vp); }
         else if (key === 'diagram') {
           if (typeof v === 'string') emit(`diagram ${id(v, vp)}`, vp);

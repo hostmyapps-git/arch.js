@@ -3,6 +3,7 @@ import { jsonToDSL, isJSONDocument } from './json.js';
 import { resolveProfile, getProfiles, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
 import { DIAGRAMS, DIAGRAM_OPTIONS } from './diagrams.js';
 import { topics } from './help-syntax.js';
+import {POSITION_FIELDS} from './placement.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const own = (value, key) => Object.hasOwn(value, key);
@@ -21,6 +22,7 @@ function jsonSource(model) {
     const config = {}, original = model.config;
     if (own(original, 'profile')) config.profile = original.profile;
     if (own(original, 'views')) config.views = copy(original.views);
+    if (own(original, 'validation')) config.validation = original.validation;
     if (original.definition) {
       for (const [key, value] of Object.entries(original.definition)) {
         const mapped = {nodeTypes:'type', relationTypes:'relation', viewpoints:'viewpoint', styleGroups:'styleGroup'}[key];
@@ -59,14 +61,15 @@ function jsonSource(model) {
   a.model = {elements: collection(nodes(null))};
   if (model.edges.length) a.model.relations = collection(model.edges.map(e => [e.id, {
     from:e.source, to:e.target, name:e.title, ...(e.type !== undefined ? {type:e.type} : {}),
-    ...props(e, EDGE_PROPERTIES, ['id','from','to','name','type','attributes'])
+    ...props(e, EDGE_PROPERTIES, ['id','from','to','name','type','direction','attributes'])
   }]));
   a.views = collection(model.views.map(v => {
     const result = {name:v.title};
     if(v.meta!==undefined)result['@meta']=v.meta;
-    for (const key of ['direction','theme','spacing','viewpoint','include','exclude','referenceDisplay','referenceOccurrences','diagram']) if (v[key] !== undefined) result[key] = clean(v[key]);
+    for (const key of ['direction','theme','spacing','viewpoint','include','exclude','referenceDisplay','referenceOccurrences','diagram','propertyFields']) if (v[key] !== undefined) result[key] = clean(v[key]);
     if (Object.keys(v.places).length) result.place = Object.fromEntries(Object.entries(v.places).map(([id,p]) => [id,{at:[p.at.x,p.at.y],...(p.size?{size:[p.size.x,p.size.y]}:{})}]));
     if (Object.keys(v.styles).length) result.style = clean(v.styles);
+    if(v.trees)result.tree=clean(v.trees);
     const route = item => Object.fromEntries(Object.entries(item).filter(([key]) => !['loc','nodeId','edgeId'].includes(key)).map(([key,value]) => [key,
       key === 'via' ? value.map(p=>[p.x,p.y]) : value && typeof value === 'object' && own(value,'x') ? [value.x,value.y] : value]));
     if (v.routeDefaults) result.routes = route(v.routeDefaults);
@@ -108,11 +111,11 @@ export function modelSource(model,format) {
   return output;
 }
 
-const styleKeys = ['template','accent','icon','iconPosition','backgroundColor','opacity','display','fontSize','width','height','showIcon','showLabel','showStereotype','showDescription','showTechnology'];
+const styleKeys = ['template','accent','icon','iconPosition','backgroundColor','opacity','display','fontSize','width','height','showIcon','showLabel','showStereotype','showDescription','showTechnology','propertyFields'];
 const routingKeys = ['from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel'];
-const viewKeys = ['name','@meta','meta','diagram','direction','theme','spacing','viewpoint','include','exclude','place','style','routes','route','referenceDisplay','referenceOccurrences'];
-const configKeys = ['profile','views','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
-const profileKeys = ['extends','template','container','abstract','contains','attribute','attributes','icon','accent','backgroundColor','styleGroup','from','to','style','allowSelf','acyclic','incoming','outgoing','nodes','relations','requiredNodes','requiredRelations'];
+const viewKeys = ['name','@meta','meta','diagram','tree','direction','theme','spacing','viewpoint','include','exclude','place','style','routes','route','referenceDisplay','referenceOccurrences','propertyFields'];
+const configKeys = ['profile','views','validation','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
+const profileKeys = ['extends','template','container','abstract','contains','attribute','attributes','icon','accent','backgroundColor','styleGroup','from','to','directions','style','allowSelf','acyclic','incoming','outgoing','nodes','relations','requiredNodes','requiredRelations'];
 function distance(a,b) {
   a=String(a).slice(0,100).toLowerCase();b=String(b).slice(0,100).toLowerCase();let row=Array.from({length:b.length+1},(_,i)=>i);
   for(let i=0;i<a.length;i++){const next=[i+1];for(let j=0;j<b.length;j++)next.push(Math.min(next[j]+1,row[j+1]+1,row[j]+(a[i]!==b[j])));row=next;}return row[b.length];
@@ -122,6 +125,7 @@ function jsonKeys(path='') {
   if(path==='/architecture/model')return ['elements','relations'];
   if(path==='/architecture/config')return configKeys;
   if(/\/style\/[^/]+$/.test(path))return styleKeys;
+  if(/\/tree\/[^/]+$/.test(path))return ['nodes',...DIAGRAM_OPTIONS.tree];
   if(/\/(?:route\/[^/]+|routes)$/.test(path))return routingKeys;
   if(/\/place\/[^/]+$/.test(path))return ['at','size'];
   if(/\/views\/[^/]+$/.test(path))return viewKeys;
@@ -158,9 +162,12 @@ function corrections(diagnostic, model, source, format, options) {
     const serialized=JSON.stringify(rule?.many?[value]:value);
     add(`Provide ${missing[1]}`,format==='json'?`"${missing[1]}": ${serialized}`:`${missing[1]} ${serialized}`,'Check the attribute type and profile constraints.');
   }
-  for(const [term,values] of [['direction',['right','down']],['theme',['light','dark']],['iconPosition',['top','left','bottom','right']],['referenceDisplay',['labels','nodes','both']],['referenceOccurrences',['shared','perEdge']],['curve',['straight','orthogonal','rounded','bezier']]])
+  const edgeDirection=/forward or both|does not allow direction/.test(message)||/\/relations\//.test(diagnostic.path??'');
+  for(const [term,values] of [['validation',['strict','draft']],['parentDirection',['auto','source','target']],['orientation',['down','right','up','left']],['direction',edgeDirection?['forward','both']:/must be.*up/.test(message)?['down','right','up','left']:['right','down']],['theme',['light','dark']],['iconPosition',['top','left','bottom','right']],['referenceDisplay',['labels','nodes','both']],['referenceOccurrences',['shared','perEdge']],['curve',['straight','orthogonal','rounded','bezier']]])
     if(message.includes(term)&&(message.includes('must')||message.includes('Unknown')))for(const value of values)add(`${term}: ${value}`,format==='json'?`"${term}": "${value}"`:`${term} ${value}`);
   if(/spacing must/.test(message))add('Use spacing between 24 and 400',format==='json'?'"spacing": 80':'spacing 80');
+  const allowedDirections=message.match(/allowed directions: (forward|both)(?:, (forward|both))?/);
+  if(allowedDirections)for(const value of allowedDirections.slice(1).filter(Boolean))add(`Use ${value==='both'?'<->':'->'}`,format==='json'?`"direction": "${value}"`:`relation LINK_ID SOURCE_ID ${value==='both'?'<->':'->'} TARGET_ID "Label"`,'Use a direction allowed by the selected relationship type.');
   if(/Unknown diagram type/.test(message))nearest(message.split(' ').at(-1),DIAGRAMS,'Diagram');
   const diagramOption=message.match(/Option (\w+) does not apply to (\w+)/);
   if(diagramOption)nearest(diagramOption[1],DIAGRAM_OPTIONS[diagramOption[2]]??[],'Diagram field');
@@ -181,6 +188,18 @@ function corrections(diagnostic, model, source, format, options) {
   if(/Expected: (?:element title|architecture title|relationship label|view title)/.test(message))add('Quote the title','"Title"');
   if(/Expected: model, view, config/.test(message))nearest(tokenAtError??'',['model','view','config','description']);
   if(/Expected: at/.test(message))add('Specify the placement position','place elementId at (0, 0)');
+  if(/placement coordinate|Placement expressions require/.test(message)) {
+    add('Use a box field with an offset',format==='json'?'"at": ["coverage.x + 20", "vision.y - 40"]':'place elementId at (coverage.x + 20, vision.y - 40)',`Allowed fields: ${POSITION_FIELDS.join(', ')}. Operators: +, -, *, /; multiplication/division precede addition/subtraction. Parentheses group calculations.`);
+    add('Use fixed coordinates',format==='json'?'"at": [0, 0]':'place elementId at (0, 0)');
+    if(/Placement expressions require/.test(message))add('Separate the two coordinates',',','Use (x, y), with a comma between coordinates; use +, -, * or / within an expression.');
+  }
+  if(/Division by zero/.test(message))add('Choose a nonzero divisor',format==='json'?'"at": ["coverage.x / 2", 0]':'place elementId at (coverage.x / 2, 0)','Check calculated denominators as well as literal zero.');
+  if(/calculation must remain finite/.test(message))add('Reduce the calculation magnitude','100 * 2','Keep intermediate calculations finite and final coordinates within ±10000000.');
+  if(/Circular placement dependency/.test(message))add('Break the dependency with a fixed coordinate',format==='json'?'"at": [300, 0]':'place elementId at (300, 0)','Follow the coordinate chain in the error. Tree members depend on their group; package sizes depend on their children.');
+  const placementReference=message.match(/Unknown or hidden placement reference: ([^;]+)/);
+  if(placementReference&&model)nearest(placementReference[1],[...model.nodes.map(n=>n.id),...model.views.flatMap(v=>Object.keys(v.trees??{}))],'Visible element/group');
+  const viaReference=message.match(/(?:Unknown|Hidden or excluded|Unavailable) via reference: ([^;]+)/);
+  if(viaReference&&model)nearest(viaReference[1],[...model.nodes.map(n=>n.id),...model.views.flatMap(v=>Object.keys(v.trees??{}))],'Visible via anchor');
   if(/Expected: ->/.test(message))add('Connect the endpoints with ->','relation flow sourceId -> targetId "Label"');
   if(/Expected an object/.test(message))add('Use an object for this block',format==='json'?'{}':'model {}');
   if(/Expected a coordinate pair/.test(message))add('Use two numeric coordinates','[0, 0]');

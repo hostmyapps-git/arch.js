@@ -1,0 +1,35 @@
+architecture "Criterion and measure details" {
+    config { profile naf41-uaf views [cards, classes] }
+    model {
+        Capability sar "SAR"
+        Effect found "Distressed person found"
+        EffectivenessCriterion timeToFind "Time to find" {
+            expression "Elapsed time in minutes from receipt of a valid distress alert to confirmed localization of the distressed person"
+        }
+        Measure elapsed "Measured search time" { unit "minutes" value 25 }
+        relation desires sar -> found "desires" { type DesiredEffect }
+        relation specifies sar -> timeToFind "specifies" { type SpecifiesEffectiveness }
+        relation characterizes timeToFind -> found "characterizes" { type CharacterizesEffect }
+        relation evaluates elapsed -> timeToFind "evaluates" { type EvaluatesCriterion }
+    }
+    view cards "C5 · Node cards with properties" {
+        viewpoint C5
+        propertyFields [expression, unit, value]
+        style timeToFind { width 340 }
+        place sar at (0, 0)
+        place found at (sar.right + 500, sar.y)
+        place timeToFind at (sar.right + 80, sar.bottom + 100)
+        place elapsed at (timeToFind.x, timeToFind.bottom + 100)
+        route specifies { from bottom to top curve rounded }
+        route characterizes { from right to bottom curve rounded }
+        route evaluates { from top to bottom curve straight }
+    }
+    view classes "C5 · Freely positioned class cards" {
+        viewpoint C5
+        diagram class { propertyFields [expression, unit, value] }
+        place sar at (0, 0)
+        place found at (sar.right + 600, sar.y)
+        place timeToFind at (sar.right + 100, sar.bottom + 100)
+        place elapsed at (timeToFind.x, timeToFind.bottom + 100)
+    }
+}

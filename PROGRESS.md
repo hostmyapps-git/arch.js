@@ -1,5 +1,237 @@
 # Umsetzungsfortschritt
 
+## Frei positionierbare Properties in beiden Darstellungen (17.11.2026)
+
+- `propertyFields` auf View-Ebene, pro Node-Style und als Diagrammvorgabe in
+  Connected/Tree/Class. Rangfolge Style → View → Diagramm; `[]` leert die Auswahl.
+  Vorhandene Werte einschließlich 0/false/Listen werden escaped und umgebrochen;
+  fehlende Werte ausgelassen, unbekannte Felder geprüft.
+- Normale Karten behalten Templates/Icons, Positionierung und manuelles Routing.
+  Property-Zeilen erhöhen Karten-/Package-Headermaße vor Layout/Koordinatenauflösung;
+  grafische Referenzkarten übernehmen sie. Leere Packages berücksichtigen auch
+  lange Header mit Property-Zeilen in ihrer Mindesthöhe.
+- Class behält gegliederte Bereiche und unterstützt `place` mit Berechnungen und
+  Mindestgrößen. Flache Projektion, absolute Koordinaten; Ports folgen ihrem Owner
+  und dienen als Anker. Details werden über den Owner positioniert. Kanten folgen
+  Karten automatisch; Class hat weiterhin kein `route`/`routes`/`via`, keine
+  Tree-Gruppen oder grafischen Referenzkarten.
+- JSON-/Meta-Übersetzung, englische Laufzeithilfe und Dokumentation ergänzt.
+  `examples/property-fields.arch` zeigt dasselbe C5-Modell in beiden Varianten.
+
+Verifikation: **256 Node-Testgruppen** und vollständige Chromium-Suite.
+Rangfolge, Modellidentität, negative/relative Positionen, Class-Ports,
+Package-/Tree-/Referenzkarten, Templates/Iconpositionen, lange Unicode-Texte,
+beide Themes, JSON/Meta, Standalone-Bundles und SVG-Export geprüft.
+
+## Berechnete via-Stützpunkte (17.11.2026)
+
+- `via` akzeptiert Referenzen auf sichtbare Nodes/Tree-Gruppen sowie `+`, `-`,
+  `*`, `/`, Klammern und Vorzeichen mit denselben Grenzen wie `place at`.
+  Normale Routen, interne Tree-Kanten, Zuordnungslinien und gemeinsame `routes`-
+  Vorgaben unterstützt. Endpunkt-/Labelpunkte und Größen bleiben numerisch.
+- Auswertung nach Nodepositionen/Package-Größen/Tree-Gruppen im absoluten
+  View-Koordinatenraum, unmittelbar vor dem jeweiligen Routing. Via weist keine
+  Positionen zu; bestehende Platzierungszyklen bleiben separat geprüft.
+- Effektive Vorgaben berücksichtigen lokale Ersetzung und `path`. Ausgeblendete
+  oder übersteuerte Routen benötigen keine ungenutzte Ankergeometrie; gespeicherte
+  Ausdrücke/IDs bleiben geprüft. Automatische grafische Referenzkarten, die als
+  Anker dienen, werden kanonische Karten im normalen Layout, auch bei `perEdge`.
+- JSON-/DSL-/Meta-Übersetzung erhält Ausdrücke. Hilfe, Dokumentation und die
+  relative C2-View enthalten ein Beispiel mit berechnetem `via`.
+
+Verifikation: **248 Node-Testgruppen** und vollständige Chromium-Suite.
+Arithmetik, endgültige Koordinaten, Package-/Tree-Bezüge, Defaults/Übersteuerung,
+Bezier, Zuordnungslinien, Sichtbarkeit, Nullteiler, JSON, Modelleingabe ohne
+Mutation und beide Standalone-Bundles geprüft.
+
+## Multiplikation/Division in Platzierungsrechnungen (16.11.2026)
+
+- `place` unterstützt `*` und `/` mit Punkt vor Strich, Linksassoziativität,
+  Klammern und unären Vorzeichen. Bestehende Referenzen, JSON und Meta-Views
+  bleiben symbolisch. Beispiel für vertikale Zentrierung:
+  `vision.centerY - maritime.height / 2`.
+- Begrenzter arithmetischer Parser ohne Codeausführung: höchstens 32 Operanden,
+  16 Klammer-Ebenen. Division durch null, nichtendliche Zwischenwerte und
+  endgültige Koordinaten außerhalb des gültigen Bereichs werden abgefangen.
+- Koordinatenabhängigkeiten erfassen Operanden auch in Produkten/Quotienten.
+  Package-Inhaltsräume bleiben bei affinen Rechnungen korrekt; nichtlineare
+  Positionsrechnungen berücksichtigen den Ursprung konservativ als Abhängigkeit.
+- C2-Beispiel, englische Laufzeithilfe, Korrekturvorschläge und Dokumentation
+  aktualisiert. Das Beispiel richtet Maritime SAR mittig an der Vision aus.
+
+Verifikation: **241 Node-Testgruppen** und vollständige Chromium-Suite;
+Operatorrangfolge, Gruppierung, Vorzeichen, Nullteiler, Package-/Tree-Bezüge,
+Zyklen, JSON und Standalone-Bundles geprüft.
+
+## C3-Kontextfähigkeiten ohne eigene Dependency (16.11.2026)
+
+- NAFv4.1 S.92–93 visuell geprüft: Spezialisierungen sind optional zulässiger
+  C3-Kontext; SAR besitzt im konformen Beispiel nur eine Generalisierungskante.
+- Zu strenge Einzelknotenpflicht `CapabilityDependency` für jede Capability
+  entfernt. Der Mindestinhalt einer Dependency pro C3-View bleibt bestehen;
+  Endpunkttypen, erlaubte Relationen und übrige Modellregeln bleiben geprüft.
+  Fachliche Vollständigkeit der relevanten Abhängigkeiten ist nicht automatisch
+  nachweisbar. Einschränkung auch in englischer Profilhilfe dokumentiert.
+- Profilrevision `4.1.0-arch.4`; Regression mit dem C3-Teil des Nutzerbeispiels
+  einschließlich Tree-Gruppe und externer CapabilityGroup ergänzt.
+
+Verifikation: **238 Node-Testgruppen** und vollständige Chromium-Suite;
+C3 strikt und im Entwurfsmodus ohne falschen Hinweis, beide Themes und Bundles.
+
+## Referenzierte Platzierung mit Addition/Subtraktion (16.11.2026)
+
+- `place a at (coverage.x + 20, vision.y - 40)` mit bis zu 32 Termen pro Achse;
+  `x`, `y`, `width`, `height`, `right`, `bottom`, `centerX`, `centerY` sichtbarer
+  Nodes/Tree-Gruppen, einschließlich automatisch angeordneter Mitglieder.
+- Koordinatenweise iterative Auflösung nach automatischem Layout und vor Routing.
+  Vorwärtsreferenzen, Package-Inhalte und externe Tree-Karten funktionieren.
+  Package-Größen wachsen rechts/unten; Positionen außerhalb ihres linken/oberen
+  Inhaltsrands erzeugen einen Layoutfehler. Kein iterativer Reflow manueller Plätze.
+- Zirkelbezüge berücksichtigen indirekte Abhängigkeiten über Gruppen, Package-
+  Größen und automatische Kontextausrichtung. Fehlermeldung nennt die Kette;
+  auch im Entwurfsmodus blockierend. Sich selbst über Maße referenzieren bleibt
+  möglich, wenn daraus kein Koordinatenzyklus entsteht.
+- JSON-Strings und DSL-/Meta-Übersetzung bewahren symbolische Ausdrücke.
+  Fehler enthalten Quellpositionen/JSON-Pfade und Korrekturvorschläge.
+  `size` und Routenpunkte bleiben numerisch; keine Codeauswertung.
+- Englische Laufzeithilfe und statische Dokumentation ergänzt. C2-View `relative`
+  zeigt eine Capability relativ zur Gruppenbox und Vision.
+
+Verifikation: **237 Node-Testgruppen**, vollständige Chromium-Suite, beide
+Standalone-Bundles, JSON-Gleichheit, Package-/Tree-Abhängigkeiten und eine
+1.000 Elemente lange Referenzkette. Relative C2-Ansicht visuell geprüft.
+
+## Tree-Gruppen mit eigener Richtung (16.11.2026)
+
+- `tree ID { nodes [ID, …] direction up }` ordnet ausgewählte Mitglieder als
+  Teilbaum einer Connected-View an. Mehrere Gruppen können unterschiedliche
+  Richtungen (`up`, `down`, `left`, `right`) verwenden; `orientation` bleibt Alias.
+  Vier Richtungen funktionieren ebenfalls mit `diagram tree`.
+- Gruppen sind unsichtbare Layoutbereiche, keine Modell-Packages. Mitglieder
+  sind eindeutige Nicht-Container unter demselben Modellparent. Gruppen können
+  innerhalb von Packages liegen; Modellparent und Elementidentität bleiben erhalten.
+- `place GRUPPE at (X,Y)` positioniert den ganzen Tree. Einzelne Mitglieder und
+  Gruppengrößen werden automatisch bestimmt. Außenstehende Nodes verwenden
+  Connected-Layout oder eigene Positionen; direkt verbundene Karten auf oberster
+  Ebene werden automatisch neben der Gruppe ausgerichtet.
+- Hierarchiefilter lassen Querbeziehungen sichtbar. Individuelle Kantenrouten,
+  Label-Icons, Labelpositionen und grafische Referenzkarten bleiben nutzbar.
+  Konkrete Routen überschreiben Gruppen-`curve`/`showLabels`, diese entsprechende
+  View-Vorgaben. Ausgeblendete Elemente nehmen nicht am Gruppenlayout teil.
+- JSON-View-`tree`, DSL-/JSON-Metaübersetzung, englische Laufzeithilfe und
+  statische Dokumentation ergänzt. Das C2-Beispiel zeigt die Hierarchie nach oben,
+  Maritime SAR außerhalb links sowie eine separat positionierte Variante.
+
+Verifikation: **229 Node-Testgruppen** und vollständige Chromium-Suite erfolgreich.
+C2-Gruppen in beiden Themes, JSON-Gleichheit, Text-/Labelgrenzen und SVG-Export
+geprüft; exportierte Gruppenansicht visuell kontrolliert. Beide Standalone-Bundles
+neu gebaut. Tests umfassen mehrere Gruppen, Package-Containment, vier Richtungen,
+Routen/Referenzkarten, unverändertes Modell und verständliche Validierungsfehler.
+
+## C2-desires-Ziele und Beispiel auf Seite 91 (16.11.2026)
+
+- C2-Cut-out S.90 visuell nachgeprüft: EnterprisePhase kann Capability,
+  EnterpriseVision und Goal über `desires` adressieren. Die vorherige Abbildung
+  nur auf Capability war unvollständig; die Phase→Vision-Verbindung von S.91
+  ist kein Beleg für eine fehlerhafte NAF-Abbildung.
+- `DesiresVision` und `DesiresGoal` mit getrennten, typisierten Endpunkten
+  ergänzt. C2 verlangt pro Planungsphase mindestens eine Verbindung aus
+  `DesiresCapability`/`DesiresVision`/`DesiresGoal`, keinen zusätzlichen
+  direkten Phase→Capability-Link. Bestehende C2-Pflichtinhalte bleiben geprüft.
+- Profilrevision `4.1.0-arch.3`: 94 Anwendungsrelationen, insgesamt 137
+  Relationstypen; 286 Knotentypen und 47 Viewpoints unverändert.
+- `examples/naf41-enterprise-vision.arch` zeigt das Modell mit drei Goals als
+  echten Tree (Phase → Vision → vier Blätter) und als manuell positionierte
+  Connected-View in der Anordnung des PDF-Beispiels.
+- Regressionen für die drei desires-Ziele, fehlende Phase-Verknüpfung,
+  falsche Endpunkte/Richtungen, Generalisierungsmissbrauch und JSON ergänzt.
+
+Verifikation: **222 Node-Testgruppen** und die vollständige Chromium-Suite
+erfolgreich. Das Beispiel von S.91 besteht die strenge C2-Prüfung ohne
+DesiresCapability und rendert als Tree sowie in PDF-ähnlicher manueller
+Anordnung. Beide Ansichten visuell geprüft; Profil-Scripts/Bundles neu gebaut,
+`git diff --check` sauber.
+
+## NAF-C2-Bezeichnung Goal (16.11.2026)
+
+- NAFv4.1 S.90–91 visuell und textuell geprüft: Das C2-Beispiel zeigt drei
+  `Goal`-Elemente. Der vorhandene UAF-Katalog und die ADMBw-MDG definieren
+  `EnterpriseGoal`; die MDG enthält keinen eigenen Stereotyp `Goal`.
+- Expliziten NAF-Anwendungsadapter `Goal extends EnterpriseGoal` im
+  Quellkatalog ergänzt; geerbte Attribute, `SpecifiesGoal` und alle C2-Regeln
+  greifen ohne parallele Sonderregeln. Der native UAF-Katalog bleibt unverändert.
+- Profilrevision `4.1.0-arch.2`: 73 Anwendungs-Knotenadapter, insgesamt
+  286 Knotentypen; Beziehungen und 47 Viewpoints unverändert.
+- Originales Benutzer-C1-Modell mit drei nicht eingeblendeten Goals sowie C2
+  mit allen drei Goals, Pflichtbeziehungen, falscher Richtung, Attributtypen,
+  Hilfe, JSON und beiden Bundle-/Profil-Ladevarianten als Regression abgesichert.
+- Herkunft/Abgrenzung dokumentiert: Die Namensabbildung benötigt kein ADMBw-Profil.
+  Ein eigenes Profil wäre für Bundeswehr-spezifische Erweiterungen angemessen;
+  die Referenz-MDG nennt NAF 4.0 und wird nicht vollständig importiert.
+
+Verifikation: **221 Node-Testgruppen** und die vollständige Chromium-Suite
+erfolgreich. Benutzer-C1 und C2 mit drei Goals in beiden Themes geprüft,
+einschließlich geerbter Beziehungen/Hilfe. Einzelne und gesammelte generierte
+Profil-Scripts mit beiden Librarybundles getestet; `git diff --check` sauber.
+
+## Automatischer Tree-/Taxonomie-Renderer (16.11.2026)
+
+- `diagram tree` mit `relations`, `parentDirection`, `orientation`, `levelGap`,
+  `siblingGap`, `curve` und `showLabels` ergänzt. Auto erkennt das Ziel von
+  Generalisierungen als Elternteil; andere Beziehungen gehen von Eltern zum Kind.
+  Semantische Richtung, Typen und SVG-Marker bleiben erhalten.
+- Iterative Topologie-/Teilbaum-Anordnung für Bäume und Wälder: Eltern über der
+  Mitte des ersten/letzten Kindes, deklarationsstabile Reihenfolge, keine
+  Überschneidungen unabhängiger Unterbäume, Platz für variable Karten und Labels.
+  1.000 Ebenen ohne rekursiven Layoutstack geprüft.
+- Vorhandene Node-Karten/Icons/Styles und SVG-Ausgabe wiederverwendet; Packages
+  sind in dieser Projektion flache Karten. Hides, JSON-/DSL-Übersetzung,
+  Entwurfsmodus und gestapelte Views bleiben unterstützt.
+- Strukturfehler bei Zyklen, Selbstkanten, mehreren Eltern, parallelen oder
+  bidirektionalen Hierarchiekanten mit Hinweisen auf Filter/Hides/Connected.
+  Manuelle Positionen/Routen bleiben Connected vorbehalten.
+- `examples/taxonomy.arch` mit dem SAR-Modell und zwei C1-Views in die Demo
+  aufgenommen. Laufzeithilfe `@help diagrams tree`, statische Dokumentation
+  und Vergleich aktualisiert. Demo: 13 Modelle / 48 Views plus Hilfereferenz.
+
+Verifikation: **219 Node-Testgruppen** und vollständige Chromium-Suite erfolgreich.
+C1-Beispiel mit beiden Orientierungen/Themes, JSON, Schrift-/Labelgrenzen und
+SVG-Export geprüft. Export und Dark-Theme-Screenshot visuell geprüft.
+Beide Bundles neu gebaut; `git diff --check` ohne Beanstandungen.
+
+## Bidirektionale Beziehungen, Entwurfsmodus und Kanten ausblenden (16.11.2026)
+
+- `<->` und JSON `direction: "both"` ergänzt; Profilfeld `directions` erlaubt
+  `forward`/`both`, einschließlich Vererbung und reiner Bidirektionalität.
+  Endpunktrollen, Kardinalitäten beider Richtungen, Selbstkanten, `acyclic`,
+  Viewpoint-Verbindungen und Metaview-Übersetzungen berücksichtigt.
+- Connected-/Klassenrenderer mit zwei Pfeilspitzen, Matrizen mit beiden
+  Richtungen. Sequenz/State/Activity/Timeline lehnen sichtbare bidirektionale
+  Beziehungen ausdrücklich ab. Neue Beispiele `bidirectional.arch`, `draft.arch`.
+- `config.validation`/API `validation` mit `strict` (Standard) und `draft`.
+  Fehlende Pflichtangaben/Mindestanzahlen werden Warnungen, sichere Diagramme
+  samt Quellpositionen darunter gerendert. Übrige Fehler bleiben blockierend.
+  `validate()` kennzeichnet unvollständige Entwürfe als `conformant: false`.
+- Warnungsfooter als eigenständiges `notices`-Layout mit vollständigen Bounds;
+  bei mehreren Views einmal darunter. SVG-/DOM-/Markdown-Ausgabe erhalten ihn.
+- `style EDGE_ID { display none|standard }` steuert die Sichtbarkeit je View.
+  Verbindungen, Labels/Icons und Zuordnungspfeile ausgeblendeter Kanten entfallen;
+  sämtliche Beziehungen bleiben Bestandteil der Modell-/Profilvalidierung.
+- Verschachtelte Packages und ihre Hintergrund-/Schrift-/Größenstile durch das
+  neue Beispiel und Browserprüfungen zusätzlich abgesichert.
+- Laufzeithilfe und README/SPEC/JSON/HELP/DIAGRAMS/ROADMAP/Profilhandbuch ergänzt.
+- `display none` zusätzlich für Nodes/Packages: Nachkommen und angrenzende
+  Beziehungen entfallen, ohne Modell-/Profilregeln aufzuheben. Fachrenderer
+  filtern konfigurierte Teilnehmer-/Detail-Listen, leere Projektionen bleiben
+  gültig; Lanes/Heatmap-Eltern verbergen ihre zugeordneten Inhalte mit.
+
+Verifikation: **212 Node-Testgruppen** und die vollständige Chromium-Suite
+erfolgreich. Browser prüft beide Richtungen/Marker, verschachtelte Package-Farben,
+Draft-Hinweise und Bounds, strenge Übersteuerung, verschwundene Hinweise nach
+Korrektur, JSON, Node-/Kanten-Hides sowie SVG-Export. Screenshots
+`bidirectional-packages.png` und `draft-validation.png` visuell geprüft.
+Beide Browserbundles neu gebaut; `git diff --check` ohne Beanstandungen.
+
 ## Fehlerkorrektur: Organisationslogos einschließlich NATO (16.11.2026)
 
 - `ReferenceDocs/organizationLogos.json` enthält 45 Icons. NATO und Rolls-Royce

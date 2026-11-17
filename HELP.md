@@ -64,6 +64,47 @@ Ebene des `architecture`-Blocks.
 
 Aliase: `icons` → `iconpacks`, `profile` → `profiles`, `nodes` → `types`,
 `edges` → `relations`, `diagram` → `diagrams`, `view` → `views`, `style` → `styles`.
+
+Für automatische Taxonomien: `@help diagrams tree`. Die C1-View kann mit
+`diagram tree { relations [CapabilityGeneralization] }` ohne manuelle Positionen
+gerendert werden. `parentDirection auto` erkennt Generalisierungsziele als Eltern;
+`direction down|up|left|right` (Alias `orientation`), `levelGap`, `siblingGap`, `curve rounded|orthogonal`
+und `showLabels` steuern die Ausgabe. Vorhandene Node-Styles sind verfügbar.
+Die Hilfe nennt Grenzen für Zyklen und Mehrfachvererbung sowie Alternativen über
+Typfilter/ausgeblendete Kanten oder `diagram connected`.
+
+Für C2-Phasen: `@help connections naf41-uaf EnterprisePhase` zeigt
+`DesiresCapability`, `DesiresVision` und `DesiresGoal`. `@help relations naf41-uaf
+DesiresVision` erklärt Phase→Vision aus dem Beispiel auf S.91. Die Anordnung
+funktioniert als Tree. Für eine gemischte Anordnung in Connected-Views:
+`tree hierarchy { nodes [horizon, vision, goalA, goalB] direction up }`.
+Die Capability bleibt außerhalb und kann automatisch oder per `place` positioniert
+werden. `place hierarchy at (300, 0)` verschiebt den gesamten Tree; Mitglieder
+werden automatisch angeordnet. Mehrere Gruppen mit eigenen Richtungen sind
+möglich. `@help views` erklärt Mitgliedschaft, Routen und Grenzen.
+`CapabilityGeneralization` gilt nur zwischen Capabilities.
+
+`propertyFields [expression, unit, value]` in einer View zeigt Properties auf
+Connected-/Tree-/Class-Karten. `style criterion {propertyFields [expression]}`
+überschreibt die Auswahl pro Node; `[]` leert sie. `@help styles` erläutert Werte,
+Umbruch und Rangfolge Style → View → Diagramm. Connected behält manuelles Routing.
+Class-Karten unterstützen ebenfalls `place`, berechnete Koordinaten und
+Mindestgrößen; Ports folgen ihren Ownern. `@help diagrams class` nennt Grenzen:
+Details werden nicht einzeln positioniert; Class hat weiterhin kein
+`route`/`routes`/`via`, keine Tree-Gruppen oder grafischen Zuordnungslinien.
+
+`@help routing` erläutert Koordinatenreferenzen und Offsets:
+`place maritime at (coverage.x + 20, vision.y - 40)` oder
+`place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)`.
+Anker: `x`, `y`, `width`, `height`, `right`, `bottom`, `centerX`, `centerY`.
+Referenzen gelten für sichtbare Nodes/Tree-Gruppen derselben View, unabhängig
+von der Deklarationsreihenfolge. `+`, `-`, `*`, `/`, Klammern und unäre Vorzeichen
+sind erlaubt. Punktrechnung geht vor Strichrechnung; Division durch null ist ein
+Fehler. Berechnungen funktionieren ebenfalls für `via`, einschließlich gemeinsamer
+`routes`-Vorgaben und Zuordnungslinien. Via verwendet absolute Diagrammkoordinaten
+nach Positionierung der Nodes und Gruppen. Größen-, Endpunkt- und Labelpunkte
+bleiben numerisch. Die Hilfe erklärt Inhaltskoordinaten in Packages, Grenzen
+der automatischen Anordnung und die Fehlermeldungskette bei Zirkelbezügen.
 Themen sind unabhängig von Groß-/Kleinschreibung; registrierte IDs und Namen
 müssen exakt geschrieben werden. `#`-/`//`-Kommentare und JSON-Strings als
 Parameter sind erlaubt. Innerhalb von `model` oder `view` ist `@help` nicht erlaubt.
@@ -188,6 +229,27 @@ und Viewpoint-Regeln gelten weiterhin; die Kandidatenliste ist keine Zusage,
 dass ein Typ ohne weitere Angaben in jedem Kontext gültig ist.
 
 ### Erlaubte Beziehungen für einen Knotentyp
+
+Bidirektionale Beziehungen verwenden `relation ID a <-> b "Label"`.
+`@help model` erklärt die Semantik; `@help relations . TYPE` zeigt die
+Profilfreigabe `directions`. `[forward, both]` erlaubt beide Arten, `[both]`
+verlangt eine bidirektionale Beziehung. Neue eigene Typen sind standardmäßig
+vorwärts gerichtet. Die Übersicht `@help connections` nennt ebenfalls die
+erlaubten Richtungen; Quelle/Ziel bezeichnen weiterhin die geschriebenen Rollen.
+
+Für die Modellierung unvollständiger Architekturen: `config { validation draft }`.
+`@help model` und `@help config` erklären, welche fehlenden Anforderungen zu
+Warnungen werden und welche Fehler weiterhin blockieren. Der Hinweisbereich
+steht unter dem Diagramm und ist Bestandteil des SVG-Exports.
+
+`style EDGE_ID { display none }` blendet die ganze Beziehung pro View aus,
+`display standard` zeigt sie wieder. `@help routing` beschreibt den Unterschied
+zu `route EDGE_ID { label none }`, das lediglich das Label ausblendet.
+
+Auch Nodes unterstützen `style NODE_ID { display none }`. Bei Packages werden
+alle Nachkommen ausgeblendet, einschließlich ihrer Beziehungen. `@help styles`
+erklärt diese Sichtbarkeit unabhängig von `showLabel` und den anderen
+Einzelfeldern. Die Modell-/Profilanforderungen gelten weiterhin.
 
 ```arch
 @help connections uaf OperationalPerformer

@@ -8,6 +8,37 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
 
+- Property-Zeilen auf Connected-/Tree-/Package-Karten, globale und pro-Node-Auswahl
+  und Größenanpassung vor Positionierung/Routing. Class-Karten behalten ihre
+  Bereiche und erlauben `place` samt relativen Koordinaten/Mindestgrößen.
+  Ports folgen ihren Ownern; Class-Routen bleiben automatisch.
+
+- Referenzierte `place`- und `via`-Koordinaten mit `+`, `-`, `*`, `/`, Klammern, sichtbaren Node-/Tree-Ankern,
+  Abmessungen und Mittelpunkten. Koordinatenweise topologische Auflösung,
+  indirekte Zyklusdiagnosen einschließlich Containment/Tree-Mitgliedschaft,
+  JSON-/Meta-Erhalt und Routing nach Positionierung. Größen, Endpunkt- und
+  Labelpunkte bleiben numerisch; kein allgemeiner Ausdrucksinterpreter oder iterativer Reflow.
+
+- Tree-Renderer für automatische Taxonomien/Wälder: zentrierte Eltern,
+  vier Wachstumsrichtungen, richtungsabhängige Interpretation von Generalisierungen,
+  Relationstypfilter, variable Node-/Labelmaße und vorhandene Node-Styles.
+  Eindeutige Strukturprüfung, JSON/Meta, Hilfe und C1-Beispiel in der Demo.
+- Benannte Tree-Layoutgruppen in Connected-Views mit expliziten Mitgliedern,
+  eigener Richtung und optionaler Gruppenposition. Externe Karten bleiben
+  automatisch/manuell positionierbar; Querbeziehungen, Routen und Referenzkarten
+  bleiben erhalten. Keine verschachtelten Layoutgruppen oder Package-übergreifende
+  Mitgliedschaft. C2-Beispiel mit externer Capability verfügbar.
+
+- Bidirektionale Beziehungen mit `<->`, profilabhängigen `directions`,
+  gemeinsamer ID/Attributen, JSON-/Meta-Übersetzung, beidseitigen Pfeilspitzen
+  und richtungsabhängigen Kardinalitäts-/Matrixprüfungen.
+- Entwurfsmodus `validation draft` mit Warnungen für fehlende Anforderungen
+  unter dem Diagramm, strenger API-Übersteuerung und SVG-Export der Hinweise.
+- Einzelne Beziehungen je View per `style EDGE_ID { display none }` ausblenden;
+  das vollständige Modell bleibt Gegenstand der Profilprüfung.
+- Nodes/Packages per `style NODE_ID {display none}` einschließlich angrenzender
+  Kanten und Package-Inhalten ausblenden; alle Renderer und JSON unterstützt.
+
 - Deklarierte Quellenviews mit `@meta json`/`@meta dsl`, einzeln oder zusammen
   mit Diagrammen als SVG exportierbar; Architektur-Kurzform und JSON-Syntax.
   Zeilennummern, Einrückung, visueller Umbruch, Themes und keine rekursive

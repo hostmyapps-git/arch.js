@@ -9,14 +9,17 @@ for(const name of ['enterprise','uaf','naf4-uaf','naf41-uaf']) {
 }
 for(const name of ['bootstrap','lucide','tabler'])arch.registerIconPack(name,JSON.parse(await readFile(`icons/${name}.json`,'utf8')));
 
-test('all shipped DSL and JSON models round-trip through source formats with identical SVG for every view',async()=>{
+test('all shipped DSL and JSON models round-trip with identical diagrams and equivalent diagnostics for every view',async()=>{
+  const diagram=svg=>svg.includes('data-arch-validation="draft"')?svg.slice(svg.indexOf('<svg x="0" y="0"'),svg.indexOf('<g class="arch-validation-notices"')):svg;
   for(const file of (await readdir('examples')).filter(f=>/\.(arch|json)$/.test(f))) {
     const source=await readFile(`examples/${file}`,'utf8'),translated=arch.translate(source),back=arch.translate(translated);
     const model=arch.parse(source);
+    const messages=input=>arch.validate(input).diagnostics.map(d=>d.message);
+    assert.deepEqual(messages(translated),messages(source));assert.deepEqual(messages(back),messages(source));
     for(const theme of ['light','dark'])for(const view of model.views) {
       const options={view:view.id,theme,idPrefix:'same'};
-      assert.equal(arch.renderToString(translated,options),arch.renderToString(source,options),`${file}:${view.id}:${theme}`);
-      assert.equal(arch.renderToString(back,options),arch.renderToString(source,options),`${file}:back:${view.id}:${theme}`);
+      assert.equal(diagram(arch.renderToString(translated,options)),diagram(arch.renderToString(source,options)),`${file}:${view.id}:${theme}`);
+      assert.equal(diagram(arch.renderToString(back,options)),diagram(arch.renderToString(source,options)),`${file}:back:${view.id}:${theme}`);
     }
   }
 });
