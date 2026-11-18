@@ -1,0 +1,32 @@
+architecture "Calculated node styles" {
+  model {
+    service base "Base card" {
+      description "The content makes this card taller than its configured minimum. Other cards can refer to its measured height or to the explicitly configured minimum."
+    }
+    service measured "Twice the measured height"
+    service minimum "Twice the configured minimum"
+    relation a base -> measured "measured dimensions"
+    relation b base -> minimum "explicit style values"
+  }
+  view v "Calculated styles" {
+    style base {width 240 height 100 fontSize 15}
+    style measured {
+      width base.width + 80
+      height 2 * base.height
+      fontSize base.style.fontSize * 1.2
+    }
+    style minimum {
+      width measured.style.width
+      height base.style.height * 2
+      fontSize base.fontSize
+    }
+    place base at (0,0)
+    place measured at (base.right+120,0)
+    place minimum at (measured.right+120,0)
+    routes {curve rounded}
+    route b {
+      from top to top
+      via (base.centerX, base.y - 60), (minimum.centerX, minimum.y - 60)
+    }
+  }
+}

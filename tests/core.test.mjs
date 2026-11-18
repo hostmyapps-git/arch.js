@@ -108,6 +108,20 @@ test('parallel routes separate collinear edges and orthogonal waypoints add elbo
     assert.ok(via.points[i - 1].x === via.points[i].x || via.points[i - 1].y === via.points[i].y);
 });
 
+test('straight routes keep two endpoints for parallel and reverse edges while explicit waypoints remain intact',()=>{
+  const body=pair+' relation repeat a -> b "Again" relation reply b -> a "Reply"';
+  for(const rules of ['routes {curve straight from right 0.4 to left 0.6}',
+    'route repeat {curve straight from right 0.4 to left 0.6} route reply {curve straight from left 0.6 to right 0.6}']) {
+    const graph=arch.layout(source(body,`view v "V" {place a at (0,0) place b at (600,0) ${rules}}`));
+    for(const id of ['repeat','reply']) {
+      const edge=graph.edges.find(e=>e.id===id);assert.equal(edge.points.length,2,id);
+      assert.equal((edge.d.match(/ L /g)??[]).length,1);
+    }
+  }
+  const graph=arch.layout(source(body,'view v "V" {route reply {curve straight via (300,400)}}'));
+  assert.equal(graph.edges[2].points.length,3);assert.deepEqual(graph.edges[2].points[1],{x:300,y:400});
+});
+
 test('path grammar accepts SVG curves, relative commands, arcs and rejects injection and malformed paths', () => {
   for (const d of ['M0 0h20v20z', 'm1 2 3 4 5 6', 'M0,0C1,2,3,4,5,6S9,10,11,12', 'M0 0Q10 20 30 40T50 60', 'M0 0A20 30 45 1 0 50 60'])
     assert.ok(inspectPath(d).length);

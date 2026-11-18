@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.14` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.16` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -58,7 +58,7 @@ not complete UAF 1.2 compatibility or an import of the ADMBw MDG.
 See [aliases, metamodel mappings and migration](ALIASES.md),
 `@help aliases naf41-uaf` and `@help mappings naf41-uaf`.
 The profile pins `uaf@1.0.0-arch.1`; select this revision explicitly with
-`config { profile "naf41-uaf@4.1.0-arch.14" }` when needed.
+`config { profile "naf41-uaf@4.1.0-arch.16" }` when needed.
 
 | Source relationship | arch.js type | Direction |
 |---|---|---|
@@ -297,8 +297,8 @@ Use one help query per document.
 | Logical needline | `Needline` node with required `source` and `target` references to logical nodes |
 | Logical interaction | `LogicalInteraction` edge between active resources, required `conveyed` list; optional `needline` reference |
 | Physical interaction | `ResourceInteraction` node with typed endpoints, linked to standards/protocols |
-| State | `ServiceState`, `LogicalState`, `ResourceState`, each with required `owner`; distinct from a UAF state-machine description |
-| Sequence | Domain lifelines with `represents`; interactions have a positive `order` |
+| State | `ServiceState` with HasServiceState or owner in S5; LogicalState/ResourceState retain required owner; distinct from a UAF state-machine description |
+| Sequence | Domain lifelines with represents (S6 also accepts RepresentsService); interactions have a positive order |
 | Parameters | Operation parameters: explicit has/involves links or legacy `owner`/`resource`; S3 payload optional, S7 required. Function parameters retain required references. |
 | Roadmaps | Domain milestones with a valid ISO date, readiness/increment nodes and defining/fulfilment/delivery links; Cr additionally permits implicit milestone properties as in p.103 |
 | Foundation | Explicit glossary, correspondence, methodology, work-product, status, version and library adapters |
@@ -420,3 +420,99 @@ S2 provider-specific relies-on/delivers projections remain outside this S4 work.
 Examples: [p.112](../../examples/naf41-service-functions.arch) and
 [full cut-out](../../examples/naf41-service-functions-cutout.arch).
 Use @help viewpoints naf41-uaf S4 and @help connections naf41-uaf ServiceFunction.
+
+## S5: objectified transitions and state context (pp.113–115)
+
+Revision 4.1.0-arch.15 supports the complete p.115 example and p.114 cut-out.
+ServiceStateTransition exists in both node and relation namespaces. Use a
+separate object ID and bind it on the state edge: `relation change ready ->
+unavailable "" {type ServiceStateTransition transition loss}`. This edge
+defines the endpoints; no duplicate source/target attributes are needed.
+
+The typed transition reference draws the object-to-edge connector captioned
+is equal to. It is not a model edge accepting another edge ID as endpoint.
+Use `route loss -> change {from top to 1/2}` to route it. Labels-only
+presentation lists the reference in the ordinary edge label instead. Connected
+views display the attached object; the Sequence renderer also supports message
+objectification from revision 4.1.0-arch.16. Other specialist renderers do not.
+
+| Source | Relationship | Target |
+|---|---|---|
+| Service | HasServiceState | ServiceState |
+| ServiceState | ServiceStateTransition | ServiceState |
+| ServiceEvent | TriggersServiceStateTransition | ServiceStateTransition object |
+| ServiceState | StateEnablesServiceFunction | ServiceFunction |
+| ServiceFunction | EnablesService | Service |
+| ServiceFunction | HasServiceMode | ServiceMode |
+| ServiceStateGroup | GroupsServiceState | ServiceState |
+| ServiceStateGroup | AggregatesServiceStateGroup | ServiceStateGroup |
+
+Each selected transition object must be referenced by exactly one selected
+state-transition edge in S5. A transition edge may remain compact without an
+object. Its optional event reference is retained; new models can instead use
+explicit triggers links. Events are optional and multiple triggers are allowed.
+
+ServiceState.owner and ServiceMode.function become optional global attributes:
+S5 requires exactly one selected owner/function association through the explicit
+link or the legacy reference, deduplicating the same owner reference and link.
+Outside S5 those attributes alone no longer enforce ownership. State ownership
+and function ownership references must still be selected when provided. Every
+selected state retains the existing transition-connection check. Group nesting
+is acyclic, rejects self-links, and permits shared subgroups. State transitions
+may self-loop. The recursive cut-out arrows describe type-level possibilities.
+
+Legacy EnablesServiceMode (state to mode) remains valid but is not the cut-out
+function-to-mode has relation. Cross-state same-service consistency, event
+reference/link consistency, guards, execution, reachability and implicit
+state-machine semantics are not implemented. These are structural application
+projections, not full UML/UAF state-machine semantics.
+
+Examples: [p.115](../../examples/naf41-service-states.arch),
+[cut-out](../../examples/naf41-service-states-cutout.arch).
+Help: @help types naf41-uaf ServiceStateTransition,
+@help relations naf41-uaf ServiceStateTransition, @help viewpoints naf41-uaf S5.
+
+## S6: objectified interactions and service timelines (pp.116–118)
+
+Revision 4.1.0-arch.16 reproduces both messages on p.118 as ServiceInteraction
+edges plus ServiceInteraction nodes. Bind each node on its message using the
+interaction reference. Lifelines represent services, not objectified messages.
+
+| Source | Relationship | Target |
+|---|---|---|
+| ServiceLifeline | RepresentsService | Service |
+| ServiceLifeline | ServiceInteraction | ServiceLifeline |
+| ServiceEvent | TriggersServiceInteraction | ServiceInteraction object |
+| ServiceInteraction object | InteractionRelatesOperation | ServiceOperation / ServiceMethod |
+| ServiceFunction | EnablesService | Service |
+| Service | SpecifiesServiceInterface | ServiceInterface |
+| ServiceInterface | SpecifiesServiceOperation | ServiceOperation / ServiceMethod |
+
+Each selected lifeline represents exactly one selected service, via RepresentsService
+or its legacy represents reference. The reference becomes globally optional;
+outside S6 it no longer enforces that association by itself. Each selected
+interaction object binds exactly one selected lifeline-message edge. Compact
+messages without an object remain valid, retaining required positive integer
+order and optional event/operation attributes. Explicit trigger/relates-to links
+are optional. No automatic reconciliation of links versus legacy attributes.
+
+Sequence views draw message object cards, captioned is equal to attachments and,
+with showContext true, selected context cards/links in a separate area. Context
+is not a new set of lifelines. The profile sequenceMessage flag distinguishes
+messages from ordinary context edges. Explicit participants/messages still work.
+Use orderAttribute order to sort by unique positive message positions; without
+it, declaration or explicit list order remains authoritative.
+
+Connected views retain free placement/routing for the same model. Sequence
+layouts remain automatic: no place/route, custom card sizing, full UML fragments,
+execution, time semantics or global crossing minimization. Some captions are
+limited to two visual lines with the full text in the SVG title. Context layout
+uses a fixed grid; omitted context is not interpreted as an implicit model edge.
+
+Examples: [p.118](../../examples/naf41-service-sequence.arch),
+[cut-out](../../examples/naf41-service-sequence-cutout.arch), both with a second
+Connected inspection view. Help: @help viewpoints naf41-uaf S6,
+@help types naf41-uaf ServiceInteraction, @help diagrams sequence.
+
+Further confirmed PDF vocabulary/objectification gaps are tracked in [GAPS.md](GAPS.md).
+Supporting every viewpoint ID is not a claim of complete cut-out or example coverage.

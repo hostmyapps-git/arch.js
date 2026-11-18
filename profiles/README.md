@@ -433,6 +433,37 @@ zählt auch bei mehreren Pfaden einmal. Keine impliziten Modellkanten oder
 Verhaltensvererbung. Explizite Relationsnamen sind Pflicht, kein `*`.
 Die Erweiterung gilt nur für externe JSON-/API-Profile.
 
+`connections[].referencedByAttributes` prüft Rückwärtsreferenzen von Beziehungen:
+
+```json
+{"nodes":["ServiceStateTransition"], "relations":["ServiceStateTransition"],
+ "direction":"either", "min":1, "max":1, "referencedByAttributes":["transition"]}
+```
+
+Jeder ausgewählte Transition-Knoten muss damit von genau einer ausgewählten
+State-to-State-Beziehung im Referenzattribut transition genannt sein. Die
+Attribute müssen als reference an den expliziten Relationstypen definiert sein.
+Eine Beziehung zählt einmal, selbst bei mehreren passenden Attributen. Kein
+Wildcard, counterpart-Filter, through oder referenceAttributes in derselben Regel.
+Die Regel ersetzt den gewöhnlichen Endpunkt-Verbindungsnachweis.
+
+Relationsprofile können `referenceConnectorLabels: true` setzen, um die Texte
+aus referenceLabels an den Zuordnungslinien anzuzeigen. Standard false; gilt
+für Connected-Views und benannte Tree-Gruppen. Beschriftung am Pfadmittelpunkt,
+mit Zeilenumbruch und Exportgrenzen; Styling/Routing bleibt über die vorhandenen
+Zuordnungsrouten möglich. Keine eigene label-Option an diesen Routen.
+
+`sequenceMessage: true` an einem Relationsprofil kennzeichnet Sequenznachrichten.
+Ohne explizite messages-Auswahl werden solche ausgewählten Beziehungen als
+Nachrichten und ihre Endpunkte als Lifelines verwendet. Explizite participants
+bleiben wirksam. Ohne markierte Beziehungen bleibt die generische Auswahl
+erhalten. `diagram sequence {orderAttribute order}` sortiert nach eindeutigen
+positiven Integerwerten; ohne diese Option gelten Listen-/Deklarationsreihenfolge.
+`showContext true` zeichnet andere ausgewählte Elemente und Beziehungen zusätzlich;
+Default false. Nachrichtenreferenzen werden als Objektkarten mit Zuordnungslinie
+gezeichnet, einschließlich referenceConnectorLabels. Keine fachliche Sonderlogik
+für NAF-Typnamen im Renderer.
+
 `connections[].referenceAttributes` nennt optional Referenzattribute, die
 statt einer expliziten Beziehung als Gegenstellen-Nachweis zählen dürfen.
 Beispiel: `{ nodes: ["Parameter"], relations: ["HasParameter"],

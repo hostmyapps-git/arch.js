@@ -174,7 +174,9 @@ export function toSVG(graph, options = {}) {
   }).join('');
   const referenceConnectors = (graph.referenceNodes ?? []).map(occurrence => {
     const d = occurrence.d ?? occurrence.points.map((p,i) => `${i ? 'L' : 'M'} ${num(p.x)} ${num(p.y)}`).join(' ');
-    return `<path class="arch-reference-connector" data-reference-for="${escape(occurrence.edgeId)}" data-reference-node="${escape(occurrence.nodeId)}" d="${escape(d)}" fill="none" stroke="${occurrence.color??palette.edge}" stroke-width="${num(occurrence.width??1.5)}" stroke-linejoin="round"${dashAttribute(occurrence,true)} marker-end="url(#${marker('arrow',occurrence.color)})"/>`;
+    const label=occurrence.connectorLabel;
+    const caption=label?`<g class="arch-reference-label" data-reference-for="${escape(occurrence.edgeId)}" data-reference-node="${escape(occurrence.nodeId)}"><rect x="${num(label.x-label.width/2)}" y="${num(label.y-label.height/2)}" width="${num(label.width)}" height="${num(label.height)}" rx="5" fill="${palette.bg}" stroke="${palette.border}" stroke-width=".6"/>${linesMarkup(label.lines,label.x,label.y-(label.lines.length-1)*7.5+3.5,11,palette.muted,450,15,'middle')}</g>`:'';
+    return `<path class="arch-reference-connector" data-reference-for="${escape(occurrence.edgeId)}" data-reference-node="${escape(occurrence.nodeId)}" d="${escape(d)}" fill="none" stroke="${occurrence.color??palette.edge}" stroke-width="${num(occurrence.width??1.5)}" stroke-linejoin="round"${dashAttribute(occurrence,true)} marker-end="url(#${marker('arrow',occurrence.color)})"/>${caption}`;
   }).join('');
   const renderedCards=new Set();
   const referenceCards = (graph.referenceNodes ?? []).filter(occurrence => {

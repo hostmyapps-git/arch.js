@@ -1,0 +1,35 @@
+# NAFv4.1 p.115: the transition object and the state-to-state edge
+# have separate IDs, linked by the edge's transition attribute.
+architecture "NAFv4.1 · S5 Service States" {
+  config {profile naf41-uaf}
+  model {
+    Service position "Position Determination Service"
+    ServiceState inService "In Service"
+    ServiceState outOfService "Out of Service"
+    ServiceStateTransition loss "In Service to Out of Service"
+    ServiceEvent denial "Denial of Service"
+    relation hasIn position -> inService "has" {type HasServiceState}
+    relation hasOut position -> outOfService "has" {type HasServiceState}
+    relation stateChange inService -> outOfService "" {type ServiceStateTransition transition loss}
+    relation triggers denial -> loss "triggers" {type TriggersServiceStateTransition}
+  }
+  view s5 "S5 · Service States" {
+    viewpoint S5
+    place position at (450,0)
+    place inService at (0,300)
+    place outOfService at (900,300)
+    place loss at (450,600)
+    place denial at (450,900)
+    style position {width 300}
+    style inService {width 300}
+    style outOfService {width 300}
+    style loss {width 300}
+    style denial {width 300}
+    routes {curve rounded sharePath stereotypes}
+    route hasIn {from bottom to top}
+    route hasOut {from bottom to top}
+    route stateChange {from right to left}
+    route triggers {from top to bottom}
+    route loss -> stateChange {from top to 1/2 curve straight dasharray none}
+  }
+}

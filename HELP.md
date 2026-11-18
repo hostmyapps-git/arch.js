@@ -384,6 +384,17 @@ entlang des tatsächlichen Relationspfads: `0` ist dessen Anfang, `1` sein Ende.
 Ohne `to` bleibt die automatische Ankerposition bestehen. `from` akzeptiert
 `auto`, `top`, `right`, `bottom`, `left` oder einen absoluten Punkt `(X,Y)`.
 Alle Wegpunkte sind absolute Diagrammkoordinaten, auch innerhalb eines Clusters.
+`straight` verbindet ohne `via` zwei unterschiedliche Nodes direkt zwischen
+den gewählten Ports, auch bei parallelen oder gegenläufigen Beziehungen.
+Es gibt dabei keinen automatischen Versatz; identische Ports können überlappen.
+Explizite `via`-Punkte bleiben Zwischenpunkte; Selbstkanten behalten ihre Schleife.
+
+Bei grafischen Referenzkarten prüft die automatische Relationsbeschriftung
+beide Seiten der Verbindung und bevorzugt die Seite mit weniger Konflikten
+zu Karten, Zuordnungspfeilen und deren Beschriftungen. Damit kann das Label
+auch oberhalb bzw. links liegen. Explizite `label (X,Y)`-Angaben bleiben fest.
+Dies ist eine lokale Platzierungsheuristik, keine globale Kollisionsoptimierung.
+
 `curve` unterstützt `orthogonal`, `straight`, `rounded` und `bezier`; bei Bezier
 sind explizite `via`-Punkte die beiden Kontrollpunkte. Ein optionales `path`
 ersetzt den vollständigen SVG-Pfad einschließlich seiner Endpunkte.
@@ -578,6 +589,41 @@ nur das Rechteck. Für frei kombinierbare Textfelder verwende `display standard`
 Die Optionen gelten für Connected-Views und deren Referenzkarten; Modellwerte
 und Tooltips bleiben erhalten.
 
+## Berechnete Node-Styles
+
+In Connected- und Tree-Views akzeptieren `width`, `height` und `fontSize`
+arithmetische Ausdrücke:
+
+```arch
+style source { width 240 height 100 fontSize 15 }
+style target {
+  width source.width + 80
+  height 2 * source.height
+  fontSize source.style.fontSize * 1.2
+}
+```
+
+`source.height` liefert die gemessene Kartenhöhe einschließlich sichtbarer
+Inhalte; `source.style.height` bleibt der explizit konfigurierte Mindestwert
+100. Entsprechend sind `.width`, `.fontSize` und `.style.width/.fontSize`
+verfügbar. Effektive Schriftgröße ohne Override: 15. `.style` benötigt einen
+expliziten Wert in dieser View; es gibt dafür keinen impliziten Standardwert.
+
+Erlaubt sind `+`, `-`, `*`, `/`, Vorzeichen und Klammern. Vorwärtsreferenzen
+auf sichtbare Nodes sind möglich; Zyklen (auch über Textumbruch/Höhenmessung),
+Division durch null und ungültige Ergebnisse werden mit einer Fehlermeldung
+abgewiesen. Mindestwerte: Breite 160, Höhe 96; Obergrenze jeweils 10000000.
+Schriftgröße: 6–64. Höchstens 32 Terme, 16 Klammerebenen und 2048 Zeichen.
+Punkte/Bindestriche in IDs bleiben erlaubt; die längste deklarierte passende
+ID wird verwendet. Leerzeichen um Minus vermeiden mehrdeutige Schreibweisen.
+
+Die Berechnung erfolgt vor Positionierung und Routing. Finale Paketgrößen
+und Tree-Gruppenmaße sind deshalb keine Messreferenzen; explizite Paketwerte
+wie `packageId.style.height` sind möglich. Positionsfelder und Routenstyles
+gehören nicht zu diesen Styleausdrücken. In JSON stehen Ausdrücke als Strings;
+DSL-/JSON-/Meta-Ausgabe bewahrt die Referenzen. Laufzeithilfe: `@help styles`.
+Vollständiges Beispiel: [style-expressions.arch](examples/style-expressions.arch).
+
 ## Route-Icon und Text getrennt auswählen
 
 ```arch
@@ -688,7 +734,7 @@ Fehlerisolation nicht. API-Vertrag: [SPEC.md](SPEC.md#prüfgrenzen-und-fehlerver
 Jeweils einen Befehl pro Hilfedokument verwenden; `.` wählt das Dokumentprofil.
 
 Eine geladene Revision lässt sich mit
-`config { profile "naf41-uaf@4.1.0-arch.14" }` festlegen. Auch die Hilfebefehle
+`config { profile "naf41-uaf@4.1.0-arch.16" }` festlegen. Auch die Hilfebefehle
 akzeptieren diesen qualifizierten Profilnamen. Unqualifizierte IDs bleiben
 möglich. `arch.getProfileVersions('naf41-uaf')` zeigt geladene Revisionen;
 es werden keine historischen Dateien automatisch geladen.
@@ -761,3 +807,60 @@ Alle Relationstypen: @help viewpoints naf41-uaf S4.
 
 Beispiele: [Service Functions](examples/naf41-service-functions.arch) und
 [S4 Cut-out](examples/naf41-service-functions-cutout.arch), auch im Demo-Menü.
+
+## S5: Transition als Element und als Kante
+
+```arch
+ServiceStateTransition loss "In Service to Out of Service"
+ServiceEvent denial "Denial of Service"
+relation change inService -> outOfService "" {
+  type ServiceStateTransition
+  transition loss
+}
+relation trigger denial -> loss "triggers" {type TriggersServiceStateTransition}
+```
+
+Knoten und Relation dürfen denselben Typnamen haben, brauchen aber eigene IDs.
+Die Kante definiert Anfangs-/Endzustand; transition verbindet das zugehörige
+Element mit ihr. Die Zuordnung wird als is equal to beschriftet und lässt sich
+mit `route loss -> change {from top to 1/2}` routen. Eine S5-View verlangt
+genau eine ausgewählte Übergangskante je ausgewähltem Transitionselement.
+
+HasServiceState ordnet Service → Zustand zu. Die bisherige owner-Referenz
+ist alternativ gültig. HasServiceMode ordnet Funktion → Modus zu; alternativ
+bleibt die function-Referenz möglich. StateEnablesServiceFunction und
+EnablesService bilden die enables-Kanten des Cut-outs ab. GroupsServiceState
+und AggregatesServiceStateGroup ermöglichen Gruppen und Untergruppen.
+
+Die bisherige kompakte Übergangskante mit optionalem event bleibt gültig.
+[Beispiel S.115](examples/naf41-service-states.arch),
+[vollständiger Cut-out](examples/naf41-service-states-cutout.arch),
+[Profilregeln und Grenzen](profiles/naf41/README.md#s5-objectified-transitions-and-state-context-pp113115).
+
+`@help types naf41-uaf ServiceStateTransition` erklärt das Element,
+`@help relations naf41-uaf ServiceStateTransition` die Kante.
+
+## S6: ServiceInteraction als Element
+
+```arch
+ServiceInteraction request "Request Sortie"
+relation message coordinationLine -> sarLine "Request Sortie" {
+  type ServiceInteraction
+  order 1
+  interaction request
+}
+```
+
+RepresentsService ordnet Lifeline → Service zu; alternativ bleibt die
+represents-Referenz gültig. TriggersServiceInteraction verbindet Event →
+Interaktionselement, InteractionRelatesOperation verbindet Interaktionselement →
+ServiceOperation. Das Element ist über interaction an genau eine ausgewählte
+Nachrichtenkante gebunden; is equal to erscheint als Zuordnung.
+
+`diagram sequence {orderAttribute order showContext true}` zeigt die
+Objektkarten und den ausgewählten Service-/Interface-/Operations-/Ereigniskontext.
+Der Renderer erkennt ServiceInteraction-Nachrichten über generische Profilmetadaten.
+Alte kompakte Nachrichten mit event/operation bleiben gültig.
+[Beispiel](examples/naf41-service-sequence.arch),
+[Cut-out](examples/naf41-service-sequence-cutout.arch).
+`@help viewpoints naf41-uaf S6` und `@help diagrams sequence`.

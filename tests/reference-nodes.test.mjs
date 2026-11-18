@@ -8,6 +8,21 @@ const source=(view='',body='')=>`architecture "References" {model {actor a "Sour
 const xml=svg=>new DOMParser({onError:(level,message)=>{throw new Error(message);}}).parseFromString(svg,'image/svg+xml');
 const overlap=(a,b)=>a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;
 
+test('automatic reference-bearing edge captions choose the free side for horizontal and vertical attachments',()=>{
+  const labeled={...profile,relationTypes:{exchange:{...profile.relationTypes.exchange,referenceConnectorLabels:true}}};
+  for(const [vertical,side]of [[false,-1],[false,1],[true,-1],[true,1]]) {
+    const placements=vertical?
+      `place a at (0,0) place b at (0,700) place first at (${side<0?-500:600},(a.bottom+b.y)/2-first.height/2) route flow {from bottom to top curve straight}`:
+      `place a at (0,0) place b at (700,0) place first at ((a.right+b.x)/2-first.width/2,${side<0?-400:400}) route flow {from right to left curve straight}`;
+    const text=source(`exclude second,third ${placements}`).replace('[first, second, third]','[first]');
+    const model=arch.parse(text,{profile:labeled}),before=JSON.stringify(model),graph=arch.layout(model),edge=graph.edges[0];
+    const axis=vertical?'x':'y',anchor=graph.referenceNodes[0].anchor;
+    assert.ok((edge.label[axis]-anchor[axis])*side<0,'label faces away from attached card');
+    assert.equal(JSON.stringify(model),before);
+    assert.equal(arch.renderToString(text,{profile:labeled,idPrefix:'side'}),arch.renderToString(arch.translate(text,{profile:labeled}),{profile:labeled,idPrefix:'side'}));
+  }
+});
+
 test('graphical reference cards preserve the original templates, show all payloads and attach to their own edge',()=>{
   const model=arch.parse(source(),{profile}),before=JSON.stringify(model),graph=arch.layout(model);
   assert.equal(graph.referenceNodes.length,3);

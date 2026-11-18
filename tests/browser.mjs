@@ -45,7 +45,7 @@ try {
     const issues = [], host = document.createElement('div'); document.body.append(host);
     const queries = ['', 'syntax', 'model', 'profiles', 'types uaf Capability', 'types uaf OperationalAgent', 'relations uaf Implements', 'connections uaf OperationalPerformer', 'viewpoints naf4-uaf C1', 'profiles naf41-uaf', 'viewpoints naf41-uaf C7', 'types naf41-uaf Needline', 'connections naf41-uaf OperationalPerformer', 'iconpacks lucide cloud', 'iconpacks tabler "*" 2', 'diagrams', 'views', 'routing', 'styles', 'colors', 'templates', 'config', 'api'];
     arch.registerProfile('wide_help', { title: '界'.repeat(300), nodeTypes: { ['Long'.repeat(80)]: { attributes: { note: { enum: ['🙂界'.repeat(200)] } } } } });
-    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80), 'aliases naf41-uaf', 'mappings naf41-uaf', 'types naf41-uaf@4.1.0-arch.14 Service', 'types naf41-uaf Node', 'types naf41-uaf PhysicalActiveResource', 'relations naf41-uaf ServiceAggregation', 'types naf41-uaf ServiceOperation', 'types naf41-uaf DataProductType', 'viewpoints naf41-uaf S3');
+    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80), 'aliases naf41-uaf', 'mappings naf41-uaf', 'types naf41-uaf@4.1.0-arch.16 Service', 'types naf41-uaf Node', 'types naf41-uaf PhysicalActiveResource', 'relations naf41-uaf ServiceAggregation', 'types naf41-uaf ServiceOperation', 'types naf41-uaf DataProductType', 'viewpoints naf41-uaf S3');
     for (const query of queries) for (const theme of ['light', 'dark']) {
       const svg = arch.render(host, '@help ' + query, { theme });
       if (new DOMParser().parseFromString(svg.outerHTML, 'image/svg+xml').querySelector('parsererror')) issues.push(`Invalid SVG: ${query}`);
@@ -91,7 +91,7 @@ try {
   console.log('✓ Built-in help, registered types/icons, SVG export, themes, bounds and error recovery');
   const aliasChecks=await page.evaluate(()=>{
     const issues=[],host=document.createElement('div');document.body.append(host);
-    const source='architecture "Mixed service names" {config {profile "naf41-uaf@4.1.0-arch.14"} model {ServiceSpecification general "General service" Service specialized "Specialized service" relation kind specialized -> general "is a kind of" {type ServiceGeneralization}} view s1 "S1" {viewpoint S1 diagram tree}}';
+    const source='architecture "Mixed service names" {config {profile "naf41-uaf@4.1.0-arch.16"} model {ServiceSpecification general "General service" Service specialized "Specialized service" relation kind specialized -> general "is a kind of" {type ServiceGeneralization}} view s1 "S1" {viewpoint S1 diagram tree}}';
     for(const theme of ['light','dark']) {
       const svg=arch.render(host,source,{theme});
       if(svg.querySelector('[data-node="specialized"]')?.getAttribute('data-type')!=='Service')issues.push('Written node type lost');
@@ -672,6 +672,68 @@ try {
   }
   await s4Page.close();
   console.log('✓ S4 pp.111–112: complete example/cut-out, recursive coverage, roles, JSON and both themes');
+  const s5Page=await browser.newPage({viewport:{width:1800,height:1500}});
+  for(const [name,nodeCount,edgeCount]of [['naf41-service-states',5,4],['naf41-service-states-cutout',9,10]]) {
+    const source=await readFile(`examples/${name}.arch`,'utf8');
+    assert.deepEqual(await page.evaluate(({source,nodeCount,edgeCount})=>{
+      const issues=[],host=document.createElement('div');document.body.append(host);
+      for(const theme of ['light','dark']) {
+        const report=arch.validate(source),svg=arch.render(host,source,{theme}),graph=arch.layout(source);
+        if(!report.valid||report.diagnostics.length)issues.push('S5 validation notices');
+        if(graph.nodes.length!==nodeCount||graph.edges.length!==edgeCount)issues.push('S5 topology changed');
+        if(svg.querySelectorAll('.arch-node').length!==nodeCount||svg.querySelectorAll('.arch-edge').length!==edgeCount)issues.push('S5 SVG topology changed');
+        if(svg.querySelectorAll('.arch-reference-connector').length!==1||svg.querySelector('.arch-reference-label')?.textContent!=='is equal to')issues.push('S5 objectification lost');
+        const reference=graph.referenceNodes[0],path=svg.querySelector('.arch-reference-connector');
+        const end=path.getPointAtLength(path.getTotalLength());
+        if(Math.hypot(end.x-reference.anchor.x,end.y-reference.anchor.y)>.1)issues.push('S5 attachment misses transition');
+        const bounds=svg.viewBox.baseVal;
+        for(const text of svg.querySelectorAll('text')) {
+          const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+          for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+            const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S5 clipped text');
+          }
+        }
+        if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s5'})!==arch.renderToString(source,{theme,idPrefix:'s5'}))issues.push('S5 JSON differs');
+      }
+      host.remove();return issues;
+    },{source,nodeCount,edgeCount}),[]);
+    for(const theme of ['light','dark']) {
+      await s5Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s5-preview'}),{source,theme}));
+      await s5Page.locator('svg').screenshot({path:`test-results/${name}-${theme}.png`});
+    }
+    await page.locator(`[data-example="${name}"]`).click();assert.equal(await page.locator('#error').isVisible(),false);
+  }
+  await s5Page.close();
+  console.log('✓ S5 pp.114–115: objectified transitions, triggers, captioned/routed references, groups, modes and both themes');
+  const s6Page=await browser.newPage({viewport:{width:2100,height:1500}});
+  for(const [name,nodeCount,edgeCount,messageCount]of [['naf41-service-sequence',10,9,2],['naf41-service-sequence-cutout',7,7,1]]) {
+    const source=await readFile(`examples/${name}.arch`,'utf8');
+    assert.deepEqual(await page.evaluate(({source,nodeCount,edgeCount,messageCount})=>{
+      const issues=[],host=document.createElement('div');document.body.append(host);
+      for(const theme of ['light','dark']) {
+        const report=arch.validate(source),svg=arch.render(host,source,{theme});
+        if(!report.valid||report.diagnostics.length)issues.push('S6 validation notices');
+        if(svg.querySelectorAll('[data-node]').length!==nodeCount||svg.querySelectorAll('[data-edge]').length!==edgeCount)issues.push('S6 topology changed');
+        if(svg.querySelectorAll('[data-message]').length!==messageCount||svg.querySelectorAll('.arch-sequence-reference').length!==messageCount)issues.push('S6 objectified message lost');
+        const bounds=svg.viewBox.baseVal;
+        for(const text of svg.querySelectorAll('text')) {
+          const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+          for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+            const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S6 clipped text');
+          }
+        }
+        if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s6'})!==arch.renderToString(source,{theme,idPrefix:'s6'}))issues.push('S6 JSON differs');
+      }
+      host.remove();return issues;
+    },{source,nodeCount,edgeCount,messageCount}),[]);
+    for(const theme of ['light','dark']) {
+      await s6Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s6-preview'}),{source,theme}));
+      await s6Page.locator('svg').screenshot({path:`test-results/${name}-${theme}.png`});
+    }
+    await page.locator(`[data-example="${name}"]`).click();assert.equal(await page.locator('#error').isVisible(),false);
+  }
+  await s6Page.close();
+  console.log('✓ S6 pp.117–118: sequence/connected objectification, context links, service timelines, ordering and both themes');
 
   const roadmapSource=await readFile('examples/naf41-capability-roadmap.arch','utf8');
   assert.deepEqual(await page.evaluate(source=>{
@@ -711,6 +773,61 @@ try {
   assert.equal(await page.locator('#error').isVisible(),false);
   assert.equal(await page.locator('#diagram .arch-node').count(),6);
   console.log('✓ Cr p.103: six nodes, seven edges, shared aggregates, triggers, implicit milestones, JSON, bounds and both themes');
+
+  const styleExpressionsSource=await readFile('examples/style-expressions.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      const byId=Object.fromEntries(graph.nodes.map(n=>[n.id,n]));
+      if(byId.base.height<=100||byId.measured.height!==2*byId.base.height||byId.minimum.height!==200)issues.push('Measured and explicit heights differ from expressions');
+      if(byId.measured.width!==320||byId.minimum.width!==320||byId.measured.fontSize!==18)issues.push('Resolved width/fontSize incorrect');
+      if(byId.measured.x!==byId.base.x+byId.base.width+120||byId.minimum.x!==byId.measured.x+byId.measured.width+120)issues.push('Placement did not use computed dimensions');
+      for(const card of svg.querySelectorAll('.arch-node')) {
+        const id=card.getAttribute('data-node'),node=byId[id];
+        for(const text of card.querySelectorAll('text')) {
+          const b=text.getBBox();
+          if(b.x<0||b.y<0||b.x+b.width>node.width+1||b.y+b.height>node.height+1)issues.push(`Calculated style clips ${id}: ${text.textContent}`);
+        }
+      }
+      if(arch.renderToString(arch.translate(source),{theme,idPrefix:'style-math'})!==arch.renderToString(source,{theme,idPrefix:'style-math'}))issues.push('Computed style JSON differs');
+      if(/NaN|Infinity|undefined/.test(svg.outerHTML))issues.push('Invalid calculated SVG coordinates');
+    }
+    const cycle=source.replace('height 2 * base.height','height measured.height * 2');
+    if(arch.validate(cycle).valid||!arch.inspectSource(cycle).diagnostics.some(d=>/Circular style dependency/.test(d.message)))issues.push('Cycle diagnostic missing');
+    host.remove();return issues;
+  },styleExpressionsSource),[],'Calculated style geometry, placement, text bounds, JSON, themes and cycles');
+  const mathStylesPage=await browser.newPage({viewport:{width:1500,height:850}});
+  for(const theme of ['light','dark']) {
+    await mathStylesPage.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'style-math-preview'}),{source:styleExpressionsSource,theme}));
+    await mathStylesPage.locator('svg').screenshot({path:`test-results/style-expressions-${theme}.png`});
+  }
+  await mathStylesPage.close();
+  await page.locator('[data-example="style-expressions"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ Calculated node styles: measured/explicit dimensions, fonts, placement, text bounds, JSON, cycles and both themes');
+
+  const placedS6Source=await readFile('examples/naf41-service-sequence-placed.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      const edge=graph.edges.find(e=>e.id==='s6.8'),path=svg.querySelector('[data-edge="s6.8"] path');
+      if(edge.points.length!==2||edge.points[0].y!==edge.points[1].y||(path.getAttribute('d').match(/ L /g)??[]).length!==1)issues.push('Reverse straight S6 message has a bend');
+      const label=svg.querySelector('[data-label-for="s6.8"] rect').getBBox();
+      const reference=svg.querySelector('.arch-reference-label[data-reference-for="s6.8"] rect').getBBox();
+      if(label.y+label.height>=edge.points[0].y||reference.y-(label.y+label.height)<8)issues.push('Acknowledge and is-equal-to captions lack separation');
+      if(arch.renderToString(source,{theme,idPrefix:'placed-s6'})!==arch.renderToString(arch.translate(source),{theme,idPrefix:'placed-s6'}))issues.push('Placed S6 JSON differs');
+    }
+    host.remove();return issues;
+  },placedS6Source),[],'Positioned S6 reply remains straight in SVG and JSON');
+  const placedS6Page=await browser.newPage({viewport:{width:1600,height:1300}});
+  for(const theme of ['light','dark']) {
+    await placedS6Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'placed-s6-preview'}),{source:placedS6Source,theme}));
+    await placedS6Page.locator('svg').screenshot({path:`test-results/s6-placed-${theme}.png`});
+  }
+  await placedS6Page.close();
+  await page.locator('[data-example="naf41-service-sequence-placed"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ Positioned S6: calculated lifeline heights, fractional ports and a straight reverse message in both themes');
 
   const routeStylesSource=await readFile('examples/route-styles.arch','utf8');
   assert.deepEqual(await page.evaluate(source=>{

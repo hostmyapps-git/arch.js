@@ -82,11 +82,13 @@ function connector(card,anchor,obstacles) {
 export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnector, resolveRoute=route=>route) {
   const byId=new Map(nodes.map(n=>[n.id,n])), occurrences=[], boxes=nodes.filter(n=>!n.container&&!n.referenceOnly);
   const containers=nodes.filter(n=>n.container),headers=containers.map(n=>({...n,height:n.headerHeight}));
+  const automaticLabels=new Map();
   // Labels are obstacles too. In nodes mode the relation keeps its original
   // caption and moves it away from the line to leave room for attachment arrows.
   for(const edge of edges) {
     if(edge.referenceItems?.length&&!edge.labelExplicit&&(edge.labelLines.length||edge.labelIcon)) {
-      if(horizontalPath(pathSamples(edge.d)))edge.label.y+=edge.labelHeight/2+14;
+      automaticLabels.set(edge,{center:{...edge.label},horizontal:horizontalPath(pathSamples(edge.d))});
+      if(automaticLabels.get(edge).horizontal)edge.label.y+=edge.labelHeight/2+14;
       else edge.label.x+=edge.labelWidth/2+14;
     }
   }
@@ -109,6 +111,7 @@ export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnecto
       if(!groups.has(key))groups.set(key,[]);
       const occurrence={edgeId:edge.id,attribute:item.attribute,nodeId:item.id,anchor,explicit,route,...routeStyle(route),
         horizontal:horizontalPath(samples),preferredX:rowLeft};
+      if(edge.referenceConnectorLabels)occurrence.connectorLabelText=item.label;
       groups.get(key).push(occurrence);occurrences.push(occurrence);
       rowLeft+=original.width+28;
     }
@@ -147,6 +150,29 @@ export function attachReferenceNodes(nodes, edges, view, wrapText, routeConnecto
       const routed=routeConnector(occurrence.node,occurrence.anchor,occurrence.route);
       occurrence.points=routed.points;occurrence.d=routed.d;
     } else occurrence.points=connector(occurrence.node,occurrence.anchor,obstacles);
+    if (occurrence.connectorLabelText) {
+      const lines=wrapText(occurrence.connectorLabelText,180,11),height=lines.length*15+8;
+      const center=pointOnPath(occurrence.d?pathSamples(occurrence.d):occurrence.points,.5);
+      occurrence.connectorLabel={...center,lines,width:Math.min(204,Math.max(40,...lines.map(line=>[...line].length*13))+16),height};
+    }
+  }
+  // Once attachment geometry is known, choose the less crowded side of the
+  // carrying edge. Explicit label positions always remain authoritative.
+  const labelBox=label=>({x:label.x-label.width/2,y:label.y-label.height/2,width:label.width,height:label.height});
+  const captions=occurrences.filter(o=>o.connectorLabel).map(o=>labelBox(o.connectorLabel));
+  const connectors=occurrences.map(o=>o.d?pathSamples(o.d):o.points);
+  for(const [edge,{center,horizontal}]of automaticLabels) {
+    const current={...edge.label},opposite={x:horizontal?current.x:2*center.x-current.x,y:horizontal?2*center.y-current.y:current.y};
+    const obstacles=[...boxes,...headers,...cards,...captions,...edges.filter(e=>e!==edge&&(e.labelLines.length||e.labelIcon)).map(e=>labelBox({...e.label,width:e.labelWidth,height:e.labelHeight}))];
+    const score=position=>{
+      const box=labelBox({...position,width:edge.labelWidth,height:edge.labelHeight});
+      const padded={x:box.x-8,y:box.y-8,width:box.width+16,height:box.height+16};
+      const collisions=obstacles.filter(other=>overlap(box,other,8)).length;
+      const crossings=connectors.filter(path=>path.slice(1).some((p,i)=>!p.move&&segmentHits(path[i],p,padded))).length;
+      return [collisions,crossings];
+    };
+    const a=score(current),b=score(opposite);
+    if(b[0]<a[0]||b[0]===a[0]&&b[1]<a[1])edge.label=opposite;
   }
   // Give reference-only semantic nodes the geometry of their first occurrence;
   // visual occurrences never duplicate the source model elements.

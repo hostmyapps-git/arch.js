@@ -46,8 +46,9 @@ test('view-local font and dimensions override place size, preserve model data an
 });
 
 test('node style rejects invalid font/dimension values and unsupported renderer overrides',()=>{
-  for(const style of ['fontSize 5','fontSize 65','fontSize "14"','width 159','height 95','width -1','height 10000001'])
+  for(const style of ['fontSize 5','fontSize 65','fontSize "invalid"','width 159','height 95','width -1','height 10000001'])
     assert.equal(arch.validate(`architecture "Invalid" {model {system node "Node"} view v "V" {style node {${style}}}}`).valid,false,style);
+  assert.equal(arch.validate('architecture "Expression" {model {system node "Node"} view v "V" {style node {fontSize "14"}}}').valid,true);
   const specialized='architecture "Special" {model {system node "Node"} view v "V" {diagram class style node {fontSize 14}}}';
   assert.equal(arch.validate(specialized).valid,false);
 });

@@ -1,0 +1,27 @@
+# S6 p.117: all cut-out associations, with a self-message on one lifeline.
+architecture "NAFv4.1 · S6 Cut-out" {
+  config {profile naf41-uaf}
+  model {
+    ServiceFunction function "Coordinate Rescue"
+    Service service "Coordination Service"
+    ServiceInterface api "Coordination Interface"
+    ServiceOperation operation "Request Sortie"
+    ServiceEvent event "Rescue Required"
+    ServiceLifeline line "Coordination Lifeline"
+    ServiceInteraction request "Request Sortie"
+    relation enables function -> service "enables" {type EnablesService}
+    relation specifies service -> api "specifies" {type SpecifiesServiceInterface}
+    relation specifiesOperation api -> operation "specifies" {type SpecifiesServiceOperation}
+    relation represents line -> service "represents a timeline of" {type RepresentsService}
+    relation message line -> line "Request Sortie" {type ServiceInteraction order 1 interaction request}
+    relation relates request -> operation "relates to" {type InteractionRelatesOperation}
+    relation triggers event -> request "triggers" {type TriggersServiceInteraction}
+  }
+  view s6 "S6 · Cut-out associations" {
+    viewpoint S6
+    diagram sequence {participants [line] orderAttribute order showContext true}
+  }
+  view connected "S6 · Connected inspection" {
+    viewpoint S6
+  }
+}

@@ -123,7 +123,7 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
 - Relations-`pairs`: alternative `{ from, to, fromExclude?, toExclude? }`-Paare,
   zusätzlich zu globalen Endpunktregeln. `acyclic` prüft gerichtete Zyklen
   einschließlich abgeleiteter Relationstypen über das ganze Modell.
-- Viewpoint-`connections`: `{ nodes, nodesExclude?, relations, counterparts?, referenceAttributes?, through?, direction, min, max }` prüft
+- Viewpoint-`connections`: `{ nodes, nodesExclude?, relations, counterparts?, referenceAttributes?, referencedByAttributes?, through?, direction, min, max }` prüft
   Beziehungen mit sichtbaren Endpunkten pro sichtbarem passendem Knoten.
   `counterparts` filtert optional den Gegenstellentyp einschließlich Vererbung.
   `nodesExclude` nimmt passende Typen einschließlich Untertypen aus dieser
@@ -146,6 +146,13 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
   display none ändert die semantische Auswahl nicht. Ein visited-Set beendet
   auch zyklische generische Durchläufe; Zyklenverbote bestimmen die Relationsregeln.
   S4 verwendet dies zur Serviceabdeckung über aggregierende Funktionsvorfahren.
+  `referencedByAttributes` prüft alternativ, wie viele ausgewählte Beziehungen
+  der genannten Relationstypen den Knoten über ein typisiertes Referenzattribut
+  referenzieren. Explizite Relations-/Attributnamen, `direction: "either"`, keine
+  counterparts/referenceAttributes/through. Jede Beziehung zählt einmal, auch
+  bei mehreren passenden Attributen. S5 erzwingt damit genau eine ausgewählte
+  Übergangskante je Transitionselement. Knotentyp und Relationstyp dürfen denselben
+  Namen besitzen; die Namespaces bleiben getrennt. Keine impliziten Modellkanten.
 - Viewpoint-`references`: `{ nodes | relations, attributes }` verlangt sichtbare
   Zielknoten für ausgewählte skalare/mehrwertige Referenzattribute. Optionale
   fehlende Werte bleiben erlaubt; Pflichtwerte bestimmt das Attributschema.
@@ -207,12 +214,12 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.14`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.16`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 78 zusätzliche Knotentypen und
-113 zusätzliche Relationen ergeben mit dem Basisprofil 291 Knoten- und
-156 Relationstypen sowie drei Knotennamen als Aliase. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter: 81 zusätzliche Knotentypen und
+122 zusätzliche Relationen ergeben mit dem Basisprofil 294 Knoten- und
+165 Relationstypen sowie drei Knotennamen als Aliase. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
@@ -644,6 +651,22 @@ architecture "Customer platform" {
   ab 160/96 fest und haben Vorrang vor `place ... size`. Inhalt kann die Höhe
   und Containermaße weiter vergrößern. Diese Einstellungen gelten für
   Connected-Views, einschließlich Referenzkarten.
+- Numerische Node-Styles `width`, `height`, `fontSize` akzeptieren in Connected-
+  und Tree-Views bounded arithmetic mit `+`, `-`, `*`, `/`, Vorzeichen und
+  Klammern; JSON verwendet Strings. `ID.width/height` referenzieren die vor
+  Positionierung gemessenen Kartenmaße (Höhe einschließlich Inhalt),
+  `ID.fontSize` die effektive Titelschriftgröße. `ID.style.FIELD` verlangt den
+  ausdrücklich gesetzten Wert derselben View. Vorwärtsreferenzen auf sichtbare
+  Nodes sind erlaubt. Finale Container-/Tree-Gruppenmaße und Positionsfelder
+  sind ausgeschlossen; explizite Container-Styles sind verfügbar. Die längste
+  deklarierte passende ID hat Vorrang bei Punkten/Bindestrichen.
+  Abhängigkeiten werden topologisch aufgelöst; Zyklen einschließlich indirekter
+  Höhenabhängigkeiten sind auch im Draft-Modus Fehler. Division durch null,
+  nichtendliche Ergebnisse und Werte außerhalb Breite 160–10000000,
+  Höhe 96–10000000 bzw. Schriftgröße 6–64 sind Fehler. Höchstens 32 Terme,
+  16 Klammerebenen und 2048 Zeichen; keine JavaScript-Auswertung. Symbolische
+  Ausdrücke bleiben im Quellmodell/JSON/DSL/Meta erhalten, Zahlen gehen erst
+  ins Layout ein. Platzierung und Routing verwenden die aufgelösten Maße.
 - Die Typ-/Stereotypzeile regulärer Connected-Karten bleibt einzeilig und
   erhält bei Platzmangel „…“. Der vollständige Wert bleibt im Tooltip und
   unverändert im Modell erhalten; Knotentitel/Beschreibungen können umbrechen.

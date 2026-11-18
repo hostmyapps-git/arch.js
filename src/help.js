@@ -158,7 +158,7 @@ export function helpContent(model, options = {}) {
       section('Style groups', Object.entries(p.styleGroups).map(([name, rule]) => `${name}: ${rule.backgroundColor ?? '(neutral)'}`));
     }
     section('Selection and registration', 'config { profile PROFILE }  // inside architecture', 'API options.profile takes precedence over the document profile.',
-      'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.14" }.',
+      'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.16" }.',
       'Help lists registered profiles; it does not load files. Unqualified IDs select the most recently registered revision.', '@help config');
   } else if (topic === 'aliases') {
     const p = selectProfile();
@@ -238,7 +238,10 @@ export function helpContent(model, options = {}) {
         'Node styles, icons, visibility and minimum sizes work as in connected views. Packages are flat cards; containment is not the hierarchy.',
         'A visible node has at most one hierarchy parent; cycles, self-links, parallel hierarchy links and bidirectional links are errors. Use relations/include/exclude/display none to select a tree, or diagram connected for multiple inheritance.',
         'For mixed layouts use tree ID { nodes [a, b, c] direction up } inside a connected view. External nodes remain visible and can be positioned separately; see @help views.'],
-      sequence: ['participants/messages: ordered lists of node/edge IDs.', 'asyncMessages/returns: subsets of messages; a message cannot be both async and return.'],
+      sequence: ['participants/messages: ordered lists of node/edge IDs. Profiles may mark relation types with sequenceMessage true; automatic selection then uses those messages and their endpoint lifelines.',
+        'asyncMessages/returns: subsets of messages; a message cannot be both async and return.',
+        'Typed graphical references on messages draw object cards and attachments. Profile referenceConnectorLabels true captions the attachments. showContext true also draws other selected cards and context relationships (default false).',
+        'orderAttribute FIELD sorts selected messages by unique positive integers in that attribute. Without it, explicit messages order or declaration order applies. Manual place/route is still Connected-only.'],
       state: ['initial: node ID; finals: list of node IDs. Initial has no incoming edges; finals have no outgoing edges.'],
       activity: ['lanes: list of node IDs; laneAttribute: assignment attribute (default owner).', 'decisions/forks require at least two outgoing edges; joins require at least two incoming edges.'],
       matrix: ['rows/columns: lists of node IDs (at most 100 each); relations: relationship types.', 'Without a selection, uses all visible elements/relationships. Cells count relationships in each direction; bidirectional links appear in both cells.'],
@@ -318,7 +321,7 @@ export function helpContent(model, options = {}) {
       'NODE_ID must be a graphical reference of EDGE_ID, configured by the profile referenceLabels. Works with shared and perEdge cards.',
       'from: a card port (auto, top, right, bottom, left) or an absolute point. to: fraction from 0 (relationship source) to 1 (target), measured along the rendered relationship path. Default: automatic attachment position.',
       'via and curve work like ordinary edge routes. Manual routes replace automatic obstacle avoidance. Coordinates are absolute, including inside containers.',
-      'path "M 0 0 L 100 100" overrides the whole connector, including its endpoints. No connector label is supported.',
+      'path "M 0 0 L 100 100" overrides the whole connector, including its endpoints. No per-route connector label is supported; a profile may enable referenceConnectorLabels to display each referenceLabels caption at the path midpoint.',
       'Hidden references, hidden carrying relationships and labels-only presentation do not draw connectors; their stored routes remain available.');
   } else if (topic === 'styles') {
     section('Property fields on cards', 'propertyFields [expression, unit, value]  // view-wide', 'style criterion { propertyFields [expression] }', 'style measure { propertyFields [unit, value] }',
@@ -333,6 +336,12 @@ export function helpContent(model, options = {}) {
     section('View style', 'style NODE_ID {', '  template component', '  icon core.service', '  accent SlateBlue', '  backgroundColor Gold', '  opacity 0.45', '}',
       'Valid fields: template, icon, iconPosition, accent, backgroundColor, opacity, display, fontSize, width, height, showIcon, showLabel, showStereotype, showDescription, showTechnology, propertyFields.', 'fontSize: title size from 6 to 64 (default 15); other node texts scale proportionally. width/height: minimum dimensions (at least 160/96). These overrides require a connected view and take precedence over place size; content may increase height.', 'The type/stereotype badge stays on one line with an ellipsis when needed; its tooltip keeps the complete text.', 'display logo: connected view, non-container elements; show only a rectangle and an aspect-preserving icon. Centered by default; iconPosition aligns it inside the padded rectangle. display standard restores the usual card. Accessible title/type remain present.', 'Containers use template package; other elements use a non-container template.', 'opacity: number from 0 to 1, applied to fills only. Text, icons and borders remain opaque.', 'Default: 0.2 with an explicit background, otherwise 1.');
     section('Node icon placement and visible fields', 'style NODE_ID { iconPosition right showStereotype false showDescription false }', 'iconPosition: top | left | bottom | right. Default: existing template placement; logo display stays centered unless a side is chosen. Package icons stay inside the header. Text and card/header sizes adapt to the placement.', 'showIcon, showLabel, showStereotype, showDescription, showTechnology: true | false (default true). showLabel controls the node title. Hidden fields reserve no text space; model values and accessible tooltips remain present.', 'Use standard display for independent text/icon visibility. Logo display still hides all text; showIcon false leaves its rectangle. These options require connected views and also apply to graphical reference cards.');
+    section('Calculated node styles', 'style source { width 240 height 100 fontSize 15 }', 'style target { width source.width + 80 height 2 * source.height fontSize source.style.fontSize * 1.2 }',
+      'width, height and fontSize accept numbers or arithmetic with +, -, *, /, unary signs and parentheses. Available in connected and tree views; JSON uses expression strings.',
+      'ID.width/height are measured card dimensions before placement; height includes visible content. ID.fontSize is the effective title size (default 15). ID.style.width/height/fontSize use explicitly configured values in this view and fail when missing. A configured height remains a minimum.',
+      'References must name visible nodes in the same view. Forward references are allowed. Final package and tree-group dimensions are unavailable here; packages can supply explicit .style values. Position fields and route styling cannot use these expressions.',
+      'Cycles, division by zero and invalid results are errors. Resolved width/height must be at least 160/96 and at most 10000000; fontSize must be 6–64. Expressions allow at most 32 terms, 16 nested parentheses and 2048 characters. Source expressions are preserved in JSON/DSL/meta output.',
+      'IDs may contain dots and hyphens; the longest declared matching ID wins. Spaces around subtraction make the intended calculation clear. Example: examples/style-expressions.arch.');
     section('Tree projection', 'Tree views also accept node fontSize, width/height, iconPosition, showIcon/showLabel/showStereotype/showDescription/showTechnology and logo display. Placement and routing are automatic. See @help diagrams tree.');
     section('Precedence', 'View style overrides type presentation. Background: view, then type color, then style group, then theme.', 'A model icon overrides the type icon; a view icon has the highest priority.', 'Colors: hex (3/6 digits, quoted) or a CSS3 color name.', '@help colors', '@help templates');
   } else if (topic === 'colors') {
@@ -357,6 +366,10 @@ export function helpContent(model, options = {}) {
       'Multiple inheritance: extends A, B. Profile extends has exactly one registered parent.',
       'JSON profiles also support comparisons, pairs and connections. A connection rule may use referenceAttributes to count selected typed counterpart references as alternative evidence; the same explicit edge endpoint is not counted twice.',
       'connections[].through: {relations:["ServiceFunctionAggregation"], direction:"incoming"} permits evidence at selected transitive ancestors (outgoing follows descendants instead). Explicit relationship names are required, including subtype matching; each evidence edge counts once. No implicit model edges are created. Details: @help types/relations/viewpoints PROFILE NAME.');
+    section('Objectified relationships', 'External JSON/API profiles may define node and relationship types with the same name in separate namespaces.',
+      'A typed reference attribute on an edge binds its object node. referenceLabels plus referenceDisplay nodes draw the attachment; referenceConnectorLabels true also draws its caption. route OBJECT_ID -> EDGE_ID controls the connector.',
+      'connections[].referencedByAttributes counts selected matching relationships whose named reference attributes point to the selected node. Use direction either and explicit relation/attribute names, without counterparts, through or referenceAttributes. An edge counts once. min/max can enforce exactly one binding.',
+      '@help types naf41-uaf ServiceStateTransition', '@help relations naf41-uaf ServiceStateTransition', '@help viewpoints naf41-uaf S5');
     section('Validation mode', 'config { profile naf41-uaf validation draft }', 'validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.');
   } else if (topic === 'api') {
     section('Queries and rendering', 'arch.help("types default service", options) → help text', 'arch.parse(source, options) → architecture or help document', 'arch.validate(sourceOrModel, options) → { valid, profile, diagnostics }',

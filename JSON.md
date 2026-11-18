@@ -176,6 +176,25 @@ zusätzliches `id` im selben Eintrag dürfen nicht kombiniert werden.
 
 ### Routing, Styles und Diagrammtypen
 
+Numerische Node-Styles `width`, `height` und `fontSize` akzeptieren in Connected-
+und Tree-Views zusätzlich Ausdrücke als Strings:
+
+```json
+"style": {
+  "source": {"width": 240, "height": 100, "fontSize": 15},
+  "target": {"height": "2 * source.height", "width": "source.style.width + 80"}
+}
+```
+
+`source.height` ist die gemessene Kartenhöhe einschließlich Inhalt,
+`source.style.height` der ausdrücklich konfigurierte Mindestwert. Verfügbar
+sind `width`, `height`, `fontSize`, jeweils direkt oder unter `.style`, sowie
+`+`, `-`, `*`, `/` und Klammern. Referenzen bleiben bei der Übersetzung erhalten;
+konstante Rechnungen werden als Zahlen normalisiert. Sichtbarkeit, fehlende
+explizite Werte, Zyklen und Ergebnisbereiche werden geprüft. Finale Paket-/
+Tree-Gruppenmaße sind nicht verfügbar; explizite Paket-Styles schon.
+Weitere Regeln: [HELP.md](HELP.md#berechnete-node-styles).
+
 Die vorhandenen Felder gelten unverändert. `via` ist eine Liste von Paaren,
 beispielsweise `[[250, 80], [250, 300]]`; `from`/`to` sind Portnamen oder Punkte,
 bei Zuordnungspfeilen ist `to` ein Anteil zwischen 0 und 1. Das Ziel eines
@@ -258,7 +277,7 @@ automatisch. Syntax und Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
 
 Ein registriertes Profil wird über `config.profile` gewählt. Eine konkrete
 geladene Revision kann beispielsweise mit
-`"config": { "profile": "naf41-uaf@4.1.0-arch.14" }` gebunden werden.
+`"config": { "profile": "naf41-uaf@4.1.0-arch.16" }` gebunden werden.
 Aliasnamen bleiben in den `type`-Feldern auch bei JSON-/DSL-Übersetzungen
 erhalten. `aliases` und `mappings` gehören zum vollständigen externen
 Registrierungsformat, nicht zur Inline-Konfiguration:

@@ -10,7 +10,19 @@ const key=(id,field)=>JSON.stringify([id,field]);
 
 const precedence={'+':1,'-':1,'*':2,'/':2,neg:3,pos:3};
 const referencePattern=/^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/;
-function coordinateReference(rest,known) {
+function coordinateReference(rest,known,allowedFields) {
+  if(allowedFields) {
+    const candidates=[];
+    for(let index=rest.indexOf('.');index>=0;index=rest.indexOf('.',index+1)) {
+      const id=rest.slice(0,index);if(!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(id))continue;
+      for(const field of allowedFields)if(rest.startsWith(`.${field}`,index)&&/^(?:$|[+\-*/()\s])/.test(rest.slice(index+field.length+1)))
+        candidates.push([rest.slice(0,index+field.length+1),id,field]);
+    }
+    // Keep ambiguous spelling intact until declared IDs are available.
+    // Otherwise e.g. a.height-b.height could prematurely become subtraction
+    // even when a.height-b is itself a declared node ID.
+    return candidates.filter(c=>known?.has(c[1])).sort((a,b)=>b[1].length-a[1].length)[0]??candidates.sort((a,b)=>known?a[1].length-b[1].length:b[1].length-a[1].length)[0];
+  }
   // Preserve source spelling during syntax lowering; bind once IDs are known.
   if(!known)return rest.match(referencePattern);
   // Dots and hyphens also belong to IDs. Prefer the longest declared ID;
@@ -40,7 +52,7 @@ function calculate(tokens,reference,loc) {
 }
 
 // A bounded arithmetic grammar, never JavaScript. RPN keeps evaluation iterative.
-export function coordinateTerms(value,loc,known) {
+export function coordinateTerms(value,loc,known,allowedFields) {
   if(typeof value==='number') {
     if(!Number.isFinite(value)||Math.abs(value)>limit)fail('Coordinate outside the range ±10000000',loc);
     return [{value}];
@@ -66,13 +78,13 @@ export function coordinateTerms(value,loc,known) {
     }
     if(!operand)fail('Placement expressions require +, -, * or / between terms',loc);
     const number=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
-    const reference=coordinateReference(rest,known);
+    const reference=coordinateReference(rest,known,allowedFields);
     if(number) {
       const value=Number(number[0]);if(!Number.isFinite(value)||value>limit)fail('Coordinate outside the range ±10000000',loc);
       terms.push({value});source.push(String(value));rest=rest.slice(number[0].length).trimStart();
     } else if(reference) {
       terms.push({ref:reference[1],field:reference[2]});source.push(reference[0]);rest=rest.slice(reference[0].length).trimStart();
-    } else fail(`Invalid placement coordinate; use a number or ID.FIELD (${POSITION_FIELDS.join(', ')}) with +, -, * or /`,loc);
+    } else fail(`Invalid placement coordinate; use a number or ID.FIELD (${(allowedFields??POSITION_FIELDS).join(', ')}) with +, -, * or /`,loc);
     if(++count>32)fail('At most 32 terms are allowed in a placement coordinate',loc);
     operand=false;
   }
@@ -92,8 +104,8 @@ export function placementCoordinate(value,loc) {
   return terms.source;
 }
 
-export function evaluateCoordinate(value,reference,loc,known) {
-  const result=calculate(coordinateTerms(value,loc,known),reference,loc);
+export function evaluateCoordinate(value,reference,loc,known,allowedFields) {
+  const result=calculate(coordinateTerms(value,loc,known,allowedFields),reference,loc);
   coordinateTerms(result,loc);return result;
 }
 

@@ -260,7 +260,7 @@ export function compileProfile(definition, fallbackId) {
     if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail(`Unknown or cyclic relation type: ${name}`);
     identifier(name, 'relation type');
     const raw = rawEdges[name];
-    keys(raw, ['extends', 'from', 'to', 'directions', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic', 'referenceLabels', 'referenceDisplay', 'referenceOccurrences', ...documentationKeys], `relation type ${name}`);
+    keys(raw, ['extends', 'from', 'to', 'directions', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic', 'sequenceMessage', 'referenceLabels', 'referenceConnectorLabels', 'referenceDisplay', 'referenceOccurrences', ...documentationKeys], `relation type ${name}`);
     compiling.add(`e:${name}`);
     const baseNames = parentNames(raw.extends, `Base relationship of ${name}`), parents = baseNames.map(relation), parent = parents[0];
     const result = { ...documentation(raw, name), from: names(raw.from ?? parent?.from, `${name}.from`), to: names(raw.to ?? parent?.to, `${name}.to`),
@@ -271,6 +271,14 @@ export function compileProfile(definition, fallbackId) {
     if(result.directions.some(d=>!['forward','both'].includes(d)))fail(`${name}.directions must contain only forward or both`);
     if(result.directions.includes('both')&&['composition','generalization','realization'].includes(result.style))fail(`${name}: ${result.style} does not support bidirectional relationships`);
     const referenceLabels = raw.referenceLabels ?? parent?.referenceLabels;
+    if (raw.sequenceMessage !== undefined || parent?.sequenceMessage !== undefined) {
+      result.sequenceMessage = raw.sequenceMessage ?? parent.sequenceMessage;
+      if (typeof result.sequenceMessage !== 'boolean') fail(`${name}.sequenceMessage must be boolean`);
+    }
+    if (raw.referenceConnectorLabels !== undefined || parent?.referenceConnectorLabels !== undefined) {
+      result.referenceConnectorLabels = raw.referenceConnectorLabels ?? parent.referenceConnectorLabels;
+      if (typeof result.referenceConnectorLabels !== 'boolean') fail(`${name}.referenceConnectorLabels must be boolean`);
+    }
     if (raw.referenceDisplay !== undefined || parent?.referenceDisplay !== undefined) {
       result.referenceDisplay = raw.referenceDisplay ?? parent.referenceDisplay;
       if (!['labels', 'nodes', 'both'].includes(result.referenceDisplay)) fail(`${name}.referenceDisplay must be labels, nodes or both`);
@@ -326,12 +334,21 @@ export function compileProfile(definition, fallbackId) {
     if (raw.connections !== undefined) {
       if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: invalid connections`);
       result.connections = raw.connections.map(check => {
-        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'referenceAttributes', 'through', 'direction', 'min', 'max'], `${name}.connections`);
+        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'referenceAttributes', 'referencedByAttributes', 'through', 'direction', 'min', 'max'], `${name}.connections`);
         const value = { nodes: names(check.nodes, name), relations: names(check.relations, name), direction: check.direction ?? 'either',
           ...cardinality({ min: check.min ?? 1, max: check.max }, `${name}.connections`) };
         if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: invalid connection direction`);
         if (check.counterparts !== undefined) { value.counterparts = names(check.counterparts, name); knownNodes(value.counterparts, name); }
         if (check.nodesExclude !== undefined) { value.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true); knownNodes(value.nodesExclude, name); }
+        if (check.referencedByAttributes !== undefined) {
+          value.referencedByAttributes = names(check.referencedByAttributes, `${name}.referencedByAttributes`);
+          if (value.relations.includes('*') || value.referencedByAttributes.includes('*') || value.direction !== 'either' || check.counterparts || check.referenceAttributes || check.through)
+            fail(`${name}: referencedByAttributes requires explicit relations/attributes, direction either, and no counterparts/referenceAttributes/through`);
+          for (const type of value.relations) {
+            knownEdges([type], name);
+            for (const attr of value.referencedByAttributes) if (relationTypes[type].attributes[attr]?.type !== 'reference') fail(`${name}: ${type}.${attr} must be a reference attribute`);
+          }
+        }
         if (check.through !== undefined) {
           keys(check.through, ['relations', 'direction'], `${name}.through`);
           value.through = {relations: names(check.through.relations, `${name}.through.relations`), direction: check.through.direction ?? 'incoming'};
@@ -642,13 +659,14 @@ export function profileDiagnostics(model, profile) {
         for (const id of origins) for (const next of adjacent.get(id) ?? []) origins.add(next);
       }
       const connected = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
+        (check.referencedByAttributes ? check.referencedByAttributes.some(attr => [edge.attributes?.[attr]].flat().includes(node.id)) :
         (((check.direction !== 'incoming'||edge.direction==='both') && origins.has(edge.source) && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
-         ((check.direction !== 'outgoing'||edge.direction==='both') && origins.has(edge.target) && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))));
+         ((check.direction !== 'outgoing'||edge.direction==='both') && origins.has(edge.target) && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))))));
       const endpoints = new Set(connected.map(edge => origins.has(edge.source) ? edge.target : edge.source));
       const references = new Set([...origins].flatMap(id => (check.referenceAttributes ?? []).flatMap(attr => [nodes.get(id)?.attributes?.[attr]].flat())).filter(id =>
         typeof id === 'string' && visible.has(id) && (!check.counterparts || matches(nodes.get(id)?.type, check.counterparts, profile.nodeTypes))));
       const count = connected.length + [...references].filter(id => !endpoints.has(id)).length;
-      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}${check.through ? `; directly or through ${check.through.direction} ${check.through.relations.join(', ')}` : ''}${check.referenceAttributes ? `; reference attributes: ${check.referenceAttributes.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id,...(count<check.min?{incomplete:true}:{}) });
+      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}${check.through ? `; directly or through ${check.through.direction} ${check.through.relations.join(', ')}` : ''}${check.referenceAttributes ? `; reference attributes: ${check.referenceAttributes.join(', ')}` : ''}${check.referencedByAttributes ? `; referenced by: ${check.referencedByAttributes.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id,...(count<check.min?{incomplete:true}:{}) });
     }
     for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
       for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter(v => typeof v === 'string')) if (!visible.has(id))

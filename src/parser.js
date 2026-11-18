@@ -13,6 +13,7 @@ import {placementCoordinate,placementPlan} from './placement.js';
 import {viaReferences} from './via.js';
 import {validateClassPlacement} from './class-placement.js';
 import {validateRouteStyle} from './route-styles.js';
+import {STYLE_NUMBERS,styleNumber,checkStyleNumber,styleExpressionPlan} from './style-expressions.js';
 import { TEMPLATES, EDGE_STYLES, NODE_PROPERTIES, EDGE_PROPERTIES, resolveProfile, profileDiagnostics } from './profiles.js';
 export { ArchError };
 export const TYPES = TEMPLATES;
@@ -182,6 +183,19 @@ function parseDSLDocument(source) {
     const key = typed('word');
     if (!allowed.includes(key.value)) fail(`Unknown attribute: ${key.value}`, key);
     if (Object.hasOwn(object, key.value)) fail(`Duplicate attribute: ${key.value}`, key);
+    if (STYLE_NUMBERS.includes(key.value)) {
+      const loc=peek();
+      if(loc.type==='string'){object[key.value]=styleNumber(take().value,loc);return;}
+      const parts=[];let depth=0;
+      while(peek().type!=='eof'&&!is('}')) {
+        const token=peek();
+        if(!depth&&parts.length&&token.type==='word'&&!token.value.includes('.'))break;
+        if(!['word','number','+','-','*','/','(',')'].includes(token.type))break;
+        if(token.type==='(')depth++;else if(token.type===')')depth--;
+        parts.push(String(take().value));if(parts.length>128)fail('Style expression is too long',loc);
+      }
+      object[key.value]=styleNumber(parts.join(' '),loc);return;
+    }
     if (['showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology','propertyFields'].includes(key.value)) { object[key.value] = scalar(); return; }
     object[key.value] = ['opacity', 'fontSize', 'width', 'height'].includes(key.value) ? typed('number').value : text();
   };
@@ -462,8 +476,7 @@ export function validateModel(model, options = {}) {
         if(Object.keys(style).some(k=>!['loc','display'].includes(k))||!['none','standard'].includes(style.display))fail('Relationship styles support only display none or standard',style.loc);
         continue;
       }
-      for (const [field,min,max] of [['fontSize',6,64],['width',160,1e7],['height',96,1e7]]) if (style[field] !== undefined &&
-        (!Number.isFinite(style[field]) || style[field] < min || style[field] > max)) fail(`${field} must be a number between ${min} and ${max}`,style.loc);
+      for (const field of STYLE_NUMBERS) if (style[field] !== undefined)checkStyleNumber(style[field],field,style.loc);
       for (const key of ['showIcon', 'showLabel', 'showStereotype', 'showDescription', 'showTechnology']) if (style[key] !== undefined && typeof style[key] !== 'boolean') fail(`${key} must be true or false`, style.loc);
       if (style.iconPosition !== undefined && !['top', 'left', 'bottom', 'right'].includes(style.iconPosition)) fail('iconPosition must be top, left, bottom or right', style.loc);
       if (style.display !== undefined && !['standard', 'logo', 'none'].includes(style.display)) fail('display must be standard, logo or none', style.loc);
@@ -534,7 +547,7 @@ export function validateModel(model, options = {}) {
     error.diagnostics = diagnostics;
     throw error;
   }
-  for (const view of model.views) {validateTreeGroups(model,profile,view);validateDiagramView(model, profile, view);if(view.meta===undefined){if(view.diagram?.type==='class')validateClassPlacement(model,profile,view);else placementPlan(model,profile,view);viaReferences(model,profile,view);}}
+  for (const view of model.views) {validateTreeGroups(model,profile,view);validateDiagramView(model, profile, view);if(view.meta===undefined){styleExpressionPlan(model,profile,view);if(view.diagram?.type==='class')validateClassPlacement(model,profile,view);else placementPlan(model,profile,view);viaReferences(model,profile,view);}}
   return model;
 }
 

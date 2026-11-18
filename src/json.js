@@ -1,5 +1,6 @@
 import { ArchError } from './errors.js';
 import {placementCoordinate} from './placement.js';
+import {STYLE_NUMBERS,styleNumber} from './style-expressions.js';
 
 const own = (o, k) => Object.hasOwn(o, k);
 const record = o => o !== null && typeof o === 'object' && !Array.isArray(o);
@@ -277,7 +278,15 @@ export function jsonToDSL(input) {
               keys(rule, ['at', 'size'], rp);
               emit(`place ${id(target, rp)} at ${placementPoint(rule.at, child(rp, 'at'))}${own(rule, 'size') ? ` size ${point(rule.size, child(rp, 'size'))}` : ''}`, rp);
             } else {
-              emit(`style ${id(target, rp)} {`, rp); attributes(rule, rp); emit('}', rp);
+              emit(`style ${id(target, rp)} {`, rp);
+              for(const [key,value]of Object.entries(rule)) {
+                const path=child(rp,key);
+                if(STYLE_NUMBERS.includes(key)) {
+                  let expression;try{expression=styleNumber(value);}catch(err){error(err.message,path);}
+                  emit(`${key} ${expression}`,path);
+                } else field(key,value,path);
+              }
+              emit('}', rp);
             }
           }
         } else if(key==='tree') {

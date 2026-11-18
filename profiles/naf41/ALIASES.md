@@ -102,7 +102,7 @@ Inline-Konfiguration ist weiterhin auf die vorhandenen DSL-Felder begrenzt.
 
 ```arch
 architecture "Services" {
-  config { profile "naf41-uaf@4.1.0-arch.14" }
+  config { profile "naf41-uaf@4.1.0-arch.16" }
   model {
     Service rescue "Rescue"
     ServiceSpecification parent "Rescue services"
@@ -114,15 +114,15 @@ architecture "Services" {
 }
 ```
 
-JSON: `"config": { "profile": "naf41-uaf@4.1.0-arch.14" }`.
-API: `{ profile: 'naf41-uaf@4.1.0-arch.14' }`.
+JSON: `"config": { "profile": "naf41-uaf@4.1.0-arch.16" }`.
+API: `{ profile: 'naf41-uaf@4.1.0-arch.16' }`.
 Ein externes Profil kann ebenso `"extends": "uaf@1.0.0-arch.1"` verwenden;
 das NAF-Profil bindet diese konkrete Basisrevision.
 
 Ein unqualifizierter Profilname wählt wie bisher die zuletzt registrierte
 Definition dieses IDs. `getProfiles()` listet IDs;
 `getProfileVersions('naf41-uaf')` liefert geladene Revisionsstrings.
-`getProfile('naf41-uaf@4.1.0-arch.14')` liefert die konkrete Profilkopie.
+`getProfile('naf41-uaf@4.1.0-arch.16')` liefert die konkrete Profilkopie.
 Parsed Models behalten ihren eingefrorenen Profil-Snapshot.
 
 **Explizit versionierte Revisionen sind unveränderlich:** denselben ID und

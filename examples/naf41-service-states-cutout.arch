@@ -1,0 +1,51 @@
+# S5 p.114 cut-out: all association patterns, including nested state groups.
+architecture "NAFv4.1 · S5 Cut-out" {
+  config {profile naf41-uaf}
+  model {
+    Service service "Position Service"
+    ServiceState ready "Ready"
+    ServiceState unavailable "Unavailable"
+    ServiceStateTransition transitionObject "Becoming unavailable"
+    ServiceEvent event "Failure detected"
+    ServiceFunction function "Determine Position"
+    ServiceMode mode "Continuous Positioning"
+    ServiceStateGroup group "Service States"
+    ServiceStateGroup subgroup "Unavailable States"
+    relation hasReady service -> ready "has" {type HasServiceState}
+    relation hasUnavailable service -> unavailable "has" {type HasServiceState}
+    relation transition ready -> unavailable "" {type ServiceStateTransition transition transitionObject}
+    relation trigger event -> transitionObject "triggers" {type TriggersServiceStateTransition}
+    relation enablesFunction ready -> function "enables" {type StateEnablesServiceFunction}
+    relation enablesService function -> service "enables" {type EnablesService}
+    relation hasMode function -> mode "has" {type HasServiceMode}
+    relation groupsReady group -> ready "aggregates" {type GroupsServiceState}
+    relation groupsUnavailable subgroup -> unavailable "aggregates" {type GroupsServiceState}
+    relation groupsNested group -> subgroup "aggregates" {type AggregatesServiceStateGroup}
+  }
+  view s5 "S5 · Cut-out relationships" {
+    viewpoint S5
+    place service at (0,400)
+    place ready at (450,400)
+    place unavailable at (1000,400)
+    place transitionObject at ((ready.right+unavailable.x)/2-150,700)
+    place event at (transitionObject.x,1000)
+    place function at (450,100)
+    place mode at (450,-200)
+    place group at (1000,0)
+    place subgroup at (1450,400)
+    style transitionObject {width 300}
+    style event {width 300}
+    routes {curve rounded}
+    route hasReady {from right to left}
+    route hasUnavailable {from bottom to bottom via (service.centerX,unavailable.bottom+20),(unavailable.centerX,unavailable.bottom+20)}
+    route transition {from right to left}
+    route transitionObject -> transition {from top to 1/2 curve straight dasharray none}
+    route trigger {from top to bottom}
+    route enablesFunction {from top to bottom}
+    route enablesService {from left to top via (service.centerX,function.centerY)}
+    route hasMode {from top to bottom}
+    route groupsReady {from left to right via (ready.right+100,group.centerY),(ready.right+100,ready.y+30)}
+    route groupsUnavailable {from left to right}
+    route groupsNested {from right to top via (subgroup.centerX,group.centerY)}
+  }
+}

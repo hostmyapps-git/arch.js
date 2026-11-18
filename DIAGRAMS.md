@@ -475,7 +475,7 @@ Die Darstellungsoptionen sind nicht zwischen allen Renderern austauschbar:
 | `place`, `route`, `routes` | Ja | Abgewiesen; Diagrammtyp und Listen/Reihenfolgen bestimmen das Layout |
 | `referenceDisplay nodes/both`, `referenceOccurrences`, Zuordnungsrouten | Ja | Abgewiesen; keine grafischen Referenzkarten |
 | `display logo`, Node-`iconPosition`, `showIcon`/`showLabel` und weitere Feldschalter | Ja | Tree: ja; übrige Spezialrenderer: abgewiesen |
-| Node-`fontSize`, `width`, `height` im Style | Ja, Größen sind Mindestwerte | Tree: ja; übrige Spezialrenderer: eigene Maße |
+| Node-`fontSize`, `width`, `height` im Style | Ja, Größen sind Mindestwerte; auch arithmetische Referenzen auf sichtbare Karten/Styles | Tree: ja; übrige Spezialrenderer: eigene Maße |
 | Template-/Iconwahl | Vorhandene Templates und registrierte Icons | Tree verwendet dieselben Karten/Templates; sonst bestimmt die Spezialnotation die Form |
 | Hintergrund-/Akzentfarben und `opacity` | Im Node-/Package-Style | Je nach gezeichnetem Primitive: Karten und Timeline-Balken verwenden Hintergrund/Fülltransparenz; Heatmap verwendet ihre Wertskala, Klasse zusätzlich Akzente. Keine allgemeine Übertragung aller Styles. |
 
@@ -591,3 +591,28 @@ Operationen verbunden. DataProductType konkretisiert PhysicalPassiveResource
 und DataElement. Resource hat im Beispiel keinen involves-Bezug. Class-
 Parameterkompartimente benötigen weiterhin einen skalaren owner; sie leiten
 keine Mehrfachzuordnung aus has-Kanten ab.
+
+### Objektifizierte Nachrichten und Kontext in Sequenzen
+
+```arch
+diagram sequence {
+  participants [coordinationLine, sarLine]
+  orderAttribute order
+  showContext true
+}
+```
+
+Nachrichten können typisierte Referenzen auf eigene Modellelemente tragen.
+Der Sequence-Renderer zeichnet diese als Karten an der jeweiligen Nachricht,
+mit beschrifteter Zuordnung, sofern das Profil referenceConnectorLabels setzt.
+showContext (Standard false) ergänzt die übrigen ausgewählten Elemente und
+Beziehungen in einem Kontextbereich. Die Karten sind keine weiteren Lifelines.
+Mit sequenceMessage markierte Relationstypen werden automatisch als Nachrichten
+ausgewählt; deren Endpunkte liefern die Standard-Lifelines. Ohne solche
+Markierung bleibt das bisherige generische Verhalten erhalten.
+
+orderAttribute verlangt eindeutige positive Integerwerte für die ausgewählten
+Nachrichten und sortiert danach. Ohne Option gelten messages-Listenreihenfolge
+oder Deklarationsreihenfolge. Die übrigen Regeln für returns/asyncMessages
+bleiben erhalten. Manuelles place/route gehört weiterhin in Connected-Views.
+Beispiel: [S6](examples/naf41-service-sequence.arch).

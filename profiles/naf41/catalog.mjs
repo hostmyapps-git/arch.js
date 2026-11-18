@@ -75,10 +75,13 @@ node('ServiceOperationParameter', 'ServiceParameter', 110, 'Conceptual parameter
   limitations: ['The p.110 shared parameter is a conceptual reusable parameter, not one UML owned Parameter shared by multiple owners. S3/S7 viewpoint checks require operation association through visible links or owner; optional resource links use InvolvesPhysicalResource.'],
 });
 node('DataProductType', 'DataElement PhysicalPassiveResource', 110, 'Type of a physical data product, as used by the Position Report and Target Track Record in the S3 example. A specialization of UAF DataElement and the application passive-resource category, not a synonym for every DataElement.', { styleGroup: 'physical' });
-node('ServiceState', 'UAFElement', 113, 'A state belonging to a service; distinct from a UAF StateDescription (state machine).', { attributes: { owner: ref('ServiceSpecification') } });
+node('ServiceState', 'UAFElement', 113, 'A state belonging to a service; use HasServiceState or the legacy owner reference. Distinct from a UAF StateDescription.', { attributes: { owner: ref('ServiceSpecification', false) } });
+node('ServiceStateTransition', 'UAFElement', 114, 'Objectified form of a ServiceStateTransition relationship. Bind it using the transition attribute on exactly one selected state-to-state edge in S5; endpoints belong to that edge.');
+node('ServiceStateGroup', 'UAFElement', 114, 'A grouping of service states, optionally containing nested state groups.');
 node('ServiceEvent', 'UAFElement', 113, 'An event relevant to service behavior.');
-node('ServiceMode', 'UAFElement', 113, 'A mode of a service function.', { attributes: { function: ref('ServiceFunction') } });
-node('ServiceLifeline', 'UAFElement', 116, 'An interaction lifeline representing a service.', { attributes: { represents: ref('ServiceSpecification') } });
+node('ServiceMode', 'UAFElement', 113, 'A mode of a service function; use HasServiceMode or the legacy function reference.', { attributes: { function: ref('ServiceFunction', false) } });
+node('ServiceLifeline', 'UAFElement', 116, 'A timeline representing a service; use RepresentsService or the legacy represents reference. It is not an objectified message.', { attributes: { represents: ref('ServiceSpecification', false) } });
+node('ServiceInteraction', 'UAFElement', 117, 'Objectified form of a message between service lifelines. Bind through the interaction reference on a ServiceInteraction edge.');
 node('ServiceReadinessLevel', 'PropertySet', 123, 'A defined service readiness level.');
 node('ServiceMilestone', 'ProjectMilestone', 123, 'A milestone defining service readiness.', { attributes: { date: { type: 'string', required: true, format: 'date' } } });
 node('ServiceProject', 'Project', 123, 'A project scheduling service milestones.');
@@ -109,9 +112,22 @@ edge('ServicePolicySatisfiedBy', 'ServicePolicy', 'ServiceSpecification', 104, '
 edge('SatisfiesServicePolicy', 'ServiceSpecification', 'ServicePolicy', 104, 'Service to the policy it satisfies, following the S1 cut-out and p.105 example. ServicePolicySatisfiedBy remains the explicit inverse application relationship.');
 edge('GroupsServiceConstraint', 'ServicePolicy', 'ServiceConstraint', 121, 'Policy to member constraint.');
 edge('EvaluatesServiceConstraint', 'Measure', 'ServiceConstraint', 121, 'Measure to evaluated service constraint.');
-edge('ServiceStateTransition', 'ServiceState', 'ServiceState', 113, 'Source state to target state.', { allowSelf: true, attributes: { event: ref('ServiceEvent', false) } });
+edge('ServiceStateTransition', 'ServiceState', 'ServiceState', 113, 'Source state to target state. An optional transition reference binds its objectified form; an optional event retains the legacy compact representation.', { allowSelf: true,
+  attributes: { event: ref('ServiceEvent', false), transition: ref('ServiceStateTransition', false) },
+  referenceLabels: {transition:'is equal to'}, referenceDisplay:'nodes', referenceConnectorLabels:true });
+edge('HasServiceState', 'ServiceSpecification', 'ServiceState', 114, 'Service to one of its states.', {style:'flow'});
+edge('TriggersServiceStateTransition', 'ServiceEvent', 'ServiceStateTransition', 114, 'Service event to the objectified transition it triggers.', {style:'flow'});
+edge('StateEnablesServiceFunction', 'ServiceState', 'ServiceFunction', 114, 'Service state to a function it enables.', {style:'flow'});
+edge('HasServiceMode', 'ServiceFunction', 'ServiceMode', 114, 'Service function to one of its modes.', {style:'flow'});
+edge('GroupsServiceState', 'ServiceStateGroup', 'ServiceState', 114, 'State group to a member state.', {style:'flow'});
+edge('AggregatesServiceStateGroup', 'ServiceStateGroup', 'ServiceStateGroup', 114, 'State group to a nested state group. Shared grouping, not exclusive UML ownership.', {style:'flow',acyclic:true});
 edge('EnablesServiceMode', 'ServiceState', 'ServiceMode', 113, 'State to enabled mode.');
-edge('ServiceInteraction', 'ServiceLifeline', 'ServiceLifeline', 116, 'Ordered interaction between service lifelines.', { allowSelf: true, attributes: { order: { type: 'integer', required: true, min: 1 }, event: ref('ServiceEvent', false), operation: ref('ServiceMethod', false) } });
+edge('ServiceInteraction', 'ServiceLifeline', 'ServiceLifeline', 116, 'Ordered message between service lifelines; interaction binds the optional objectified form. Compact event/operation references remain valid.', { allowSelf: true, sequenceMessage:true,
+  attributes: { order: { type: 'integer', required: true, min: 1 }, event: ref('ServiceEvent', false), operation: ref('ServiceMethod', false), interaction: ref('ServiceInteraction', false) },
+  referenceLabels:{interaction:'is equal to'}, referenceDisplay:'nodes', referenceConnectorLabels:true });
+edge('RepresentsService', 'ServiceLifeline', 'ServiceSpecification', 117, 'Lifeline to the service whose timeline it represents.', {style:'flow'});
+edge('TriggersServiceInteraction', 'ServiceEvent', 'ServiceInteraction', 117, 'Event to the objectified interaction it triggers.', {style:'flow'});
+edge('InteractionRelatesOperation', 'ServiceInteraction', 'ServiceMethod', 117, 'Objectified interaction to a related service operation.', {style:'flow'});
 edge('DefinesServiceReadiness', 'ServiceMilestone', 'ServiceReadinessLevel', 123, 'Milestone to readiness level.');
 edge('FulfilsServiceReadiness', 'ServiceSpecification', 'ServiceReadinessLevel', 123, 'Service to readiness level fulfilled.');
 edge('SchedulesService', 'ServiceProject', 'ServiceMilestone', 123, 'Project to scheduled service milestone.');
@@ -286,8 +302,25 @@ view('S4', 'Service Functions', 111, 'Functions enabling services, recursive fun
     {...connect('ServiceFunction','EnablesService IsCapableToPerform','either','ServiceSpecification'), through:{relations:['ServiceFunctionAggregation'],direction:'incoming'}}], [],
   ['Each selected function must enable a selected service directly or through selected aggregating ancestors. Legacy service-to-function IsCapableToPerform remains accepted. This is contextual coverage, not inheritance of behavior or implicit model edges.',
    'Provider and consumer are explicit contextual application roles, with optional represents references. Cut-out links are directed structural projections; no execution, notification delivery, exclusive ownership or full UML activity decomposition is asserted.']);
-view('S5', 'Service States', 113, 'Service states, transitions, events and function modes.', 'ServiceSpecification ServiceState ServiceEvent ServiceMode ServiceFunction', 'ServiceStateTransition EnablesServiceMode IsCapableToPerform', 'ServiceSpecification ServiceState', 'ServiceStateTransition', [connect('ServiceState','ServiceStateTransition','either')], [visible('ServiceState','owner'), visible('ServiceMode','function')], ['Transition guards, state ownership consistency, reachability and execution are not evaluated.']);
-view('S6', 'Service Sequence', 116, 'Ordered interactions between lifelines representing services.', 'ServiceSpecification ServiceLifeline ServiceEvent ServiceFunction ServiceInterface ServiceMethod', 'ServiceInteraction IsCapableToPerform SpecifiesServiceInterface SpecifiesServiceOperation', 'ServiceSpecification ServiceLifeline', 'ServiceInteraction', [connect('ServiceLifeline','ServiceInteraction','either')], [visible('ServiceLifeline','represents')], ['Order is a positive integer; UML interaction fragments, time semantics and unique sequence positions require review.']);
+view('S5', 'Service States', 113, 'States, objectified or compact transitions, events, functions, modes and state groupings.',
+  'ServiceSpecification ServiceState ServiceStateTransition ServiceStateGroup ServiceEvent ServiceMode ServiceFunction',
+  'ServiceStateTransition HasServiceState TriggersServiceStateTransition StateEnablesServiceFunction HasServiceMode GroupsServiceState AggregatesServiceStateGroup EnablesService EnablesServiceMode IsCapableToPerform',
+  'ServiceSpecification ServiceState', 'ServiceStateTransition', [connect('ServiceState','ServiceStateTransition','either'),
+    {...connect('ServiceState','HasServiceState','incoming','ServiceSpecification',1,1),referenceAttributes:['owner']},
+    {...connect('ServiceMode','HasServiceMode','incoming','ServiceFunction',1,1),referenceAttributes:['function']},
+    {...connect('ServiceStateTransition','ServiceStateTransition','either',undefined,1,1),referencedByAttributes:['transition']}],
+  [visible('ServiceState','owner'),visible('ServiceMode','function'),{relations:['ServiceStateTransition'],attributes:['transition']}],
+  ['The transition node and edge share a type name in separate namespaces. Bind the object node via the edge transition attribute; is equal to is the graphical reference connector, not a separate edge with an edge ID as endpoint. Each selected transition object binds exactly one selected state edge.',
+   'Legacy owner/function/event references remain accepted. State/mode ownership is checked in S5 through an explicit link or selected reference; duplicate contradictory ownership is rejected. Cross-state same-service consistency, conflicting event representations, guards, reachability, execution and omitted model elements require review.']);
+view('S6', 'Service Sequence', 116, 'Ordered compact or objectified interactions between lifelines, with optional service/function/interface/operation/event context.',
+  'ServiceSpecification ServiceLifeline ServiceInteraction ServiceEvent ServiceFunction ServiceInterface ServiceMethod',
+  'ServiceInteraction RepresentsService TriggersServiceInteraction InteractionRelatesOperation EnablesService IsCapableToPerform SpecifiesServiceInterface SpecifiesServiceOperation',
+  'ServiceSpecification ServiceLifeline', 'ServiceInteraction', [connect('ServiceLifeline','ServiceInteraction','either'),
+    {...connect('ServiceLifeline','RepresentsService','outgoing','ServiceSpecification',1,1),referenceAttributes:['represents']},
+    {...connect('ServiceInteraction','ServiceInteraction','either',undefined,1,1),referencedByAttributes:['interaction']}],
+  [visible('ServiceLifeline','represents'),{relations:['ServiceInteraction'],attributes:['interaction']}],
+  ['Interaction objects bind exactly one selected lifeline message; message endpoints belong to the edge. Lifelines represent services and are not objectified interactions. Compact event/operation/represents references remain supported; explicit context links are optional.',
+   'Sequence views support object cards and is equal to attachments. showContext true draws other selected cards and relationships in a context area. orderAttribute order sorts and checks unique positive message positions; otherwise declaration order or an explicit messages list determines display order. No execution, temporal constraints, UML fragments or event/operation-reference consistency is asserted.']);
 view('S7', 'Service Interface Parameters', 119, 'Operation/function parameters reference their owner and passive resource.', 'ServiceParameter ServiceFunction ServiceMethod PhysicalPassiveResource DataElement ServiceSpecification ServiceInterface', 'SpecifiesServiceInterface SpecifiesServiceOperation IsCapableToPerform HasServiceOperationParameter InvolvesPhysicalResource', 'ServiceParameter', '', [
   { ...connect('ServiceOperationParameter','HasServiceOperationParameter','incoming','ServiceMethod'), referenceAttributes: ['owner'] },
   { ...connect('ServiceOperationParameter','InvolvesPhysicalResource','outgoing','PhysicalPassiveResource DataElement'), referenceAttributes: ['resource'] }], [visible('ServiceOperationParameter','owner resource'), visible('ServiceFunctionParameter','owner resource')], ['Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Operation parameters may use explicit has/involves links instead of owner/resource references; S7 requires both associations, whereas S3 makes the resource trace optional.']);
@@ -338,7 +371,7 @@ relationTypes.LogicalInteraction.sources.push(source(132));
 relationTypes.LogicalInteraction.description += ' The default connected presentation uses reference cards attached to the flow, following the example on page 132 with the original arch.js templates and colors.';
 
 export const definition = {
-  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.14', extends: 'uaf@1.0.0-arch.1',
+  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.16', extends: 'uaf@1.0.0-arch.1',
   description: 'All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.',
   sources: [source('78–82, 88–190'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — inherited UAF 1.0 catalog', 'ReferenceDocs/nafv4/NAFv4-ADMBw-MDG-2026.05.xml — supporting comparison only; its declared foundation is NAF 4.0'],
   limitations: [mappingLimit, 'No certification or complete NAF/UAF conformance is claimed. All 47 IDs are covered structurally, not all normative semantics.', 'The inherited UAF coverage report still applies, including deferred native constraints. Application adapters are identified in type help.', 'Only included view elements/links count toward viewpoint connection rules. Typed references resolve in the model; designated structural references must also be visible.', 'NAF methodology, stakeholder approval, full state/sequence execution semantics and qualitative completeness require human review. See profiles/naf41/COVERAGE.md.'],

@@ -11,6 +11,7 @@ import {placementPlan,resolvePlacements} from './placement.js';
 import {viaReferences,resolveVia} from './via.js';
 import {nodeProperties,positionProperties} from './property-fields.js';
 import {shareEdgePaths} from './shared-paths.js';
+import {styleExpressionPlan,resolveStyleExpressions} from './style-expressions.js';
 import {routeStyle} from './route-styles.js';
 
 export const num = (n) => String(Math.round(n * 1000) / 1000);
@@ -228,7 +229,7 @@ function routeEdge(edge, source, target, route, parallel) {
           { x: b.x + shift, y: b.y - stub }, { x: b.x, y: b.y - stub });
       } else points.push({ x: a.x, y }, { x: b.x, y });
     }
-  } else if (parallel) points.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + parallel * 28 });
+  }
   points.push(b);
   if (route.via && ['orthogonal', 'rounded'].includes(curve)) {
     const orthogonal = [points[0]];
@@ -287,8 +288,8 @@ export function layout(model, options = {}) {
   if (!view) fail(`Unknown view: ${options.view}`);
   if(view.meta!==undefined)return layoutMeta(model,profile,view);
   const visible = visibleNodeIds(model, view);
-  const nodes = model.nodes.filter(n => visible.has(n.id)).map(n => {
-    const definition = profile.nodeTypes[n.type], style = view.styles[n.id] ?? {};
+  const measureNode = (n,style=view.styles[n.id]??{}) => {
+    const definition = profile.nodeTypes[n.type];
     const template = style.template ?? definition.template;
     const width = style.width ?? view.places[n.id]?.size?.x ?? 220;
     const fontSize=style.fontSize??15,scale=fontSize/15;
@@ -322,7 +323,10 @@ export function layout(model, options = {}) {
       accent: normalizeColor(style.accent ?? n.accent ?? definition.accent),
       backgroundColor: normalizeColor(style.backgroundColor ?? definition.backgroundColor ?? profile.styleGroups?.[definition.styleGroup]?.backgroundColor),
       container: definition.container, template, width, height, textStyle, iconBox, titleLines, badgeText, badgeLines, descLines, technologyLines,propertyRows, x: 0, y: 0 };
-  });
+  };
+  const stylePlan=styleExpressionPlan(model,profile,view);
+  const resolvedStyles=resolveStyleExpressions(stylePlan,view,measureNode);
+  const nodes=model.nodes.filter(n=>visible.has(n.id)).map(n=>resolvedStyles?.measured.get(n.id)??measureNode(n,resolvedStyles?.styles[n.id]??view.styles[n.id]??{}));
   const byId = new Map(nodes.map(n => [n.id, n]));
   const modelNodes = new Map(model.nodes.map(n => [n.id, n]));
   const edges = model.edges.filter(e => visible.has(e.source) && visible.has(e.target) && view.styles[e.id]?.display!=='none').map(edge => {
@@ -331,7 +335,7 @@ export function layout(model, options = {}) {
     const referenceDisplay = view.referenceDisplay ?? rule.referenceDisplay ?? 'labels';
     const referenceItems = referenceDisplay === 'labels' ? [] : relationshipReferences(edge, rule).filter(item => byId.has(item.id) && !byId.get(item.id).container);
     const referenceOccurrences = view.referenceOccurrences ?? rule.referenceOccurrences ?? 'shared';
-    return { ...edge, type, ...(rule.aliasOf ? { canonicalType: canonicalType(type, profile.relationTypes) } : {}), style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, labelText: relationshipLabel(edge, rule, modelNodes) };
+    return { ...edge, type, ...(rule.aliasOf ? { canonicalType: canonicalType(type, profile.relationTypes) } : {}), style: rule.style, referenceDisplay, referenceOccurrences, referenceItems, ...(rule.referenceConnectorLabels ? {referenceConnectorLabels:true} : {}), labelText: relationshipLabel(edge, rule, modelNodes) };
   });
   if(view.diagram?.type==='tree')return layoutTree(model,profile,view,nodes,edges);
   if (view.diagram && view.diagram.type !== 'connected') return layoutDiagram(model, profile, view, nodes, edges);
@@ -352,6 +356,7 @@ export function layout(model, options = {}) {
   const referenced = new Set(edges.flatMap(e => e.referenceItems.map(item => item.id)));
   const endpoints = new Set(edges.flatMap(e => [e.source, e.target]));
   const positions=placementPlan(model,profile,view),positionTargets=new Set([...viaReferences(model,profile,view),...[...positions?.expressions.values()??[]].flatMap(terms=>terms.filter(t=>t.ref!==undefined).map(t=>t.ref))]);
+  for(const parsed of stylePlan?.expressions.values()??[])for(const term of parsed)if(term.ref!==undefined&&!term.field.startsWith('style.'))positionTargets.add(term.ref);
   for (const node of nodes) if (referenced.has(node.id) && !endpoints.has(node.id) && !node.parent && !node.container && !view.places[node.id]&&!positionTargets.has(node.id)) node.referenceOnly = true;
   const process = (parent) => {
     const children = nodes.filter(n => n.parent === parent && !n.referenceOnly);
@@ -448,6 +453,10 @@ export function layout(model, options = {}) {
   const extents = nodes.flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
   for (const occurrence of referenceNodes) {
     extents.push({x:occurrence.node.x,y:occurrence.node.y},{x:occurrence.node.x+occurrence.node.width,y:occurrence.node.y+occurrence.node.height},...occurrence.points);
+    if (occurrence.connectorLabel) {
+      const label=occurrence.connectorLabel;
+      extents.push({x:label.x-label.width/2,y:label.y-label.height/2},{x:label.x+label.width/2,y:label.y+label.height/2});
+    }
   }
   for (const edge of routedEdges) {
     extents.push(...edge.points);

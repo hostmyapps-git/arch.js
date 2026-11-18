@@ -1,7 +1,7 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.14",
+  "version": "4.1.0-arch.16",
   "extends": "uaf@1.0.0-arch.1",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
@@ -522,7 +522,7 @@
         "UAFElement"
       ],
       "styleGroup": "service",
-      "description": "A state belonging to a service; distinct from a UAF StateDescription (state machine).",
+      "description": "A state belonging to a service; use HasServiceState or the legacy owner reference. Distinct from a UAF StateDescription.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 113 (NAFv4.1, 2026.03)"
       ],
@@ -535,9 +535,35 @@
           "targets": [
             "ServiceSpecification"
           ],
-          "required": true
+          "required": false
         }
       }
+    },
+    "ServiceStateTransition": {
+      "extends": [
+        "UAFElement"
+      ],
+      "styleGroup": "service",
+      "description": "Objectified form of a ServiceStateTransition relationship. Bind it using the transition attribute on exactly one selected state-to-state edge in S5; endpoints belong to that edge.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
+    },
+    "ServiceStateGroup": {
+      "extends": [
+        "UAFElement"
+      ],
+      "styleGroup": "service",
+      "description": "A grouping of service states, optionally containing nested state groups.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
     },
     "ServiceEvent": {
       "extends": [
@@ -557,7 +583,7 @@
         "UAFElement"
       ],
       "styleGroup": "service",
-      "description": "A mode of a service function.",
+      "description": "A mode of a service function; use HasServiceMode or the legacy function reference.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 113 (NAFv4.1, 2026.03)"
       ],
@@ -570,7 +596,7 @@
           "targets": [
             "ServiceFunction"
           ],
-          "required": true
+          "required": false
         }
       }
     },
@@ -579,7 +605,7 @@
         "UAFElement"
       ],
       "styleGroup": "service",
-      "description": "An interaction lifeline representing a service.",
+      "description": "A timeline representing a service; use RepresentsService or the legacy represents reference. It is not an objectified message.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 116 (NAFv4.1, 2026.03)"
       ],
@@ -592,9 +618,22 @@
           "targets": [
             "ServiceSpecification"
           ],
-          "required": true
+          "required": false
         }
       }
+    },
+    "ServiceInteraction": {
+      "extends": [
+        "UAFElement"
+      ],
+      "styleGroup": "service",
+      "description": "Objectified form of a message between service lifelines. Bind through the interaction reference on a ServiceInteraction edge.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 117 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
     },
     "ServiceReadinessLevel": {
       "extends": [
@@ -2221,7 +2260,7 @@
       ],
       "allowSelf": true,
       "style": "dependency",
-      "description": "Source state to target state.",
+      "description": "Source state to target state. An optional transition reference binds its objectified form; an optional event retains the legacy compact representation.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 113 (NAFv4.1, 2026.03)"
       ],
@@ -2232,8 +2271,105 @@
             "ServiceEvent"
           ],
           "required": false
+        },
+        "transition": {
+          "type": "reference",
+          "targets": [
+            "ServiceStateTransition"
+          ],
+          "required": false
         }
-      }
+      },
+      "referenceLabels": {
+        "transition": "is equal to"
+      },
+      "referenceDisplay": "nodes",
+      "referenceConnectorLabels": true
+    },
+    "HasServiceState": {
+      "from": [
+        "ServiceSpecification"
+      ],
+      "to": [
+        "ServiceState"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service to one of its states.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "TriggersServiceStateTransition": {
+      "from": [
+        "ServiceEvent"
+      ],
+      "to": [
+        "ServiceStateTransition"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service event to the objectified transition it triggers.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "StateEnablesServiceFunction": {
+      "from": [
+        "ServiceState"
+      ],
+      "to": [
+        "ServiceFunction"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service state to a function it enables.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "HasServiceMode": {
+      "from": [
+        "ServiceFunction"
+      ],
+      "to": [
+        "ServiceMode"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service function to one of its modes.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "GroupsServiceState": {
+      "from": [
+        "ServiceStateGroup"
+      ],
+      "to": [
+        "ServiceState"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "State group to a member state.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "AggregatesServiceStateGroup": {
+      "from": [
+        "ServiceStateGroup"
+      ],
+      "to": [
+        "ServiceStateGroup"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "State group to a nested state group. Shared grouping, not exclusive UML ownership.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 114 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true
     },
     "EnablesServiceMode": {
       "from": [
@@ -2258,10 +2394,11 @@
       ],
       "allowSelf": true,
       "style": "dependency",
-      "description": "Ordered interaction between service lifelines.",
+      "description": "Ordered message between service lifelines; interaction binds the optional objectified form. Compact event/operation references remain valid.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 116 (NAFv4.1, 2026.03)"
       ],
+      "sequenceMessage": true,
       "attributes": {
         "order": {
           "type": "integer",
@@ -2281,8 +2418,62 @@
             "ServiceMethod"
           ],
           "required": false
+        },
+        "interaction": {
+          "type": "reference",
+          "targets": [
+            "ServiceInteraction"
+          ],
+          "required": false
         }
-      }
+      },
+      "referenceLabels": {
+        "interaction": "is equal to"
+      },
+      "referenceDisplay": "nodes",
+      "referenceConnectorLabels": true
+    },
+    "RepresentsService": {
+      "from": [
+        "ServiceLifeline"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Lifeline to the service whose timeline it represents.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 117 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "TriggersServiceInteraction": {
+      "from": [
+        "ServiceEvent"
+      ],
+      "to": [
+        "ServiceInteraction"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Event to the objectified interaction it triggers.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 117 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "InteractionRelatesOperation": {
+      "from": [
+        "ServiceInteraction"
+      ],
+      "to": [
+        "ServiceMethod"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Objectified interaction to a related service operation.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 117 (NAFv4.1, 2026.03)"
+      ]
     },
     "DefinesServiceReadiness": {
       "from": [
@@ -4108,24 +4299,34 @@
     },
     "S5": {
       "title": "Service States",
-      "description": "Service states, transitions, events and function modes.",
+      "description": "States, objectified or compact transitions, events, functions, modes and state groupings.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 113 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
-        "Transition guards, state ownership consistency, reachability and execution are not evaluated."
+        "The transition node and edge share a type name in separate namespaces. Bind the object node via the edge transition attribute; is equal to is the graphical reference connector, not a separate edge with an edge ID as endpoint. Each selected transition object binds exactly one selected state edge.",
+        "Legacy owner/function/event references remain accepted. State/mode ownership is checked in S5 through an explicit link or selected reference; duplicate contradictory ownership is rejected. Cross-state same-service consistency, conflicting event representations, guards, reachability, execution and omitted model elements require review."
       ],
       "nodes": [
         "Package",
         "ServiceSpecification",
         "ServiceState",
+        "ServiceStateTransition",
+        "ServiceStateGroup",
         "ServiceEvent",
         "ServiceMode",
         "ServiceFunction"
       ],
       "relations": [
         "ServiceStateTransition",
+        "HasServiceState",
+        "TriggersServiceStateTransition",
+        "StateEnablesServiceFunction",
+        "HasServiceMode",
+        "GroupsServiceState",
+        "AggregatesServiceStateGroup",
+        "EnablesService",
         "EnablesServiceMode",
         "IsCapableToPerform"
       ],
@@ -4146,6 +4347,54 @@
           ],
           "direction": "either",
           "min": 1
+        },
+        {
+          "nodes": [
+            "ServiceState"
+          ],
+          "relations": [
+            "HasServiceState"
+          ],
+          "direction": "incoming",
+          "min": 1,
+          "counterparts": [
+            "ServiceSpecification"
+          ],
+          "max": 1,
+          "referenceAttributes": [
+            "owner"
+          ]
+        },
+        {
+          "nodes": [
+            "ServiceMode"
+          ],
+          "relations": [
+            "HasServiceMode"
+          ],
+          "direction": "incoming",
+          "min": 1,
+          "counterparts": [
+            "ServiceFunction"
+          ],
+          "max": 1,
+          "referenceAttributes": [
+            "function"
+          ]
+        },
+        {
+          "nodes": [
+            "ServiceStateTransition"
+          ],
+          "relations": [
+            "ServiceStateTransition"
+          ],
+          "direction": "either",
+          "min": 1,
+          "max": 1,
+          "referencedByAttributes": [
+            "transition"
+          ]
         }
       ],
       "references": [
@@ -4164,23 +4413,33 @@
           "attributes": [
             "function"
           ]
+        },
+        {
+          "relations": [
+            "ServiceStateTransition"
+          ],
+          "attributes": [
+            "transition"
+          ]
         }
       ]
     },
     "S6": {
       "title": "Service Sequence",
-      "description": "Ordered interactions between lifelines representing services.",
+      "description": "Ordered compact or objectified interactions between lifelines, with optional service/function/interface/operation/event context.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 116 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
-        "Order is a positive integer; UML interaction fragments, time semantics and unique sequence positions require review."
+        "Interaction objects bind exactly one selected lifeline message; message endpoints belong to the edge. Lifelines represent services and are not objectified interactions. Compact event/operation/represents references remain supported; explicit context links are optional.",
+        "Sequence views support object cards and is equal to attachments. showContext true draws other selected cards and relationships in a context area. orderAttribute order sorts and checks unique positive message positions; otherwise declaration order or an explicit messages list determines display order. No execution, temporal constraints, UML fragments or event/operation-reference consistency is asserted."
       ],
       "nodes": [
         "Package",
         "ServiceSpecification",
         "ServiceLifeline",
+        "ServiceInteraction",
         "ServiceEvent",
         "ServiceFunction",
         "ServiceInterface",
@@ -4188,6 +4447,10 @@
       ],
       "relations": [
         "ServiceInteraction",
+        "RepresentsService",
+        "TriggersServiceInteraction",
+        "InteractionRelatesOperation",
+        "EnablesService",
         "IsCapableToPerform",
         "SpecifiesServiceInterface",
         "SpecifiesServiceOperation"
@@ -4209,6 +4472,37 @@
           ],
           "direction": "either",
           "min": 1
+        },
+        {
+          "nodes": [
+            "ServiceLifeline"
+          ],
+          "relations": [
+            "RepresentsService"
+          ],
+          "direction": "outgoing",
+          "min": 1,
+          "counterparts": [
+            "ServiceSpecification"
+          ],
+          "max": 1,
+          "referenceAttributes": [
+            "represents"
+          ]
+        },
+        {
+          "nodes": [
+            "ServiceInteraction"
+          ],
+          "relations": [
+            "ServiceInteraction"
+          ],
+          "direction": "either",
+          "min": 1,
+          "max": 1,
+          "referencedByAttributes": [
+            "interaction"
+          ]
         }
       ],
       "references": [
@@ -4218,6 +4512,14 @@
           ],
           "attributes": [
             "represents"
+          ]
+        },
+        {
+          "relations": [
+            "ServiceInteraction"
+          ],
+          "attributes": [
+            "interaction"
           ]
         }
       ]

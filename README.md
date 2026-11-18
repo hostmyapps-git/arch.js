@@ -154,6 +154,24 @@ einzelne Eigenschaften unabhängig von der Reihenfolge. Nodes unterstützen
 `showLabel` schaltet den Titeltext; Typ-/Stereotypzeile und Detailtexte haben
 eigene Schalter. `width`/`height` sind Mindestgrößen, keine feste Textbegrenzung.
 
+In Connected- und Tree-Views sind auch berechnete Stylewerte möglich:
+
+```arch
+style api { width 280 height 160 fontSize 16 }
+style db {
+  width api.width + 40
+  height 2 * api.height
+  fontSize api.style.fontSize
+}
+```
+
+`api.height` bezeichnet die gemessene Kartenhöhe einschließlich Inhalt;
+`api.style.height` den ausdrücklich gesetzten Mindestwert. Ebenso funktionieren
+`width` und `fontSize` mit `+`, `-`, `*`, `/` und Klammern. Referenzen gelten für
+sichtbare Nodes derselben View; Zirkelbezüge sind Fehler. Finale Paket-/Tree-
+Gruppenmaße sind hier nicht verfügbar, explizite Paket-Styles dagegen schon.
+[Beispiel](examples/style-expressions.arch), Details: `@help styles`.
+
 An Kanten wählen `showIcon` und `showLabel` Icon und Text getrennt aus.
 `label none` blendet das gesamte Relationslabel einschließlich Icon aus;
 `icon none` entfernt nur das Icon. `display logo` reduziert einen Node auf
@@ -235,7 +253,7 @@ Namen; `extends` bleibt echte Spezialisierung. Ursprüngliche Namen bleiben in
 Diagrammen und JSON-/DSL-Übersetzungen erhalten. `mappings` dokumentiert
 Framework-/Versionszuordnungen und konvertiert keine Modelle automatisch.
 
-Mit `config { profile "naf41-uaf@4.1.0-arch.14" }` lässt sich eine geladene
+Mit `config { profile "naf41-uaf@4.1.0-arch.16" }` lässt sich eine geladene
 Revision ausdrücklich auswählen. `arch.getProfileVersions('naf41-uaf')` zeigt
 verfügbare Versionen; unqualifizierte IDs wählen die zuletzt registrierte.
 Explizit versionierte Definitionen benötigen bei Änderungen eine neue Version.
@@ -702,3 +720,14 @@ Provider/Consumer sind explizite Kontextrollen. Beispiele:
 [Service Functions](examples/naf41-service-functions.arch),
 [S4 Cut-out](examples/naf41-service-functions-cutout.arch). Typen und Grenzen:
 [Profilbeschreibung](profiles/naf41/README.md#s4-functions-aggregation-and-service-context-pp111112).
+
+S5 unterstützt seit Profilrevision 4.1.0-arch.15 auch objektifizierte
+ServiceStateTransition-Elemente mit Ereignis-Triggern und beschrifteter
+Zuordnung zur Übergangskante. Beispiel: [Service States](examples/naf41-service-states.arch),
+[Cut-out](examples/naf41-service-states-cutout.arch). Alte kompakte Kanten bleiben gültig.
+
+S6 unterstützt seit Profilrevision 4.1.0-arch.16 objektifizierte
+ServiceInteraction-Nachrichten auch im Sequence-Renderer, mit optionalem
+Kontextbereich und Sortierung über orderAttribute. Beispiele:
+[Service Sequence](examples/naf41-service-sequence.arch) und
+[S6 Cut-out](examples/naf41-service-sequence-cutout.arch).

@@ -1,5 +1,124 @@
 # Umsetzungsfortschritt
 
+## Abstand zwischen Relations- und Zuordnungslabels (18.11.2026)
+
+- Automatische Relationslabels mit grafischen Referenzen prüfen nach dem
+  Routing der Zuordnungspfeile beide Seiten der Verbindung. Karten, andere
+  Labels und Zuordnungspfeile gehen in die lokale Konfliktbewertung ein.
+- In der positionierten S6-View liegt Acknowledge jetzt über der Rückkante,
+  während is equal to darunter bleibt. Request Sortie bleibt unter seiner
+  Verbindung. Manuelle Labelkoordinaten werden unverändert übernommen.
+- S6-Regression und Chromium-Prüfung sichern den Abstand; Hilfe ergänzt.
+  Die Auswahl zwischen zwei Seiten bleibt eine lokale Heuristik.
+- Build, alle **333 Node-Testgruppen** und vollständige Chromium-Suite
+  bestanden; horizontale/vertikale Zuordnungen auf beiden Seiten, JSON und
+  feste Labelpositionen geprüft. Aktualisierten S6-Screenshot visuell geprüft.
+
+## Gerade Gegenkanten in positionierter S6-View (18.11.2026)
+
+- Fehler behoben: Der Parallelkantenversatz fügte auch bei `curve straight`
+  einen Knick ein. Ohne `via` verbindet straight unterschiedliche Nodes jetzt
+  direkt an den gewählten Ports, auch bei parallelen/gegenläufigen Relationen.
+  Explizite Wegpunkte und Selbstschleifen behalten ihr Verhalten.
+- Die gemeldete S6-View mit berechneten Lifeline-Höhen und Ports 0.4/0.6 ist
+  als `examples/naf41-service-sequence-placed.arch` mit dem vorhandenen
+  S6-Beispielmodell reproduziert und in die Demo aufgenommen.
+- Generische und S6-spezifische Regressionstests sowie Chromium-Checks für
+  beide Themes und JSON-Parität ergänzt; Routinghilfe aktualisiert.
+- Build, alle **332 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  S6-Screenshot `test-results/s6-placed-light.png` visuell geprüft; `s6.8`
+  besitzt genau zwei Endpunkte und verläuft horizontal zwischen den 0.6-Ports.
+
+## Berechnete Node-Styles (18.11.2026)
+
+- `width`, `height` und `fontSize` unterstützen Zahlen oder arithmetische
+  Ausdrücke mit `+`, `-`, `*`, `/`, Vorzeichen und Klammern in Connected/Tree.
+  JSON verwendet Ausdrucksstrings; DSL/JSON/Meta erhalten die Referenzen.
+- `ID.width/height` liefern gemessene Kartenmaße einschließlich Inhalt,
+  `ID.fontSize` die effektive Titelschrift. `ID.style.FIELD` verlangt den
+  expliziten View-Wert; eine konfigurierte Höhe bleibt eine Mindesthöhe.
+- Generischer Abhängigkeitsgraph löst Vorwärtsreferenzen vor Textumbruch,
+  Positionierung und Routing auf. Zyklen einschließlich intrinsischer
+  Höhenabhängigkeiten, fehlende/unsichtbare Referenzen, Division durch null
+  und ungültige Werte werden abgewiesen. Kein JavaScript-eval.
+- Finale Paket-/Tree-Gruppenmaße bleiben ausgeschlossen, weil sie erst später
+  entstehen; explizite Paket-Styles sind referenzierbar. Andere Renderer und
+  Routenstyles behalten ihre bisherigen Grenzen. IDs mit Punkten/Bindestrichen
+  bleiben erhalten, auch bei mehrdeutiger kompakter Subtraktion.
+- Laufzeithilfe, README/SPEC/HELP/JSON/DIAGRAMS, Demo **Calculated node styles**,
+  beide Bundles und acht zusätzliche Node-Testgruppen ergänzt.
+- Build, alle **330 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Gemessene/explizite Größen, Schrift, Platzierung, Textgrenzen, JSON und
+  Zirkelbezüge geprüft. Screenshot `test-results/style-expressions-dark.png`
+  visuell kontrolliert; Demo-Verbindung verläuft außerhalb der Karten.
+
+## S6: objektifizierte Nachrichten und Sequence-Kontext (18.11.2026)
+
+- Profilrevision `4.1.0-arch.16` ergänzt ServiceInteraction als Element neben
+  der bestehenden Nachricht. Das interaction-Attribut bindet genau ein
+  ausgewähltes Element an eine ausgewählte Lifeline-Nachricht in S6.
+  RepresentsService, TriggersServiceInteraction und InteractionRelatesOperation
+  ergänzen den Cut-out; EnablesService ist ebenfalls zugelassen.
+- ServiceLifeline bleibt eine Service-Zeitlinie, keine objektifizierte Nachricht.
+  Die represents-Referenz wird global optional; S6 verlangt genau eine
+  ausgewählte Servicezuordnung über Link oder Referenz. Alte kompakte Nachrichten
+  mit order/event/operation und Lifelines mit represents bleiben gültig.
+- Generisches sequenceMessage-Profilmetadatum trennt Nachrichten von Kontext.
+  Der Sequence-Renderer zeichnet Objektkarten mit beschrifteter Zuordnung,
+  optionalen Kontextkarten/-beziehungen (showContext) und prüfbarer Sortierung
+  (orderAttribute). Ohne Sortieroption bleibt die Listen-/Deklarationsreihenfolge.
+  Rückgabe-, asynchrone und Selbstnachrichten bleiben verfügbar; ausgeblendete
+  Nachrichten lassen Kontextkanten nicht zu Nachrichten werden.
+- Beispiel S.118 und vollständiger Cut-out jeweils als Sequence und Connected
+  verfügbar. Keine Ausführung/Zeitsemantik/UML-Fragmente oder globale
+  Kreuzungsoptimierung; Sequence-Layout bleibt automatisch.
+- 294 semantische Knotentypen, drei Aliase, 165 Relationen und 47 Viewpoints.
+  Profilhilfe, Dokumentation, Coverage, Demo und Bundles aktualisiert.
+- PDF-Bestandsaufnahme weiterer L/P-Objektifizierungen und fehlender Namen in
+  [profiles/naf41/GAPS.md](profiles/naf41/GAPS.md) dokumentiert. Dafür wurden
+  keine weiteren L/P-Profiltypen implementiert.
+- Build, alle **322 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Die Sequence-/Connected-Beispiele und beide Themes wurden geprüft; die
+  Kontextzuordnung zur Operation läuft außerhalb der Kontextkarten.
+
+## S5: objektifizierte Transitionen und vollständiger Cut-out (18.11.2026)
+
+- Profilrevision `4.1.0-arch.15` ergänzt ServiceStateTransition als Elementtyp
+  neben dem gleichnamigen Relationstyp. Ein typisiertes transition-Attribut
+  bindet das Element an die State-to-State-Kante; die Endpunkte stehen an der
+  Kante. Vorhandene kompakte Übergangskanten mit optionalem event bleiben gültig.
+- Referenzkarten zeigen eine routbare, mit is equal to beschriftete Zuordnung.
+  Generisches Profilfeld referenceConnectorLabels aktiviert die Beschriftung
+  aus referenceLabels; Zeilenumbruch, Escaping und SVG-Exportgrenzen sind
+  berücksichtigt. Routen behalten die vorhandene NODE_ID -> EDGE_ID-Syntax.
+- HasServiceState, TriggersServiceStateTransition, StateEnablesServiceFunction,
+  HasServiceMode, GroupsServiceState und AggregatesServiceStateGroup bilden
+  gemeinsam mit EnablesService die Beziehungen des Cut-outs auf S.114 ab.
+  Gruppen können gemeinsame Untergruppen haben, aber keine Zyklen/Selbstkanten;
+  echte Zustandsübergänge dürfen weiterhin Selbstkanten sein.
+- ServiceState.owner und ServiceMode.function sind global optional geworden;
+  S5 prüft die Zuordnung über genau eine ausgewählte explizite Beziehung oder
+  ausgewählte Legacy-Referenz. Derselbe Link plus dieselbe Referenz wird nicht
+  doppelt gezählt; widersprüchliche Owner/Function-Zuordnungen fallen auf.
+- Generische connections[].referencedByAttributes-Regeln zählen referenzierende
+  ausgewählte Kanten, jede einmal. S5 verlangt genau eine solche Bindung je
+  ausgewähltem Transitionselement. Fehlende Bindungen sind im Draft Hinweise;
+  falsche Typen und Mehrfachbindungen bleiben Fehler. Keine impliziten Kanten.
+- Vollständiges Beispiel S.115 (fünf Elemente/vier Modellkanten plus Zuordnung)
+  und erweiterter Cut-out (neun Elemente/zehn Kanten plus Zuordnung) als Dateien
+  und Demo-Einträge ergänzt. Hilfe, Profilschema, Migration, Versionsbeispiele,
+  Coverage und Bundles aktualisiert: 293 semantische Knotentypen, drei Aliase,
+  162 Relationen und 47 Viewpoints.
+- Grenzen bleiben ausdrücklich dokumentiert: keine Ausführung/Guards,
+  Erreichbarkeitsprüfung, Gleichheit der Services an beiden Zustandsendpunkten
+  oder Konsistenzprüfung zwischen gleichzeitiger event-Referenz und Triggerlinks.
+  Die Objektifizierung ist eine Connected-Darstellung; andere Spezialrenderer
+  erhalten dadurch keine Unterstützung für Objekt-zu-Kante-Zuordnungen.
+- Build, alle **317 Node-Testgruppen** und die vollständige Chromium-Suite
+  bestanden. Die Beispiele wurden in beiden Themes geprüft; nach der
+  Sichtprüfung sind Zuordnungslinien mittig und Beschriftungen ohne Überlagerung
+  durch benachbarte Linien angeordnet.
+
 ## S4: vollständiges Beispiel und Cut-out-Beziehungen (18.11.2026)
 
 - Profilrevision `4.1.0-arch.14` unterstützt das Beispiel auf S.112 mit exakt

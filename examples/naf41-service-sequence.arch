@@ -1,0 +1,38 @@
+# NAFv4.1 p.118: two service lifelines and two objectified messages.
+architecture "NAFv4.1 · S6 Service Sequence" {
+  config {profile naf41-uaf}
+  model {
+    Service coordination "Coordination Service"
+    Service sar "SAR Service"
+    ServiceInterface coordinationInterface "Coordination Interface"
+    ServiceInterface rescueInterface "Rescue Interface"
+    ServiceOperation s3 "S3 Operation"
+    ServiceOperation s2 "S2 operation"
+    ServiceLifeline coordinationLine "Coordination Service Lifeline"
+    ServiceLifeline sarLine "SAR Service Lifeline"
+    ServiceInteraction request "Request Sortie"
+    ServiceInteraction acknowledgement "Acknowledge"
+    relation coordinationTimeline coordinationLine -> coordination "represents a timeline of" {type RepresentsService}
+    relation sarTimeline sarLine -> sar "represents a timeline of" {type RepresentsService}
+    relation coordinationApi coordination -> coordinationInterface "specifies" {type SpecifiesServiceInterface}
+    relation rescueApi sar -> rescueInterface "specifies" {type SpecifiesServiceInterface}
+    relation coordinationOperation coordinationInterface -> s3 "specifies" {type SpecifiesServiceOperation}
+    relation rescueOperation rescueInterface -> s2 "specifies" {type SpecifiesServiceOperation}
+    relation requestMessage coordinationLine -> sarLine "Request Sortie" {type ServiceInteraction order 1 interaction request}
+    relation acknowledgeMessage sarLine -> coordinationLine "Acknowledge" {type ServiceInteraction order 2 interaction acknowledgement}
+    relation requestedOperation request -> s3 "relates to" {type InteractionRelatesOperation}
+  }
+  view s6 "S6 · Service Sequence" {
+    viewpoint S6
+    diagram sequence {
+      participants [coordinationLine,sarLine]
+      orderAttribute order
+      showContext true
+    }
+  }
+  view connected "S6 · Connected inspection" {
+    viewpoint S6
+    diagram connected
+    routes {curve rounded}
+  }
+}

@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.14",
+  "version": "4.1.0-arch.16",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,12 +25,12 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 78,
-    "applicationRelations": 113,
+    "applicationNodeAdapters": 81,
+    "applicationRelations": 122,
     "relationAliases": 0,
     "nodeAliases": 3,
-    "totalNodes": 291,
-    "totalRelations": 156,
+    "totalNodes": 294,
+    "totalRelations": 165,
     "viewpoints": 47
   },
   "aliases": {
@@ -218,9 +218,12 @@
     "ServiceOperationParameter",
     "DataProductType",
     "ServiceState",
+    "ServiceStateTransition",
+    "ServiceStateGroup",
     "ServiceEvent",
     "ServiceMode",
     "ServiceLifeline",
+    "ServiceInteraction",
     "ServiceReadinessLevel",
     "ServiceMilestone",
     "ServiceProject",
@@ -387,7 +390,8 @@
       "page": 113,
       "status": "structural application checks",
       "limitations": [
-        "Transition guards, state ownership consistency, reachability and execution are not evaluated."
+        "The transition node and edge share a type name in separate namespaces. Bind the object node via the edge transition attribute; is equal to is the graphical reference connector, not a separate edge with an edge ID as endpoint. Each selected transition object binds exactly one selected state edge.",
+        "Legacy owner/function/event references remain accepted. State/mode ownership is checked in S5 through an explicit link or selected reference; duplicate contradictory ownership is rejected. Cross-state same-service consistency, conflicting event representations, guards, reachability, execution and omitted model elements require review."
       ]
     },
     "S6": {
@@ -395,7 +399,8 @@
       "page": 116,
       "status": "structural application checks",
       "limitations": [
-        "Order is a positive integer; UML interaction fragments, time semantics and unique sequence positions require review."
+        "Interaction objects bind exactly one selected lifeline message; message endpoints belong to the edge. Lifelines represent services and are not objectified interactions. Compact event/operation/represents references remain supported; explicit context links are optional.",
+        "Sequence views support object cards and is equal to attachments. showContext true draws other selected cards and relationships in a context area. orderAttribute order sorts and checks unique positive message positions; otherwise declaration order or an explicit messages list determines display order. No execution, temporal constraints, UML fragments or event/operation-reference consistency is asserted."
       ]
     },
     "S7": {

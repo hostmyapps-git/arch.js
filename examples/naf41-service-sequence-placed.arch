@@ -1,0 +1,43 @@
+# NAFv4.1 p.118: two service lifelines and two objectified messages.
+architecture "NAFv4.1 · S6 Positioned lifelines" {
+  config {profile naf41-uaf}
+  model {
+    Service service_coordinationService "Coordination Service"
+    Service service_sarService "SAR Service"
+    ServiceInterface serviceInterface_coordinationInterface "Coordination Interface"
+    ServiceInterface serviceInterface_rescueInterface "Rescue Interface"
+    ServiceOperation serviceOperation_s3operation "S3 Operation"
+    ServiceOperation serviceOperation_s2operation "S2 operation"
+    ServiceLifeline serviceLifeline_coordinationServiceLifeline "Coordination Service Lifeline"
+    ServiceLifeline serviceLifeline_sarServiceLifeline "SAR Service Lifeline"
+    ServiceInteraction serviceInteraction_requestSortie "Request Sortie"
+    ServiceInteraction serviceInteraction_acknowledge "Acknowledge"
+    relation coordinationTimeline serviceLifeline_coordinationServiceLifeline -> service_coordinationService "represents a timeline of" {type RepresentsService}
+    relation sarTimeline serviceLifeline_sarServiceLifeline -> service_sarService "represents a timeline of" {type RepresentsService}
+    relation coordinationApi service_coordinationService -> serviceInterface_coordinationInterface "specifies" {type SpecifiesServiceInterface}
+    relation rescueApi service_sarService -> serviceInterface_rescueInterface "specifies" {type SpecifiesServiceInterface}
+    relation coordinationOperation serviceInterface_coordinationInterface -> serviceOperation_s3operation "specifies" {type SpecifiesServiceOperation}
+    relation rescueOperation serviceInterface_rescueInterface -> serviceOperation_s2operation "specifies" {type SpecifiesServiceOperation}
+    relation s6.7 serviceLifeline_coordinationServiceLifeline -> serviceLifeline_sarServiceLifeline "Request Sortie" {type ServiceInteraction order 1 interaction serviceInteraction_requestSortie}
+    relation s6.8 serviceLifeline_sarServiceLifeline -> serviceLifeline_coordinationServiceLifeline "Acknowledge" {type ServiceInteraction order 2 interaction serviceInteraction_acknowledge}
+    relation requestedOperation serviceInteraction_requestSortie -> serviceOperation_s3operation "relates to" {type InteractionRelatesOperation}
+  }
+  view s6 "S6" {
+    include service_coordinationService,service_sarService,serviceInterface_coordinationInterface,serviceInterface_rescueInterface,serviceOperation_s3operation,serviceOperation_s2operation,serviceInteraction_requestSortie,serviceInteraction_acknowledge,serviceLifeline_coordinationServiceLifeline,serviceLifeline_sarServiceLifeline
+    viewpoint S6
+    place serviceInterface_coordinationInterface at (1.5*service_coordinationService.width,0)
+    place service_coordinationService at (0,1.5*serviceInterface_coordinationInterface.height)
+    place serviceOperation_s3operation at (1.5*service_coordinationService.width,1.5*serviceInterface_coordinationInterface.height)
+    place service_sarService at (serviceOperation_s3operation.x+1.5*serviceOperation_s3operation.width,1.5*serviceInterface_coordinationInterface.height)
+    place serviceOperation_s2operation at (service_sarService.x+1.5*service_sarService.width,1.5*serviceInterface_coordinationInterface.height)
+    place serviceInterface_rescueInterface at (serviceOperation_s2operation.x,0)
+    place serviceInteraction_requestSortie at (serviceOperation_s3operation.x,serviceOperation_s3operation.y+1.5*serviceOperation_s3operation.height)
+    place serviceLifeline_coordinationServiceLifeline at (service_coordinationService.x,serviceInteraction_requestSortie.y)
+    place serviceLifeline_sarServiceLifeline at (service_sarService.x,serviceInteraction_requestSortie.y)
+    place serviceInteraction_acknowledge at (serviceInteraction_requestSortie.x,serviceInteraction_requestSortie.y+4*serviceInteraction_requestSortie.height)
+    style serviceLifeline_coordinationServiceLifeline { height 5*serviceInteraction_requestSortie.height }
+    style serviceLifeline_sarServiceLifeline { height 5*serviceInteraction_requestSortie.height }
+    route s6.7 { from right 0.4 to left 0.4 }
+    route s6.8 { from left 0.6 to right 0.6 curve straight }
+  }
+}

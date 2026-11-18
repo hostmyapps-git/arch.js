@@ -5,10 +5,11 @@ import { validateMetaView } from './meta-syntax.js';
 import {treeStructure,validateTreeOptions,TREE_OPTIONS} from './tree.js';
 import {validatePropertyFields,nodeProperties} from './property-fields.js';
 import {positionClassCards} from './class-placement.js';
+import {sequenceProjection,drawSequence} from './sequence.js';
 
 export const DIAGRAMS = ['connected', 'tree', 'sequence', 'state', 'activity', 'matrix', 'heatmap', 'timeline', 'class'];
 export const DIAGRAM_OPTIONS = {
-  connected: ['propertyFields'], sequence: ['participants','messages','asyncMessages','returns'],
+  connected: ['propertyFields'], sequence: ['participants','messages','asyncMessages','returns','showContext','orderAttribute'],
   tree:[...TREE_OPTIONS,'propertyFields'],
   state: ['initial','finals'], activity: ['lanes','laneAttribute','initial','finals','decisions','forks','joins'],
   matrix: ['rows','columns','relations'], heatmap: ['valueAttribute','parentAttribute','min','max','colorLow','colorHigh'],
@@ -55,7 +56,7 @@ export function validateDiagramView(model, profile, view) {
       if(!Array.isArray(v)||v.some(x=>typeof x!=='string')||new Set(v).size!==v.length) fail(`${key} requires a list of unique values`,view);
       const allowed=['messages','asyncMessages','returns'].includes(key)?edgeIds:key==='relations'?new Set(Object.keys(profile.relationTypes)):ids;
       for(const id of v) if(!allowed.has(id)) fail(`${key}: unknown or invisible reference ${id}`,view);
-    } else if(key==='showLabels') {if(typeof v!=='boolean')fail('showLabels must be true or false',view);}
+    } else if(key==='showLabels'||key==='showContext') {if(typeof v!=='boolean')fail(`${key} must be true or false`,view);}
     else if(['levelGap','siblingGap'].includes(key)) {if(!Number.isFinite(v)||v<16||v>800)fail(`${key} must be between 16 and 800`,view);}
     else if(['min','max'].includes(key)) { if(!Number.isFinite(v)) fail(`${key} must be finite`,view); }
     else if(typeof v!=='string') fail(`${key} must be a string`,view);
@@ -69,7 +70,8 @@ export function validateDiagramView(model, profile, view) {
   }
   if(c.initial&&!ids.has(c.initial)) fail('initial is not visible',view);
   if(type==='sequence') {
-    const participants=new Set(c.participants??nodes.map(n=>n.id)), messages=c.messages??edges.map(e=>e.id);
+    const projection=sequenceProjection(nodes,edges,c,profile,view);
+    const participants=new Set(projection.participants.map(n=>n.id)), messages=projection.messages.map(e=>e.id);
     for(const id of messages) { const e=edges.find(e=>e.id===id); if(!participants.has(e.source)||!participants.has(e.target)) fail(`Message ${id} requires both participants`,view); }
     for(const id of [...(c.returns??[]),...(c.asyncMessages??[])]) if(!messages.includes(id)) fail(`Message ${id} is not included in messages`,view);
     if((c.returns??[]).some(id=>(c.asyncMessages??[]).includes(id))) fail('A message cannot be both return and async',view);
@@ -147,16 +149,7 @@ function scene(graph, theme, prefix) {
   };
   const edgeLabel=(e,x,y)=> {rect(x-80,y-14,160,20,bg,1,3);label(e.title,x,y,150,11,muted,'middle');};
   if(type==='sequence') {
-    const participants=(c.participants??nodes.map(n=>n.id)).map(id=>byId.get(id));
-    const messages=(c.messages??edges.map(e=>e.id)).map(id=>edges.find(e=>e.id===id)).filter(Boolean);
-    const gap=Math.max(280,...participants.map(n=>n.title.length*8+40));width=Math.max(500,participants.length*gap+160);height=180+messages.reduce((sum,e)=>sum+Math.max(90,Math.min(2,wrap(e.title,32).length)*18+50),0);
-    const xs=new Map();participants.forEach((n,i)=>{const x=60+i*gap;xs.set(n.id,x+110);card(n,x,25,220,90);path(`M${x+110} 115 V${height-25}`,false,true);});
-    let y=155;
-    messages.forEach((e,i)=>{const a=xs.get(e.source),b=xs.get(e.target),ret=(c.returns??[]).includes(e.id),async=(c.asyncMessages??[]).includes(e.id);out.push(`<g data-edge="${esc(e.id)}" data-message="${i+1}" data-message-kind="${ret?'return':async?'async':'sync'}">`);
-      if(a===b) {path(`M${a} ${y} h65 v35 h-65`,!async,ret);if(async)path(`M${a+10} ${y+29} L${a} ${y+35} l10 6`);label(`${i+1}. ${e.title}`,a+10,y-12,220,12);}
-      else {path(`M${a} ${y} H${b}`,!async,ret);if(async)path(`M${b+(b>a?-10:10)} ${y-6} L${b} ${y} l${b>a?-10:10} 6`);label(`${i+1}. ${e.title}`,(a+b)/2,y-15,Math.abs(b-a)-25,12,text,'middle');}
-      if(!ret&&!async)rect(b-4,y,8,35,dark?'#64748b':'#cbd5e1',1,0);out.push('</g>');y+=Math.max(90,Math.min(2,wrap(e.title,32).length)*18+50);
-    });
+    ({width,height}=drawSequence({nodes,edges,c,profile:profileRules,view,out,card,path,label,rect,esc,bg,muted,text,dark,wrap}));
   } else if(type==='matrix') {
     const rows=(c.rows??nodes.map(n=>n.id)).map(id=>byId.get(id)),cols=(c.columns??nodes.map(n=>n.id)).map(id=>byId.get(id));const cell=110,left=240,top=130;
     width=left+cols.length*cell+40;height=top+rows.length*70+60;
