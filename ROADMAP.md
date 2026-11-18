@@ -8,6 +8,17 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
 
+- S3-Beispiel von S.110 mit ServiceOperation-Alias, DataProductType-Spezialisierung,
+  gemeinsamem konzeptionellen Parameter und has/involves-Kanten. Alternative
+  Referenz-Nachweise in Viewpoint-Verbindungsregeln sichern owner/resource-
+  Kompatibilität. Vollständige UML-Parameter-Ownership und Signatursemantik
+  bleiben offen.
+
+- S2-Beispiel von S.108 mit ServiceAggregation, Node-Alias, konkretem PhysicalActiveResource und
+  quellgerichteten ConsumesService/EnablesService/RealizesService-Adaptern.
+  Native UAF-Regeln bleiben erhalten. Die zusätzlichen Consumer-/Provider-
+  Rollen und relies-on/provides/delivers des S2-Cut-outs bleiben offen.
+
 - Generische Knoten-/Relationsaliase mit symmetrischer Typidentität,
   erhaltener Quellnotation und versionierter Profilwahl. Service ist im
   NAF-Profil ein Alias von ServiceSpecification; Goal und Constraint bleiben

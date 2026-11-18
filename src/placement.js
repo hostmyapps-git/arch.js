@@ -9,6 +9,22 @@ const fields=field=>({right:['x','width'],bottom:['y','height'],centerX:['x','wi
 const key=(id,field)=>JSON.stringify([id,field]);
 
 const precedence={'+':1,'-':1,'*':2,'/':2,neg:3,pos:3};
+const referencePattern=/^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/;
+function coordinateReference(rest,known) {
+  // Preserve source spelling during syntax lowering; bind once IDs are known.
+  if(!known)return rest.match(referencePattern);
+  // Dots and hyphens also belong to IDs. Prefer the longest declared ID;
+  // otherwise stop at the first complete ID.FIELD before an operator.
+  // This keeps e.g. part.x-offset.y usable without swallowing a.x-b.height.
+  let first,declared;
+  for(const field of rest.matchAll(/\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/g)) {
+    const id=rest.slice(0,field.index);
+    if(!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(id))break;
+    const reference=[rest.slice(0,field.index+field[0].length),id,field[1]];
+    first??=reference;if(known.has(id))declared=reference;
+  }
+  return declared??first;
+}
 function calculate(tokens,reference,loc) {
   const stack=[];
   for(const token of tokens) {
@@ -24,7 +40,7 @@ function calculate(tokens,reference,loc) {
 }
 
 // A bounded arithmetic grammar, never JavaScript. RPN keeps evaluation iterative.
-export function coordinateTerms(value,loc) {
+export function coordinateTerms(value,loc,known) {
   if(typeof value==='number') {
     if(!Number.isFinite(value)||Math.abs(value)>limit)fail('Coordinate outside the range ±10000000',loc);
     return [{value}];
@@ -50,7 +66,7 @@ export function coordinateTerms(value,loc) {
     }
     if(!operand)fail('Placement expressions require +, -, * or / between terms',loc);
     const number=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
-    const reference=rest.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/);
+    const reference=coordinateReference(rest,known);
     if(number) {
       const value=Number(number[0]);if(!Number.isFinite(value)||value>limit)fail('Coordinate outside the range ±10000000',loc);
       terms.push({value});source.push(String(value));rest=rest.slice(number[0].length).trimStart();
@@ -76,8 +92,8 @@ export function placementCoordinate(value,loc) {
   return terms.source;
 }
 
-export function evaluateCoordinate(value,reference,loc) {
-  const result=calculate(coordinateTerms(value,loc),reference,loc);
+export function evaluateCoordinate(value,reference,loc,known) {
+  const result=calculate(coordinateTerms(value,loc,known),reference,loc);
   coordinateTerms(result,loc);return result;
 }
 
@@ -112,9 +128,9 @@ function originCoefficients(tokens) {
 // Dependencies include parent translations, group membership, context alignment and
 // package dimensions, so indirect cycles cannot escape through an automatic box.
 export function placementPlan(model,profile,view) {
-  const expressions=new Map();
+  const expressions=new Map(),known=new Set([...model.nodes.map(n=>n.id),...Object.keys(view.trees??{})]);
   for(const [id,place]of Object.entries(view.places))for(const axis of ['x','y']) {
-    const terms=coordinateTerms(place.at?.[axis],place.loc);
+    const terms=coordinateTerms(place.at?.[axis],place.loc,known);
     if(typeof place.at[axis]==='string')expressions.set(key(id,axis),terms);
   }
   if(!expressions.size)return null;

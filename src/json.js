@@ -224,12 +224,22 @@ export function jsonToDSL(input) {
   };
   const routing = (value, path) => {
     obj(value, path); emit('{', path);
+    const fraction = (value, p) => {
+      if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1) return String(value);
+      if (typeof value === 'string' && /^\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*\/\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*$/.test(value)) return value.trim();
+      error('Port/attachment position must be a number between 0 and 1 or a fraction such as "1/2"', p);
+    };
     for (const [key, v] of Object.entries(value)) {
       const p = child(path, key);
       if (key === 'via') {
         if (!Array.isArray(v) || !v.length) error('Expected a nonempty list of coordinate pairs', p);
         emit(`via ${v.map((pair, i) => placementPoint(pair, child(p, i))).join(', ')}`, p);
+      } else if (['from', 'to'].includes(key) && record(v)) {
+        keys(v, ['side', 'position'], p);
+        if (!['top', 'right', 'bottom', 'left'].includes(v.side)) error('Positioned port side must be top, right, bottom or left', child(p, 'side'));
+        emit(`${key} ${v.side} ${fraction(v.position, child(p, 'position'))}`, p);
       } else if (['from', 'to', 'label'].includes(key) && Array.isArray(v)) emit(`${key} ${point(v, p)}`, p);
+      else if (key === 'to' && typeof v === 'string' && v.includes('/')) emit(`to ${fraction(v, p)}`, p);
       else if (key === 'label' && v === 'none') emit('label none', p);
       else field(key, v, p);
     }

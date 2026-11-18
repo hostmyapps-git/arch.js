@@ -417,6 +417,40 @@ Whitelists und Pflichttypen. Die zusätzlichen JSON-Felder `pairs`,
 `comparisons`, `connections` lassen sich über ein registriertes Profil auch
 mit `config { profile ID }` auswählen.
 
+`connections[].through` ermöglicht transitive Nachweise, zum Beispiel:
+
+```json
+{"nodes":["ServiceFunction"], "relations":["EnablesService"],
+ "direction":"outgoing", "counterparts":["ServiceSpecification"], "min":1,
+ "through":{"relations":["ServiceFunctionAggregation"], "direction":"incoming"}}
+```
+
+Ein ausgewählter Knoten darf seinen Nachweis direkt oder an transitiv
+erreichbaren Vorfahren erbringen. `outgoing` folgt stattdessen der Kantenrichtung;
+Standard ist incoming. Es zählen nur ausgewählte Endpunkte, Relationstypen
+einschließlich Untertypen und passende Gegenstellentypen. Dieselbe Nachweiskante
+zählt auch bei mehreren Pfaden einmal. Keine impliziten Modellkanten oder
+Verhaltensvererbung. Explizite Relationsnamen sind Pflicht, kein `*`.
+Die Erweiterung gilt nur für externe JSON-/API-Profile.
+
+`connections[].referenceAttributes` nennt optional Referenzattribute, die
+statt einer expliziten Beziehung als Gegenstellen-Nachweis zählen dürfen.
+Beispiel: `{ nodes: ["Parameter"], relations: ["HasParameter"],
+direction: "incoming", counterparts: ["Operation"], referenceAttributes: ["owner"],
+min: 1 }`. Ein Parameter erfüllt die Regel durch einen eingehenden HasParameter-
+Link oder eine ausgewählte owner-Referenz auf eine Operation.
+
+Die Attribute müssen auf den explizit ausgewählten Knotentypen als `reference`
+definiert sein; skalare und mehrwertige Referenzen werden unterstützt.
+`nodes` und `referenceAttributes` dürfen dafür keine Wildcards enthalten.
+Nur Ziel-IDs in der View-Auswahl und mit passendem `counterparts`-Typ zählen.
+Mehrere Referenzwerte auf dieselbe ID zählen einmal; ein bereits durch eine
+passende Kante gezähltes Gegenstellen-ID wird nicht nochmals als Referenz
+gezählt. Die bisherige Zählung expliziter, auch paralleler Kanten bleibt erhalten.
+Referenzen erzeugen keine zusätzlichen Modell-/SVG-Kanten. Richtung und
+Zuordnung von Referenzattribut zu fachlicher Verbindung bestimmt der
+Profilautor; dies ist keine automatische UML- oder Ownership-Inferenz.
+
 `connections` unterstützt außerdem `counterparts` zur Filterung des
 Gegenstellentyps einschließlich Untertypen. Optionales `nodesExclude: ["Typ"]`
 nimmt den genannten Typ und seine Untertypen aus genau dieser Einzelknotenregel

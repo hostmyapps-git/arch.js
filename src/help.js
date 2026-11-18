@@ -158,7 +158,7 @@ export function helpContent(model, options = {}) {
       section('Style groups', Object.entries(p.styleGroups).map(([name, rule]) => `${name}: ${rule.backgroundColor ?? '(neutral)'}`));
     }
     section('Selection and registration', 'config { profile PROFILE }  // inside architecture', 'API options.profile takes precedence over the document profile.',
-      'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.10" }.',
+      'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.14" }.',
       'Help lists registered profiles; it does not load files. Unqualified IDs select the most recently registered revision.', '@help config');
   } else if (topic === 'aliases') {
     const p = selectProfile();
@@ -267,6 +267,7 @@ export function helpContent(model, options = {}) {
       'place maritime at (hierarchy.x - maritime.width - 80, vision.y)', 'place second at (first.right + 40, first.y)',
       'Reference fields: x, y (top-left corner), width, height, right, bottom, centerX, centerY. Use visible node or tree group IDs from the same view, including automatically positioned tree members.',
       'Each coordinate supports numbers, references and +, -, *, /. Multiplication/division precede addition/subtraction; equal-precedence operators evaluate left to right. Parentheses override precedence, unary + and - are supported. At most 32 operands and 16 nested parentheses; no executable code. Expressions work in place at and route via; size, endpoint and label points stay numeric.',
+      'Subtraction between references also works without spaces: first.y-second.height. Dots/hyphens remain valid in IDs: the longest matching declared ID wins. If root.x-offset is a declared ID, root.x-offset.y means its y coordinate; root.x - offset.y forces subtraction. Hidden IDs still bind and produce visibility errors.',
       'place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)',
       'place second at ((first.x + first.right) / 2, first.y + 20 * 3)',
       'Division by zero and nonfinite calculations are errors. Constant zero divisors are rejected during validation; divisors depending on layout values are checked when positions resolve.',
@@ -283,7 +284,7 @@ export function helpContent(model, options = {}) {
     section('Shared relationship paths', 'routes { sharePath stereotypes }', 'route EDGE_ID { sharePath none }',
       'sharePath: none (default), stereotypes (exact relationship type) or all (different types permitted). A specific route overrides the default.',
       'Bundles fan-in or fan-out relationships sharing a target or source, compatible line styles/directions, matching color/width/dasharray and facing ports. Applies to connected views, including named tree groups. Labels/icons and relationship IDs remain separate; reference connectors follow each complete logical path.',
-      'Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out.');
+      'Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, explicitly positioned side ports, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out.');
     section('Route line styles (connected only)', 'routes { color "#64748b" width 2 dasharray [8, 4] }', 'route EDGE_ID { color red width 3 dasharray none }', 'route NODE_ID -> EDGE_ID { color blue width 1.5 dasharray [2, 3] }',
       'color: a quoted #RGB/#RRGGBB value or a CSS3 color name. Applies to the line and arrowheads; label text, frames and icons retain their own theme colors. Without color, uses the theme edge color.',
       'width: stroke width from 0.1 to 64 SVG units (default 1.5). Arrowheads scale with line width. Export bounds grow conservatively for thick markers.',
@@ -291,6 +292,11 @@ export function helpContent(model, options = {}) {
       'Without dasharray, dependency/realization edges remain dashed (6 5), other edges and reference connectors stay solid. Individual fields override routes defaults. Line styles also apply to reference connectors; style-only settings preserve automatic obstacle avoidance and do not replace an inherited path.');
     section('Edge routing (connected only)', 'route EDGE_ID {', '  from right', '  to left', '  via (270, 100), (270, 180)', '  curve rounded', '  label (300, 140)', '}',
       'from/to: auto | top | right | bottom | left, or an absolute point (X, Y).', 'curve: orthogonal | straight | rounded | bezier. With via, bezier requires exactly two control points.', 'path "M 0 0 L 100 100" replaces the calculated path; label (X, Y) positions the edge label; label none hides its text, frame and icon.');
+    section('Positions along node sides', 'route EDGE_ID { from bottom 1/2 to left 0.25 curve rounded }',
+      'top, right, bottom and left accept an optional position from 0 to 1, as a decimal or a fraction such as 1/2 or 3/4. top/bottom run left to right; left/right run top to bottom. 0 and 1 select the corners. Omitted positions use the side center (0.5). auto does not accept a position.',
+      'Positions follow the final node size and placement, including packages and named tree groups in connected views. A specific endpoint replaces the entire default endpoint; from left resets an inherited from bottom 0.25 to the left center. Explicit path overrides endpoints.',
+      'Reference connectors accept the same positioned from port: route NODE_ID -> EDGE_ID { from right 1/4 to 1/2 }. Their to remains a fraction along the relationship, not a node side. Fractions cannot divide by zero. Evaluated positions must be between 0 and 1.',
+      'JSON: "from": {"side":"bottom","position":"1/2"}, "to": {"side":"left","position":0.25}. Reference targets accept "to":"1/2". Fractions normalize to decimal numbers in JSON/DSL/meta exports.');
     section('Calculated via points', 'route EDGE_ID { via (source.right + 40, source.centerY), (target.x - 40, target.centerY) }',
       'route information -> EDGE_ID { via (information.centerX, information.y - 40), (target.x - 40, target.centerY) curve bezier }',
       'routes { via ((source.x + target.x) / 2, source.y - 60) }',
@@ -349,7 +355,8 @@ export function helpContent(model, options = {}) {
       'Attribute types: string, number, integer, boolean, reference. Formats: date, date-time, uri.',
       'viewpoint: nodes, relations, requiredNodes, requiredRelations. styleGroup: backgroundColor.',
       'Multiple inheritance: extends A, B. Profile extends has exactly one registered parent.',
-      'JSON profiles also support comparisons, pairs and connections. Details: @help types/relations/viewpoints PROFILE NAME.');
+      'JSON profiles also support comparisons, pairs and connections. A connection rule may use referenceAttributes to count selected typed counterpart references as alternative evidence; the same explicit edge endpoint is not counted twice.',
+      'connections[].through: {relations:["ServiceFunctionAggregation"], direction:"incoming"} permits evidence at selected transitive ancestors (outgoing follows descendants instead). Explicit relationship names are required, including subtype matching; each evidence edge counts once. No implicit model edges are created. Details: @help types/relations/viewpoints PROFILE NAME.');
     section('Validation mode', 'config { profile naf41-uaf validation draft }', 'validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.');
   } else if (topic === 'api') {
     section('Queries and rendering', 'arch.help("types default service", options) → help text', 'arch.parse(source, options) → architecture or help document', 'arch.validate(sourceOrModel, options) → { valid, profile, diagnostics }',

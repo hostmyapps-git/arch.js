@@ -1,0 +1,50 @@
+# NAFv4.1 p.108: same nine elements and eight directed relationships.
+# Node is the NAF vocabulary alias of the existing LogicalNode application type.
+# The concrete physical-resource adapter retains UAF isStandardConfiguration.
+architecture "NAFv4.1 · S2 Service Structure" {
+  config { profile naf41-uaf }
+  model {
+    Node controller "SAR Asset Controller"
+    ServiceInterface getArea "Get Area"
+    Service position "Position Determination Service"
+    Service situation "Situation Information Consolidation"
+    Service documents "Document Management Service"
+    Service platform "Platform Service"
+    Service storage "Storage Service"
+    ServiceFunction getAreaOfInterest "Get Area of Interest"
+    PhysicalActiveResource airTraffic "Air Traffic Control System" {
+      isStandardConfiguration false
+    }
+
+    relation consumes controller -> situation "consumes" { type ConsumesService }
+    relation needsPosition situation -> position "depends on" { type ServiceDependency }
+    relation needsDocuments situation -> documents "depends on" { type ServiceDependency }
+    relation specifies position -> getArea "specifies" { type SpecifiesServiceInterface }
+    relation enables getAreaOfInterest -> position "enables" { type EnablesService }
+    relation aggregatesPlatform documents -> platform "aggregates" { type ServiceAggregation }
+    relation aggregatesStorage documents -> storage "aggregates" { type ServiceAggregation }
+    relation realizes airTraffic -> situation "realizes" { type RealizesService }
+  }
+  view s2 "S2 · Service Structure" {
+    viewpoint S2
+    place situation at (460,260)
+    place controller at (situation.x,0)
+    place position at (0,situation.y)
+    place documents at (920,situation.y)
+    place getArea at (position.x,0)
+    place getAreaOfInterest at (position.x,560)
+    place airTraffic at (situation.centerX - 150,820)
+    style airTraffic { width 300 }
+    place platform at (810,560)
+    place storage at (1140,560)
+    routes { curve orthogonal sharePath stereotypes }
+    route consumes { from bottom to top }
+    route needsPosition { from left to right }
+    route needsDocuments { from right to left }
+    route specifies { from top to bottom }
+    route enables { from top to bottom }
+    route realizes { from top to bottom }
+    route aggregatesPlatform { from bottom to top }
+    route aggregatesStorage { from bottom to top }
+  }
+}

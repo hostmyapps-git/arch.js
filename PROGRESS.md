@@ -1,5 +1,187 @@
 # Umsetzungsfortschritt
 
+## S4: vollständiges Beispiel und Cut-out-Beziehungen (18.11.2026)
+
+- Profilrevision `4.1.0-arch.14` unterstützt das Beispiel auf S.112 mit exakt
+  fünf Elementen und vier Relationen sowie alle neun gerichteten Muster des
+  Cut-outs auf S.111. Neue Beispiele und Demo-Einträge: Service Functions und
+  S4 Cut-out; die rekursive Typbeziehung wird als Whole/Member-Verbindung
+  zwischen unterschiedlichen Funktionen modelliert, nicht als Selbstkante.
+- ServiceFunctionAggregation bildet azyklische, auch gemeinsam genutzte
+  Teilfunktionen ab. EnablesService ist in S4 zugelassen; die bestehende inverse
+  UAF-Allokation IsCapableToPerform bleibt unverändert gültig.
+- ServiceProvider/ServiceConsumer sind explizite konkrete Kontextrollen auf
+  UAFElement-Basis mit optionaler represents-Referenz. ProvidesService,
+  NotifiesServiceProvider, AccessesServiceFunction, SupportsServiceFunction,
+  EnablesOperationalActivity und PerformsOperationalActivity ergänzen den
+  Cut-out. ConsumesService akzeptiert zusätzlich ServiceConsumer. Native
+  UAF- und ADMBw-Definitionen werden nicht ersetzt oder semantisch umgedeutet.
+- Generische connections[].through-Regeln ermöglichen direkte oder transitive
+  Nachweise über ausgewählte Kanten. S4 prüft Serviceabdeckung über aggregierende
+  Vorfahren; Teilfunktionen benötigen keine redundanten Servicekanten. Isolierte
+  Funktionen, ausgeschlossene notwendige Vorfahren, falsche Endpunkte, Zyklen
+  und Selbstkanten bleiben Fehler. Draft meldet fehlende Abdeckung als Hinweis.
+- Die Definitionen sind strukturelle Anwendungsprojektionen. Keine exklusive
+  UML-Ownership, Ausführung, impliziten Modellkanten oder automatische Erkennung
+  von nicht modellierten Funktionen. Optionale Rollen-/Aktivitätskanten werden
+  nicht universell erzwungen. S2-spezifische weitere Rollenzuordnungen bleiben
+  separat zu untersuchen.
+- 291 semantische Knotentypen, drei Knotenaliase, 156 Relationen, 47 Viewpoints.
+  Profilhilfe, Schema-Dokumentation, Mappings, Coverage und Builds aktualisiert.
+  Build, alle **312 Node-Testgruppen** und vollständige Chromium-Suite bestanden;
+  Beispiele in beiden Themes geprüft, SVG-Darstellung visuell kontrolliert.
+
+## Relative Andockpositionen und Brüche (17.11.2026)
+
+- Connected-Routen unterstützen `from bottom 1/2 to left 0.25` für alle vier
+  festen Seiten. `top`/`bottom` zählen links → rechts, `left`/`right` oben → unten.
+  Standard bleibt die Seitenmitte; Endpunkte folgen den endgültigen Knotenmaßen
+  und Positionen, auch bei Packages und Kanten in benannten Tree-Gruppen.
+- Zuordnungslinien unterstützen positionierte Ausgangsports und Brüche für
+  ihre Zielposition entlang des Relationspfads (`from right 1/4 to 1/2`).
+  `routes`-Vorgaben gelten entsprechend, konkrete Endpunkte ersetzen die gesamte
+  Seiten-/Positionsangabe. Freie SVG-Pfade behalten Vorrang. Explizit
+  positionierte Ports bleiben von automatischem sharePath-Bündeln ausgenommen.
+- Dezimalzahlen und einfache Brüche mit optionalen Leerzeichen werden im Bereich
+  0–1 validiert; Division durch null und ungültige Seiten werden mit englischen
+  Diagnosen und Korrekturvorschlag zurückgewiesen. JSON nutzt `{side, position}`;
+  Brüche sind dort Strings und werden im internen Modell/Meta-Export numerisch
+  normalisiert. Bestehende Seitenports und absolute Koordinaten bleiben nutzbar.
+- Hilfe, SPEC, README, JSON-Dokumentation und S3-Beispiel ergänzt. Die beiden
+  has-Kanten am Geographic-Location-Knoten docken nun getrennt bei 1/4 und 3/4
+  an; helle und dunkle Darstellung visuell geprüft.
+- Build, alle **308 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Neue Prüfungen decken sämtliche Seitenkombinationen/Kurvenarten, Eckpunkte,
+  Brüche, Zuordnungslinien, Vorgaben, Container/Tree-Gruppen, Fehlerfälle,
+  JSON/DSL, beide Browserbundles und tatsächliche SVG-Endpunktkoordinaten ab.
+
+## S3: Operationen, gemeinsame Parameter und Datenprodukttypen (17.11.2026)
+
+- S.109–110 vollständig gelesen und visuell geprüft. ServiceOperation als
+  Vokabularalias von UAF ServiceMethod (UML Operation) ergänzt. DataProductType
+  spezialisiert DataElement und PhysicalPassiveResource. Position Report und
+  Target Track Record sind benannte Modellelemente dieses Typs; die Abbildung
+  zeigt keine Laufzeitinstanz eines konkreten Berichts.
+- HasServiceOperationParameter bildet Operation → konzeptionellen Parameter,
+  InvolvesPhysicalResource Parameter → physische passive Ressource ab. Gemeinsame
+  Parameter sind erlaubt; keine exklusive UML-Parameter-Ownership wird behauptet.
+  Der Parameter Resource aus dem Beispiel benötigt in S3 keinen Ressourcenbezug.
+- ServiceOperationParameter.owner/resource sind weiterhin typisiert, nun
+  optional als alternative Darstellung. S3 verlangt Operationszuordnung über
+  has oder ausgewählte owner-Referenz; S7 verlangt Operations- und Ressourcen-
+  zuordnung über Kanten oder Referenzen. ServiceFunctionParameter bleibt
+  unverändert. Außerhalb dieser Viewpoints erzwingen optionale Felder keine
+  Zuordnung. S3 verlangt nun außerdem die spezifizierende Interface-Verknüpfung
+  für jede dargestellte Operation.
+- Generische connections.referenceAttributes zählt ausgewählte Referenzziele
+  als alternative Gegenstellen-Nachweise mit counterparts-Filter. Referenzen
+  werden untereinander und gegen passende Kanten-Endpunkte dedupliziert;
+  parallele explizite Kanten behalten ihre Einzelzählung. Referenzen erzeugen
+  keine zusätzlichen Kanten und implementieren keine automatische Ownership.
+- Datenmodelltrace bleibt transitiv über das Datenprodukt: SpecifiesData von
+  DataModel (mit nativem Pflichtfeld kind) zum DataElement/DataProductType;
+  Parameter→DataModel ist kein gültiges InvolvesPhysicalResource-Endpunktpaar.
+- Neues vollständiges Beispiel `examples/naf41-service-interfaces.arch` mit
+  neun Elementen und neun Relationen, Geographic Location einmal für zwei
+  Operationen sowie optionalen Ressourcenbezügen; Demo **NAFv4.1 · Service Interfaces**.
+- Profilrevision `4.1.0-arch.13`: 289 semantische Knoten, drei Knotenaliase,
+  149 Relationen und 47 Viewpoints. Native UAF-/ADMBw-Definitionen unverändert;
+  Operation-/Datenprodukt-Mappings und Grenzen dokumentiert. Generierte
+  Profile/Bundles, Abdeckungsbericht, Versionsbeispiele und Hilfetexte aktualisiert.
+
+Verifikation: Build, **302 Node-Testgruppen** und vollständige Chromium-Suite
+bestanden. Vier neue Gruppen prüfen Referenz-Nachweise/Maxima/Deduplizierung,
+S3-Topologie/Sharing, native Abgrenzung, falsche Richtungen und Eigentümer,
+legacy owner/resource, S7-Pflichtbezüge, DataModel-Trace, JSON und beide Bundles.
+Browser prüft englische Hilfe, Demo, genau einen gemeinsamen Parameter,
+Knoten-/Kantenanzahlen, Label-/Kartentrennung, Textgrenzen und beide Themes.
+Screenshots `test-results/naf41-s3-light.png` und `naf41-s3-dark.png` visuell geprüft.
+Signaturen, Parameterreihenfolge/-richtung, vollständige UML-Ownership und
+Konsistenz gleichzeitig angegebener Kanten/Referenzen bleiben offen.
+
+## Kompakte Referenzsubtraktion und Bezeichner (17.11.2026)
+
+- `place` und `via` lösen Ausdrücke wie `service.y-service.height` jetzt
+  anhand der deklarierten Node-/Tree-Gruppen-IDs auf. Der bisherige gierige
+  Ausdruck konnte beide Operanden fälschlich zu einer unbekannten ID verbinden.
+- Gültige IDs mit Punkten/Bindestrichen bleiben erhalten: Die längste passende
+  deklarierte ID hat Vorrang. `root.x-offset.y` referenziert daher die
+  y-Koordinate einer vorhandenen ID root.x-offset; `root.x - offset.y` erzwingt
+  Subtraktion. Auch verborgene deklarierte IDs werden gebunden und danach als
+  nicht sichtbar abgewiesen, anstatt die Rechnung anders zu interpretieren.
+- Keine globale Änderung der Bezeichnergrammatik und kein pauschales Trimmen.
+  Bindung erfolgt bei Platzierungsabhängigkeiten und bei via-Prüfung/Auswertung;
+  DSL-/JSON-Übersetzung erhält die symbolische Schreibweise. Rechenreihenfolge,
+  Zirkelprüfung, Endlichkeits-/Nullteiler-/Ausdrucksgrenzen bleiben bestehen.
+- Englische Laufzeithilfe, SPEC/HELP/JSON und beide Bundles aktualisiert.
+
+Verifikation: Build, **298 Node-Testgruppen** und vollständige Chromium-Suite
+bestanden. Drei neue Testgruppen sichern die originale lange Nutzer-ID mit
+verschiedenen Leerraumvarianten, DSL/JSON/Roundtrip/beiden Bundles, Punkt-/
+Bindestrich-Mehrdeutigkeiten, verborgene IDs, Tippfehler und Zyklen sowie via ab.
+Browser prüft kompakte Node- und Wegpunktkoordinaten, SVG-Positionen und
+JSON-Äquivalenz in beiden Themes.
+
+## S2: ServiceAggregation (17.11.2026)
+
+- ServiceAggregation als eigenständige Relation Gesamtservice → Mitgliedservice
+  ergänzt. Bewusst kein Alias für ServiceComposition: Die vorhandene
+  Kompositionsrelation samt Notation bleibt erhalten. Aggregation wird als
+  durchgezogene gerichtete Gruppierung dargestellt; Mitglieder können von
+  mehreren Gesamtservices referenziert werden. Selbstbezüge/Zyklen sind
+  verboten; vollständige UML-Besitz-/Lebenszyklussemantik bleibt offen.
+- S2-Whitelist und strukturelle Einzelknotenprüfung berücksichtigen
+  ServiceAggregation zusätzlich zu ServiceComposition und ServiceDependency.
+  Vorhandene Kompositionsmodelle bleiben gültig. Das vollständige S2-Beispiel
+  verwendet für beide aggregates-Kanten den neuen Typ, einschließlich der
+  gemeinsamen Route und der ursprünglichen Relationsnamen im JSON-Roundtrip.
+- Profilrevision `4.1.0-arch.12`: 147 semantische Relationstypen, weiterhin 288
+  Knotentypen und zwei Knotenaliase. Generierte Profile/Bundles, Demo, aktive
+  Versionsbeispiele, Hilfe und Dokumentation aktualisiert.
+
+Verifikation: Build, **295 Node-Testgruppen** und vollständige Chromium-Suite
+bestanden. Neue Tests prüfen gemeinsam referenzierte Mitglieder, falsche
+Endpunkte, Selbstbezüge/Zyklen, Kompositionskompatibilität und die getrennten
+Typidentitäten. S2 wird in beiden Themes mit ServiceAggregation, vollständigem
+Inhalt, gemeinsamer Route, englischer Typhilfe und JSON-Roundtrip geprüft.
+Der aktualisierte Screenshot `test-results/naf41-s2-light.png` wurde visuell
+kontrolliert.
+
+## S2: Node, PhysicalActiveResource und Service Structure (17.11.2026)
+
+- NAFv4.1 S.106–108 vollständig geprüft, Cut-out und Beispiel von S.107–108
+  visuell gelesen. Node ist ein Alias des bestehenden LogicalNode-Adapters
+  unter OperationalArchitecture; die original geschriebene Typbezeichnung bleibt
+  im Diagramm und in JSON-/DSL-Übersetzungen erhalten.
+- PhysicalActiveResource als konkreten Anwendungs-Untertyp des abstrakten
+  ResourcePerformer ergänzt. Keine Aliasgleichsetzung mit der abstrakten Basis
+  oder dem engeren System-Typ; geerbtes isStandardConfiguration bleibt Pflicht.
+  Der Beispielwert false ist eine explizite Modellierungsentscheidung.
+- ConsumesService bildet logischer Knoten → Service ab, EnablesService
+  ServiceFunction → Service und RealizesService ResourcePerformer → Service.
+  Native UAF-Beziehungen Consumes/IsCapableToPerform/Implements bleiben in ihren
+  bisherigen Richtungen und Endpunktregeln erhalten.
+- S2 erlaubt die ergänzten Traces und bisherigen nativen Beziehungsendpunkte.
+  Strukturelle ServiceComposition-/ServiceDependency-Verknüpfungen bleiben
+  verpflichtend; optionale Traces ersetzen sie nicht. Die speziellen Consumer-/
+  Provider-Rollen und relies-on/provides/delivers aus dem größeren S2-Cut-out
+  bleiben ausdrücklich offen.
+- `examples/naf41-service-structure.arch` reproduziert neun Elemente und acht
+  Beziehungen von S.108 mit Node, fünf Services, Interface, Function und
+  PhysicalActiveResource. Connected-Platzierung, relative Koordinaten und
+  getrennte Pfade; Demo **NAFv4.1 · Service Structure** ergänzt.
+- Profilrevision `4.1.0-arch.11`: 288 semantische Knotentypen, zwei Knotenaliase,
+  146 Relationstypen, weiterhin 47 Viewpoints. Generierte Profile/Bundles,
+  Abdeckungsbericht, Hilfe-/Versionsbeispiele und Modellierungsdokumentation
+  aktualisiert. Node-/Ressourcen-Projektionen als Anwendungs-Mappings ausgewiesen.
+
+Verifikation: Build, **294 Node-Testgruppen** und vollständige Chromium-Suite
+bestanden. Drei neue Testgruppen prüfen vollständige Topologie, beide
+Vokabulare, L1/L2-Kompatibilität, Pflichtwerte/Endpunkte, unverändertes natives
+UAF, JSON und beide Bundles. Browser prüft neue Typ-Hilfe, Demo, Knoten-/
+Kanteninhalte, Richtungen, Label-/Kartentrennung, Textgrenzen und beide Themes.
+`test-results/naf41-s2-light.png` und `naf41-s2-dark.png` visuell kontrolliert.
+
 ## Aliase und versionierte Metamodell-Zuordnungen (17.11.2026)
 
 - Generische `aliases.nodeTypes` / `aliases.relationTypes` mit Alias-Ketten,

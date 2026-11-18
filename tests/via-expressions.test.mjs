@@ -19,6 +19,17 @@ test('via expressions use final placed nodes with arithmetic/grouping and preser
   for(const p of edge(g).points)assert.ok(p.x>=g.bounds.x&&p.y>=g.bounds.y&&p.x<=g.bounds.x+g.bounds.width&&p.y<=g.bounds.y+g.bounds.height);
 });
 
+test('via subtraction without spaces resolves known references and preserves ambiguous declared IDs',()=>{
+  const source=doc(`${at} route e {curve straight via (b.x-a.width,b.y-a.height)}`),g=arch.layout(source);
+  assert.deepEqual(edge(g).points[1],{x:320,y:144});
+  assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'compact-via'}),arch.renderToString(source,{idPrefix:'compact-via'}));
+  const model=body+' service root "Root" service offset "Offset" service root.x-offset "Long ID"';
+  const places='place root at (300,100) place offset at (0,40) place root.x-offset at (800,500)';
+  const long=arch.layout(doc(`${at} ${places} route e {curve straight via (root.x-offset.y,root.x - offset.y)}`,model));
+  assert.deepEqual(edge(long).points[1],{x:500,y:260});
+  assert.match(arch.validate(doc(`${at} ${places} route e {via (root.x-offset.y,0)} style root.x-offset {display none}`,model)).diagnostics[0].message,/Hidden or excluded via reference: root.x-offset/);
+});
+
 test('shared route defaults resolve after overrides, including ignored paths and hidden unused anchors',()=>{
   const g=arch.layout(doc(`${at} routes {curve straight via (c.x - 100,c.y - 40)} route e {via (a.right + 30,a.y)}`));
   assert.deepEqual(edge(g).points[1],{x:270,y:40});assert.deepEqual(edge(g,'f').points[1],{x:800,y:-40});

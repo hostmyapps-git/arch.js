@@ -28,6 +28,38 @@ test('reference parsing preserves dotted/hyphenated IDs, negatives, compact arit
   const report=arch.validate(doc('place a at (b.wdth,0)'));assert.match(report.diagnostics[0].message,/Invalid placement coordinate/);
 });
 
+test('compact reference subtraction binds declared IDs and matches spaced DSL/JSON in both bundles',async()=>{
+  const id='service_situationInformationConsolidation',model=`service ${id} "Situation" service doc "Document"`;
+  let expected;
+  for(const gap of ['',' ','  ','\n']) {
+    const source=doc(`place ${id} at (400,300) place doc at (${id}.x+${id}.width,${id}.y${gap}-${gap}${id}.height)`,model);
+    const graph=arch.layout(source);assert.deepEqual([node(graph,'doc').x,node(graph,'doc').y],[620,204]);
+    const svg=arch.renderToString(source,{idPrefix:'compact'});expected??=svg;assert.equal(svg,expected);
+    const json=JSON.parse(arch.translate(source));json.architecture.views.v.place.doc.at=[`${id}.x+${id}.width`,`${id}.y-${id}.height`];
+    assert.equal(arch.renderToString(json,{idPrefix:'compact'}),svg);
+    assert.equal(arch.renderToString(arch.translate(json),{idPrefix:'compact'}),svg);
+    if(gap==='')for(const file of ['arch.js','arch.min.js']) {
+      const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
+      assert.equal(context.arch.renderToString(source,{idPrefix:'compact'}),svg);
+    }
+  }
+  const arithmetic=arch.layout(doc('place a at ((b.x-b.width)/2,c.y-b.height*2) place b at (400,300) place c at (0,500)'));
+  assert.deepEqual([node(arithmetic,'a').x,node(arithmetic,'a').y],[90,308]);
+  const typo=arch.validate(doc(`place doc at (${id}.x,se0rvice_situationInformationConsolidation.y-${id}.height)`,model));
+  assert.match(typo.diagnostics[0].message,/reference: se0rvice_situationInformationConsolidation;/);
+  assert.match(arch.validate(doc('place a at (b.x-a.width,0) place b at (a.x,0)')).diagnostics[0].message,/Circular placement dependency/);
+});
+
+test('compact arithmetic preserves longer declared dotted/hyphenated IDs, with spaces disambiguating subtraction',()=>{
+  const model=body+' service root "Root" service offset "Offset" service root.x-offset "Long ID"';
+  const at='place root at (300,100) place offset at (0,40) place root.x-offset at (800,500)';
+  const graph=arch.layout(doc(`${at} place a at (root.x-offset.y,0) place b at (root.x - offset.y,0)`,model));
+  assert.equal(node(graph,'a').x,500);assert.equal(node(graph,'b').x,260);
+  assert.match(arch.validate(doc(`${at} place a at (root.x-offset.y,0) style root.x-offset {display none}`,model)).diagnostics[0].message,/reference: root.x-offset;/);
+  const source=doc(`${at} place a at (root.x-offset.y,0) place b at (root.x - offset.y,0)`,model);
+  assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'long-id'}),arch.renderToString(source,{idPrefix:'long-id'}));
+});
+
 test('cycles report coordinate chains including cross-axis, tree membership, automatic context and package sizing',()=>{
   for(const [view,model,pattern]of [
     ['place a at (a.x + 1,0)',body,/a.x -> a.x/],

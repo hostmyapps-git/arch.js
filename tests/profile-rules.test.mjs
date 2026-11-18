@@ -99,3 +99,22 @@ test('profile documentation survives compilation and snapshots, is escaped in he
   assert.doesNotThrow(() => arch.registerProfile('documented-copy', { ...arch.getProfile(schema.id), id: 'documented-copy' }));
   assert.throws(() => arch.registerProfile('bad-docs', { ...schema, id: 'bad-docs', sources: [() => {}] }), /text list/);
 });
+
+test('connection rules accept visible reference evidence without double-counting the same linked counterpart',()=>{
+  const schema={nodeTypes:{owner:{},tool:{},item:{attributes:{owners:{type:'reference',targets:['owner','tool'],many:true}}}},
+    relationTypes:{owns:{from:['owner'],to:['item']}},viewpoints:{v:{connections:[{nodes:['item'],relations:['owns'],direction:'incoming',counterparts:['owner'],referenceAttributes:['owners'],min:1,max:1}]}}};
+  const body='owner a "A" owner b "B" tool t "T" item i "Item"';
+  const doc=(extra='',include='')=>`architecture "Evidence" {model{${body}${extra}} view v "V"{viewpoint v ${include}}}`;
+  const withRefs=(refs,extra='',include='')=>doc(extra,include).replace('item i "Item"',`item i "Item" {owners [${refs}]}`);
+  assert.equal(arch.validate(withRefs('a'),{profile:schema}).valid,true);
+  assert.equal(arch.validate(doc(' relation edge a -> i "Owns" {type owns}'),{profile:schema}).valid,true);
+  assert.equal(arch.validate(withRefs('a',' relation edge a -> i "Owns" {type owns}'),{profile:schema}).valid,true,'same reference and link count once');
+  assert.equal(arch.validate(withRefs('a,a'),{profile:schema}).valid,true,'repeat references count once');
+  assert.equal(arch.validate(withRefs('a,b'),{profile:schema}).valid,false,'distinct references reach max count');
+  assert.equal(arch.validate(withRefs('a',' relation first a -> i "" {type owns} relation second a -> i "" {type owns}'),{profile:schema}).valid,false,'parallel edges keep existing edge-count semantics');
+  assert.equal(arch.validate(withRefs('t'),{profile:schema}).valid,false,'counterpart type filter also applies to references');
+  assert.equal(arch.validate(withRefs('a','','include i'),{profile:schema}).valid,false,'hidden reference cannot satisfy a visible connection rule');
+  assert.equal(arch.validate(doc(),{profile:schema,validation:'draft'}).conformant,false);
+  for(const referenceAttributes of [['missing'],['*']])assert.throws(()=>arch.registerProfile('bad-evidence',{...schema,viewpoints:{v:{connections:[{nodes:['item'],relations:['owns'],referenceAttributes}]}}}),/reference/);
+  assert.throws(()=>arch.registerProfile('bad-evidence',{...schema,viewpoints:{v:{connections:[{nodes:['*'],relations:['owns'],referenceAttributes:['owners']}]}}}),/reference/);
+});

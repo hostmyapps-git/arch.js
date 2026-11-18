@@ -153,17 +153,21 @@ function arrange(items, edges, direction, spacing, places, nodesById) {
 }
 
 function port(box, side, other) {
-  if (typeof side === 'object') return side;
+  let position = 0.5;
+  if (side && typeof side === 'object') {
+    if (!Object.hasOwn(side, 'side')) return side;
+    position = side.position; side = side.side;
+  }
   if (!side || side === 'auto') {
     const dx = other.x + other.width / 2 - box.x - box.width / 2;
     const dy = other.y + other.height / 2 - box.y - box.height / 2;
     side = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'right' : 'left') : (dy >= 0 ? 'bottom' : 'top');
   }
   return {
-    left: { x: box.x, y: box.y + box.height / 2 },
-    right: { x: box.x + box.width, y: box.y + box.height / 2 },
-    top: { x: box.x + box.width / 2, y: box.y },
-    bottom: { x: box.x + box.width / 2, y: box.y + box.height },
+    left: { x: box.x, y: box.y + box.height * position },
+    right: { x: box.x + box.width, y: box.y + box.height * position },
+    top: { x: box.x + box.width * position, y: box.y },
+    bottom: { x: box.x + box.width * position, y: box.y + box.height },
   }[side];
 }
 

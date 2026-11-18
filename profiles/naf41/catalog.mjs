@@ -64,9 +64,17 @@ edge('SchedulesCapability', 'CapabilityProject', 'CapabilityMilestone', 102, 'Pr
 
 // Service structure, explicit state/lifeline/parameter adapters.
 node('ServiceGroup', 'UAFElement', 104, 'A grouping of service specifications.');
+node('PhysicalActiveResource', 'ResourcePerformer', 107, 'Concrete NAF source-vocabulary projection of a physical active resource, as displayed on p.108. It specializes the abstract UAF ResourcePerformer; it is not a synonym for every UAF resource type or an instance of a drawing template.', {
+  template: 'system', styleGroup: 'physical',
+  limitations: ['Concrete arch.js application subtype, not a native UAF 1.0 or ADMBw stereotype. The inherited isStandardConfiguration attribute remains required; choose its boolean value explicitly.'],
+});
 node('ServiceConstraint', 'Rule', 121, 'An individual constraint grouped by a service policy.');
 node('ServiceFunctionParameter', 'ServiceParameter', 119, 'Parameter of a service function.', { attributes: { owner: ref('ServiceFunction'), resource: ref('PhysicalPassiveResource DataElement') } });
-node('ServiceOperationParameter', 'ServiceParameter', 119, 'Parameter of a service operation (ServiceMethod).', { attributes: { owner: ref('ServiceMethod'), resource: ref('PhysicalPassiveResource DataElement') } });
+node('ServiceOperationParameter', 'ServiceParameter', 110, 'Conceptual parameter of one or more service operations. Use incoming HasServiceOperationParameter links or the legacy scalar owner reference. A physical-resource trace is optional in S3; S7 requires it.', {
+  attributes: { owner: ref('ServiceMethod', false), resource: ref('PhysicalPassiveResource DataElement', false) },
+  limitations: ['The p.110 shared parameter is a conceptual reusable parameter, not one UML owned Parameter shared by multiple owners. S3/S7 viewpoint checks require operation association through visible links or owner; optional resource links use InvolvesPhysicalResource.'],
+});
+node('DataProductType', 'DataElement PhysicalPassiveResource', 110, 'Type of a physical data product, as used by the Position Report and Target Track Record in the S3 example. A specialization of UAF DataElement and the application passive-resource category, not a synonym for every DataElement.', { styleGroup: 'physical' });
 node('ServiceState', 'UAFElement', 113, 'A state belonging to a service; distinct from a UAF StateDescription (state machine).', { attributes: { owner: ref('ServiceSpecification') } });
 node('ServiceEvent', 'UAFElement', 113, 'An event relevant to service behavior.');
 node('ServiceMode', 'UAFElement', 113, 'A mode of a service function.', { attributes: { function: ref('ServiceFunction') } });
@@ -75,11 +83,28 @@ node('ServiceReadinessLevel', 'PropertySet', 123, 'A defined service readiness l
 node('ServiceMilestone', 'ProjectMilestone', 123, 'A milestone defining service readiness.', { attributes: { date: { type: 'string', required: true, format: 'date' } } });
 node('ServiceProject', 'Project', 123, 'A project scheduling service milestones.');
 edge('ServiceComposition', 'ServiceSpecification', 'ServiceSpecification', 106, 'Whole service to component service.', { style: 'composition', acyclic: true });
+edge('ServiceAggregation', 'ServiceSpecification', 'ServiceSpecification', 107, 'Whole service to a member service, following aggregates in the S2 cut-out and p.108 example. A separate directed grouping relation, not an alias of ServiceComposition and not exclusive composition ownership.', { style: 'flow', acyclic: true,
+  limitations: ['Binary application projection rendered as a solid directed link. Self-links/cycles are disallowed; multiple aggregating services may reference the same member. Full UML shared-aggregation, ownership and lifecycle semantics are not implemented.'],
+});
 edge('ServiceDependency', 'ServiceSpecification', 'ServiceSpecification', 106, 'Dependent service to required service. Restricted service-to-service subset of the ADMBw relationship.');
+edge('ConsumesService', 'OperationalArchitecture ServiceConsumer', 'ServiceSpecification', 107, 'Logical node or explicit S4 consumer role to the service it consumes. Native UAF Consumes remains OperationalActivity to ServiceSpecification.');
+edge('EnablesService', 'ServiceFunction', 'ServiceSpecification', 107, 'Service function to the service it enables, following the S2 cut-out and p.108 example. The native IsCapableToPerform relation remains service to function.');
+edge('RealizesService', 'ResourcePerformer', 'ServiceSpecification', 107, 'Physical active resource to the service it realizes, following the S2 cut-out and p.108 example. Native Implements retains its UAF endpoint pairs.', { style: 'realization' });
+for (const role of ['ServiceProvider','ServiceConsumer']) node(role, 'UAFElement', 111, `Explicit ${role === 'ServiceProvider' ? 'provider' : 'consumer'} role in the S4 service context. Not an alias of an operational performer or a native UAF stereotype.`, {attributes: {represents: ref('OperationalAgent ResourcePerformer ServiceSpecification', false)}});
+edge('ServiceFunctionAggregation', 'ServiceFunction', 'ServiceFunction', 111, 'Whole function to constituent function. Shared membership is permitted; not UML exclusive ownership or executable activity decomposition.', {style:'flow', acyclic:true});
+edge('ProvidesService', 'ServiceProvider', 'ServiceSpecification', 111, 'Provider role to the service it provides.', {style:'flow'});
+edge('NotifiesServiceProvider', 'ServiceFunction', 'ServiceProvider', 111, 'Service function to the provider role it notifies.', {style:'flow'});
+edge('AccessesServiceFunction', 'ServiceConsumer', 'ServiceFunction', 111, 'Consumer role to the function it accesses.', {style:'flow'});
+edge('SupportsServiceFunction', 'OperationalActivity', 'ServiceFunction', 111, 'Operational activity to the function it supports. Distinct from the inverse enables projection.', {style:'flow'});
+edge('EnablesOperationalActivity', 'ServiceFunction', 'OperationalActivity', 111, 'Service function to the operational activity it enables.', {style:'flow'});
+edge('PerformsOperationalActivity', 'ServiceProvider ServiceConsumer', 'OperationalActivity', 111, 'Provider or consumer role to an operational activity it performs. Native IsCapableToPerform is retained independently.', {style:'flow'});
+for (const name of ['ConsumesService','EnablesService']) relationTypes[name].sources.push(source(111));
 edge('GroupsService', 'ServiceGroup', 'ServiceSpecification', 104, 'Group to member service.');
 edge('AggregatesServiceGroup', 'ServiceGroup', 'ServiceGroup', 104, 'Whole service group to a member group, following the recursive grouping in the S1 cut-out. Acyclic binary membership projection, not strong UML composition.', { acyclic: true });
 edge('SpecifiesServiceInterface', 'ServiceSpecification', 'ServiceInterface', 109, 'Service to specified interface.');
 edge('SpecifiesServiceOperation', 'ServiceInterface', 'ServiceMethod', 109, 'Interface to operation.');
+edge('HasServiceOperationParameter', 'ServiceMethod', 'ServiceOperationParameter', 109, 'Service operation to its conceptual parameter, following has on pp.109–110. The same parameter may be associated with multiple operations; this is not UML exclusive ownership.', { style: 'flow' });
+edge('InvolvesPhysicalResource', 'ServiceOperationParameter', 'PhysicalPassiveResource DataElement', 109, 'Service operation parameter to the physical passive resource or data product it involves, following pp.109–110. Data Model trace is indirect through that resource; DataModel is not a valid direct target.', { style: 'flow' });
 edge('ServicePolicySatisfiedBy', 'ServicePolicy', 'ServiceSpecification', 104, 'Policy to a service satisfying it. Retained inverse application relationship; use SatisfiesServicePolicy for the service-to-policy direction shown on pp.104–105.');
 edge('SatisfiesServicePolicy', 'ServiceSpecification', 'ServicePolicy', 104, 'Service to the policy it satisfies, following the S1 cut-out and p.105 example. ServicePolicySatisfiedBy remains the explicit inverse application relationship.');
 edge('GroupsServiceConstraint', 'ServicePolicy', 'ServiceConstraint', 121, 'Policy to member constraint.');
@@ -240,12 +265,32 @@ view('S1', 'Service Taxonomy', 104, 'Service specialization taxonomy. Service is
     'SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.',
     'GroupsService connects a ServiceGroup to a member service; AggregatesServiceGroup connects a group to a member group. The latter disallows self-links/cycles as an application rule, without imposing single-parent ownership or strong composition.',
     'Use a Connected view with a ServiceGeneralization-only tree group when policy/group context is present. A whole-view tree may filter to ServiceGeneralization, omitting non-hierarchy edges.']);
-view('S2', 'Service Structure', 106, 'Service composition and dependencies; optional interfaces, functions and implementations.', 'ServiceSpecification ServiceGroup ServiceInterface ServiceFunction OperationalAgent ResourcePerformer', 'ServiceComposition ServiceDependency GroupsService SpecifiesServiceInterface IsCapableToPerform Consumes Exhibits Implements', 'ServiceSpecification', 'ServiceDependency', [connect('ServiceSpecification','ServiceComposition ServiceDependency','either')]);
-view('S3', 'Service Interfaces', 109, 'Services specify their interfaces, operations and typed operation parameters.', 'ServiceSpecification ServiceInterface ServiceMethod ServiceOperationParameter PhysicalPassiveResource DataElement', 'SpecifiesServiceInterface SpecifiesServiceOperation', 'ServiceSpecification ServiceInterface', 'SpecifiesServiceInterface', [connect('ServiceSpecification','SpecifiesServiceInterface'), connect('ServiceInterface','SpecifiesServiceInterface','incoming')], [visible('ServiceOperationParameter','owner resource')]);
-view('S4', 'Service Functions', 111, 'Functions enabling service specifications.', 'ServiceSpecification ServiceFunction OperationalAgent OperationalActivity', 'IsCapableToPerform Consumes', 'ServiceSpecification ServiceFunction', 'IsCapableToPerform', [connect('ServiceSpecification','IsCapableToPerform','outgoing','ServiceFunction'), connect('ServiceFunction','IsCapableToPerform','incoming','ServiceSpecification')]);
+view('S2', 'Service Structure', 106, 'Service aggregation, composition and dependencies; optional interfaces, functions, logical nodes and physical realizations.', 'ServiceSpecification ServiceGroup ServiceInterface ServiceFunction OperationalAgent OperationalActivity ResourcePerformer', 'ServiceAggregation ServiceComposition ServiceDependency GroupsService SpecifiesServiceInterface IsCapableToPerform Consumes Exhibits Implements ConsumesService EnablesService RealizesService', 'ServiceSpecification', 'ServiceDependency', [connect('ServiceSpecification','ServiceAggregation ServiceComposition ServiceDependency','either')], [],
+  ['Node is an alias of the application LogicalNode, a subtype of OperationalArchitecture. This models the logical grouping/architecture meaning of a NAF Node, not a physical System, runtime instance or drawing template.',
+    'The pp.107–108 directions are node to service (ConsumesService), function to service (EnablesService), and physical active resource to service (RealizesService). Native Consumes, IsCapableToPerform and Implements are unchanged; they are not interchangeable aliases of these adapters.',
+    'ServiceAggregation projects whole service to member service (aggregates in the source), with a solid directed link and no exclusive ownership. ServiceComposition remains a separate relationship with composition notation. Both reject cycles/self-links; full UML ownership/lifecycle semantics are not implemented. ServiceDependency remains dependent service to required service.',
+    'Per-service structural checks count ServiceAggregation/ServiceComposition/ServiceDependency, not optional node/function/resource traces. Service Consumer and Service Provider role projections and their relies-on/provides/delivers relationships are not yet implemented as dedicated NAF concepts; do not substitute generic nodes or native Consumes for those roles.']);
+viewpoints.S2.sources.push(source('107–108'));
+view('S3', 'Service Interfaces', 109, 'Services specify interfaces and optional operations with shared conceptual parameters and optional physical data-product traces.', 'ServiceSpecification ServiceInterface ServiceMethod ServiceOperationParameter PhysicalPassiveResource DataElement DataModel', 'SpecifiesServiceInterface SpecifiesServiceOperation HasServiceOperationParameter InvolvesPhysicalResource SpecifiesData', 'ServiceSpecification ServiceInterface', 'SpecifiesServiceInterface', [connect('ServiceSpecification','SpecifiesServiceInterface'), connect('ServiceInterface','SpecifiesServiceInterface','incoming'),
+  connect('ServiceMethod','SpecifiesServiceOperation','incoming','ServiceInterface'),
+  { ...connect('ServiceOperationParameter','HasServiceOperationParameter','incoming','ServiceMethod'), referenceAttributes: ['owner'] }], [visible('ServiceOperationParameter','owner resource')],
+  ['ServiceOperation is an application-profile vocabulary alias of UAF ServiceMethod (a UML Operation stereotype). DataProductType is a separate DataElement/PhysicalPassiveResource specialization. Native UAF and ADMBw definitions are unchanged.',
+    'HasServiceOperationParameter runs from operation to parameter; InvolvesPhysicalResource runs from parameter to a physical passive resource/data product. The p.110 Geographic Location parameter is shared by two operations. These are conceptual associations, not exclusive UML Parameter ownership.',
+    'Legacy owner/resource references remain valid and, when provided, must be visible. An owner reference can satisfy the required operation association instead of a has link; identical link/reference evidence is counted once. S3 does not require a resource for every parameter, matching the Resource parameter in p.110.',
+    'An optional DataModel trace uses SpecifiesData from model to DataElement/DataProductType. A parameter does not link directly to a DataModel. Full UML operation signatures, parameter ordering/directions and consistency between simultaneous link/reference declarations require review.']);
+viewpoints.S3.sources.push(source(110));
+view('S4', 'Service Functions', 111, 'Functions enabling services, recursive function aggregation, provider/consumer roles and operational activity context.',
+  'ServiceSpecification ServiceFunction ServiceProvider ServiceConsumer OperationalAgent OperationalActivity',
+  'IsCapableToPerform Consumes EnablesService ServiceFunctionAggregation ProvidesService ConsumesService NotifiesServiceProvider AccessesServiceFunction SupportsServiceFunction EnablesOperationalActivity PerformsOperationalActivity',
+  'ServiceSpecification ServiceFunction', '', [connect('ServiceSpecification','EnablesService IsCapableToPerform','either','ServiceFunction'),
+    {...connect('ServiceFunction','EnablesService IsCapableToPerform','either','ServiceSpecification'), through:{relations:['ServiceFunctionAggregation'],direction:'incoming'}}], [],
+  ['Each selected function must enable a selected service directly or through selected aggregating ancestors. Legacy service-to-function IsCapableToPerform remains accepted. This is contextual coverage, not inheritance of behavior or implicit model edges.',
+   'Provider and consumer are explicit contextual application roles, with optional represents references. Cut-out links are directed structural projections; no execution, notification delivery, exclusive ownership or full UML activity decomposition is asserted.']);
 view('S5', 'Service States', 113, 'Service states, transitions, events and function modes.', 'ServiceSpecification ServiceState ServiceEvent ServiceMode ServiceFunction', 'ServiceStateTransition EnablesServiceMode IsCapableToPerform', 'ServiceSpecification ServiceState', 'ServiceStateTransition', [connect('ServiceState','ServiceStateTransition','either')], [visible('ServiceState','owner'), visible('ServiceMode','function')], ['Transition guards, state ownership consistency, reachability and execution are not evaluated.']);
 view('S6', 'Service Sequence', 116, 'Ordered interactions between lifelines representing services.', 'ServiceSpecification ServiceLifeline ServiceEvent ServiceFunction ServiceInterface ServiceMethod', 'ServiceInteraction IsCapableToPerform SpecifiesServiceInterface SpecifiesServiceOperation', 'ServiceSpecification ServiceLifeline', 'ServiceInteraction', [connect('ServiceLifeline','ServiceInteraction','either')], [visible('ServiceLifeline','represents')], ['Order is a positive integer; UML interaction fragments, time semantics and unique sequence positions require review.']);
-view('S7', 'Service Interface Parameters', 119, 'Operation/function parameters reference their owner and passive resource.', 'ServiceParameter ServiceFunction ServiceMethod PhysicalPassiveResource DataElement ServiceSpecification ServiceInterface', 'SpecifiesServiceInterface SpecifiesServiceOperation IsCapableToPerform', 'ServiceParameter', '', [], [visible('ServiceOperationParameter','owner resource'), visible('ServiceFunctionParameter','owner resource')], ['Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection.']);
+view('S7', 'Service Interface Parameters', 119, 'Operation/function parameters reference their owner and passive resource.', 'ServiceParameter ServiceFunction ServiceMethod PhysicalPassiveResource DataElement ServiceSpecification ServiceInterface', 'SpecifiesServiceInterface SpecifiesServiceOperation IsCapableToPerform HasServiceOperationParameter InvolvesPhysicalResource', 'ServiceParameter', '', [
+  { ...connect('ServiceOperationParameter','HasServiceOperationParameter','incoming','ServiceMethod'), referenceAttributes: ['owner'] },
+  { ...connect('ServiceOperationParameter','InvolvesPhysicalResource','outgoing','PhysicalPassiveResource DataElement'), referenceAttributes: ['resource'] }], [visible('ServiceOperationParameter','owner resource'), visible('ServiceFunctionParameter','owner resource')], ['Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Operation parameters may use explicit has/involves links instead of owner/resource references; S7 requires both associations, whereas S3 makes the resource trace optional.']);
 // The abstract parameter category excludes an unqualified ServiceParameter as a substitute.
 node('ServiceInterfaceParameter', 'UAFElement', 119, 'Abstract parameter category for S7.', { abstract: true });
 nodeTypes.ServiceOperationParameter.extends.push('ServiceInterfaceParameter');
@@ -293,7 +338,7 @@ relationTypes.LogicalInteraction.sources.push(source(132));
 relationTypes.LogicalInteraction.description += ' The default connected presentation uses reference cards attached to the flow, following the example on page 132 with the original arch.js templates and colors.';
 
 export const definition = {
-  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.10', extends: 'uaf@1.0.0-arch.1',
+  id: 'naf41-uaf', title: 'NAFv4.1 · UAF-based structural application profile', version: '4.1.0-arch.14', extends: 'uaf@1.0.0-arch.1',
   description: 'All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.',
   sources: [source('78–82, 88–190'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — inherited UAF 1.0 catalog', 'ReferenceDocs/nafv4/NAFv4-ADMBw-MDG-2026.05.xml — supporting comparison only; its declared foundation is NAF 4.0'],
   limitations: [mappingLimit, 'No certification or complete NAF/UAF conformance is claimed. All 47 IDs are covered structurally, not all normative semantics.', 'The inherited UAF coverage report still applies, including deferred native constraints. Application adapters are identified in type help.', 'Only included view elements/links count toward viewpoint connection rules. Typed references resolve in the model; designated structural references must also be visible.', 'NAF methodology, stakeholder approval, full state/sequence execution semantics and qualitative completeness require human review. See profiles/naf41/COVERAGE.md.'],
@@ -302,6 +347,16 @@ export const definition = {
     description: 'NAF S1 vocabulary resolved to UAF 1.0 ServiceSpecification in this application profile. ActualService remains distinct.',
     sources: [source('104–105'), 'https://issues.omg.org/issues/UAF12-33'],
     limitations: ['UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence.'],
+  }, Node: {
+    target: 'LogicalNode',
+    description: 'NAF S2/L1 Node vocabulary for the existing logical-node application type. Its UAF projection is OperationalArchitecture through LogicalNode, not OperationalPerformer or a physical System.',
+    sources: [source('107–108, 126–127')],
+    limitations: ['Explicit arch.js application mapping. This is not a native UAF or ADMBw stereotype named Node, nor an assertion that every OperationalArchitecture must be called Node.'],
+  }, ServiceOperation: {
+    target: 'ServiceMethod',
+    description: 'NAF S3 operation vocabulary resolved to UAF 1.0 ServiceMethod, which extends UML Operation. This alias retains the native runtime rules and written source name.',
+    sources: [source('109–110'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod, base_Operation'],
+    limitations: ['Application vocabulary mapping, not a claim that all native UML operation-owner, method and ownedParameter constraints are implemented.'],
   } } },
   mappings: [{ kind: 'node', relationship: 'equivalent',
     source: { framework: 'NAF', version: '4.1', type: 'Service' },
@@ -313,6 +368,26 @@ export const definition = {
     target: { framework: 'UAF', version: '1.2', type: 'Service' },
     description: 'Documented UAF rename. Descriptive only: other service concepts and relationships also changed in UAF 1.2.',
     sources: ['https://issues.omg.org/issues/UAF12-33'], limitations: ['No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted.'],
+  }, { kind: 'node', relationship: 'specialization',
+    source: { framework: 'NAF', version: '4.1', type: 'Node' },
+    target: { framework: 'UAF', version: '1.0', type: 'OperationalArchitecture' },
+    description: 'Application projection of NAF logical grouping nodes through LogicalNode extends OperationalArchitecture. Node is a vocabulary alias of LogicalNode within arch.js, not an alias of the entire UAF OperationalArchitecture category.',
+    sources: [source('107–108, 126–127')], limitations: [mappingLimit],
+  }, { kind: 'node', relationship: 'specialization',
+    source: { framework: 'NAF', version: '4.1', type: 'PhysicalActiveResource' },
+    target: { framework: 'UAF', version: '1.0', type: 'ResourcePerformer' },
+    description: 'Concrete application subtype for the NAF example vocabulary. ResourcePerformer remains abstract and retains its native attributes; this is deliberately not an alias.',
+    sources: [source('107–108')], limitations: [mappingLimit],
+  }, { kind: 'node', relationship: 'equivalent',
+    source: { framework: 'NAF', version: '4.1', type: 'ServiceOperation' },
+    target: { framework: 'UAF', version: '1.0', type: 'ServiceMethod' },
+    description: 'Application-profile operation vocabulary equivalence. Native ServiceMethod extends UML Operation; deferred native ownership/method constraints remain outside the structural projection.',
+    sources: [source('109–110'), 'ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod'], limitations: [mappingLimit],
+  }, { kind: 'node', relationship: 'specialization',
+    source: { framework: 'NAF', version: '4.1', type: 'DataProductType' },
+    target: { framework: 'UAF', version: '1.0', type: 'DataElement' },
+    description: 'Concrete application subtype for a physical data product type. It also specializes the application PhysicalPassiveResource category; it is not an alias for all UAF DataElements.',
+    sources: [source(110)], limitations: [mappingLimit],
   }],
   requireViewpoint: true, defaultRelation: null, nodeTypes, relationTypes, viewpoints,
 };

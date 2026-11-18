@@ -326,12 +326,26 @@ export function compileProfile(definition, fallbackId) {
     if (raw.connections !== undefined) {
       if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: invalid connections`);
       result.connections = raw.connections.map(check => {
-        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'direction', 'min', 'max'], `${name}.connections`);
+        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'referenceAttributes', 'through', 'direction', 'min', 'max'], `${name}.connections`);
         const value = { nodes: names(check.nodes, name), relations: names(check.relations, name), direction: check.direction ?? 'either',
           ...cardinality({ min: check.min ?? 1, max: check.max }, `${name}.connections`) };
         if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: invalid connection direction`);
         if (check.counterparts !== undefined) { value.counterparts = names(check.counterparts, name); knownNodes(value.counterparts, name); }
         if (check.nodesExclude !== undefined) { value.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true); knownNodes(value.nodesExclude, name); }
+        if (check.through !== undefined) {
+          keys(check.through, ['relations', 'direction'], `${name}.through`);
+          value.through = {relations: names(check.through.relations, `${name}.through.relations`), direction: check.through.direction ?? 'incoming'};
+          knownEdges(value.through.relations, name);
+          if (value.through.relations.includes('*') || !['incoming','outgoing'].includes(value.through.direction)) fail(`${name}: through requires explicit relationship types and incoming or outgoing direction`);
+        }
+        if (check.referenceAttributes !== undefined) {
+          value.referenceAttributes = names(check.referenceAttributes, `${name}.referenceAttributes`);
+          if (value.nodes.includes('*') || value.referenceAttributes.includes('*')) fail(`${name}: referenceAttributes require explicit node and attribute names`);
+          for (const type of value.nodes) {
+            knownNodes([type], name);
+            for (const attr of value.referenceAttributes) if (nodeTypes[type].attributes[attr]?.type !== 'reference') fail(`${name}: ${type}.${attr} must be a reference attribute`);
+          }
+        }
         knownNodes(value.nodes, name); knownEdges(value.relations, name); return value;
       });
     }
@@ -616,10 +630,25 @@ export function profileDiagnostics(model, profile) {
     for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id,incomplete:true });
     for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id,incomplete:true });
     for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)&&!matches(node.type,check.nodesExclude??[],profile.nodeTypes)) {
-      const count = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
-        (((check.direction !== 'incoming'||edge.direction==='both') && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
-         ((check.direction !== 'outgoing'||edge.direction==='both') && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))))).length;
-      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id,...(count<check.min?{incomplete:true}:{}) });
+      const origins = new Set([node.id]);
+      if (check.through) {
+        const adjacent = new Map();
+        for (const edge of selectedEdges) if (matches(edge.type ?? profile.defaultRelation, check.through.relations, profile.relationTypes)) {
+          const from = check.through.direction === 'incoming' ? edge.target : edge.source;
+          const to = check.through.direction === 'incoming' ? edge.source : edge.target;
+          if (!adjacent.has(from)) adjacent.set(from, []);
+          adjacent.get(from).push(to);
+        }
+        for (const id of origins) for (const next of adjacent.get(id) ?? []) origins.add(next);
+      }
+      const connected = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
+        (((check.direction !== 'incoming'||edge.direction==='both') && origins.has(edge.source) && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
+         ((check.direction !== 'outgoing'||edge.direction==='both') && origins.has(edge.target) && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))));
+      const endpoints = new Set(connected.map(edge => origins.has(edge.source) ? edge.target : edge.source));
+      const references = new Set([...origins].flatMap(id => (check.referenceAttributes ?? []).flatMap(attr => [nodes.get(id)?.attributes?.[attr]].flat())).filter(id =>
+        typeof id === 'string' && visible.has(id) && (!check.counterparts || matches(nodes.get(id)?.type, check.counterparts, profile.nodeTypes))));
+      const count = connected.length + [...references].filter(id => !endpoints.has(id)).length;
+      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}${check.through ? `; directly or through ${check.through.direction} ${check.through.relations.join(', ')}` : ''}${check.referenceAttributes ? `; reference attributes: ${check.referenceAttributes.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id,...(count<check.min?{incomplete:true}:{}) });
     }
     for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
       for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter(v => typeof v === 'string')) if (!visible.has(id))

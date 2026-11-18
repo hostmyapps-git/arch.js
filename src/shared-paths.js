@@ -23,6 +23,7 @@ export function shareEdgePaths(edges,nodes,routes,path) {
   const boxes=new Map(nodes.map(n=>[n.id,n])),used=new Set(),shared=[];
   const eligible=edge=>{
     const r=routes.get(edge.id)??{};
+    // Preserve explicit docking positions, including positioned side objects.
     return !used.has(edge.id)&&['all','stereotypes'].includes(r.sharePath)&&edge.source!==edge.target
       &&r.path===undefined&&r.via===undefined&&!['straight','bezier'].includes(r.curve)
       &&typeof r.from!=='object'&&typeof r.to!=='object';

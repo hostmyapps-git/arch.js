@@ -123,12 +123,29 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
 - Relations-`pairs`: alternative `{ from, to, fromExclude?, toExclude? }`-Paare,
   zusätzlich zu globalen Endpunktregeln. `acyclic` prüft gerichtete Zyklen
   einschließlich abgeleiteter Relationstypen über das ganze Modell.
-- Viewpoint-`connections`: `{ nodes, nodesExclude?, relations, counterparts?, direction, min, max }` prüft
+- Viewpoint-`connections`: `{ nodes, nodesExclude?, relations, counterparts?, referenceAttributes?, through?, direction, min, max }` prüft
   Beziehungen mit sichtbaren Endpunkten pro sichtbarem passendem Knoten.
   `counterparts` filtert optional den Gegenstellentyp einschließlich Vererbung.
   `nodesExclude` nimmt passende Typen einschließlich Untertypen aus dieser
   Einzelknotenregel aus; Zulässigkeit, globale Pflichtinhalte und andere Regeln
   bleiben aktiv. C7 verwendet dies für optionale EffectivenessCriteria.
+  `referenceAttributes` lässt zusätzlich ausgewählte skalare/mehrwertige
+  Referenzwerte als Gegenstellen-Nachweis zählen. Nur zur View-Auswahl gehörige
+  IDs mit passendem `counterparts`-Typ zählen. Referenz-IDs werden untereinander
+  und gegen bereits durch passende Kanten gezählte Gegenstellen dedupliziert;
+  parallele explizite Kanten behalten ihre bisherige Einzelzählung. Die Attribute
+  müssen als Referenzen definiert sein; Wildcards für nodes/Attributnamen sind
+  dabei unzulässig. Referenzen erzeugen keine automatischen Modellkanten.
+  `through: {relations, direction: "incoming"|"outgoing"}` erweitert den Nachweis
+  auf transitiv erreichbare Knoten entlang ausgewählter Kanten der explizit
+  genannten Relationstypen (einschließlich Untertypen). Standard incoming;
+  Wildcards sind unzulässig. Startknoten und erreichbare Knoten zählen gemeinsam,
+  dieselbe Nachweiskante nur einmal, auch bei mehreren Pfaden. Referenzattribute
+  werden gegebenenfalls ebenfalls an diesen Knoten ausgewertet. Es entstehen
+  keine Modellkanten. View-Auswahl und Gegenstellentypfilter bleiben wirksam;
+  display none ändert die semantische Auswahl nicht. Ein visited-Set beendet
+  auch zyklische generische Durchläufe; Zyklenverbote bestimmen die Relationsregeln.
+  S4 verwendet dies zur Serviceabdeckung über aggregierende Funktionsvorfahren.
 - Viewpoint-`references`: `{ nodes | relations, attributes }` verlangt sichtbare
   Zielknoten für ausgewählte skalare/mehrwertige Referenzattribute. Optionale
   fehlende Werte bleiben erlaubt; Pflichtwerte bestimmt das Attributschema.
@@ -190,12 +207,12 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.10`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.14`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 74 zusätzliche Knotentypen und
-100 zusätzliche Relationen ergeben mit dem Basisprofil 287 Knoten- und
-143 Relationstypen. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter: 78 zusätzliche Knotentypen und
+113 zusätzliche Relationen ergeben mit dem Basisprofil 291 Knoten- und
+156 Relationstypen sowie drei Knotennamen als Aliase. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
@@ -242,6 +259,21 @@ Letztere verbietet Selbstbezüge und Zyklen als Anwendungsregel, ohne starken Be
 oder Single-Parent-Semantik. ServicePolicy.ruleKind bleibt Pflicht; der Beispielwert
 Constraint ist eine explizite Wahl und steht nicht im PDF. Das vollständige
 S1-Beispiel nutzt Connected samt gefilterter Tree-Gruppe und externer Policy.
+
+S2 verwendet `Node` als Alias des bisherigen `LogicalNode`-Adapters
+(`extends OperationalArchitecture`). `PhysicalActiveResource` ist ein konkreter
+Untertyp von `ResourcePerformer` mit geerbtem Pflichtfeld
+`isStandardConfiguration`; ein Alias würde die abstrakte Basis nicht
+instanziierbar machen. `ConsumesService` (Node → Service), `EnablesService`
+(ServiceFunction → Service) und `RealizesService` (ResourcePerformer → Service)
+bilden die Richtungen von S.107–108 ab. Native Consumes, IsCapableToPerform und
+Implements bleiben unverändert. ServiceAggregation bildet die aggregates-Kanten
+als eigenständige gerichtete Gruppierung ab; ServiceComposition bleibt separat
+mit Kompositionsnotation erhalten. Aggregation erlaubt gemeinsam referenzierte
+Mitglieder. Beide Beziehungen verbieten jeweils Selbstbezüge/Zyklen;
+vollständige UML-Besitz-/Lebenszyklussemantik ist nicht implementiert. Die speziellen
+Consumer-/Provider-Rollen samt relies-on/provides/delivers aus dem Cut-out
+bleiben offen. Beispiel: [Service Structure](examples/naf41-service-structure.arch).
 
 Der C2-Cut-out auf S.90 zeigt `desires` von EnterprisePhase zu Capability,
 EnterpriseVision und Goal. Dafür stehen `DesiresCapability`, `DesiresVision`
@@ -532,6 +564,14 @@ architecture "Customer platform" {
 - `place`-Koordinaten akzeptieren Rechnungen mit `+`, `-`, `*`, `/` aus Zahlen und
   `ID.x`, `.y`, `.width`, `.height`, `.right`, `.bottom`, `.centerX`, `.centerY`.
   Beispiel: `place maritime at (coverage.x + 20, vision.y - 40)`.
+  Subtraktionen zwischen Referenzen funktionieren auch ohne Leerzeichen:
+  `place doc at (service.x+service.width,service.y-service.height)`.
+  Da IDs Punkte/Bindestriche enthalten dürfen, hat die längste passende
+  deklarierte ID Vorrang. Bei einer ID `root.x-offset` bezeichnet
+  `root.x-offset.y` deren y-Koordinate; `root.x - offset.y` erzwingt dagegen
+  die Subtraktion. Bindung berücksichtigt auch verborgene deklarierte IDs,
+  damit ein ausgeblendeter Anker nicht als andere Rechnung umgedeutet wird.
+  Die Regeln gelten gleichermaßen für `place`, `via`, DSL und JSON.
   Referenzen gelten für sichtbare Nodes/Tree-Gruppen derselben View, inklusive
   automatisch angeordneter Mitglieder. Punkt vor Strich; gleichrangige Operatoren
   werden linksassoziativ ausgewertet. Klammern und unäre Vorzeichen sind möglich.
@@ -647,7 +687,7 @@ architecture "Customer platform" {
   Kurvenart und gemeinsamer Start-/Zielport müssen kompatibel sein.
   Nur Geschwisterknoten desselben Containers werden gebündelt. Fan-in wird zuerst
   verarbeitet; jede Kante gehört höchstens einem Bündel an. Manuelle `via`/`path`,
-  absolute Endpunkte, `straight`/`bezier`, parallele Verbindungen, Hindernisse
+  absolute Endpunkte, explizit positionierte Seitenports, `straight`/`bezier`, parallele Verbindungen, Hindernisse
   oder unzureichender Labelplatz behalten das bisherige Routing. Gemeinsame
   Junctions sind rechtwinklig, auch bei `rounded`. IDs und Labels/Icons bleiben
   pro Beziehung; automatische Labels liegen auf privaten Ästen, explizite
@@ -695,6 +735,19 @@ architecture "Customer platform" {
   Ausgeblendete Labels bilden keine Hindernisse und vergrößern die SVG-Grenzen
   nicht. Unterstützt auch freie und Bezier-Pfade.
 - Ports: `auto|top|right|bottom|left` oder absolutes Tupel `(X,Y)`.
+  Die vier festen Seiten akzeptieren eine optionale Position: `from bottom 1/2
+  to left 0.25`. Werte sind Dezimalzahlen oder Brüche (`1/2`, auch `1 / 2`),
+  ausgewertet im geschlossenen Bereich 0–1; Division durch null ist ungültig.
+  `top`/`bottom` zählen von links nach rechts, `left`/`right` von oben nach unten.
+  Ohne Position gilt 0.5, bei 0/1 die jeweilige Ecke. `auto` akzeptiert keinen
+  Positionswert. Relative Ports folgen den endgültigen Knotenmaßen und -positionen.
+  In `routes` gelten dieselben Angaben; ein konkretes from/to ersetzt den ganzen
+  Endpunkt einschließlich Position. `from left` setzt daher eine geerbte Position
+  auf die linke Seitenmitte zurück. Gilt auch für Paketknoten und Kanten in
+  Tree-Gruppen innerhalb von Connected-Views. Bei Zuordnungspfeilen ist `from`
+  ein solcher Kartenport; `to 1/2` bleibt ein Anteil am Zielrelationspfad.
+  Intern sind positionierte Ports `{side, position}`, Brüche werden numerisch
+  normalisiert. Absolute Endpunkttupel bleiben rein numerisch; `path` hat Vorrang.
   Wegpunkte und Labelpositionen sind **absolute** Diagrammkoordinaten.
 - Kurven: `orthogonal` (Standard), `straight`, `rounded`, `bezier`.
   Wegpunkte werden bei orthogonal/straight/rounded exakt durchlaufen;
@@ -1158,3 +1211,23 @@ NAF Revision 10 verwendet `Service → ServiceSpecification` als Alias und binde
 semantischen Knotentyp. Goal und Constraint bleiben fachlich zu prüfende
 Untertypen. Vollständiges Format und Migrationsgrenzen:
 [ALIASES.md](profiles/naf41/ALIASES.md).
+
+## S3: Operationen und Datenprodukttypen
+
+Seit `naf41-uaf@4.1.0-arch.13` ist ServiceOperation ein Alias von UAF ServiceMethod
+(UML Operation). DataProductType spezialisiert DataElement und
+PhysicalPassiveResource. HasServiceOperationParameter verbindet Operation →
+konzeptionellen Parameter; InvolvesPhysicalResource verbindet Parameter →
+physische passive Ressource. Ein Parameter darf wie auf S.110 von mehreren
+Operationen verwendet werden. Das ist keine exklusive UML-Parameter-Ownership.
+
+ServiceOperationParameter.owner/resource bleiben typisierte optionale Felder.
+S3 verlangt die Operationszuordnung über has oder eine ausgewählte owner-
+Referenz; ein Ressourcenbezug ist optional. S7 verlangt beide Zuordnungen
+über Kanten oder Referenzen. Außerhalb dieser Viewpoints erzwingen die optionalen
+Attribute keine Zuordnung. ServiceFunctionParameter bleibt unverändert.
+DataModel-Bezüge verlaufen über das Datenprodukt (SpecifiesData), nicht durch
+eine direkte Parameter→DataModel-Kante. Native DataModel.kind bleibt Pflicht.
+Das [S3-Beispiel](examples/naf41-service-interfaces.arch) ist mit allen neun
+Knoten und neun Kanten ausführbar; Signaturen, Parameterreihenfolge/-richtung
+und Konsistenz gleichzeitig angegebener Referenzen/Kanten bleiben offen.

@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.10` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.14` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -58,7 +58,7 @@ not complete UAF 1.2 compatibility or an import of the ADMBw MDG.
 See [aliases, metamodel mappings and migration](ALIASES.md),
 `@help aliases naf41-uaf` and `@help mappings naf41-uaf`.
 The profile pins `uaf@1.0.0-arch.1`; select this revision explicitly with
-`config { profile "naf41-uaf@4.1.0-arch.10" }` when needed.
+`config { profile "naf41-uaf@4.1.0-arch.14" }` when needed.
 
 | Source relationship | arch.js type | Direction |
 |---|---|---|
@@ -155,9 +155,134 @@ architecture "Profile help" {
 Help displays the title, English explanation, source page, rule definitions
 and limitations. An abstract type such as `OperationalAgent` also lists
 concrete candidates. Use `OperationalPerformer` for an actor and
-`OperationalArchitecture` or its convenience subtype `LogicalNode` for a
+`Node`, its canonical application type `LogicalNode`, or `OperationalArchitecture` for a
 logical node. Relationship help checks type compatibility; the selected
 viewpoint can impose further restrictions.
+
+## S2 — Service Structure (pp.106–108)
+
+`Node` is a vocabulary alias of the existing `LogicalNode` application subtype
+of UAF OperationalArchitecture. It is not a physical resource or a drawing
+primitive. The alias also works in existing L1/L2 projections through the
+same inherited logical-node rules. It does not equate all OperationalArchitecture
+subtypes with Node.
+
+`PhysicalActiveResource` is a **concrete application subtype** of the abstract
+UAF ResourcePerformer. It deliberately is not an alias: an alias would retain
+ResourcePerformer's abstract flag. Native UAF and ADMBw do not gain either new
+name. The required native `isStandardConfiguration` boolean remains explicit:
+
+```arch
+PhysicalActiveResource airTraffic "Air Traffic Control System" {
+  isStandardConfiguration false
+}
+```
+
+The example chooses false; change it if the resource represents a standard
+configuration. Native concrete types such as System remain usable.
+
+| Source link | Relationship type | Direction |
+|---|---|---|
+| depends on | `ServiceDependency` | Dependent service → required service |
+| aggregates | `ServiceAggregation` | Whole service → component service |
+| specifies | `SpecifiesServiceInterface` | Service → interface |
+| consumes | `ConsumesService` | Logical node → service |
+| enables | `EnablesService` | Service function → service |
+| realizes | `RealizesService` | Physical active resource → service |
+
+The last three are source-directed application projections. Native UAF
+Consumes still starts at OperationalActivity; IsCapableToPerform runs from
+service to function; Implements keeps its native endpoint pairs. They are not
+aliases of the new relationships and their validation rules are unchanged.
+ServiceAggregation is a separate whole-to-member grouping relation, rendered
+as a solid directed link. It rejects self-links/cycles and permits multiple
+aggregating services to reference the same member. It is not an alias of
+ServiceComposition, which remains supported with composition notation. Neither
+relationship implements full UML ownership/lifecycle semantics.
+
+[The complete S2 example](../../examples/naf41-service-structure.arch) reproduces
+p.108's nine elements and eight relationships, including all five services.
+It validates in strict mode and uses ordinary Connected placement/routing.
+It is also available as **NAFv4.1 · Service Structure** in the demo.
+
+Service dependencies and structural connections (ServiceAggregation,
+ServiceComposition or ServiceDependency) remain mandatory; optional
+consumption/enabling/realization traces cannot satisfy those requirements.
+ServiceProvider and ServiceConsumer now exist for S4 (see below). Their admission
+and the complete relies-on/provides/delivers context of the wider p.107 S2
+cut-out remain outside the S2 mapping.
+This change covers the complete p.108 example, not every optional S2 construct.
+
+Help: `@help types naf41-uaf Node`,
+`@help types naf41-uaf PhysicalActiveResource`,
+`@help connections naf41-uaf Node`, `@help viewpoints naf41-uaf S2`.
+Use one help query per document.
+
+## S3 — Service Interfaces (pp.109–110)
+
+`ServiceOperation` is an application-profile vocabulary alias of UAF
+`ServiceMethod`. The native stereotype extends UML Operation; this alias does
+not assert that every UML owner/method/ownedParameter constraint is implemented.
+`DataProductType` is a concrete application specialization of both DataElement
+and PhysicalPassiveResource. Position Report and Target Track Record are named
+model elements of that type, not runtime report instances. The italic Physical
+Passive Resource category in the cut-out is concretized by the data-product type
+in the example; other passive resource types remain distinct.
+
+| Source link | Relationship type | Direction |
+|---|---|---|
+| specifies | `SpecifiesServiceInterface` | Service → interface |
+| specifies | `SpecifiesServiceOperation` | Interface → operation |
+| has | `HasServiceOperationParameter` | Operation → conceptual parameter |
+| involves | `InvolvesPhysicalResource` | Parameter → physical passive resource / data product |
+
+The [complete p.110 example](../../examples/naf41-service-interfaces.arch)
+contains nine elements and nine relationships. One Geographic Location
+parameter is associated with two operations. The Resource parameter has no
+resource trace, as in the source. This is a conceptual reusable parameter,
+not a single UML owned Parameter shared between two exclusive owners.
+The demo entry is **NAFv4.1 · Service Interfaces**.
+
+```arch
+ServiceOperation submit "Submit location"
+ServiceOperationParameter location "Geographic Location"
+DataProductType report "Position Report"
+relation argument submit -> location "has" { type HasServiceOperationParameter }
+relation payload location -> report "involves" { type InvolvesPhysicalResource }
+```
+
+This is a model fragment. A strict S3 view also needs its service/interface and
+specifying relationships; use the complete example for a standalone document.
+Every operation selected in S3 must have its specifying interface link; an
+operation shown only as disconnected context now produces an incomplete-view
+notice. This tightens the earlier S3 rule, which did not check operation
+association. Use draft validation while constructing that link.
+
+Legacy scalar `owner` and `resource` attributes remain accepted on
+ServiceOperationParameter, with their previous reference target types. Their
+requiredness is now contextual: S3 requires an operation association, supplied
+by a visible has link or a selected owner reference. S3 resource tracing is
+optional; S7 requires both the operation and resource associations. Explicit
+reference values must still be correctly typed and selected in the view.
+A reference and a matching edge do not count the same counterpart twice.
+Outside S3/S7, the optional attributes alone do not impose an ownership check.
+ServiceFunctionParameter keeps its previous required owner/resource attributes.
+
+A Data Model is reached **through** the passive data product, following the
+p.110 note: optionally add `DataModel model "Reports" {kind Physical}` and
+`relation schema model -> report "specifies" {type SpecifiesData}`.
+Do not point InvolvesPhysicalResource directly at DataModel. Native DataModel
+still requires `kind` (Conceptual, Logical or Physical).
+
+Connected is suitable for the shared-parameter drawing and exposes place/route.
+Class parameter compartments still use a scalar owner attribute; the renderer
+does not infer multiple compartment owners from has links. Full operation
+signatures, parameter directions/order and consistency between simultaneous
+reference and edge declarations remain outside these structural checks.
+
+Help: `@help types naf41-uaf ServiceOperation`,
+`@help types naf41-uaf DataProductType`, `@help viewpoints naf41-uaf S3`.
+Use one help query per document.
 
 ## Modeling choices
 
@@ -174,7 +299,7 @@ viewpoint can impose further restrictions.
 | Physical interaction | `ResourceInteraction` node with typed endpoints, linked to standards/protocols |
 | State | `ServiceState`, `LogicalState`, `ResourceState`, each with required `owner`; distinct from a UAF state-machine description |
 | Sequence | Domain lifelines with `represents`; interactions have a positive `order` |
-| Parameters | `ServiceOperationParameter` / `ServiceFunctionParameter`, with `owner` and `resource` |
+| Parameters | Operation parameters: explicit has/involves links or legacy `owner`/`resource`; S3 payload optional, S7 required. Function parameters retain required references. |
 | Roadmaps | Domain milestones with a valid ISO date, readiness/increment nodes and defining/fulfilment/delivery links; Cr additionally permits implicit milestone properties as in p.103 |
 | Foundation | Explicit glossary, correspondence, methodology, work-product, status, version and library adapters |
 
@@ -249,3 +374,49 @@ The pre-existing `uaf` and `naf4-uaf` profiles retain their earlier meanings.
 Migration is explicit: change the selected profile and then satisfy the newer
 view rules and adapter fields. This release does not silently migrate native
 UAF 1.0 models to UAF 1.3.
+
+## S4: functions, aggregation and service context (pp.111–112)
+
+Revision 4.1.0-arch.14 supports the complete p.112 example and each directed
+association of the p.111 cut-out. ServiceFunction remains native UAF Activity;
+Service remains an alias of ServiceSpecification. The additional relationships
+are explicit application projections, not imported UAF/ADMBw stereotypes.
+
+| Source | Relationship | Target |
+|---|---|---|
+| ServiceFunction | EnablesService | Service / ServiceSpecification |
+| ServiceFunction | ServiceFunctionAggregation | ServiceFunction |
+| ServiceProvider | ProvidesService | Service |
+| ServiceConsumer | ConsumesService | Service |
+| ServiceFunction | NotifiesServiceProvider | ServiceProvider |
+| ServiceConsumer | AccessesServiceFunction | ServiceFunction |
+| OperationalActivity | SupportsServiceFunction | ServiceFunction |
+| ServiceFunction | EnablesOperationalActivity | OperationalActivity |
+| ServiceProvider / ServiceConsumer | PerformsOperationalActivity | OperationalActivity |
+
+ServiceProvider and ServiceConsumer are concrete contextual roles extending
+UAFElement, not aliases or specializations of OperationalPerformer. Optional
+represents references can identify an OperationalAgent, ResourcePerformer or
+ServiceSpecification; links remain attached to the role. ADMBw Provides uses
+OperationalPerformer/OperationalRole to ServiceSpecification/Role, so it is not
+silently substituted for this role projection.
+
+ConsumesService additionally accepts ServiceConsumer without removing the S2
+OperationalArchitecture source. Native Consumes and IsCapableToPerform remain
+unchanged. S4 accepts legacy service-to-function IsCapableToPerform alongside
+function-to-service EnablesService. Each selected service needs a direct
+function allocation. Each selected function needs one directly or through
+selected aggregating ancestors, at any depth. Orphans still fail; draft mode
+reports missing coverage. Shared subfunctions are permitted. Aggregation is
+acyclic and rejects self-links; the recursive cut-out arrow describes a type
+relationship, not a concrete self-loop.
+
+Provider/consumer/activity context is optional; none of the optional cut-out
+links is required universally. Grouping does not establish UML exclusive
+ownership, call behavior, workflow order or executable notification semantics.
+No completeness check can discover functions omitted from the model. Existing
+S2 provider-specific relies-on/delivers projections remain outside this S4 work.
+
+Examples: [p.112](../../examples/naf41-service-functions.arch) and
+[full cut-out](../../examples/naf41-service-functions-cutout.arch).
+Use @help viewpoints naf41-uaf S4 and @help connections naf41-uaf ServiceFunction.

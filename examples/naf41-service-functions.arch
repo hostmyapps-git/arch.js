@@ -1,0 +1,34 @@
+# NAFv4.1 p.112: constituent functions inherit contextual service coverage
+# through aggregation; no extra enables edges are needed on the leaves.
+architecture "NAFv4.1 · S4 Service Functions" {
+  config { profile naf41-uaf }
+  model {
+    Service situation "Situation Information Consolidation"
+    ServiceFunction receiving "Data Receiving"
+    ServiceFunction storing "Data Storing"
+    ServiceFunction persisting "Persisting"
+    ServiceFunction notifying "Notifying of success"
+    relation receivingService receiving -> situation "enables" {type EnablesService}
+    relation storingService storing -> situation "enables" {type EnablesService}
+    relation storesData storing -> persisting "aggregates" {type ServiceFunctionAggregation}
+    relation notifiesSuccess storing -> notifying "aggregates" {type ServiceFunctionAggregation}
+  }
+  view s4 "S4 · Service Functions" {
+    viewpoint S4
+    place situation at (500,0)
+    place receiving at (0,300)
+    place storing at (500,300)
+    place persisting at (250,600)
+    place notifying at (850,600)
+    style situation {width 320}
+    style receiving {width 300}
+    style storing {width 320}
+    style persisting {width 300}
+    style notifying {width 300}
+    routes {curve rounded sharePath stereotypes}
+    route receivingService {from top to left via (receiving.centerX,situation.centerY)}
+    route storingService {from top to bottom}
+    route storesData {from bottom to top}
+    route notifiesSuccess {from bottom to top}
+  }
+}

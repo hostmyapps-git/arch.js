@@ -220,6 +220,17 @@ function parseDSLDocument(source) {
       else modelProperty(node, NODE_PROPERTIES);
     });
   };
+  const routingFraction = () => {
+    const numerator = typed('number', 'position from 0 to 1 or a fraction such as 1/2');
+    let value = numerator.value;
+    if (is('/')) {
+      take(); const denominator = typed('number', 'fraction denominator');
+      if (denominator.value === 0) fail('Port/attachment position cannot divide by zero', denominator);
+      value /= denominator.value;
+    }
+    if (!Number.isFinite(value) || value < 0 || value > 1) fail('Port/attachment position must be between 0 and 1', numerator);
+    return value;
+  };
   const readRouting = (item, reference = false, defaults = false) => block(() => {
     const attr = typed('word');
     const allowed = [...(reference ? ['from', 'to', 'via', 'curve', 'path'] : ['from', 'to', 'via', 'curve', 'label', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath']), 'color', 'width', 'dasharray'];
@@ -229,12 +240,21 @@ function parseDSLDocument(source) {
     else if (attr.value === 'width') item.width = typed('number', 'route width').value;
     else if (attr.value === 'dasharray') item.dasharray = scalar();
     else if (attr.value === 'via') item.via = list(placementPoint);
-    else if (attr.value === 'to' && (reference || defaults && peek().type === 'number')) item.to = typed('number', 'position along the relationship (0 to 1)').value;
+    else if (attr.value === 'to' && (reference || defaults && peek().type === 'number')) {
+      if (peek().type !== 'number') fail('Expected position along the relationship (0 to 1 or a fraction such as 1/2)', peek(), 'ARCH_SYNTAX');
+      item.to = routingFraction();
+    }
     else if (attr.value === 'label') {
       if (is('none')) { take(); item.label = 'none'; }
       else item.label = point();
     }
-    else if (['from', 'to'].includes(attr.value) && is('(')) item[attr.value] = point();
+    else if (['from', 'to'].includes(attr.value)) {
+      if (is('(')) item[attr.value] = point();
+      else {
+        const side = text();
+        item[attr.value] = peek().type === 'number' ? {side, position: routingFraction()} : side;
+      }
+    }
     else item[attr.value] = text();
   });
   const readView = () => {
@@ -473,8 +493,19 @@ export function validateModel(model, options = {}) {
       if (!route) return;
       validateRouteStyle(route);
       if (route.sharePath !== undefined && !['none', 'stereotypes', 'all'].includes(route.sharePath)) fail('sharePath must be none, stereotypes or all', route.loc);
-      for (const key of ['from', ...(!reference ? ['to'] : [])]) if (typeof route[key] === 'string' && !['auto', 'top', 'right', 'bottom', 'left'].includes(route[key]))
-        fail(`Unknown port: ${route[key]}`, route.loc);
+      for (const key of ['from', ...(!reference ? ['to'] : [])]) {
+        const endpoint = route[key];
+        if (endpoint === undefined || defaults && key === 'to' && typeof endpoint === 'number') continue;
+        if (typeof endpoint === 'string') {
+          if (!['auto', 'top', 'right', 'bottom', 'left'].includes(endpoint)) fail(`Unknown port: ${endpoint}`, route.loc);
+        } else if (endpoint && typeof endpoint === 'object' && !Array.isArray(endpoint)) {
+          if (Object.hasOwn(endpoint, 'side') || Object.hasOwn(endpoint, 'position')) {
+            if (!['top', 'right', 'bottom', 'left'].includes(endpoint.side)) fail('Positioned port side must be top, right, bottom or left', route.loc);
+            if (!Number.isFinite(endpoint.position) || endpoint.position < 0 || endpoint.position > 1) fail('Port position must be a number between 0 and 1', route.loc);
+            if (Object.keys(endpoint).some(key => !['side', 'position'].includes(key))) fail('Positioned port accepts only side and position', route.loc);
+          } else if (!['x', 'y'].every(key => Number.isFinite(endpoint[key]) && Math.abs(endpoint[key]) <= 1e7) || Object.keys(endpoint).some(key => !['x', 'y'].includes(key))) fail('Port must be a side, a positioned side or an absolute point (X, Y)', route.loc);
+        } else fail('Port must be a side, a positioned side or an absolute point (X, Y)', route.loc);
+      }
       if ((reference || defaults) && typeof route.to === 'number' && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
         fail('Reference route to must be a number between 0 and 1', route.loc);
       for (const key of ['showIcon', 'showLabel']) if (route[key] !== undefined && typeof route[key] !== 'boolean') fail(`${key} must be true or false`, route.loc);

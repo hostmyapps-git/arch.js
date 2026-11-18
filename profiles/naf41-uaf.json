@@ -1,7 +1,7 @@
 {
   "id": "naf41-uaf",
   "title": "NAFv4.1 · UAF-based structural application profile",
-  "version": "4.1.0-arch.10",
+  "version": "4.1.0-arch.14",
   "extends": "uaf@1.0.0-arch.1",
   "description": "All 47 NAFv4.1 (2026.03) viewpoint IDs with executable structural checks, inherited UAF 1.0 types and explicit application adapters. Use @help viewpoints naf41-uaf ID and @help connections naf41-uaf TYPE.",
   "sources": [
@@ -27,6 +27,27 @@
         ],
         "limitations": [
           "UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence."
+        ]
+      },
+      "Node": {
+        "target": "LogicalNode",
+        "description": "NAF S2/L1 Node vocabulary for the existing logical-node application type. Its UAF projection is OperationalArchitecture through LogicalNode, not OperationalPerformer or a physical System.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+        ],
+        "limitations": [
+          "Explicit arch.js application mapping. This is not a native UAF or ADMBw stereotype named Node, nor an assertion that every OperationalArchitecture must be called Node."
+        ]
+      },
+      "ServiceOperation": {
+        "target": "ServiceMethod",
+        "description": "NAF S3 operation vocabulary resolved to UAF 1.0 ServiceMethod, which extends UML Operation. This alias retains the native runtime rules and written source name.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109–110 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod, base_Operation"
+        ],
+        "limitations": [
+          "Application vocabulary mapping, not a claim that all native UML operation-owner, method and ownedParameter constraints are implemented."
         ]
       }
     }
@@ -72,6 +93,91 @@
       ],
       "limitations": [
         "No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "Node"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalArchitecture"
+      },
+      "description": "Application projection of NAF logical grouping nodes through LogicalNode extends OperationalArchitecture. Node is a vocabulary alias of LogicalNode within arch.js, not an alias of the entire UAF OperationalArchitecture category.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "PhysicalActiveResource"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ResourcePerformer"
+      },
+      "description": "Concrete application subtype for the NAF example vocabulary. ResourcePerformer remains abstract and retains its native attributes; this is deliberately not an alias.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "ServiceOperation"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceMethod"
+      },
+      "description": "Application-profile operation vocabulary equivalence. Native ServiceMethod extends UML Operation; deferred native ownership/method constraints remain outside the structural projection.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109–110 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "DataProductType"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "DataElement"
+      },
+      "description": "Concrete application subtype for a physical data product type. It also specializes the application PhysicalPassiveResource category; it is not an alias for all UAF DataElements.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
       ]
     }
   ],
@@ -308,6 +414,20 @@
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
       ]
     },
+    "PhysicalActiveResource": {
+      "extends": [
+        "ResourcePerformer"
+      ],
+      "styleGroup": "physical",
+      "description": "Concrete NAF source-vocabulary projection of a physical active resource, as displayed on p.108. It specializes the abstract UAF ResourcePerformer; it is not a synonym for every UAF resource type or an instance of a drawing template.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Concrete arch.js application subtype, not a native UAF 1.0 or ADMBw stereotype. The inherited isStandardConfiguration attribute remains required; choose its boolean value explicitly."
+      ],
+      "template": "system"
+    },
     "ServiceConstraint": {
       "extends": [
         "Rule"
@@ -358,12 +478,12 @@
         "ServiceInterfaceParameter"
       ],
       "styleGroup": "service",
-      "description": "Parameter of a service operation (ServiceMethod).",
+      "description": "Conceptual parameter of one or more service operations. Use incoming HasServiceOperationParameter links or the legacy scalar owner reference. A physical-resource trace is optional in S3; S7 requires it.",
       "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 119 (NAFv4.1, 2026.03)"
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+        "The p.110 shared parameter is a conceptual reusable parameter, not one UML owned Parameter shared by multiple owners. S3/S7 viewpoint checks require operation association through visible links or owner; optional resource links use InvolvesPhysicalResource."
       ],
       "attributes": {
         "owner": {
@@ -371,7 +491,7 @@
           "targets": [
             "ServiceMethod"
           ],
-          "required": true
+          "required": false
         },
         "resource": {
           "type": "reference",
@@ -379,9 +499,23 @@
             "PhysicalPassiveResource",
             "DataElement"
           ],
-          "required": true
+          "required": false
         }
       }
+    },
+    "DataProductType": {
+      "extends": [
+        "DataElement",
+        "PhysicalPassiveResource"
+      ],
+      "styleGroup": "physical",
+      "description": "Type of a physical data product, as used by the Position Report and Target Track Record in the S3 example. A specialization of UAF DataElement and the application passive-resource category, not a synonym for every DataElement.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ]
     },
     "ServiceState": {
       "extends": [
@@ -507,6 +641,54 @@
       "limitations": [
         "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
       ]
+    },
+    "ServiceProvider": {
+      "extends": [
+        "UAFElement"
+      ],
+      "styleGroup": "service",
+      "description": "Explicit provider role in the S4 service context. Not an alias of an operational performer or a native UAF stereotype.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ],
+      "attributes": {
+        "represents": {
+          "type": "reference",
+          "targets": [
+            "OperationalAgent",
+            "ResourcePerformer",
+            "ServiceSpecification"
+          ],
+          "required": false
+        }
+      }
+    },
+    "ServiceConsumer": {
+      "extends": [
+        "UAFElement"
+      ],
+      "styleGroup": "service",
+      "description": "Explicit consumer role in the S4 service context. Not an alias of an operational performer or a native UAF stereotype.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "arch.js application adapter; this name is not asserted to be a native UAF 1.0 stereotype."
+      ],
+      "attributes": {
+        "represents": {
+          "type": "reference",
+          "targets": [
+            "OperationalAgent",
+            "ResourcePerformer",
+            "ServiceSpecification"
+          ],
+          "required": false
+        }
+      }
     },
     "LogicalNode": {
       "extends": [
@@ -1711,6 +1893,24 @@
       ],
       "acyclic": true
     },
+    "ServiceAggregation": {
+      "from": [
+        "ServiceSpecification"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Whole service to a member service, following aggregates in the S2 cut-out and p.108 example. A separate directed grouping relation, not an alias of ServiceComposition and not exclusive composition ownership.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true,
+      "limitations": [
+        "Binary application projection rendered as a solid directed link. Self-links/cycles are disallowed; multiple aggregating services may reference the same member. Full UML shared-aggregation, ownership and lifecycle semantics are not implemented."
+      ]
+    },
     "ServiceDependency": {
       "from": [
         "ServiceSpecification"
@@ -1723,6 +1923,151 @@
       "description": "Dependent service to required service. Restricted service-to-service subset of the ADMBw relationship.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 106 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "ConsumesService": {
+      "from": [
+        "OperationalArchitecture",
+        "ServiceConsumer"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Logical node or explicit S4 consumer role to the service it consumes. Native UAF Consumes remains OperationalActivity to ServiceSpecification.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "EnablesService": {
+      "from": [
+        "ServiceFunction"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "dependency",
+      "description": "Service function to the service it enables, following the S2 cut-out and p.108 example. The native IsCapableToPerform relation remains service to function.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "RealizesService": {
+      "from": [
+        "ResourcePerformer"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "realization",
+      "description": "Physical active resource to the service it realizes, following the S2 cut-out and p.108 example. Native Implements retains its UAF endpoint pairs.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "ServiceFunctionAggregation": {
+      "from": [
+        "ServiceFunction"
+      ],
+      "to": [
+        "ServiceFunction"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Whole function to constituent function. Shared membership is permitted; not UML exclusive ownership or executable activity decomposition.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ],
+      "acyclic": true
+    },
+    "ProvidesService": {
+      "from": [
+        "ServiceProvider"
+      ],
+      "to": [
+        "ServiceSpecification"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Provider role to the service it provides.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "NotifiesServiceProvider": {
+      "from": [
+        "ServiceFunction"
+      ],
+      "to": [
+        "ServiceProvider"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service function to the provider role it notifies.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "AccessesServiceFunction": {
+      "from": [
+        "ServiceConsumer"
+      ],
+      "to": [
+        "ServiceFunction"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Consumer role to the function it accesses.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "SupportsServiceFunction": {
+      "from": [
+        "OperationalActivity"
+      ],
+      "to": [
+        "ServiceFunction"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Operational activity to the function it supports. Distinct from the inverse enables projection.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "EnablesOperationalActivity": {
+      "from": [
+        "ServiceFunction"
+      ],
+      "to": [
+        "OperationalActivity"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service function to the operational activity it enables.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "PerformsOperationalActivity": {
+      "from": [
+        "ServiceProvider",
+        "ServiceConsumer"
+      ],
+      "to": [
+        "OperationalActivity"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Provider or consumer role to an operational activity it performs. Native IsCapableToPerform is retained independently.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
       ]
     },
     "GroupsService": {
@@ -1778,6 +2123,35 @@
       "allowSelf": false,
       "style": "dependency",
       "description": "Interface to operation.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "HasServiceOperationParameter": {
+      "from": [
+        "ServiceMethod"
+      ],
+      "to": [
+        "ServiceOperationParameter"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service operation to its conceptual parameter, following has on pp.109–110. The same parameter may be associated with multiple operations; this is not UML exclusive ownership.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "InvolvesPhysicalResource": {
+      "from": [
+        "ServiceOperationParameter"
+      ],
+      "to": [
+        "PhysicalPassiveResource",
+        "DataElement"
+      ],
+      "allowSelf": false,
+      "style": "flow",
+      "description": "Service operation parameter to the physical passive resource or data product it involves, following pp.109–110. Data Model trace is indirect through that resource; DataModel is not a valid direct target.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)"
       ]
@@ -3497,12 +3871,17 @@
     },
     "S2": {
       "title": "Service Structure",
-      "description": "Service composition and dependencies; optional interfaces, functions and implementations.",
+      "description": "Service aggregation, composition and dependencies; optional interfaces, functions, logical nodes and physical realizations.",
       "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 106 (NAFv4.1, 2026.03)"
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 106 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "Node is an alias of the application LogicalNode, a subtype of OperationalArchitecture. This models the logical grouping/architecture meaning of a NAF Node, not a physical System, runtime instance or drawing template.",
+        "The pp.107–108 directions are node to service (ConsumesService), function to service (EnablesService), and physical active resource to service (RealizesService). Native Consumes, IsCapableToPerform and Implements are unchanged; they are not interchangeable aliases of these adapters.",
+        "ServiceAggregation projects whole service to member service (aggregates in the source), with a solid directed link and no exclusive ownership. ServiceComposition remains a separate relationship with composition notation. Both reject cycles/self-links; full UML ownership/lifecycle semantics are not implemented. ServiceDependency remains dependent service to required service.",
+        "Per-service structural checks count ServiceAggregation/ServiceComposition/ServiceDependency, not optional node/function/resource traces. Service Consumer and Service Provider role projections and their relies-on/provides/delivers relationships are not yet implemented as dedicated NAF concepts; do not substitute generic nodes or native Consumes for those roles."
       ],
       "nodes": [
         "Package",
@@ -3511,9 +3890,11 @@
         "ServiceInterface",
         "ServiceFunction",
         "OperationalAgent",
+        "OperationalActivity",
         "ResourcePerformer"
       ],
       "relations": [
+        "ServiceAggregation",
         "ServiceComposition",
         "ServiceDependency",
         "GroupsService",
@@ -3521,7 +3902,10 @@
         "IsCapableToPerform",
         "Consumes",
         "Exhibits",
-        "Implements"
+        "Implements",
+        "ConsumesService",
+        "EnablesService",
+        "RealizesService"
       ],
       "requiredNodes": [
         "ServiceSpecification"
@@ -3535,6 +3919,7 @@
             "ServiceSpecification"
           ],
           "relations": [
+            "ServiceAggregation",
             "ServiceComposition",
             "ServiceDependency"
           ],
@@ -3546,12 +3931,17 @@
     },
     "S3": {
       "title": "Service Interfaces",
-      "description": "Services specify their interfaces, operations and typed operation parameters.",
+      "description": "Services specify interfaces and optional operations with shared conceptual parameters and optional physical data-product traces.",
       "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)"
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "ServiceOperation is an application-profile vocabulary alias of UAF ServiceMethod (a UML Operation stereotype). DataProductType is a separate DataElement/PhysicalPassiveResource specialization. Native UAF and ADMBw definitions are unchanged.",
+        "HasServiceOperationParameter runs from operation to parameter; InvolvesPhysicalResource runs from parameter to a physical passive resource/data product. The p.110 Geographic Location parameter is shared by two operations. These are conceptual associations, not exclusive UML Parameter ownership.",
+        "Legacy owner/resource references remain valid and, when provided, must be visible. An owner reference can satisfy the required operation association instead of a has link; identical link/reference evidence is counted once. S3 does not require a resource for every parameter, matching the Resource parameter in p.110.",
+        "An optional DataModel trace uses SpecifiesData from model to DataElement/DataProductType. A parameter does not link directly to a DataModel. Full UML operation signatures, parameter ordering/directions and consistency between simultaneous link/reference declarations require review."
       ],
       "nodes": [
         "Package",
@@ -3560,11 +3950,15 @@
         "ServiceMethod",
         "ServiceOperationParameter",
         "PhysicalPassiveResource",
-        "DataElement"
+        "DataElement",
+        "DataModel"
       ],
       "relations": [
         "SpecifiesServiceInterface",
-        "SpecifiesServiceOperation"
+        "SpecifiesServiceOperation",
+        "HasServiceOperationParameter",
+        "InvolvesPhysicalResource",
+        "SpecifiesData"
       ],
       "requiredNodes": [
         "ServiceSpecification",
@@ -3593,6 +3987,35 @@
           ],
           "direction": "incoming",
           "min": 1
+        },
+        {
+          "nodes": [
+            "ServiceMethod"
+          ],
+          "relations": [
+            "SpecifiesServiceOperation"
+          ],
+          "direction": "incoming",
+          "min": 1,
+          "counterparts": [
+            "ServiceInterface"
+          ]
+        },
+        {
+          "nodes": [
+            "ServiceOperationParameter"
+          ],
+          "relations": [
+            "HasServiceOperationParameter"
+          ],
+          "direction": "incoming",
+          "min": 1,
+          "counterparts": [
+            "ServiceMethod"
+          ],
+          "referenceAttributes": [
+            "owner"
+          ]
         }
       ],
       "references": [
@@ -3609,40 +4032,52 @@
     },
     "S4": {
       "title": "Service Functions",
-      "description": "Functions enabling service specifications.",
+      "description": "Functions enabling services, recursive function aggregation, provider/consumer roles and operational activity context.",
       "sources": [
         "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
-        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
+        "Each selected function must enable a selected service directly or through selected aggregating ancestors. Legacy service-to-function IsCapableToPerform remains accepted. This is contextual coverage, not inheritance of behavior or implicit model edges.",
+        "Provider and consumer are explicit contextual application roles, with optional represents references. Cut-out links are directed structural projections; no execution, notification delivery, exclusive ownership or full UML activity decomposition is asserted."
       ],
       "nodes": [
         "Package",
         "ServiceSpecification",
         "ServiceFunction",
+        "ServiceProvider",
+        "ServiceConsumer",
         "OperationalAgent",
         "OperationalActivity"
       ],
       "relations": [
         "IsCapableToPerform",
-        "Consumes"
+        "Consumes",
+        "EnablesService",
+        "ServiceFunctionAggregation",
+        "ProvidesService",
+        "ConsumesService",
+        "NotifiesServiceProvider",
+        "AccessesServiceFunction",
+        "SupportsServiceFunction",
+        "EnablesOperationalActivity",
+        "PerformsOperationalActivity"
       ],
       "requiredNodes": [
         "ServiceSpecification",
         "ServiceFunction"
       ],
-      "requiredRelations": [
-        "IsCapableToPerform"
-      ],
+      "requiredRelations": [],
       "connections": [
         {
           "nodes": [
             "ServiceSpecification"
           ],
           "relations": [
+            "EnablesService",
             "IsCapableToPerform"
           ],
-          "direction": "outgoing",
+          "direction": "either",
           "min": 1,
           "counterparts": [
             "ServiceFunction"
@@ -3653,13 +4088,20 @@
             "ServiceFunction"
           ],
           "relations": [
+            "EnablesService",
             "IsCapableToPerform"
           ],
-          "direction": "incoming",
+          "direction": "either",
           "min": 1,
           "counterparts": [
             "ServiceSpecification"
-          ]
+          ],
+          "through": {
+            "relations": [
+              "ServiceFunctionAggregation"
+            ],
+            "direction": "incoming"
+          }
         }
       ],
       "references": []
@@ -3788,7 +4230,7 @@
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide.",
-        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection."
+        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Operation parameters may use explicit has/involves links instead of owner/resource references; S7 requires both associations, whereas S3 makes the resource trace optional."
       ],
       "nodes": [
         "Package",
@@ -3803,13 +4245,49 @@
       "relations": [
         "SpecifiesServiceInterface",
         "SpecifiesServiceOperation",
-        "IsCapableToPerform"
+        "IsCapableToPerform",
+        "HasServiceOperationParameter",
+        "InvolvesPhysicalResource"
       ],
       "requiredNodes": [
         "ServiceInterfaceParameter"
       ],
       "requiredRelations": [],
-      "connections": [],
+      "connections": [
+        {
+          "nodes": [
+            "ServiceOperationParameter"
+          ],
+          "relations": [
+            "HasServiceOperationParameter"
+          ],
+          "direction": "incoming",
+          "min": 1,
+          "counterparts": [
+            "ServiceMethod"
+          ],
+          "referenceAttributes": [
+            "owner"
+          ]
+        },
+        {
+          "nodes": [
+            "ServiceOperationParameter"
+          ],
+          "relations": [
+            "InvolvesPhysicalResource"
+          ],
+          "direction": "outgoing",
+          "min": 1,
+          "counterparts": [
+            "PhysicalPassiveResource",
+            "DataElement"
+          ],
+          "referenceAttributes": [
+            "resource"
+          ]
+        }
+      ],
       "references": [
         {
           "nodes": [

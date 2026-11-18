@@ -11,6 +11,136 @@ const coverage = JSON.parse(await readFile('profiles/naf41/coverage.json', 'utf8
 const errors = source => arch.validate(source).diagnostics.map(d => d.message).join('\n');
 const without = (id, relationship) => document(id, cases[id].replace(new RegExp(`relation ${relationship} [^}]*}`), ''));
 
+test('S3 reproduces p.110 with operation vocabulary, a shared parameter and optional physical-resource traces',async()=>{
+  const source=await readFile('examples/naf41-service-interfaces.arch','utf8');
+  for(const validation of ['strict','draft'])assert.deepEqual(arch.validate(source,{validation}).diagnostics,[]);
+  const model=arch.parse(source),graph=arch.layout(model);
+  assert.equal(model.nodes.length,9);assert.equal(graph.nodes.length,9);assert.equal(model.edges.length,9);
+  assert.equal(model.nodes.filter(n=>n.type==='ServiceOperation').length,2);
+  assert.equal(model.nodes.filter(n=>n.type==='DataProductType').length,2);
+  assert.equal(model.nodes.filter(n=>n.type==='ServiceOperationParameter').length,3);
+  assert.deepEqual(model.edges.filter(e=>e.target==='geographicLocation').map(e=>e.source),['submitLocation','setArea']);
+  assert.equal(model.nodes.find(n=>n.id==='resource').attributes?.resource,undefined);
+  assert.equal(model.edges.some(e=>e.source==='resource'&&e.type==='InvolvesPhysicalResource'),false);
+  assert.deepEqual(model.edges.map(e=>[e.type,e.source,e.target]),[
+    ['SpecifiesServiceInterface','situation','picture'],['SpecifiesServiceOperation','picture','submitLocation'],['SpecifiesServiceOperation','picture','setArea'],
+    ['HasServiceOperationParameter','submitLocation','geographicLocation'],['HasServiceOperationParameter','setArea','geographicLocation'],
+    ['HasServiceOperationParameter','submitLocation','resource'],['HasServiceOperationParameter','submitLocation','track'],
+    ['InvolvesPhysicalResource','geographicLocation','positionReport'],['InvolvesPhysicalResource','track','targetTrackRecord']
+  ]);
+  const expected=arch.renderToString(source,{idPrefix:'s3'});assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s3'}),expected);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
+    assert.equal(context.arch.renderToString(source,{idPrefix:'s3'}),expected);
+  }
+});
+
+test('S3 aliases operations, specializes data products and validates has/involves directions without changing native UAF',async()=>{
+  const p=arch.getProfile('naf41-uaf');assert.equal(p.nodeTypes.ServiceOperation.aliasOf,'ServiceMethod');
+  assert.deepEqual(p.nodeTypes.DataProductType.extends,['DataElement','PhysicalPassiveResource']);assert.equal(p.nodeTypes.DataProductType.abstract,false);
+  for(const name of ['ServiceOperation','DataProductType'])assert.equal(arch.getProfile('uaf').nodeTypes[name],undefined);
+  const source=await readFile('examples/naf41-service-interfaces.arch','utf8');
+  assert.equal(arch.validate(source.replaceAll('ServiceOperation submit','ServiceMethod submit').replaceAll('ServiceOperation set','ServiceMethod set')).valid,true);
+  for(const [from,to,type]of [['submitLocation','geographicLocation','HasServiceOperationParameter'],['geographicLocation','positionReport','InvolvesPhysicalResource']])
+    assert.match(errors(source.replace(`${from} -> ${to}`,`${to} -> ${from}`)),new RegExp(`not allowed for ${type}`));
+  assert.match(errors(source.replace('DataProductType positionReport','DataModel positionReport')),/not allowed for InvolvesPhysicalResource/);
+  const drop=id=>source.replace(new RegExp(`relation ${id} [^}]*}`),'').replace(new RegExp(`route ${id} [^}]*}`),'');
+  assert.match(errors(drop('specifiesArea')),/setArea requires.*SpecifiesServiceOperation/);
+  assert.match(errors(drop('submitResource')),/resource requires.*HasServiceOperationParameter/);
+  for(const query of ['types naf41-uaf ServiceOperation','connections naf41-uaf ServiceOperation','types naf41-uaf DataProductType','viewpoints naf41-uaf S3'])assert.ok(arch.help(query).length>50);
+  assert.equal(arch.validate(source.replace('viewpoint S3','viewpoint S7')).valid,false,'S7 still requires a resource association for every operation parameter');
+  const dataModel=source.replace('model {','model { DataModel dataModel "Report model" {kind Physical} relation schema dataModel -> positionReport "specifies" {type SpecifiesData}');
+  assert.equal(arch.validate(dataModel).valid,true,'DataModel trace passes through the DataProductType');
+});
+
+test('S3/S7 retain legacy owner/resource syntax as alternative evidence with visible typed targets',()=>{
+  const body='Service s "S" ServiceInterface i "I" ServiceMethod op "Op" DataProductType product "Product" ServiceOperationParameter p "Parameter" {owner op resource product} relation specifies s -> i "" {type SpecifiesServiceInterface} relation operation i -> op "" {type SpecifiesServiceOperation}';
+  for(const viewpoint of ['S3','S7'])assert.equal(arch.validate(document(viewpoint,body)).valid,true,viewpoint);
+  const mixed=body+' relation parameter op -> p "has" {type HasServiceOperationParameter} relation payload p -> product "involves" {type InvolvesPhysicalResource}';
+  assert.equal(arch.validate(document('S3',mixed)).valid,true);
+  assert.match(errors(document('S3',body.replace('owner op','owner product'))),/Reference type DataProductType is not allowed/);
+  assert.match(errors(document('S3',body,'include s, i, p, product')),/owner references op.*must be visible/);
+  assert.equal(arch.validate(document('S3',body.replace(' resource product',''))).valid,true,'resource association is optional in S3');
+  assert.equal(arch.validate(document('S7',body.replace(' resource product',''))).valid,false,'resource association remains required in S7');
+  const missingOwner=arch.validate(document('S3',body.replace('owner op ','')),{validation:'draft'});
+  assert.equal(missingOwner.valid,true);assert.equal(missingOwner.conformant,false);
+  assert.match(missingOwner.diagnostics[0].message,/HasServiceOperationParameter.*reference attributes: owner/);
+});
+
+test('S2 reproduces p.108 with a logical Node, five services, an interface, function and physical realization',async()=>{
+  const source=await readFile('examples/naf41-service-structure.arch','utf8');
+  for(const validation of ['strict','draft'])assert.deepEqual(arch.validate(source,{validation}).diagnostics,[]);
+  const model=arch.parse(source),graph=arch.layout(model);
+  assert.equal(model.nodes.length,9);assert.equal(graph.nodes.length,9);assert.equal(graph.edges.length,8);
+  assert.equal(model.nodes.find(n=>n.id==='controller').type,'Node');
+  assert.equal(model.nodes.find(n=>n.id==='airTraffic').type,'PhysicalActiveResource');
+  assert.equal(model.nodes.filter(n=>n.type==='Service').length,5);
+  assert.deepEqual(model.edges.map(e=>[e.type,e.source,e.target]),[
+    ['ConsumesService','controller','situation'],['ServiceDependency','situation','position'],['ServiceDependency','situation','documents'],
+    ['SpecifiesServiceInterface','position','getArea'],['EnablesService','getAreaOfInterest','position'],
+    ['ServiceAggregation','documents','platform'],['ServiceAggregation','documents','storage'],['RealizesService','airTraffic','situation']
+  ]);
+  const expected=arch.renderToString(source,{idPrefix:'s2'});
+  assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s2'}),expected);
+  for(const file of ['arch.js','arch.min.js']) {
+    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
+    assert.equal(context.arch.renderToString(source,{idPrefix:'s2'}),expected);
+  }
+});
+
+test('Node is a vocabulary alias of LogicalNode, retaining logical type compatibility and source spelling',()=>{
+  const p=arch.getProfile('naf41-uaf');assert.equal(p.nodeTypes.Node.aliasOf,'LogicalNode');
+  assert.deepEqual(p.nodeTypes.Node.extends,['OperationalArchitecture']);
+  for(const id of ['L1','L2'])assert.equal(arch.validate(document(id,cases[id].replaceAll('OperationalArchitecture','Node'))).valid,true,id);
+  for(const type of ['Node','LogicalNode','OperationalArchitecture']) {
+    const body=`${type} node "Controller" Service a "A" Service b "B" relation dep a -> b "depends" {type ServiceDependency} relation uses node -> a "consumes" {type ConsumesService}`;
+    assert.equal(arch.validate(document('S2',body)).valid,true,type);
+  }
+  for(const query of ['aliases naf41-uaf','types naf41-uaf Node'])assert.match(arch.help(query),/LogicalNode/);
+  assert.match(arch.help('connections naf41-uaf Node'),/ConsumesService/);
+  assert.match(arch.help('viewpoints naf41-uaf S2'),/107–108|p\.108/);
+  assert.equal(arch.getProfile('uaf').nodeTypes.Node,undefined);
+});
+
+test('S2 ServiceAggregation is a separate directed whole-to-member relationship with reusable members and acyclic grouping',async()=>{
+  const body='Service a "A" ServiceSpecification b "B" Service member "Member" relation dependency a -> b "depends" {type ServiceDependency} relation first a -> member "aggregates" {type ServiceAggregation} relation second b -> member "aggregates" {type ServiceAggregation}';
+  assert.equal(arch.validate(document('S2',body)).valid,true,'a member may belong to multiple aggregations');
+  const p=arch.getProfile('naf41-uaf'),rule=p.relationTypes.ServiceAggregation;
+  assert.equal(rule.aliasOf,undefined);assert.equal(rule.extends,undefined);assert.equal(rule.style,'flow');assert.equal(rule.acyclic,true);assert.equal(rule.allowSelf,false);
+  assert.equal(p.relationTypes.ServiceComposition.style,'composition');
+  assert.equal(arch.getProfile('uaf').relationTypes.ServiceAggregation,undefined);
+  assert.match(errors(document('S2',body+' relation back member -> a "cycle" {type ServiceAggregation}')),/ServiceAggregation: Cycles are not allowed/);
+  assert.match(errors(document('S2',body.replace('a -> member','a -> a'))),/Self-relationships/);
+  assert.match(errors(document('S2',body.replace('Service member','Node member'))),/not allowed for ServiceAggregation/);
+  const source=await readFile('examples/naf41-service-structure.arch','utf8');
+  assert.equal(arch.validate(source.replaceAll('type ServiceAggregation','type ServiceComposition')).valid,true,'older composition models remain supported');
+  const graph=arch.layout(source),aggregation=graph.edges.find(e=>e.type==='ServiceAggregation');
+  assert.equal(aggregation.style,'flow');assert.ok(graph.sharedPaths.some(p=>p.types.includes('ServiceAggregation')));
+  assert.match(arch.help('connections naf41-uaf Service'),/ServiceAggregation/);
+  assert.match(arch.help('relations naf41-uaf ServiceAggregation'),/not an alias/);
+});
+
+test('S2 application links enforce their directions and retain native UAF endpoints and mandatory structural connections',async()=>{
+  const source=await readFile('examples/naf41-service-structure.arch','utf8');
+  for(const [from,to,type]of [['controller','situation','ConsumesService'],['getAreaOfInterest','position','EnablesService'],['airTraffic','situation','RealizesService']]) {
+    assert.match(errors(source.replace(`${from} -> ${to}`,`${to} -> ${from}`)),new RegExp(`not allowed for ${type}`));
+  }
+  for(const [replacement,native]of [['ConsumesService','Consumes'],['EnablesService','IsCapableToPerform'],['RealizesService','Implements']]) {
+    assert.match(errors(source.replace(`type ${replacement}`,`type ${native}`)),/not allowed/);
+  }
+  assert.match(errors(source.replace('isStandardConfiguration false','')),/Missing required attribute isStandardConfiguration/);
+  assert.match(errors(document('S2','Node n "N" Service s "S" relation consume n -> s "consumes" {type ConsumesService}')),/Missing required relationship type ServiceDependency/);
+  for(const id of ['ConsumesService','EnablesService','RealizesService'])assert.equal(arch.getProfile('uaf').relationTypes[id],undefined);
+  assert.deepEqual(arch.getProfile('uaf').relationTypes.Consumes.from,['OperationalActivity']);
+  const physical=arch.getProfile('naf41-uaf').nodeTypes.PhysicalActiveResource;
+  assert.equal(physical.abstract,false);assert.deepEqual(physical.extends,['ResourcePerformer']);
+  assert.equal(physical.attributes.isStandardConfiguration.required,true);
+  assert.equal(arch.getProfile('uaf').nodeTypes.PhysicalActiveResource,undefined);
+  assert.equal(arch.getProfile('uaf').nodeTypes.ResourcePerformer.abstract,true);
+  assert.equal(arch.validate(source.replace('PhysicalActiveResource airTraffic','System airTraffic')).valid,true,'specific native resource remains supported');
+  assert.match(errors(source.replace('PhysicalActiveResource airTraffic','Node airTraffic').replace('isStandardConfiguration false','')),/not allowed for RealizesService/);
+});
+
 test('S1 accepts p.105 Service vocabulary, specialization and the service-to-policy direction',async()=>{
   const source=await readFile('examples/naf41-service-taxonomy.arch','utf8');
   for(const validation of ['strict','draft']) {

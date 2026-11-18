@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.10",
+  "version": "4.1.0-arch.14",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,11 +25,12 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 74,
-    "applicationRelations": 100,
-    "nodeAliases": 1,
-    "totalNodes": 287,
-    "totalRelations": 143,
+    "applicationNodeAdapters": 78,
+    "applicationRelations": 113,
+    "relationAliases": 0,
+    "nodeAliases": 3,
+    "totalNodes": 291,
+    "totalRelations": 156,
     "viewpoints": 47
   },
   "aliases": {
@@ -43,6 +44,27 @@
         ],
         "limitations": [
           "UAF 1.2 renamed ServiceSpecification to Service alongside other service metamodel changes. This alias retains UAF 1.0 semantics; it does not claim cross-version equivalence."
+        ]
+      },
+      "Node": {
+        "target": "LogicalNode",
+        "description": "NAF S2/L1 Node vocabulary for the existing logical-node application type. Its UAF projection is OperationalArchitecture through LogicalNode, not OperationalPerformer or a physical System.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+        ],
+        "limitations": [
+          "Explicit arch.js application mapping. This is not a native UAF or ADMBw stereotype named Node, nor an assertion that every OperationalArchitecture must be called Node."
+        ]
+      },
+      "ServiceOperation": {
+        "target": "ServiceMethod",
+        "description": "NAF S3 operation vocabulary resolved to UAF 1.0 ServiceMethod, which extends UML Operation. This alias retains the native runtime rules and written source name.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109–110 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod, base_Operation"
+        ],
+        "limitations": [
+          "Application vocabulary mapping, not a claim that all native UML operation-owner, method and ownedParameter constraints are implemented."
         ]
       }
     }
@@ -89,6 +111,91 @@
       "limitations": [
         "No automatic UAF 1.0 to 1.2 model conversion or complete semantic equivalence is asserted."
       ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "Node"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalArchitecture"
+      },
+      "description": "Application projection of NAF logical grouping nodes through LogicalNode extends OperationalArchitecture. Node is a vocabulary alias of LogicalNode within arch.js, not an alias of the entire UAF OperationalArchitecture category.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "PhysicalActiveResource"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ResourcePerformer"
+      },
+      "description": "Concrete application subtype for the NAF example vocabulary. ResourcePerformer remains abstract and retains its native attributes; this is deliberately not an alias.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "ServiceOperation"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ServiceMethod"
+      },
+      "description": "Application-profile operation vocabulary equivalence. Native ServiceMethod extends UML Operation; deferred native ownership/method constraints remain outside the structural projection.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109–110 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/uaf/UAFP-1.0.xmi — ServiceMethod"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "DataProductType"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "DataElement"
+      },
+      "description": "Concrete application subtype for a physical data product type. It also specializes the application PhysicalPassiveResource category; it is not an alias for all UAF DataElements.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
     }
   ],
   "adapters": [
@@ -105,9 +212,11 @@
     "CapabilityMilestone",
     "CapabilityProject",
     "ServiceGroup",
+    "PhysicalActiveResource",
     "ServiceConstraint",
     "ServiceFunctionParameter",
     "ServiceOperationParameter",
+    "DataProductType",
     "ServiceState",
     "ServiceEvent",
     "ServiceMode",
@@ -115,6 +224,8 @@
     "ServiceReadinessLevel",
     "ServiceMilestone",
     "ServiceProject",
+    "ServiceProvider",
+    "ServiceConsumer",
     "LogicalNode",
     "Needline",
     "LogicalState",
@@ -244,19 +355,32 @@
       "title": "Service Structure",
       "page": 106,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "Node is an alias of the application LogicalNode, a subtype of OperationalArchitecture. This models the logical grouping/architecture meaning of a NAF Node, not a physical System, runtime instance or drawing template.",
+        "The pp.107–108 directions are node to service (ConsumesService), function to service (EnablesService), and physical active resource to service (RealizesService). Native Consumes, IsCapableToPerform and Implements are unchanged; they are not interchangeable aliases of these adapters.",
+        "ServiceAggregation projects whole service to member service (aggregates in the source), with a solid directed link and no exclusive ownership. ServiceComposition remains a separate relationship with composition notation. Both reject cycles/self-links; full UML ownership/lifecycle semantics are not implemented. ServiceDependency remains dependent service to required service.",
+        "Per-service structural checks count ServiceAggregation/ServiceComposition/ServiceDependency, not optional node/function/resource traces. Service Consumer and Service Provider role projections and their relies-on/provides/delivers relationships are not yet implemented as dedicated NAF concepts; do not substitute generic nodes or native Consumes for those roles."
+      ]
     },
     "S3": {
       "title": "Service Interfaces",
       "page": 109,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "ServiceOperation is an application-profile vocabulary alias of UAF ServiceMethod (a UML Operation stereotype). DataProductType is a separate DataElement/PhysicalPassiveResource specialization. Native UAF and ADMBw definitions are unchanged.",
+        "HasServiceOperationParameter runs from operation to parameter; InvolvesPhysicalResource runs from parameter to a physical passive resource/data product. The p.110 Geographic Location parameter is shared by two operations. These are conceptual associations, not exclusive UML Parameter ownership.",
+        "Legacy owner/resource references remain valid and, when provided, must be visible. An owner reference can satisfy the required operation association instead of a has link; identical link/reference evidence is counted once. S3 does not require a resource for every parameter, matching the Resource parameter in p.110.",
+        "An optional DataModel trace uses SpecifiesData from model to DataElement/DataProductType. A parameter does not link directly to a DataModel. Full UML operation signatures, parameter ordering/directions and consistency between simultaneous link/reference declarations require review."
+      ]
     },
     "S4": {
       "title": "Service Functions",
       "page": 111,
       "status": "structural application checks",
-      "limitations": []
+      "limitations": [
+        "Each selected function must enable a selected service directly or through selected aggregating ancestors. Legacy service-to-function IsCapableToPerform remains accepted. This is contextual coverage, not inheritance of behavior or implicit model edges.",
+        "Provider and consumer are explicit contextual application roles, with optional represents references. Cut-out links are directed structural projections; no execution, notification delivery, exclusive ownership or full UML activity decomposition is asserted."
+      ]
     },
     "S5": {
       "title": "Service States",
@@ -279,7 +403,7 @@
       "page": 119,
       "status": "structural application checks",
       "limitations": [
-        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection."
+        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Operation parameters may use explicit has/involves links instead of owner/resource references; S7 requires both associations, whereas S3 makes the resource trace optional."
       ]
     },
     "S8": {

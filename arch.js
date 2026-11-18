@@ -8318,7 +8318,7 @@ var arch = (() => {
       if (raw.connections !== void 0) {
         if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail3(`${name}: invalid connections`);
         result.connections = raw.connections.map((check) => {
-          keys(check, ["nodes", "nodesExclude", "relations", "counterparts", "direction", "min", "max"], `${name}.connections`);
+          keys(check, ["nodes", "nodesExclude", "relations", "counterparts", "referenceAttributes", "through", "direction", "min", "max"], `${name}.connections`);
           const value2 = {
             nodes: names(check.nodes, name),
             relations: names(check.relations, name),
@@ -8333,6 +8333,20 @@ var arch = (() => {
           if (check.nodesExclude !== void 0) {
             value2.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true);
             knownNodes(value2.nodesExclude, name);
+          }
+          if (check.through !== void 0) {
+            keys(check.through, ["relations", "direction"], `${name}.through`);
+            value2.through = { relations: names(check.through.relations, `${name}.through.relations`), direction: check.through.direction ?? "incoming" };
+            knownEdges(value2.through.relations, name);
+            if (value2.through.relations.includes("*") || !["incoming", "outgoing"].includes(value2.through.direction)) fail3(`${name}: through requires explicit relationship types and incoming or outgoing direction`);
+          }
+          if (check.referenceAttributes !== void 0) {
+            value2.referenceAttributes = names(check.referenceAttributes, `${name}.referenceAttributes`);
+            if (value2.nodes.includes("*") || value2.referenceAttributes.includes("*")) fail3(`${name}: referenceAttributes require explicit node and attribute names`);
+            for (const type of value2.nodes) {
+              knownNodes([type], name);
+              for (const attr of value2.referenceAttributes) if (nodeTypes[type].attributes[attr]?.type !== "reference") fail3(`${name}: ${type}.${attr} must be a reference attribute`);
+            }
           }
           knownNodes(value2.nodes, name);
           knownEdges(value2.relations, name);
@@ -8659,8 +8673,22 @@ var arch = (() => {
       for (const type of rule.requiredNodes) if (!selectedNodes.some((node) => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id, incomplete: true });
       for (const type of rule.requiredRelations) if (!selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id, incomplete: true });
       for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes) && !matches(node.type, check.nodesExclude ?? [], profile.nodeTypes)) {
-        const count = selectedEdges.filter((edge) => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) && ((check.direction !== "incoming" || edge.direction === "both") && edge.source === node.id && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes)) || (check.direction !== "outgoing" || edge.direction === "both") && edge.target === node.id && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes)))).length;
-        if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? "∞"} ${check.direction} connections (${check.relations.join(", ")}${check.counterparts ? `; counterpart: ${check.counterparts.join(", ")}` : ""}); found ${count}`, node, { elementId: node.id, viewId: view.id, ...count < check.min ? { incomplete: true } : {} });
+        const origins = /* @__PURE__ */ new Set([node.id]);
+        if (check.through) {
+          const adjacent = /* @__PURE__ */ new Map();
+          for (const edge of selectedEdges) if (matches(edge.type ?? profile.defaultRelation, check.through.relations, profile.relationTypes)) {
+            const from = check.through.direction === "incoming" ? edge.target : edge.source;
+            const to = check.through.direction === "incoming" ? edge.source : edge.target;
+            if (!adjacent.has(from)) adjacent.set(from, []);
+            adjacent.get(from).push(to);
+          }
+          for (const id of origins) for (const next of adjacent.get(id) ?? []) origins.add(next);
+        }
+        const connected = selectedEdges.filter((edge) => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) && ((check.direction !== "incoming" || edge.direction === "both") && origins.has(edge.source) && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes)) || (check.direction !== "outgoing" || edge.direction === "both") && origins.has(edge.target) && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))));
+        const endpoints = new Set(connected.map((edge) => origins.has(edge.source) ? edge.target : edge.source));
+        const references2 = new Set([...origins].flatMap((id) => (check.referenceAttributes ?? []).flatMap((attr) => [nodes.get(id)?.attributes?.[attr]].flat())).filter((id) => typeof id === "string" && visible.has(id) && (!check.counterparts || matches(nodes.get(id)?.type, check.counterparts, profile.nodeTypes))));
+        const count = connected.length + [...references2].filter((id) => !endpoints.has(id)).length;
+        if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? "∞"} ${check.direction} connections (${check.relations.join(", ")}${check.counterparts ? `; counterpart: ${check.counterparts.join(", ")}` : ""}${check.through ? `; directly or through ${check.through.direction} ${check.through.relations.join(", ")}` : ""}${check.referenceAttributes ? `; reference attributes: ${check.referenceAttributes.join(", ")}` : ""}); found ${count}`, node, { elementId: node.id, viewId: view.id, ...count < check.min ? { incomplete: true } : {} });
       }
       for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
         for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter((v) => typeof v === "string")) if (!visible.has(id))
@@ -8919,6 +8947,19 @@ var arch = (() => {
   var fields2 = (field) => ({ right: ["x", "width"], bottom: ["y", "height"], centerX: ["x", "width"], centerY: ["y", "height"] })[field] ?? [field];
   var key = (id, field) => JSON.stringify([id, field]);
   var precedence = { "+": 1, "-": 1, "*": 2, "/": 2, neg: 3, pos: 3 };
+  var referencePattern = /^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/;
+  function coordinateReference(rest, known) {
+    if (!known) return rest.match(referencePattern);
+    let first, declared;
+    for (const field of rest.matchAll(/\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/g)) {
+      const id = rest.slice(0, field.index);
+      if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(id)) break;
+      const reference2 = [rest.slice(0, field.index + field[0].length), id, field[1]];
+      first ?? (first = reference2);
+      if (known.has(id)) declared = reference2;
+    }
+    return declared ?? first;
+  }
   function calculate(tokens2, reference2, loc) {
     const stack = [];
     for (const token of tokens2) {
@@ -8934,7 +8975,7 @@ var arch = (() => {
     }
     return stack[0];
   }
-  function coordinateTerms(value2, loc) {
+  function coordinateTerms(value2, loc, known) {
     if (typeof value2 === "number") {
       if (!Number.isFinite(value2) || Math.abs(value2) > limit) fail4("Coordinate outside the range ±10000000", loc);
       return [{ value: value2 }];
@@ -8971,7 +9012,7 @@ var arch = (() => {
       }
       if (!operand) fail4("Placement expressions require +, -, * or / between terms", loc);
       const number2 = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
-      const reference2 = rest.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\.(centerX|centerY|width|height|right|bottom|x|y)(?=$|[+\-*/()\s])/);
+      const reference2 = coordinateReference(rest, known);
       if (number2) {
         const value3 = Number(number2[0]);
         if (!Number.isFinite(value3) || value3 > limit) fail4("Coordinate outside the range ±10000000", loc);
@@ -9002,8 +9043,8 @@ var arch = (() => {
     }
     return terms.source;
   }
-  function evaluateCoordinate(value2, reference2, loc) {
-    const result = calculate(coordinateTerms(value2, loc), reference2, loc);
+  function evaluateCoordinate(value2, reference2, loc, known) {
+    const result = calculate(coordinateTerms(value2, loc, known), reference2, loc);
     coordinateTerms(result, loc);
     return result;
   }
@@ -9035,9 +9076,9 @@ var arch = (() => {
     return stack[0];
   }
   function placementPlan(model, profile, view) {
-    const expressions = /* @__PURE__ */ new Map();
+    const expressions = /* @__PURE__ */ new Map(), known = /* @__PURE__ */ new Set([...model.nodes.map((n) => n.id), ...Object.keys(view.trees ?? {})]);
     for (const [id, place] of Object.entries(view.places)) for (const axis of ["x", "y"]) {
-      const terms = coordinateTerms(place.at?.[axis], place.loc);
+      const terms = coordinateTerms(place.at?.[axis], place.loc, known);
       if (typeof place.at[axis] === "string") expressions.set(key(id, axis), terms);
     }
     if (!expressions.size) return null;
@@ -9444,12 +9485,22 @@ var arch = (() => {
     const routing = (value2, path) => {
       obj(value2, path);
       emit("{", path);
+      const fraction = (value3, p) => {
+        if (typeof value3 === "number" && Number.isFinite(value3) && value3 >= 0 && value3 <= 1) return String(value3);
+        if (typeof value3 === "string" && /^\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*\/\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*$/.test(value3)) return value3.trim();
+        error('Port/attachment position must be a number between 0 and 1 or a fraction such as "1/2"', p);
+      };
       for (const [key2, v] of Object.entries(value2)) {
         const p = child(path, key2);
         if (key2 === "via") {
           if (!Array.isArray(v) || !v.length) error("Expected a nonempty list of coordinate pairs", p);
           emit(`via ${v.map((pair, i) => placementPoint(pair, child(p, i))).join(", ")}`, p);
+        } else if (["from", "to"].includes(key2) && record2(v)) {
+          keys2(v, ["side", "position"], p);
+          if (!["top", "right", "bottom", "left"].includes(v.side)) error("Positioned port side must be top, right, bottom or left", child(p, "side"));
+          emit(`${key2} ${v.side} ${fraction(v.position, child(p, "position"))}`, p);
         } else if (["from", "to", "label"].includes(key2) && Array.isArray(v)) emit(`${key2} ${point2(v, p)}`, p);
+        else if (key2 === "to" && typeof v === "string" && v.includes("/")) emit(`to ${fraction(v, p)}`, p);
         else if (key2 === "label" && v === "none") emit("label none", p);
         else field(key2, v, p);
       }
@@ -9738,6 +9789,7 @@ var arch = (() => {
     for (const [term, values] of [["validation", ["strict", "draft"]], ["parentDirection", ["auto", "source", "target"]], ["orientation", ["down", "right", "up", "left"]], ["direction", edgeDirection ? ["forward", "both"] : /must be.*up/.test(message) ? ["down", "right", "up", "left"] : ["right", "down"]], ["theme", ["light", "dark"]], ["iconPosition", ["top", "left", "bottom", "right"]], ["referenceDisplay", ["labels", "nodes", "both"]], ["referenceOccurrences", ["shared", "perEdge"]], ["curve", ["straight", "orthogonal", "rounded", "bezier"]]])
       if (message.includes(term) && (message.includes("must") || message.includes("Unknown"))) for (const value2 of values) add(`${term}: ${value2}`, format === "json" ? `"${term}": "${value2}"` : `${term} ${value2}`);
     if (/spacing must/.test(message)) add("Use spacing between 24 and 400", format === "json" ? '"spacing": 80' : "spacing 80");
+    if (/Port\/attachment position|Port position|Positioned port/.test(message)) add("Use a side position between 0 and 1", format === "json" ? '"from": {"side":"bottom","position":"1/2"}' : "from bottom 1/2", "Use top/right/bottom/left with a decimal or fraction. A reference connector target uses to 1/2 along the relationship.");
     const allowedDirections = message.match(/allowed directions: (forward|both)(?:, (forward|both))?/);
     if (allowedDirections) for (const value2 of allowedDirections.slice(1).filter(Boolean)) add(`Use ${value2 === "both" ? "<->" : "->"}`, format === "json" ? `"direction": "${value2}"` : `relation LINK_ID SOURCE_ID ${value2 === "both" ? "<->" : "->"} TARGET_ID "Label"`, "Use a direction allowed by the selected relationship type.");
     if (/Unknown diagram type/.test(message)) nearest(message.split(" ").at(-1), DIAGRAMS, "Diagram");
@@ -9856,25 +9908,25 @@ var arch = (() => {
   var fail5 = (message, loc) => {
     throw new ArchError(message, loc, "ARCH_ROUTING");
   };
-  function references(route) {
+  function references(route, known) {
     if (route?.via === void 0) return [];
     if (!Array.isArray(route.via)) fail5("via requires a list of coordinate pairs", route.loc);
     const refs = [];
     for (const point2 of route.via) for (const axis of ["x", "y"]) {
       if (!point2 || typeof point2 !== "object") fail5("via requires coordinate pairs (X, Y)", route.loc);
-      refs.push(...coordinateTerms(point2[axis], route.loc).filter((t) => t.ref !== void 0));
+      refs.push(...coordinateTerms(point2[axis], route.loc, known).filter((t) => t.ref !== void 0));
     }
     return refs;
   }
   function viaReferences(model, profile, view) {
     const known = /* @__PURE__ */ new Set([...model.nodes.map((n) => n.id), ...Object.keys(view.trees ?? {})]);
-    for (const route of [view.routeDefaults, ...Object.values(view.routes), ...view.referenceRoutes ?? []]) for (const ref of references(route))
+    for (const route of [view.routeDefaults, ...Object.values(view.routes), ...view.referenceRoutes ?? []]) for (const ref of references(route, known))
       if (!known.has(ref.ref)) fail5(`Unknown via reference: ${ref.ref}; use a node or tree group ID`, route.loc);
     const visible = visibleNodeIds(model, view), available = new Set(visible), targets = /* @__PURE__ */ new Set();
     for (const [id, tree] of Object.entries(view.trees ?? {})) if (tree.nodes.some((n) => visible.has(n))) available.add(id);
     const collect = (route) => {
       if (route?.path !== void 0) return;
-      for (const ref of references(route)) {
+      for (const ref of references(route, known)) {
         if (!available.has(ref.ref)) fail5(`Hidden or excluded via reference: ${ref.ref}; use a visible node or tree group`, route.loc);
         targets.add(ref.ref);
       }
@@ -9899,8 +9951,8 @@ var arch = (() => {
       return boxCoordinate(box, term.field);
     };
     return { ...route, via: route.via.map((point2) => ({
-      x: evaluateCoordinate(point2.x, reference2, route.loc),
-      y: evaluateCoordinate(point2.y, reference2, route.loc)
+      x: evaluateCoordinate(point2.x, reference2, route.loc, boxes),
+      y: evaluateCoordinate(point2.y, reference2, route.loc, boxes)
     })) };
   }
 
@@ -10175,17 +10227,22 @@ var arch = (() => {
     }
   }
   function port(box, side2, other) {
-    if (typeof side2 === "object") return side2;
+    let position = 0.5;
+    if (side2 && typeof side2 === "object") {
+      if (!Object.hasOwn(side2, "side")) return side2;
+      position = side2.position;
+      side2 = side2.side;
+    }
     if (!side2 || side2 === "auto") {
       const dx = other.x + other.width / 2 - box.x - box.width / 2;
       const dy = other.y + other.height / 2 - box.y - box.height / 2;
       side2 = Math.abs(dx) >= Math.abs(dy) ? dx >= 0 ? "right" : "left" : dy >= 0 ? "bottom" : "top";
     }
     return {
-      left: { x: box.x, y: box.y + box.height / 2 },
-      right: { x: box.x + box.width, y: box.y + box.height / 2 },
-      top: { x: box.x + box.width / 2, y: box.y },
-      bottom: { x: box.x + box.width / 2, y: box.y + box.height }
+      left: { x: box.x, y: box.y + box.height * position },
+      right: { x: box.x + box.width, y: box.y + box.height * position },
+      top: { x: box.x + box.width * position, y: box.y },
+      bottom: { x: box.x + box.width * position, y: box.y + box.height }
     }[side2];
   }
   function polyPath(points, rounded) {
@@ -11522,6 +11579,18 @@ var arch = (() => {
         else modelProperty(node, NODE_PROPERTIES);
       });
     };
+    const routingFraction = () => {
+      const numerator = typed("number", "position from 0 to 1 or a fraction such as 1/2");
+      let value2 = numerator.value;
+      if (is("/")) {
+        take();
+        const denominator = typed("number", "fraction denominator");
+        if (denominator.value === 0) fail9("Port/attachment position cannot divide by zero", denominator);
+        value2 /= denominator.value;
+      }
+      if (!Number.isFinite(value2) || value2 < 0 || value2 > 1) fail9("Port/attachment position must be between 0 and 1", numerator);
+      return value2;
+    };
     const readRouting = (item, reference2 = false, defaults = false) => block(() => {
       const attr = typed("word");
       const allowed = [...reference2 ? ["from", "to", "via", "curve", "path"] : ["from", "to", "via", "curve", "label", "path", "icon", "iconPosition", "showIcon", "showLabel", "sharePath"], "color", "width", "dasharray"];
@@ -11531,14 +11600,21 @@ var arch = (() => {
       else if (attr.value === "width") item.width = typed("number", "route width").value;
       else if (attr.value === "dasharray") item.dasharray = scalar();
       else if (attr.value === "via") item.via = list2(placementPoint);
-      else if (attr.value === "to" && (reference2 || defaults && peek().type === "number")) item.to = typed("number", "position along the relationship (0 to 1)").value;
-      else if (attr.value === "label") {
+      else if (attr.value === "to" && (reference2 || defaults && peek().type === "number")) {
+        if (peek().type !== "number") fail9("Expected position along the relationship (0 to 1 or a fraction such as 1/2)", peek(), "ARCH_SYNTAX");
+        item.to = routingFraction();
+      } else if (attr.value === "label") {
         if (is("none")) {
           take();
           item.label = "none";
         } else item.label = point2();
-      } else if (["from", "to"].includes(attr.value) && is("(")) item[attr.value] = point2();
-      else item[attr.value] = text();
+      } else if (["from", "to"].includes(attr.value)) {
+        if (is("(")) item[attr.value] = point2();
+        else {
+          const side2 = text();
+          item[attr.value] = peek().type === "number" ? { side: side2, position: routingFraction() } : side2;
+        }
+      } else item[attr.value] = text();
     });
     const readView = () => {
       const token = expect("view");
@@ -11842,8 +11918,19 @@ var arch = (() => {
         if (!route) return;
         validateRouteStyle(route);
         if (route.sharePath !== void 0 && !["none", "stereotypes", "all"].includes(route.sharePath)) fail9("sharePath must be none, stereotypes or all", route.loc);
-        for (const key2 of ["from", ...!reference2 ? ["to"] : []]) if (typeof route[key2] === "string" && !["auto", "top", "right", "bottom", "left"].includes(route[key2]))
-          fail9(`Unknown port: ${route[key2]}`, route.loc);
+        for (const key2 of ["from", ...!reference2 ? ["to"] : []]) {
+          const endpoint = route[key2];
+          if (endpoint === void 0 || defaults && key2 === "to" && typeof endpoint === "number") continue;
+          if (typeof endpoint === "string") {
+            if (!["auto", "top", "right", "bottom", "left"].includes(endpoint)) fail9(`Unknown port: ${endpoint}`, route.loc);
+          } else if (endpoint && typeof endpoint === "object" && !Array.isArray(endpoint)) {
+            if (Object.hasOwn(endpoint, "side") || Object.hasOwn(endpoint, "position")) {
+              if (!["top", "right", "bottom", "left"].includes(endpoint.side)) fail9("Positioned port side must be top, right, bottom or left", route.loc);
+              if (!Number.isFinite(endpoint.position) || endpoint.position < 0 || endpoint.position > 1) fail9("Port position must be a number between 0 and 1", route.loc);
+              if (Object.keys(endpoint).some((key3) => !["side", "position"].includes(key3))) fail9("Positioned port accepts only side and position", route.loc);
+            } else if (!["x", "y"].every((key3) => Number.isFinite(endpoint[key3]) && Math.abs(endpoint[key3]) <= 1e7) || Object.keys(endpoint).some((key3) => !["x", "y"].includes(key3))) fail9("Port must be a side, a positioned side or an absolute point (X, Y)", route.loc);
+          } else fail9("Port must be a side, a positioned side or an absolute point (X, Y)", route.loc);
+        }
         if ((reference2 || defaults) && typeof route.to === "number" && (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
           fail9("Reference route to must be a number between 0 and 1", route.loc);
         for (const key2 of ["showIcon", "showLabel"]) if (route[key2] !== void 0 && typeof route[key2] !== "boolean") fail9(`${key2} must be true or false`, route.loc);
@@ -12828,7 +12915,7 @@ var arch = (() => {
         "Selection and registration",
         "config { profile PROFILE }  // inside architecture",
         "API options.profile takes precedence over the document profile.",
-        'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.10" }.',
+        'Use a quoted PROFILE@VERSION to pin a registered revision: config { profile "naf41-uaf@4.1.0-arch.14" }.',
         "Help lists registered profiles; it does not load files. Unqualified IDs select the most recently registered revision.",
         "@help config"
       );
@@ -12983,6 +13070,7 @@ var arch = (() => {
         "place second at (first.right + 40, first.y)",
         "Reference fields: x, y (top-left corner), width, height, right, bottom, centerX, centerY. Use visible node or tree group IDs from the same view, including automatically positioned tree members.",
         "Each coordinate supports numbers, references and +, -, *, /. Multiplication/division precede addition/subtraction; equal-precedence operators evaluate left to right. Parentheses override precedence, unary + and - are supported. At most 32 operands and 16 nested parentheses; no executable code. Expressions work in place at and route via; size, endpoint and label points stay numeric.",
+        "Subtraction between references also works without spaces: first.y-second.height. Dots/hyphens remain valid in IDs: the longest matching declared ID wins. If root.x-offset is a declared ID, root.x-offset.y means its y coordinate; root.x - offset.y forces subtraction. Hidden IDs still bind and produce visibility errors.",
         "place maritime at (hierarchy.x - maritime.width - 80, vision.centerY - maritime.height / 2)",
         "place second at ((first.x + first.right) / 2, first.y + 20 * 3)",
         "Division by zero and nonfinite calculations are errors. Constant zero divisors are rejected during validation; divisors depending on layout values are checked when positions resolve.",
@@ -13009,7 +13097,7 @@ var arch = (() => {
         "route EDGE_ID { sharePath none }",
         "sharePath: none (default), stereotypes (exact relationship type) or all (different types permitted). A specific route overrides the default.",
         "Bundles fan-in or fan-out relationships sharing a target or source, compatible line styles/directions, matching color/width/dasharray and facing ports. Applies to connected views, including named tree groups. Labels/icons and relationship IDs remain separate; reference connectors follow each complete logical path.",
-        "Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out."
+        "Best effort: sufficient free space is required. Manual via/path, absolute endpoint points, explicitly positioned side ports, straight/bezier curves, parallel links and cross-container links stay independent. Shared junctions are orthogonal, including with curve rounded. Reference connectors themselves are not bundled. Fan-in takes precedence over fan-out."
       );
       section(
         "Route line styles (connected only)",
@@ -13033,6 +13121,14 @@ var arch = (() => {
         "from/to: auto | top | right | bottom | left, or an absolute point (X, Y).",
         "curve: orthogonal | straight | rounded | bezier. With via, bezier requires exactly two control points.",
         'path "M 0 0 L 100 100" replaces the calculated path; label (X, Y) positions the edge label; label none hides its text, frame and icon.'
+      );
+      section(
+        "Positions along node sides",
+        "route EDGE_ID { from bottom 1/2 to left 0.25 curve rounded }",
+        "top, right, bottom and left accept an optional position from 0 to 1, as a decimal or a fraction such as 1/2 or 3/4. top/bottom run left to right; left/right run top to bottom. 0 and 1 select the corners. Omitted positions use the side center (0.5). auto does not accept a position.",
+        "Positions follow the final node size and placement, including packages and named tree groups in connected views. A specific endpoint replaces the entire default endpoint; from left resets an inherited from bottom 0.25 to the left center. Explicit path overrides endpoints.",
+        "Reference connectors accept the same positioned from port: route NODE_ID -> EDGE_ID { from right 1/4 to 1/2 }. Their to remains a fraction along the relationship, not a node side. Fractions cannot divide by zero. Evaluated positions must be between 0 and 1.",
+        'JSON: "from": {"side":"bottom","position":"1/2"}, "to": {"side":"left","position":0.25}. Reference targets accept "to":"1/2". Fractions normalize to decimal numbers in JSON/DSL/meta exports.'
       );
       section(
         "Calculated via points",
@@ -13154,7 +13250,8 @@ var arch = (() => {
         "Attribute types: string, number, integer, boolean, reference. Formats: date, date-time, uri.",
         "viewpoint: nodes, relations, requiredNodes, requiredRelations. styleGroup: backgroundColor.",
         "Multiple inheritance: extends A, B. Profile extends has exactly one registered parent.",
-        "JSON profiles also support comparisons, pairs and connections. Details: @help types/relations/viewpoints PROFILE NAME."
+        "JSON profiles also support comparisons, pairs and connections. A connection rule may use referenceAttributes to count selected typed counterpart references as alternative evidence; the same explicit edge endpoint is not counted twice.",
+        'connections[].through: {relations:["ServiceFunctionAggregation"], direction:"incoming"} permits evidence at selected transitive ancestors (outgoing follows descendants instead). Explicit relationship names are required, including subtype matching; each evidence edge counts once. No implicit model edges are created. Details: @help types/relations/viewpoints PROFILE NAME.'
       );
       section("Validation mode", "config { profile naf41-uaf validation draft }", "validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.");
     } else if (topic === "api") {

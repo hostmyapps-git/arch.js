@@ -45,7 +45,7 @@ try {
     const issues = [], host = document.createElement('div'); document.body.append(host);
     const queries = ['', 'syntax', 'model', 'profiles', 'types uaf Capability', 'types uaf OperationalAgent', 'relations uaf Implements', 'connections uaf OperationalPerformer', 'viewpoints naf4-uaf C1', 'profiles naf41-uaf', 'viewpoints naf41-uaf C7', 'types naf41-uaf Needline', 'connections naf41-uaf OperationalPerformer', 'iconpacks lucide cloud', 'iconpacks tabler "*" 2', 'diagrams', 'views', 'routing', 'styles', 'colors', 'templates', 'config', 'api'];
     arch.registerProfile('wide_help', { title: '界'.repeat(300), nodeTypes: { ['Long'.repeat(80)]: { attributes: { note: { enum: ['🙂界'.repeat(200)] } } } } });
-    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80), 'aliases naf41-uaf', 'mappings naf41-uaf', 'types naf41-uaf@4.1.0-arch.10 Service');
+    queries.push('profiles wide_help', 'types wide_help ' + 'Long'.repeat(80), 'aliases naf41-uaf', 'mappings naf41-uaf', 'types naf41-uaf@4.1.0-arch.14 Service', 'types naf41-uaf Node', 'types naf41-uaf PhysicalActiveResource', 'relations naf41-uaf ServiceAggregation', 'types naf41-uaf ServiceOperation', 'types naf41-uaf DataProductType', 'viewpoints naf41-uaf S3');
     for (const query of queries) for (const theme of ['light', 'dark']) {
       const svg = arch.render(host, '@help ' + query, { theme });
       if (new DOMParser().parseFromString(svg.outerHTML, 'image/svg+xml').querySelector('parsererror')) issues.push(`Invalid SVG: ${query}`);
@@ -91,7 +91,7 @@ try {
   console.log('✓ Built-in help, registered types/icons, SVG export, themes, bounds and error recovery');
   const aliasChecks=await page.evaluate(()=>{
     const issues=[],host=document.createElement('div');document.body.append(host);
-    const source='architecture "Mixed service names" {config {profile "naf41-uaf@4.1.0-arch.10"} model {ServiceSpecification general "General service" Service specialized "Specialized service" relation kind specialized -> general "is a kind of" {type ServiceGeneralization}} view s1 "S1" {viewpoint S1 diagram tree}}';
+    const source='architecture "Mixed service names" {config {profile "naf41-uaf@4.1.0-arch.14"} model {ServiceSpecification general "General service" Service specialized "Specialized service" relation kind specialized -> general "is a kind of" {type ServiceGeneralization}} view s1 "S1" {viewpoint S1 diagram tree}}';
     for(const theme of ['light','dark']) {
       const svg=arch.render(host,source,{theme});
       if(svg.querySelector('[data-node="specialized"]')?.getAttribute('data-type')!=='Service')issues.push('Written node type lost');
@@ -391,6 +391,29 @@ try {
     };
   },routedWalker);
   assert.deepEqual(defaultRoutes,{straightEdges:true,roundedPickup:true,straightDelivery:true});
+  const dockingIssues=await page.evaluate(()=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    const profile={nodeTypes:{actor:{template:'person'},item:{template:'artifact'}},relationTypes:{flow:{from:['actor'],to:['actor'],attributes:{payload:{type:'reference',targets:['item'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
+    const port=(box,side,p)=>({top:{x:box.x+box.width*p,y:box.y},bottom:{x:box.x+box.width*p,y:box.y+box.height},left:{x:box.x,y:box.y+box.height*p},right:{x:box.x+box.width,y:box.y+box.height*p}})[side];
+    const check=(actual,expected,name)=>{if(Math.hypot(actual.x-expected.x,actual.y-expected.y)>.02)issues.push(name);};
+    for(const from of ['top','right','bottom','left'])for(const to of ['top','right','bottom','left'])for(const theme of ['light','dark']) {
+      const source=`architecture "Ports" {model {actor a "A" actor b "B" item data "Data" relation e a -> b "Carries" {type flow payload [data]}}
+        view v "Ports" {place a at (0,0) place b at (600,300) place data at (350,-240)
+        route e {from ${from} 1/4 to ${to} 3/4 curve rounded}
+        route data -> e {from ${from} 1/4 to 1/2 curve rounded}}}`;
+      const model=arch.parse(source,{profile}),graph=arch.layout(model),svg=arch.render(host,model,{theme});
+      const edge=svg.querySelector('[data-edge="e"] > path'),reference=svg.querySelector('.arch-reference-connector');
+      const expectedStart=port(graph.nodes.find(n=>n.id==='a'),from,.25),expectedEnd=port(graph.nodes.find(n=>n.id==='b'),to,.75);
+      check(edge.getPointAtLength(0),expectedStart,`source ${from}/${to}/${theme}`);
+      check(edge.getPointAtLength(edge.getTotalLength()),expectedEnd,`target ${from}/${to}/${theme}`);
+      check(reference.getPointAtLength(0),port(graph.referenceNodes[0].node,from,.25),`reference source ${from}/${theme}`);
+      check(reference.getPointAtLength(reference.getTotalLength()),graph.referenceNodes[0].anchor,`reference target ${to}/${theme}`);
+      const json=arch.translate(source,{format:'json'});
+      if(arch.layout(arch.parse(json,{profile})).edges[0].d!==graph.edges[0].d)issues.push('JSON endpoint changed');
+    }
+    host.remove();return issues;
+  });
+  assert.deepEqual(dockingIssues,[],'All positioned side ports and fractional reference targets render at their requested SVG coordinates');
   const routingIssues=await page.evaluate(source=>{
     const issues=[],host=document.createElement('div');document.body.append(host);
     const paths=['M 320 132 L 470 132','M 320 132 C 350 -150 430 -150 470 132','M 320 132 Q 400 -150 470 132','M 320 132 A 130 100 30 0 1 470 132'];
@@ -471,6 +494,14 @@ try {
     const cycle=arch.validate(symbolic.replace('place b at (100,200)','place b at (a.x,200)'));
     if(cycle.valid||!cycle.diagnostics[0].message.includes('Circular placement dependency'))issues.push('Missing coordinate cycle diagnostic');
     try {arch.layout(symbolic.replace('a.height / 2','a.height / 0'));issues.push('Division by zero was accepted');}catch(error){if(!error.message.includes('Division by zero'))issues.push(error.message);}
+    const compact='architecture "Compact coordinates" {model{service service_situationInformationConsolidation "Situation" service doc "Document" relation edge service_situationInformationConsolidation -> doc "Link"}view v "V"{place service_situationInformationConsolidation at (400,300) place doc at(service_situationInformationConsolidation.x+service_situationInformationConsolidation.width,service_situationInformationConsolidation.y-service_situationInformationConsolidation.height) route edge {curve straight via(service_situationInformationConsolidation.x-service_situationInformationConsolidation.width,service_situationInformationConsolidation.y-service_situationInformationConsolidation.height)}}}';
+    for(const theme of ['light','dark']) {
+      const graph=arch.layout(compact),node=graph.nodes.find(n=>n.id==='doc'),svg=arch.render(host,compact,{theme});
+      if(node.x!==620||node.y!==204)issues.push('Compact placement subtraction failed');
+      if(graph.edges[0].points[1].x!==180||graph.edges[0].points[1].y!==204)issues.push('Compact via subtraction failed');
+      if(svg.querySelector('[data-node="doc"]').getAttribute('transform')!=='translate(620 204)')issues.push('Compact SVG placement differs');
+      if(arch.renderToString(arch.translate(compact),{theme,idPrefix:'compact'})!==arch.renderToString(compact,{theme,idPrefix:'compact'}))issues.push('Compact coordinate JSON differs');
+    }
     host.remove();return issues;
   },c2VisionSource);
   assert.deepEqual(c2VisionIssues,[]);
@@ -543,6 +574,104 @@ try {
   await s1Page.close();
   await page.locator('[data-example="naf41-service-taxonomy"]').click();assert.equal(await page.locator('#error').isVisible(),false);
   console.log('✓ S1 p.105: Service vocabulary, shared specialization, service-to-policy satisfaction, JSON, bounds and both themes');
+
+  const s2Source=await readFile('examples/naf41-service-structure.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const report=arch.validate(source),graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      if(!report.valid||report.diagnostics.length)issues.push('S2 source rejected');
+      if(svg.querySelectorAll('.arch-node').length!==9||svg.querySelectorAll('.arch-edge').length!==8)issues.push('S2 topology missing');
+      if(graph.edges.filter(e=>e.type==='ServiceAggregation'&&e.style==='flow').length!==2)issues.push('S2 aggregation type/notation missing');
+      if(svg.querySelector('[data-node="controller"]')?.getAttribute('data-type')!=='Node')issues.push('S2 Node spelling lost');
+      if(svg.querySelector('[data-node="airTraffic"]')?.getAttribute('data-type')!=='PhysicalActiveResource')issues.push('S2 physical type spelling lost');
+      for(const [id,from,to]of [['consumes','controller','situation'],['enables','getAreaOfInterest','position'],['realizes','airTraffic','situation']]) {
+        const edge=graph.edges.find(e=>e.id===id);if(edge.source!==from||edge.target!==to)issues.push(`S2 ${id} direction differs`);
+      }
+      const cards=[...svg.querySelectorAll('.arch-node')].map(e=>e.getBoundingClientRect()),labels=[...svg.querySelectorAll('.arch-edge-label > rect')].map(e=>e.getBoundingClientRect());
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(labels.some(a=>cards.some(b=>overlaps(a,b))))issues.push('S2 label/card overlap');
+      const bounds=svg.viewBox.baseVal;
+      for(const text of svg.querySelectorAll('text')) {
+        const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+        for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+          const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S2 text exceeds bounds');
+        }
+      }
+      if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s2'})!==arch.renderToString(source,{theme,idPrefix:'s2'}))issues.push('S2 JSON differs');
+    }
+    host.remove();return issues;
+  },s2Source),[]);
+  const s2Page=await browser.newPage({viewport:{width:1600,height:1200}});
+  for(const theme of ['light','dark']) {
+    await s2Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s2-preview'}),{source:s2Source,theme}));
+    await s2Page.locator('svg').screenshot({path:`test-results/naf41-s2-${theme}.png`});
+  }
+  await s2Page.close();
+  await page.locator('[data-example="naf41-service-structure"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ S2 p.108: Node vocabulary, all nine elements/eight directed links, JSON, bounds and both themes');
+
+  const s3Source=await readFile('examples/naf41-service-interfaces.arch','utf8');
+  assert.deepEqual(await page.evaluate(source=>{
+    const issues=[],host=document.createElement('div');document.body.append(host);
+    for(const theme of ['light','dark']) {
+      const report=arch.validate(source),graph=arch.layout(source),svg=arch.render(host,source,{theme});
+      if(!report.valid||report.diagnostics.length)issues.push('S3 source rejected');
+      if(svg.querySelectorAll('.arch-node').length!==9||svg.querySelectorAll('.arch-edge').length!==9)issues.push('S3 topology missing');
+      if(svg.querySelectorAll('[data-node="geographicLocation"]').length!==1||graph.edges.filter(e=>e.target==='geographicLocation').length!==2)issues.push('S3 shared parameter lost');
+      if(svg.querySelector('[data-node="submitLocation"]').getAttribute('data-type')!=='ServiceOperation'||svg.querySelector('[data-node="positionReport"]').getAttribute('data-type')!=='DataProductType')issues.push('S3 source vocabulary lost');
+      if(graph.edges.filter(e=>e.type==='HasServiceOperationParameter').length!==4||graph.edges.filter(e=>e.type==='InvolvesPhysicalResource').length!==2)issues.push('S3 parameter links differ');
+      const cards=[...svg.querySelectorAll('.arch-node')].map(e=>e.getBoundingClientRect()),labels=[...svg.querySelectorAll('.arch-edge-label > rect')].map(e=>e.getBoundingClientRect());
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(labels.some(a=>cards.some(b=>overlaps(a,b))))issues.push('S3 label/card overlap');
+      const bounds=svg.viewBox.baseVal;
+      for(const text of svg.querySelectorAll('text')) {
+        const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+        for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+          const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S3 text exceeds bounds');
+        }
+      }
+      if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s3'})!==arch.renderToString(source,{theme,idPrefix:'s3'}))issues.push('S3 JSON differs');
+    }
+    host.remove();return issues;
+  },s3Source),[]);
+  const s3Page=await browser.newPage({viewport:{width:1700,height:1600}});
+  for(const theme of ['light','dark']) {
+    await s3Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s3-preview'}),{source:s3Source,theme}));
+    await s3Page.locator('svg').screenshot({path:`test-results/naf41-s3-${theme}.png`});
+  }
+  await s3Page.close();
+  await page.locator('[data-example="naf41-service-interfaces"]').click();assert.equal(await page.locator('#error').isVisible(),false);
+  console.log('✓ S3 p.110: operations/data products, shared parameter, optional resource traces, JSON, bounds and both themes');
+  const s4Page=await browser.newPage({viewport:{width:1700,height:1300}});
+  for(const [name,nodeCount,edgeCount]of [['naf41-service-functions',5,4],['naf41-service-functions-cutout',6,10]]) {
+    const source=await readFile(`examples/${name}.arch`,'utf8');
+    assert.deepEqual(await page.evaluate(({source,nodeCount,edgeCount})=>{
+      const issues=[],host=document.createElement('div');document.body.append(host);
+      for(const theme of ['light','dark']) {
+        const report=arch.validate(source),svg=arch.render(host,source,{theme}),graph=arch.layout(source);
+        if(!report.valid||report.diagnostics.length)issues.push('S4 validation notices');
+        if(graph.nodes.length!==nodeCount||graph.edges.length!==edgeCount)issues.push('S4 topology changed');
+        if(svg.querySelectorAll('.arch-node').length!==nodeCount||svg.querySelectorAll('.arch-edge').length!==edgeCount)issues.push('S4 SVG topology changed');
+        const bounds=svg.viewBox.baseVal;
+        for(const text of svg.querySelectorAll('text')) {
+          const box=text.getBBox(),matrix=svg.getCTM().inverse().multiply(text.getCTM());
+          for(const [x,y]of [[box.x,box.y],[box.x+box.width,box.y+box.height]]) {
+            const p=new DOMPoint(x,y).matrixTransform(matrix);if(p.x<bounds.x||p.y<bounds.y||p.x>bounds.x+bounds.width||p.y>bounds.y+bounds.height)issues.push('S4 clipped text');
+          }
+        }
+        if(arch.renderToString(arch.translate(source),{theme,idPrefix:'s4'})!==arch.renderToString(source,{theme,idPrefix:'s4'}))issues.push('S4 JSON differs');
+      }
+      host.remove();return issues;
+    },{source,nodeCount,edgeCount}),[]);
+    for(const theme of ['light','dark']) {
+      await s4Page.setContent(await page.evaluate(({source,theme})=>arch.renderToString(source,{theme,idPrefix:'s4-preview'}),{source,theme}));
+      await s4Page.locator('svg').screenshot({path:`test-results/${name}-${theme}.png`});
+    }
+    await page.locator(`[data-example="${name}"]`).click();assert.equal(await page.locator('#error').isVisible(),false);
+  }
+  await s4Page.close();
+  console.log('✓ S4 pp.111–112: complete example/cut-out, recursive coverage, roles, JSON and both themes');
 
   const roadmapSource=await readFile('examples/naf41-capability-roadmap.arch','utf8');
   assert.deepEqual(await page.evaluate(source=>{

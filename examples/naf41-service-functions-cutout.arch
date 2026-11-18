@@ -1,0 +1,47 @@
+# NAFv4.1 p.111: every directed cut-out association.
+# The recursive aggregates arrow describes a type-level relationship:
+# concrete models use distinct whole/member functions, not a self-loop.
+architecture "NAFv4.1 · S4 Cut-out" {
+  config {profile naf41-uaf}
+  model {
+    Service service "Situation Information Consolidation"
+    ServiceFunction function "Data Storing"
+    ServiceFunction part "Persisting"
+    ServiceProvider provider "Situation Provider"
+    ServiceConsumer consumer "Situation Consumer"
+    OperationalActivity activity "Maintain Situation Picture"
+    relation enables function -> service "enables" {type EnablesService}
+    relation aggregates function -> part "aggregates" {type ServiceFunctionAggregation}
+    relation provides provider -> service "provides" {type ProvidesService}
+    relation consumes consumer -> service "consumes" {type ConsumesService}
+    relation notifies function -> provider "notifies" {type NotifiesServiceProvider}
+    relation accesses consumer -> function "accesses" {type AccessesServiceFunction}
+    relation supports activity -> function "supports" {type SupportsServiceFunction}
+    relation enabledActivity function -> activity "enables" {type EnablesOperationalActivity}
+    relation providerPerforms provider -> activity "performs" {type PerformsOperationalActivity}
+    relation consumerPerforms consumer -> activity "performs" {type PerformsOperationalActivity}
+  }
+  view s4 "S4 · Cut-out relationships" {
+    viewpoint S4
+    place service at (450,0)
+    place provider at (0,320)
+    place function at (450,320)
+    place consumer at (900,320)
+    place activity at (450,700)
+    place part at (120,550)
+    style service {width 300}
+    style function {width 300}
+    style activity {width 300}
+    routes {curve rounded}
+    route enables {from top to bottom}
+    route provides {from top to left via (provider.centerX,service.centerY)}
+    route consumes {from top to right via (consumer.centerX,service.centerY)}
+    route notifies {from left to right}
+    route accesses {from left to right}
+    route aggregates {from bottom 1/4 to right via (function.x+function.width/4,part.centerY)}
+    route supports {from top 1/3 to bottom 1/3}
+    route enabledActivity {from bottom 2/3 to top 2/3}
+    route providerPerforms {from bottom to left via (provider.centerX,activity.centerY)}
+    route consumerPerforms {from bottom to right via (consumer.centerX,activity.centerY)}
+  }
+}

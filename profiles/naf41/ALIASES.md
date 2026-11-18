@@ -102,7 +102,7 @@ Inline-Konfiguration ist weiterhin auf die vorhandenen DSL-Felder begrenzt.
 
 ```arch
 architecture "Services" {
-  config { profile "naf41-uaf@4.1.0-arch.10" }
+  config { profile "naf41-uaf@4.1.0-arch.14" }
   model {
     Service rescue "Rescue"
     ServiceSpecification parent "Rescue services"
@@ -114,15 +114,15 @@ architecture "Services" {
 }
 ```
 
-JSON: `"config": { "profile": "naf41-uaf@4.1.0-arch.10" }`.
-API: `{ profile: 'naf41-uaf@4.1.0-arch.10' }`.
+JSON: `"config": { "profile": "naf41-uaf@4.1.0-arch.14" }`.
+API: `{ profile: 'naf41-uaf@4.1.0-arch.14' }`.
 Ein externes Profil kann ebenso `"extends": "uaf@1.0.0-arch.1"` verwenden;
 das NAF-Profil bindet diese konkrete Basisrevision.
 
 Ein unqualifizierter Profilname wählt wie bisher die zuletzt registrierte
 Definition dieses IDs. `getProfiles()` listet IDs;
 `getProfileVersions('naf41-uaf')` liefert geladene Revisionsstrings.
-`getProfile('naf41-uaf@4.1.0-arch.10')` liefert die konkrete Profilkopie.
+`getProfile('naf41-uaf@4.1.0-arch.14')` liefert die konkrete Profilkopie.
 Parsed Models behalten ihren eingefrorenen Profil-Snapshot.
 
 **Explizit versionierte Revisionen sind unveränderlich:** denselben ID und
@@ -195,3 +195,32 @@ abgeleitete Profile mit einer bisherigen eigenständigen Service-Definition
 kollidieren mit dem neuen Alias. Diese Definition entfernen, wenn Gleichheit
 gewollt ist, oder die bisherige Basisrevision weiter laden und explizit wählen.
 Es gibt keine automatische Umstellung eigener Typdefinitionen.
+
+## S2 vocabulary since revision 11
+
+`Node → LogicalNode` is a second vocabulary alias. LogicalNode remains the
+application subtype of OperationalArchitecture, so the alias does not assert
+that every UAF architecture is semantically equivalent to a NAF Node.
+`PhysicalActiveResource extends ResourcePerformer` is deliberately a concrete
+subtype rather than an alias: the UAF target is abstract, while the NAF example
+uses the physical-resource category as an instantiable modeling vocabulary.
+Inherited attributes and endpoint compatibility still apply, including required
+`isStandardConfiguration`. See [S2 modeling and limits](README.md#s2--service-structure-pp106108).
+
+## Aggregation and composition since revision 12
+
+ServiceAggregation and ServiceComposition are intentionally separate relationship
+types. The former is a directed grouping projection with reusable members;
+it does not assert exclusive composition ownership. Both retain their own
+presentation and individually reject self-links/cycles. No alias equates the
+terms and full UML ownership/lifecycle semantics remain outside this profile.
+
+## S3 vocabulary since revision 13
+
+ServiceOperation aliases UAF ServiceMethod, whose base metaclass is UML
+Operation. DataProductType specializes both DataElement and the application
+PhysicalPassiveResource category; it is not an alias for all passive resources.
+The shared conceptual ServiceOperationParameter has a context-dependent
+operation association (has link or owner reference); S3 makes its resource
+association optional while S7 requires one. This does not implement exclusive
+UML Parameter ownership or instantiate a runtime report object.

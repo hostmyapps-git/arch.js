@@ -5,13 +5,13 @@ import {routingOptions} from './routing-options.js';
 import {relationshipReferences} from './relationship-labels.js';
 
 const fail=(message,loc)=>{throw new ArchError(message,loc,'ARCH_ROUTING');};
-function references(route) {
+function references(route,known) {
   if(route?.via===undefined)return [];
   if(!Array.isArray(route.via))fail('via requires a list of coordinate pairs',route.loc);
   const refs=[];
   for(const point of route.via)for(const axis of ['x','y']) {
     if(!point||typeof point!=='object')fail('via requires coordinate pairs (X, Y)',route.loc);
-    refs.push(...coordinateTerms(point[axis],route.loc).filter(t=>t.ref!==undefined));
+    refs.push(...coordinateTerms(point[axis],route.loc,known).filter(t=>t.ref!==undefined));
   }
   return refs;
 }
@@ -20,13 +20,13 @@ function references(route) {
 // Hidden/overridden routes retain their source without requiring hidden geometry.
 export function viaReferences(model,profile,view) {
   const known=new Set([...model.nodes.map(n=>n.id),...Object.keys(view.trees??{})]);
-  for(const route of [view.routeDefaults,...Object.values(view.routes),...(view.referenceRoutes??[])])for(const ref of references(route))
+  for(const route of [view.routeDefaults,...Object.values(view.routes),...(view.referenceRoutes??[])])for(const ref of references(route,known))
     if(!known.has(ref.ref))fail(`Unknown via reference: ${ref.ref}; use a node or tree group ID`,route.loc);
   const visible=visibleNodeIds(model,view),available=new Set(visible),targets=new Set();
   for(const [id,tree]of Object.entries(view.trees??{}))if(tree.nodes.some(n=>visible.has(n)))available.add(id);
   const collect=route=>{
     if(route?.path!==undefined)return;
-    for(const ref of references(route)) {
+    for(const ref of references(route,known)) {
       if(!available.has(ref.ref))fail(`Hidden or excluded via reference: ${ref.ref}; use a visible node or tree group`,route.loc);
       targets.add(ref.ref);
     }
@@ -52,6 +52,6 @@ export function resolveVia(route,boxes) {
     return boxCoordinate(box,term.field);
   };
   return {...route,via:route.via.map(point=>({
-    x:evaluateCoordinate(point.x,reference,route.loc),y:evaluateCoordinate(point.y,reference,route.loc),
+    x:evaluateCoordinate(point.x,reference,route.loc,boxes),y:evaluateCoordinate(point.y,reference,route.loc,boxes),
   }))};
 }

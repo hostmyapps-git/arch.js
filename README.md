@@ -235,7 +235,7 @@ Namen; `extends` bleibt echte Spezialisierung. Ursprüngliche Namen bleiben in
 Diagrammen und JSON-/DSL-Übersetzungen erhalten. `mappings` dokumentiert
 Framework-/Versionszuordnungen und konvertiert keine Modelle automatisch.
 
-Mit `config { profile "naf41-uaf@4.1.0-arch.10" }` lässt sich eine geladene
+Mit `config { profile "naf41-uaf@4.1.0-arch.14" }` lässt sich eine geladene
 Revision ausdrücklich auswählen. `arch.getProfileVersions('naf41-uaf')` zeigt
 verfügbare Versionen; unqualifizierte IDs wählen die zuletzt registrierte.
 Explizit versionierte Definitionen benötigen bei Änderungen eine neue Version.
@@ -355,6 +355,22 @@ allgemeinen Service, `SatisfiesServicePolicy` vom Service zur Policy.
 [Vollständiges S1-Beispiel](examples/naf41-service-taxonomy.arch), auch in der
 Demo als **NAFv4.1 · Service Taxonomy**. `ServicePolicy` benötigt weiterhin
 `ruleKind`; das Beispiel wählt ausdrücklich `Constraint`.
+
+S2 unterstützt `Node` als Alias von LogicalNode und den konkreten Anwendungs-
+typ `PhysicalActiveResource` mit dem geerbten Pflichtfeld
+`isStandardConfiguration`. Die quellgerichteten Relationen ConsumesService,
+EnablesService und RealizesService sowie die Gruppierungsrelation
+ServiceAggregation ergänzen das vollständige
+[S2-Beispiel von S.108](examples/naf41-service-structure.arch), auch in der Demo
+als **NAFv4.1 · Service Structure**. Native UAF-Endpunkte bleiben unverändert;
+spezielle Consumer-/Provider-Rollen aus dem S2-Cut-out sind weiterhin offen.
+
+S3 ergänzt `ServiceOperation` als Alias von ServiceMethod sowie `DataProductType`
+als physischen passiven Datenprodukttyp. Das
+[vollständige Beispiel von S.110](examples/naf41-service-interfaces.arch) zeigt
+Operationen, einen gemeinsam verwendeten Parameter und optionale Ressourcen-
+bezüge über HasServiceOperationParameter/InvolvesPhysicalResource. Vorhandene
+owner-/resource-Referenzen bleiben als alternative Zuordnungen nutzbar.
 
 Anleitung, Abbildung und offene Semantik:
 [profiles/naf41/README.md](profiles/naf41/README.md). Hilfebefehl:
@@ -652,6 +668,20 @@ Siehe [C8-Beispiel](examples/shared-paths.arch) und `@help routing`.
 Das Profil `naf41-uaf` akzeptiert darin `Constraint` entsprechend S.101 der
 NAFv4.1 als Untertyp von `StrategicConstraint`.
 
+Andockpositionen sind auf allen vier Knotenseiten als Dezimalwert oder Bruch
+möglich und folgen dem Knoten beim Verschieben oder Ändern seiner Größe:
+
+```arch
+route hasLocation { from bottom 1/2 to left 0.25 curve rounded }
+route data -> pickup { from right 1/4 to 1/2 }
+```
+
+`top`/`bottom` zählen von links nach rechts, `left`/`right` von oben nach unten,
+jeweils im Bereich 0–1. Ohne Wert gilt die Mitte. Bei Zuordnungspfeilen ist `to`
+weiterhin eine Position entlang der Relation. Gilt auch für `routes`-Vorgaben;
+konkrete Endpunkte ersetzen Seite und Position zusammen. Details: `@help routing`,
+[HELP.md](HELP.md) und [JSON.md](JSON.md).
+
 Linienstile für Connected-Routen (auch benannte Tree-Gruppen) sind viewlokal:
 
 ```arch
@@ -664,3 +694,11 @@ gemeinsam gefärbt; Label-/Iconfarben bleiben erhalten. `dasharray none` macht
 die Linie durchgezogen. Zuordnungslinien unterstützen dieselben Felder.
 Unterschiedliche Farben/Breiten/Muster verhindern gemeinsame `sharePath`-Abschnitte.
 [Beispiel](examples/route-styles.arch), Demo **Route line styles**, `@help routing`.
+
+S4 unterstützt seit Profilrevision 4.1.0-arch.14 sowohl das vollständige Beispiel
+auf S.112 als auch die Beziehungsmuster des Cut-outs auf S.111. Teilfunktionen
+werden über ausgewählte Aggregationsvorfahren einem Service zugeordnet.
+Provider/Consumer sind explizite Kontextrollen. Beispiele:
+[Service Functions](examples/naf41-service-functions.arch),
+[S4 Cut-out](examples/naf41-service-functions-cutout.arch). Typen und Grenzen:
+[Profilbeschreibung](profiles/naf41/README.md#s4-functions-aggregation-and-service-context-pp111112).

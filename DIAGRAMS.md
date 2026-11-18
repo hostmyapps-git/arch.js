@@ -572,3 +572,22 @@ mit der im Modell gewählten Schreibweise erscheinen. `sharePath stereotypes`
 fasst Relationsaliase mit ihrer kanonischen Relation zusammen; echte Untertypen
 bleiben getrennte Stereotypen. Regeln und Versionsbindung:
 [Aliase und Mappings](profiles/naf41/ALIASES.md).
+
+Das [S2-Beispiel von S.108](examples/naf41-service-structure.arch) enthält neun
+Knoten und acht Relationen. Connected mit expliziten `place`-/`route`-Angaben
+zeigt Node, fünf Services, Interface, Function und PhysicalActiveResource.
+Die beiden ServiceDependency-Kanten und die ServiceAggregation-Verzweigung
+bleiben fachlich getrennt von ConsumesService/EnablesService/RealizesService.
+Eine unbeschränkte Tree-View wäre für diese Mischung keine geeignete Hierarchie.
+
+`ServiceAggregation` wird als durchgezogene gerichtete Verbindung mit Pfeil zum
+Mitglied dargestellt. `ServiceComposition` behält seine Kompositionsnotation;
+beide Relationsnamen sind eigenständige Typen und keine Aliase.
+
+Das [S3-Beispiel von S.110](examples/naf41-service-interfaces.arch) verwendet
+Connected mit neun Knoten und neun gerichteten Beziehungen. Der Parameter
+Geographic Location erscheint einmal und ist über zwei has-Kanten mit beiden
+Operationen verbunden. DataProductType konkretisiert PhysicalPassiveResource
+und DataElement. Resource hat im Beispiel keinen involves-Bezug. Class-
+Parameterkompartimente benötigen weiterhin einen skalaren owner; sie leiten
+keine Mehrfachzuordnung aus has-Kanten ab.

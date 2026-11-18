@@ -102,7 +102,12 @@ Anker: `x`, `y`, `width`, `height`, `right`, `bottom`, `centerX`, `centerY`.
 Referenzen gelten für sichtbare Nodes/Tree-Gruppen derselben View, unabhängig
 von der Deklarationsreihenfolge. `+`, `-`, `*`, `/`, Klammern und unäre Vorzeichen
 sind erlaubt. Punktrechnung geht vor Strichrechnung; Division durch null ist ein
-Fehler. Berechnungen funktionieren ebenfalls für `via`, einschließlich gemeinsamer
+Fehler. Referenzsubtraktionen funktionieren auch kompakt, etwa
+`service.y-service.height`. IDs mit Punkten/Bindestrichen bleiben gültig: Die
+längste passende deklarierte ID hat Vorrang. Bei einer ID `root.x-offset`
+ist `root.x-offset.y` deren y-Koordinate; `root.x - offset.y` erzwingt die
+Subtraktion. Ein pauschales Entfernen oder Trennen von Bindestrichen ist deshalb
+keine geeignete Normalisierung. Berechnungen funktionieren ebenfalls für `via`, einschließlich gemeinsamer
 `routes`-Vorgaben und Zuordnungslinien. Via verwendet absolute Diagrammkoordinaten
 nach Positionierung der Nodes und Gruppen. Größen-, Endpunkt- und Labelpunkte
 bleiben numerisch. Die Hilfe erklärt Inhaltskoordinaten in Packages, Grenzen
@@ -390,6 +395,38 @@ bleiben unverändert. Vollständiges Beispiel:
 
 ## Gemeinsame Routing-Vorgaben
 
+### Andockpositionen an Knotenseiten
+
+```arch
+route hasLocation {
+  from bottom 1/2
+  to left 0.25
+  curve rounded
+}
+```
+
+Alle vier Seiten `top`, `right`, `bottom`, `left` akzeptieren eine Position
+zwischen 0 und 1, als Dezimalzahl oder Bruch (`1/2`, `3/4`, auch mit Leerzeichen).
+Auf `top`/`bottom` läuft sie von links nach rechts, auf `left`/`right` von oben
+nach unten. Ohne Wert gilt die Mitte (0.5); 0 und 1 liegen an den Ecken.
+Die Position folgt dem Knoten auch beim Verschieben oder Ändern seiner Größe.
+`auto` akzeptiert keine Position; Division durch null ist ungültig.
+
+Für Zuordnungspfeile gilt zum Beispiel:
+
+```arch
+route data -> pickup { from right 1/4 to 1/2 }
+```
+
+`from` wählt hier die Position an der Karte, `to` weiterhin den Anteil entlang
+der tragenden Relation. Auch `routes { from bottom 1/2 }` ist möglich. Eine
+konkrete Endpunktangabe ersetzt Seite und Position zusammen; `from left` nutzt
+daher die linke Mitte, unabhängig von einer geerbten Position. Freie `path`-
+Angaben haben Vorrang. Explizit positionierte Ports werden nicht automatisch
+mit `sharePath` gebündelt. `@help routing` enthält die Syntax ebenfalls.
+
+### Vorgaben und Überschreibungen
+
 Innerhalb einer Connected-View setzt `routes` Vorgaben für alle fachlichen Kanten
 und Zuordnungspfeile, auch ohne einzelne Routing-Blöcke:
 
@@ -456,7 +493,8 @@ sichtbar; der gemeinsame Abschnitt und seine Pfeilspitze werden einmal gezeichne
 Die Option gilt in Connected-Views einschließlich benannter Tree-Gruppen.
 Gemeinsame Abzweige sind rechtwinklig, auch bei `curve rounded`. Es handelt sich
 um eine automatische Anordnung bei ausreichend freiem Platz: Hindernisse,
-zu wenig Labelplatz, manuelle `via`/`path`, absolute Endpunkte, `straight`/`bezier`,
+zu wenig Labelplatz, manuelle `via`/`path`, absolute Endpunkte, explizit
+positionierte Seitenports, `straight`/`bezier`,
 parallele Beziehungen und Kanten zwischen Containern bleiben unabhängig.
 Fan-in hat Vorrang vor Fan-out. Grafische Zuordnungslinien werden nicht gebündelt;
 sie folgen weiterhin dem vollständigen Pfad ihrer jeweiligen Beziehung.
@@ -650,7 +688,7 @@ Fehlerisolation nicht. API-Vertrag: [SPEC.md](SPEC.md#prüfgrenzen-und-fehlerver
 Jeweils einen Befehl pro Hilfedokument verwenden; `.` wählt das Dokumentprofil.
 
 Eine geladene Revision lässt sich mit
-`config { profile "naf41-uaf@4.1.0-arch.10" }` festlegen. Auch die Hilfebefehle
+`config { profile "naf41-uaf@4.1.0-arch.14" }` festlegen. Auch die Hilfebefehle
 akzeptieren diesen qualifizierten Profilnamen. Unqualifizierte IDs bleiben
 möglich. `arch.getProfileVersions('naf41-uaf')` zeigt geladene Revisionen;
 es werden keine historischen Dateien automatisch geladen.
@@ -658,3 +696,68 @@ es werden keine historischen Dateien automatisch geladen.
 Aliase werden im externen JSON-Profil definiert, nicht im Inline-config-Block.
 Mappings allein akzeptieren keine zusätzlichen Modelltypen. Details und Beispiele:
 [Aliase und Mappings](profiles/naf41/ALIASES.md).
+
+## S2: logische Knoten und physische Ressourcen
+
+Ab `naf41-uaf@4.1.0-arch.11` sind `Node` und `PhysicalActiveResource` direkt
+verwendbar. Node ist ein Alias von LogicalNode; PhysicalActiveResource ein
+konkreter Untertyp von ResourcePerformer. Für Letzteren ist
+`isStandardConfiguration true|false` weiterhin ausdrücklich anzugeben.
+
+`@help types naf41-uaf Node`, `@help types naf41-uaf PhysicalActiveResource`
+und `@help viewpoints naf41-uaf S2` erklären Typen und Grenzen. Jeweils einen
+Befehl pro Hilfedokument verwenden. Die Richtungen des Beispiels sind:
+`ConsumesService` Node → Service, `EnablesService` ServiceFunction → Service,
+`RealizesService` PhysicalActiveResource → Service. Die nativen UAF-Beziehungen
+Consumes, IsCapableToPerform und Implements behalten ihre bisherigen Regeln.
+Vollständiges Beispiel: [S2 Service Structure](examples/naf41-service-structure.arch).
+
+Für `aggregates` in S2 ist ab Profilrevision `4.1.0-arch.12`
+`ServiceAggregation` verfügbar: Gesamtservice → Mitgliedservice. Beispiel:
+
+```arch
+relation groups documentManagement -> storage "aggregates" {
+  type ServiceAggregation
+}
+```
+
+`@help relations naf41-uaf ServiceAggregation` zeigt Endpunkte und Regeln.
+Die Beziehung ist eigenständig und erlaubt gemeinsam referenzierte Mitglieder;
+Selbstbezüge/Zyklen sind verboten. `ServiceComposition` bleibt als separater
+Typ für Komposition erhalten. Beide zählen zu den strukturellen S2-Verbindungen.
+
+## S3: ServiceOperation und DataProductType
+
+Seit `naf41-uaf@4.1.0-arch.13` sind beide Namen verfügbar. ServiceOperation ist
+ein Alias von ServiceMethod; DataProductType spezialisiert DataElement und
+PhysicalPassiveResource. „Position Report“ ist ein Element dieses Datenprodukttyps.
+
+`HasServiceOperationParameter` verbindet Operation → Parameter,
+`InvolvesPhysicalResource` Parameter → physische passive Ressource/Datenprodukt.
+Ein Parameter darf mehreren Operationen zugeordnet sein. In S3 ist die
+Ressourcenzuordnung optional; bestehende owner-/resource-Referenzen bleiben
+nutzbar. S7 verlangt weiterhin beide Zuordnungen, über Kanten oder Referenzen.
+
+Jeweils einzeln: `@help types naf41-uaf ServiceOperation`,
+`@help types naf41-uaf DataProductType`, `@help viewpoints naf41-uaf S3`.
+[Ausführbares Beispiel von S.110](examples/naf41-service-interfaces.arch).
+
+## S4: Service Functions
+
+Das Profil unterstützt das Beispiel auf S.112 und die gerichteten Beziehungen
+des Cut-outs auf S.111. Die Zuordnungen und Grenzen sind in der
+[S4-Profilbeschreibung](profiles/naf41/README.md#s4-functions-aggregation-and-service-context-pp111112) dokumentiert.
+
+```arch
+relation enables storing -> service "enables" {type EnablesService}
+relation contains storing -> persisting "aggregates" {type ServiceFunctionAggregation}
+```
+
+Teilfunktionen benötigen keine zusätzliche direkte Servicekante, wenn ein
+ausgewählter Aggregationsvorfahr den Service ermöglicht. Isolierte Funktionen
+bleiben Fehler; mehrere Aggregationseltern sind erlaubt, Zyklen nicht.
+ServiceProvider und ServiceConsumer bilden die optionalen Rollen des Cut-outs ab.
+Alle Relationstypen: @help viewpoints naf41-uaf S4.
+
+Beispiele: [Service Functions](examples/naf41-service-functions.arch) und
+[S4 Cut-out](examples/naf41-service-functions-cutout.arch), auch im Demo-Menü.

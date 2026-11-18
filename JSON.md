@@ -223,6 +223,11 @@ In `place.at` können beide Koordinaten unabhängig Zahlen oder Ausdrucksstrings
 sein. Strings unterstützen dieselben Referenzen und `+`, `-`, `*`, `/` wie die DSL;
 `width`, `height`, `right`, `bottom`, `centerX`, `centerY` ergänzen `x`/`y`.
 IDs verweisen auf sichtbare Nodes oder Tree-Gruppen derselben View.
+Auch kompakte Subtraktionen wie `"service.y-service.height"` funktionieren.
+Punkte/Bindestriche bleiben in IDs erlaubt; die längste passende deklarierte ID
+hat Vorrang. Ist `root.x-offset` eine ID, referenziert `"root.x-offset.y"`
+deren y-Koordinate. `"root.x - offset.y"` erzwingt die Subtraktion.
+Diese Unterscheidung gilt ebenfalls für `via`.
 Reine Zahlenarithmetik wird normalisiert. Symbolische Ausdrücke bleiben bei
 JSON-/DSL-Übersetzung und in Meta-Views erhalten. Die Übersetzung speichert
 keine bereits berechneten Layoutkoordinaten anstelle der Ausdrücke.
@@ -253,7 +258,7 @@ automatisch. Syntax und Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
 
 Ein registriertes Profil wird über `config.profile` gewählt. Eine konkrete
 geladene Revision kann beispielsweise mit
-`"config": { "profile": "naf41-uaf@4.1.0-arch.10" }` gebunden werden.
+`"config": { "profile": "naf41-uaf@4.1.0-arch.14" }` gebunden werden.
 Aliasnamen bleiben in den `type`-Feldern auch bei JSON-/DSL-Übersetzungen
 erhalten. `aliases` und `mappings` gehören zum vollständigen externen
 Registrierungsformat, nicht zur Inline-Konfiguration:
@@ -322,8 +327,32 @@ Fehlerisolation und Mehrfachview-Verhalten entsprechen dem
 exakt gleiche Relationstypen in Connected-Views; `"all"` erlaubt verschiedene
 Typen mit kompatibler Darstellung, `"none"` ist der Standard. Eine konkrete
 `"route": {"edgeId": {"sharePath": "none"}}` überschreibt die Vorgabe.
-Manuelle Geometrie bleibt unabhängig. Die Option wird in beide Richtungen
+Manuelle Geometrie einschließlich expliziter Seitenpositionen bleibt unabhängig. Die Option wird in beide Richtungen
 zwischen JSON und DSL erhalten; Details und Grenzen: [HELP.md](HELP.md).
+
+Relative Andockpositionen an Knotenseiten entsprechen `from bottom 1/2 to left 0.25`:
+
+```json
+"route": {
+  "hasLocation": {
+    "from": {"side": "bottom", "position": "1/2"},
+    "to": {"side": "left", "position": 0.25}
+  },
+  "data -> pickup": {
+    "from": {"side": "right", "position": "1/4"},
+    "to": "1/2"
+  }
+}
+```
+
+`side` ist `top`, `right`, `bottom` oder `left`; `position` ist eine Zahl im
+Bereich 0–1 oder ein Bruch als String. Division durch null ist ungültig.
+`top`/`bottom` zählen von links nach rechts, `left`/`right` von oben nach unten.
+Einfache Seitenstrings bleiben gültig und wählen die Mitte. Bei Zuordnungslinien
+bleibt `to` eine Zahl oder ein Bruch entlang des Relationspfads. Brüche werden
+beim Übersetzen/Meta-Export zu Dezimalzahlen normalisiert. Dieselben Endpunkt-
+Objekte können in `routes` verwendet werden; konkrete Endpunkte ersetzen die
+gesamte geerbte Seiten-/Positionsangabe.
 
 Linienstile sind ebenfalls gleichwertig zur DSL:
 
