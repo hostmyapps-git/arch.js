@@ -28,8 +28,8 @@ test('route styles inherit field by field, independent of order, without changin
  const views=arch.parse(source(defaults,'view clean "Clean" {}'),{profile});assert.equal(arch.layout(views,{view:'clean'}).edges[0].color,undefined);
 });
 
-test('dash patterns support numeric arrays, SVG number strings, odd repetition and explicit solid overrides',()=>{
- for(const [input,expected]of [['[8,4]',[8,4]],['"8, 4"',[8,4]],['"8 4"',[8,4]],['[3]',[3,3]],['[1,2,3]',[1,2,3,1,2,3]],['[0,3]',[0,3]],['none',[]],['[]',[]]]) {
+test('dash patterns support comma-separated lists with or without brackets, SVG number strings and explicit solid overrides',()=>{
+ for(const [input,expected]of [['[8,4]',[8,4]],['8, 4',[8,4]],['"8, 4"',[8,4]],['"8 4"',[8,4]],['[3]',[3,3]],['[1,2,3]',[1,2,3,1,2,3]],['1,2,3',[1,2,3,1,2,3]],['[0,3]',[0,3]],['none',[]],['[]',[]]]) {
   const graph=layout(`routes {dasharray ${input}}`);assert.deepEqual(graph.edges[0].dasharray,expected,input);
   const path=edge(xml(render(`routes {dasharray ${input}}`)),'e1');assert.equal(path.getAttribute('stroke-dasharray'),expected.length?expected.join(' '):'none');
  }
@@ -40,7 +40,7 @@ test('dash patterns support numeric arrays, SVG number strings, odd repetition a
 test('route style validation rejects nonfinite/out-of-range widths, invalid colors and unsafe/malformed dash values',()=>{
  for(const value of ['0','-1','0.01','65','"2"'])assert.throws(()=>layout(`routes {width ${value}}`),/width/i);
  for(const value of ['"#ggg"','"rgb(1,2,3)"','"url(https://invalid)"','true'])assert.throws(()=>layout(`routes {color ${value}}`),/color|string or word/);
- for(const value of ['[-1,2]','[0,0]','[10001,2]','[true,2]','["2",3]','""','"6,,4"','"6,"','"2px 4px"','"url(#a)"','2',`[${Array(33).fill(1).join(',')}]`])assert.throws(()=>layout(`routes {dasharray ${value}}`),/dasharray/);
+ for(const value of ['[-1,2]','[0,0]','[10001,2]','[true,2]','["2",3]','""','"6,,4"','"6,"','"2px 4px"','"url(#a)"','2','4,','4, none','4, -2',`[${Array(33).fill(1).join(',')}]`])assert.throws(()=>layout(`routes {dasharray ${value}}`),/dasharray/);
  for(const rules of ['route e1 {width 0}','route data -> e1 {dasharray [0,0]}','route data -> e1 {color "#nope"}']) {
   const report=arch.validate(source(rules),{profile});assert.equal(report.valid,false);assert.ok(report.diagnostics[0].line>0);
  }
@@ -93,8 +93,11 @@ test('thick route markers stay within conservative SVG bounds while default and 
 });
 
 test('JSON/DSL/meta preserve route styles, unknown-field candidates include them and both bundles render identically',async()=>{
- const s=source('routes {color blue width 2 dasharray [8,4]} route data -> e1 {color orange dasharray "2,3"}'),json=arch.translate(s,{profile});
- assert.match(json,/"dasharray": \[/);assert.match(json,/"dasharray": "2,3"/);
+ const s=source('routes {dasharray 8, 4 color blue width 2} route e1 {dasharray 5, 2} route data -> e1 {dasharray 2, 3 color orange}'),json=arch.translate(s,{profile});
+ const {routes, route}=JSON.parse(json).architecture.views.v;
+ assert.deepEqual(routes.dasharray,[8,4]);
+ assert.deepEqual(route.e1.dasharray,[5,2]);
+ assert.deepEqual(route['data -> e1'].dasharray,[2,3]);
  assert.equal(arch.renderToString(json,{profile,idPrefix:'same'}),arch.renderToString(s,{profile,idPrefix:'same'}));
  assert.equal(arch.renderToString(arch.translate(json,{profile}),{profile,idPrefix:'same'}),arch.renderToString(s,{profile,idPrefix:'same'}));
  const inspection=arch.inspectSource(s.replace('color blue','colro blue'),{profile});assert.equal(inspection.valid,false);assert.match(JSON.stringify(inspection),/color/);

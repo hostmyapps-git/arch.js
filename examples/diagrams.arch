@@ -82,11 +82,11 @@ architecture "Seven diagram renderers" {
   }
   view states "State · Mission lifecycle" {
     include ready, active, closed
-    diagram state { initial ready finals [closed] }
+    diagram state { initial ready final closed }
   }
   view workflow "Swimlanes · Rescue workflow" {
     include ops, crew, start, assess, decision, dispatch, cancel, end
-    diagram activity { lanes [ops, crew] laneAttribute owner initial start finals [end] decisions [decision] }
+    diagram activity { lanes [ops, crew] laneAttribute owner initial start final [end] decisions [decision] }
   }
   view mapping "Matrix · Services to capabilities" {
     include api, store, rescue, tracking, planning

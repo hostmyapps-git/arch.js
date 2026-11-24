@@ -1,0 +1,52 @@
+# NAFv4.1 pp.126–127: the complete L1 Search and Rescue example.
+# LogicalActor/LogicalEquipment retain distinct conceptual types.
+architecture "L1 — Search and Rescue" {
+  config { profile naf41-uaf }
+  model {
+    Capability sar "SAR"
+    Node searchAndRescue "Search and Rescue"
+    Node rescue "Rescue"
+    Node search "Search"
+    Node waterborneRescue "Waterborne Rescue"
+    Node airborneRescue "Airborne Rescue"
+    Node spaceRescue "Space Rescue"
+    InformationProduct informationProduct "Information Product"
+    LogicalActor crew "Crew"
+    LogicalEquipment communicationDevice "Communication Device"
+    LogicalEquipment onshoreRescueVessel "Onshore Rescue Vessel"
+    LogicalEquipment surveillanceSystem "Surveillance System"
+
+    relation supports searchAndRescue -> sar "supports" {type Exhibits}
+    relation aggregatesRescue searchAndRescue -> rescue "aggregates" {type GroupsLogicalResource}
+    relation aggregatesSearch searchAndRescue -> search "aggregates" {type GroupsLogicalResource}
+    relation specializesWaterborne waterborneRescue -> rescue "is a kind of" {type OperationalGeneralization}
+    relation specializesAirborne airborneRescue -> rescue "is a kind of" {type OperationalGeneralization}
+    relation specializesSpace spaceRescue -> rescue "is a kind of" {type OperationalGeneralization}
+    relation aggregatesInformation waterborneRescue -> informationProduct "aggregates" {type GroupsLogicalResource}
+    relation aggregatesCrew waterborneRescue -> crew "aggregates" {type GroupsLogicalResource}
+    relation aggregatesDevice waterborneRescue -> communicationDevice "aggregates" {type GroupsLogicalResource}
+    relation aggregatesVessel waterborneRescue -> onshoreRescueVessel "aggregates" {type GroupsLogicalResource}
+    relation aggregatesSurveillance search -> surveillanceSystem "aggregates" {type GroupsLogicalResource}
+  }
+  view l1 "L1 — Logical Taxonomy" {
+    viewpoint L1
+    routes {curve rounded sharePath stereotypes from bottom to top}
+    route supports {from top to bottom}
+    route specializesWaterborne {from top to bottom}
+    route specializesAirborne {from top to bottom}
+    route specializesSpace {from top to bottom}
+
+    place sar at (900,0)
+    place searchAndRescue at (sar.x,180)
+    place rescue at (600,400)
+    place search at (1500,rescue.y)
+    place waterborneRescue at (300,620)
+    place airborneRescue at (600,waterborneRescue.y)
+    place spaceRescue at (900,waterborneRescue.y)
+    place informationProduct at (0,880)
+    place crew at (300,informationProduct.y)
+    place communicationDevice at (600,informationProduct.y)
+    place onshoreRescueVessel at (900,informationProduct.y)
+    place surveillanceSystem at (search.x,informationProduct.y)
+  }
+}

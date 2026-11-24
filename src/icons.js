@@ -1,5 +1,5 @@
-import { ArchError } from './parser.js';
-import { inspectPath } from './geometry.js';
+import { ArchError } from './errors.js';
+import { inspectPath } from './svg-path.js';
 import { readIconify, iconPaint } from './iconify.js';
 
 const packs = new Map();

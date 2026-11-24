@@ -7,5 +7,12 @@ export class ArchError extends Error {
     this.column = loc.column ?? null;
     this.code = code;
     if (loc.path !== undefined) this.path = loc.path;
+    if (loc.help !== undefined) this.help = loc.help;
   }
+}
+
+export function errorDiagnostic(error) {
+  const {code, message, line, column, path, help} = error;
+  return {severity:'error', code, message, line, column,
+    ...(path === undefined ? {} : {path}), ...(help === undefined ? {} : {help})};
 }

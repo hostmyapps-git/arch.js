@@ -1,6 +1,7 @@
 import { ArchError } from './errors.js';
-import { num, wrap } from './geometry.js';
-import { toSVG, escape } from './svg.js';
+import { escape, num } from './svg-values.js';
+import { wrap } from './text-layout.js';
+import { toSVG } from './svg.js';
 
 export function stackViews(model, layouts) {
   const padding = 24, gap = 24, width = Math.max(...layouts.map(graph => graph.bounds.width));

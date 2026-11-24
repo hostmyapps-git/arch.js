@@ -1,16 +1,19 @@
 import { ArchError } from './errors.js';
 import { normalizeColor } from './colors.js';
+import { naf41LegacyGrid } from '../profiles/naf41/viewpoint-grid.mjs';
+import { DIAGRAMS, GRID_MODES, GRID_VISIBILITY, GRID_VISIBILITY_ERROR } from './diagram-types.js';
 
 // These are drawing primitives, not framework/metamodel types.
 export const TEMPLATES = Object.freeze(['person', 'system', 'application', 'service', 'component', 'database',
   'queue', 'interface', 'capability', 'process', 'artifact', 'node', 'package']);
 export const EDGE_STYLES = Object.freeze(['flow', 'dependency', 'association', 'access', 'composition', 'realization', 'generalization']);
-export const NODE_PROPERTIES = Object.freeze(['description', 'technology', 'icon', 'stereotype', 'tags']);
+export const NODE_PROPERTIES = Object.freeze(['description', 'technology', 'icon', 'stereotype', 'tags', 'backgroundImage']);
 export const EDGE_PROPERTIES = Object.freeze(['description', 'technology', 'tags', 'direction']);
 const registry = new Map();
 const revisions = new Map();
 const lockedRevisions = new Set();
 const compiledProfiles = new WeakSet();
+const typeAncestry = new WeakMap();
 const idPattern = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 const reservedTypes = new Set(['relation', 'model', 'view', 'config', 'architecture']);
 const reservedAttributes = new Set(['id', 'type', 'title', 'parent', 'loc', 'attributes', 'attributeLocs', 'relation']);
@@ -103,7 +106,6 @@ function attributes(value = {}, label) {
 const bases = rule => typeof rule?.extends === 'string' ? [rule.extends] : rule?.extends ?? [];
 // Alias entries are resolved lookup views, never additional inheritance nodes.
 export const canonicalType = (name, definitions) => definitions[name]?.aliasOf ?? name;
-const canonicalEntries = definitions => Object.entries(definitions).filter(([, rule]) => !rule.aliasOf);
 const registered = selection => revisions.get(selection) ?? registry.get(selection);
 export function getProfileVersions(name) {
   if (!registry.has(name)) fail(`Unknown profile: ${name}`);
@@ -149,9 +151,54 @@ function comparisons(value = [], label) {
   });
 }
 
+function gridLayout(raw, viewpoints, styleGroups, label) {
+  keys(raw,['viewpoint','title','columns','rows','cells','products','diagrams','show'],label);
+  const {viewpoint,title,columns,rows,cells,products,diagrams,show} = raw;
+  const text = value => typeof value === 'string' && value.length <= 200;
+  if (viewpoint!==undefined && !own(viewpoints,viewpoint) || !text(title) || !title) fail(`${label}: expected a title and an optional known viewpoint`);
+  const checkModes = item => {
+    for (const field of ['products','diagrams']) if (item[field]!==undefined && !GRID_MODES.includes(item[field]))
+      fail(`${label}: ${field} must be count, list or none`);
+  };
+  checkModes(raw);
+  if (show!==undefined && !GRID_VISIBILITY.includes(show)) fail(`${label}: ${GRID_VISIBILITY_ERROR}`);
+  if (!Array.isArray(columns) || !columns.length || columns.length>16 || !columns.every(text)) fail(`${label}: invalid columns`);
+  if (!Array.isArray(rows) || !rows.length || rows.length>16) fail(`${label}: invalid rows`);
+  const palette = rows.map(row => {
+    keys(row,['title','color','darkColor','styleGroup'],label);
+    const {title,styleGroup} = row;
+    if (!text(title)) fail(`${label}: invalid row title`);
+    if (styleGroup!==undefined) {
+      identifier(styleGroup,label);
+      if (!own(styleGroups,styleGroup) || !styleGroups[styleGroup].backgroundColor)
+        fail(`${label}: row styleGroup ${styleGroup} must define a backgroundColor`);
+      if (row.color!==undefined || row.darkColor!==undefined)
+        fail(`${label}: use styleGroup or explicit row colors`);
+      return {title,styleGroup};
+    }
+    const color=normalizeColor(row.color), darkColor=normalizeColor(row.darkColor);
+    if (!color || !darkColor) fail(`${label}: invalid row colors`);
+    return {title,color,darkColor};
+  });
+  if (!Array.isArray(cells) || !cells.length || cells.length>128) fail(`${label}: invalid cells`);
+  const ids = new Set(), positions = new Set();
+  for (const cell of cells) {
+    keys(cell,['id','row','col','bridge','vertical','products','diagrams'],label);
+    checkModes(cell);
+    const {id,row,col,bridge,vertical} = cell;
+    const position = `${row},${col},${Boolean(bridge)}`;
+    if (!own(viewpoints,id) || ids.has(id) || positions.has(position) ||
+        !Number.isInteger(row) || row<0 || row>=rows.length || !Number.isInteger(col) || col<0 || col>=columns.length ||
+        bridge!==undefined && typeof bridge!=='boolean' || vertical!==undefined && typeof vertical!=='boolean')
+      fail(`${label}: invalid or duplicate cell ${id}`);
+    ids.add(id); positions.add(position);
+  }
+  return {viewpoint,title,columns:[...columns],rows:palette,cells:copy(cells),products,diagrams,...(show!==undefined ? {show} : {})};
+}
+
 export function compileProfile(definition, fallbackId) {
   if (compiledProfiles.has(definition)) return definition;
-  keys(definition, ['id', ...documentationKeys, 'version', 'extends', 'aliases', 'mappings', 'nodeTypes', 'relationTypes', 'viewpoints', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profile');
+  keys(definition, ['id', ...documentationKeys, 'version', 'extends', 'aliases', 'mappings', 'nodeTypes', 'relationTypes', 'viewpoints', 'viewpointGrid', 'diagrams', 'styleGroups', 'defaultRelation', 'requireViewpoint'], 'Profile');
   const id = definition.id ?? fallbackId;
   identifier(id, 'Profile ID');
   if (definition.extends !== undefined && (typeof definition.extends !== 'string' || !registered(definition.extends))) fail(`Unknown base profile: ${definition.extends}`);
@@ -260,7 +307,7 @@ export function compileProfile(definition, fallbackId) {
     if (!own(rawEdges, name) || compiling.has(`e:${name}`)) fail(`Unknown or cyclic relation type: ${name}`);
     identifier(name, 'relation type');
     const raw = rawEdges[name];
-    keys(raw, ['extends', 'from', 'to', 'directions', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic', 'sequenceMessage', 'referenceLabels', 'referenceConnectorLabels', 'referenceDisplay', 'referenceOccurrences', ...documentationKeys], `relation type ${name}`);
+    keys(raw, ['extends', 'from', 'to', 'directions', 'style', 'abstract', 'allowSelf', 'attributes', 'outgoing', 'incoming', 'pairs', 'acyclic', 'sequenceMessage', 'sequenceContext', 'activityFlow', 'stateTrigger', 'referenceLabels', 'referenceConnectorLabels', 'referenceDisplay', 'referenceOccurrences', ...documentationKeys], `relation type ${name}`);
     compiling.add(`e:${name}`);
     const baseNames = parentNames(raw.extends, `Base relationship of ${name}`), parents = baseNames.map(relation), parent = parents[0];
     const result = { ...documentation(raw, name), from: names(raw.from ?? parent?.from, `${name}.from`), to: names(raw.to ?? parent?.to, `${name}.to`),
@@ -274,6 +321,22 @@ export function compileProfile(definition, fallbackId) {
     if (raw.sequenceMessage !== undefined || parent?.sequenceMessage !== undefined) {
       result.sequenceMessage = raw.sequenceMessage ?? parent.sequenceMessage;
       if (typeof result.sequenceMessage !== 'boolean') fail(`${name}.sequenceMessage must be boolean`);
+    }
+    const sequenceContext=raw.sequenceContext ?? parent?.sequenceContext;
+    if (sequenceContext!==undefined) {
+      if (!['above','side'].includes(sequenceContext)) fail(`${name}.sequenceContext must be above or side`);
+      result.sequenceContext=sequenceContext;
+    }
+    const activityFlow = raw.activityFlow === undefined ? parents.find(rule=>rule.activityFlow !== undefined)?.activityFlow : raw.activityFlow;
+    if (activityFlow !== undefined) {
+      if (typeof activityFlow !== 'boolean') fail(`${name}.activityFlow must be boolean`);
+      result.activityFlow = activityFlow;
+    }
+    const stateTrigger = raw.stateTrigger === undefined ? parents.find(rule => rule.stateTrigger !== undefined)?.stateTrigger : raw.stateTrigger;
+    if (stateTrigger !== undefined) {
+      identifier(stateTrigger, `${name}.stateTrigger`);
+      if (result.attributes[stateTrigger]?.type !== 'reference') fail(`${name}.stateTrigger: ${stateTrigger} must be a reference attribute`);
+      result.stateTrigger = stateTrigger;
     }
     if (raw.referenceConnectorLabels !== undefined || parent?.referenceConnectorLabels !== undefined) {
       result.referenceConnectorLabels = raw.referenceConnectorLabels ?? parent.referenceConnectorLabels;
@@ -325,19 +388,75 @@ export function compileProfile(definition, fallbackId) {
   const knownEdges = (list, label) => { for (const name of list) if (name !== '*' && !own(relationTypes, name)) fail(`${label}: unknown relation type ${name}`); };
   for (const [name, raw] of Object.entries(rawViews)) {
     identifier(name, 'Viewpoint');
-    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'connections', 'references', ...documentationKeys], `Viewpoint ${name}`);
+    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'connections', 'references', 'objectifications', 'representations', ...documentationKeys], `Viewpoint ${name}`);
     const result = { ...documentation(raw, name), nodes: names(raw.nodes, `${name}.nodes`, ['*'], true), relations: names(raw.relations, `${name}.relations`, ['*'], true),
       requiredNodes: raw.requiredNodes === undefined ? [] : names(raw.requiredNodes, `${name}.requiredNodes`, [], true),
       requiredRelations: raw.requiredRelations === undefined ? [] : names(raw.requiredRelations, `${name}.requiredRelations`, [], true) };
+    if (raw.representations !== undefined) {
+      if (!Array.isArray(raw.representations) || raw.representations.length > 32 || raw.representations.some(value => typeof value !== 'string' || value.length > 4000)) fail(`${name}.representations: expected a text list`);
+      result.representations = [...raw.representations];
+    }
     knownNodes(result.nodes, name); knownNodes(result.requiredNodes, name); knownEdges(result.relations, name); knownEdges(result.requiredRelations, name);
     if (result.requiredNodes.includes('*') || result.requiredRelations.includes('*')) fail(`${name}: Required type lists cannot contain a wildcard`);
+    if(raw.objectifications!==undefined) {
+      if(!Array.isArray(raw.objectifications)||raw.objectifications.length>128)fail(`${name}: invalid objectifications`);
+      result.objectifications=raw.objectifications.map(check=>{
+        keys(check,['nodes','relations','attribute','endpoints','allowLegacy','required','payload','stateEventRelations'],`${name}.objectifications`);
+        const value={nodes:names(check.nodes,name),relations:names(check.relations,name),attribute:check.attribute,allowLegacy:check.allowLegacy??false,required:check.required??false};
+        if(value.nodes.includes('*')||value.relations.includes('*'))fail(`${name}: objectifications require explicit node and relationship types`);
+        knownNodes(value.nodes,name);knownEdges(value.relations,name);identifier(value.attribute,`${name}.objectifications.attribute`);
+        if(typeof value.allowLegacy!=='boolean'||typeof value.required!=='boolean')fail(`${name}: objectification allowLegacy/required must be boolean`);
+        for(const type of value.relations) {
+          const attr=relationTypes[type].attributes[value.attribute];
+          if(attr?.type!=='reference'||attr.many||value.nodes.some(n=>!matches(n,attr.targets,nodeTypes)))fail(`${name}: ${type}.${value.attribute} must be a scalar reference to the object types`);
+        }
+        if (check.payload !== undefined) {
+          keys(check.payload,['attribute','relations'],`${name}.objectifications.payload`);
+          const {attribute} = check.payload, relations = names(check.payload.relations,name);
+          identifier(attribute,`${name}.objectifications.payload.attribute`);
+          knownEdges(relations,name);
+          if (relations.includes('*')) fail(`${name}: object payload requires explicit relationship types`);
+          for (const type of value.relations) {
+            if (relationTypes[type].attributes[attribute]?.type !== 'reference') fail(`${name}: ${type}.${attribute} must be a reference attribute`);
+          }
+          value.payload = {attribute,relations};
+        }
+        if (check.stateEventRelations !== undefined) {
+          const events = names(check.stateEventRelations,name);
+          knownEdges(events,name);
+          if (events.includes('*') || value.relations.some(type => !relationTypes[type].stateTrigger)) fail(`${name}: stateEventRelations requires explicit trigger and state transition types`);
+          for (const type of events) if (value.nodes.some(node => !matches(node,relationTypes[type].to,nodeTypes)))
+            fail(`${name}: ${type} must target the transition object`);
+          value.stateEventRelations = events;
+        }
+        if(check.endpoints!==undefined) {
+          keys(check.endpoints,['source','target'],`${name}.objectifications.endpoints`);
+          value.endpoints={...check.endpoints};
+          for(const end of ['source','target']) {
+            identifier(value.endpoints[end],`${name}.objectifications.endpoints.${end}`);
+            for(const type of value.nodes) {
+              const attr=nodeTypes[type].attributes[value.endpoints[end]];
+              if(attr?.type!=='reference'||attr.many)fail(`${name}: ${type}.${value.endpoints[end]} must be a scalar endpoint reference`);
+            }
+          }
+          if(value.endpoints.source===value.endpoints.target)fail(`${name}: objectification source and target attributes must differ`);
+        }
+        if(value.allowLegacy&&!value.endpoints)fail(`${name}: legacy objectifications require endpoint attributes`);
+        return value;
+      });
+    }
     if (raw.connections !== undefined) {
       if (!Array.isArray(raw.connections) || raw.connections.length > 128) fail(`${name}: invalid connections`);
       result.connections = raw.connections.map(check => {
-        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'referenceAttributes', 'referencedByAttributes', 'through', 'direction', 'min', 'max'], `${name}.connections`);
+        keys(check, ['nodes', 'nodesExclude', 'relations', 'counterparts', 'referenceAttributes', 'referencedByAttributes', 'through', 'direction', 'min', 'max', 'visibility', 'distinctCounterparts'], `${name}.connections`);
         const value = { nodes: names(check.nodes, name), relations: names(check.relations, name), direction: check.direction ?? 'either',
-          ...cardinality({ min: check.min ?? 1, max: check.max }, `${name}.connections`) };
+          ...cardinality({ min: check.min ?? (check.visibility?0:1), max: check.max }, `${name}.connections`) };
+        if(check.visibility!==undefined){if(!['may','shall'].includes(check.visibility)||value.min!==0||value.max!==null||check.through||check.referencedByAttributes)fail(`${name}: visibility requires may/shall, min 0, no max/through/referencedByAttributes`);value.visibility=check.visibility;}
         if (!['incoming', 'outgoing', 'either'].includes(value.direction)) fail(`${name}: invalid connection direction`);
+        if (check.distinctCounterparts !== undefined) {
+          if (typeof check.distinctCounterparts!=='boolean' || check.referencedByAttributes || check.visibility) fail(`${name}: distinctCounterparts requires ordinary endpoint checks`);
+          value.distinctCounterparts=check.distinctCounterparts;
+        }
         if (check.counterparts !== undefined) { value.counterparts = names(check.counterparts, name); knownNodes(value.counterparts, name); }
         if (check.nodesExclude !== undefined) { value.nodesExclude = names(check.nodesExclude, `${name}.nodesExclude`, [], true); knownNodes(value.nodesExclude, name); }
         if (check.referencedByAttributes !== undefined) {
@@ -350,10 +469,15 @@ export function compileProfile(definition, fallbackId) {
           }
         }
         if (check.through !== undefined) {
-          keys(check.through, ['relations', 'direction'], `${name}.through`);
-          value.through = {relations: names(check.through.relations, `${name}.through.relations`), direction: check.through.direction ?? 'incoming'};
-          knownEdges(value.through.relations, name);
-          if (value.through.relations.includes('*') || !['incoming','outgoing'].includes(value.through.direction)) fail(`${name}: through requires explicit relationship types and incoming or outgoing direction`);
+          const normalizeStep = step => {
+            keys(step, ['relations', 'direction'], `${name}.through`);
+            const relations = names(step.relations, `${name}.through.relations`), direction = step.direction ?? 'incoming';
+            knownEdges(relations, name);
+            if (relations.includes('*') || !['incoming','outgoing'].includes(direction)) fail(`${name}: through requires explicit relationship types and incoming or outgoing direction`);
+            return {relations, direction};
+          };
+          if (Array.isArray(check.through) && !check.through.length) fail(`${name}: through requires at least one relationship step`);
+          value.through = Array.isArray(check.through) ? check.through.map(normalizeStep) : normalizeStep(check.through);
         }
         if (check.referenceAttributes !== undefined) {
           value.referenceAttributes = names(check.referenceAttributes, `${name}.referenceAttributes`);
@@ -383,11 +507,27 @@ export function compileProfile(definition, fallbackId) {
   }
   const defaultRelation = own(definition, 'defaultRelation') ? definition.defaultRelation : base ? base.defaultRelation : (own(relationTypes, 'flow') ? 'flow' : null);
   if (defaultRelation !== null && (!own(relationTypes, defaultRelation) || relationTypes[defaultRelation].abstract)) fail(`Invalid default relationship type: ${defaultRelation}`);
+  // Archived NAF revisions predate the profile-owned drawing configuration.
+  const legacyGrid = id==='naf41-uaf' && /^4\.1\.0-arch\.(?:3[3-9]|4[01])$/.test(definition.version) ? naf41LegacyGrid : undefined;
+  const grid = definition.viewpointGrid === undefined ? base?.viewpointGrid ?? legacyGrid : definition.viewpointGrid;
+  const diagrams = Object.fromEntries(Object.entries(merged('diagrams')).map(([name,rule]) => {
+    const label = `Profile.diagrams.${name}`;
+    identifier(name,label);
+    if (DIAGRAMS.includes(name)) fail(`${label}: reserved diagram name`);
+    keys(rule,['renderer','layout'],label);
+    if (rule.renderer!=='viewpointGrid') fail(`${label}: renderer must be viewpointGrid`);
+    return [name, rule.layout===undefined ? {renderer:rule.renderer} :
+      {renderer:rule.renderer,layout:gridLayout(rule.layout,viewpoints,styleGroups,`${label}.layout`)}];
+  }));
   const compiled = freeze({ ...documentation(definition, 'Profile'), id, title: definition.title ?? base?.title ?? id, version: definition.version ?? base?.version ?? '1',
     ...(Object.values(aliases).some(table => Object.keys(table).length) ? { aliases: copy(aliases) } : {}),
     ...((definition.mappings ?? base?.mappings) ? { mappings: mappingDefinitions(definition.mappings ?? base.mappings) } : {}),
+    ...(grid!==undefined ? {viewpointGrid:gridLayout(grid,viewpoints,styleGroups,'Profile.viewpointGrid')} : {}),
+    ...(Object.keys(diagrams).length ? {diagrams} : {}),
     nodeTypes, relationTypes, viewpoints, styleGroups: copy(styleGroups), defaultRelation, requireViewpoint: definition.requireViewpoint ?? base?.requireViewpoint ?? false });
   compiledProfiles.add(compiled);
+  typeAncestry.set(compiled.nodeTypes, new Map());
+  typeAncestry.set(compiled.relationTypes, new Map());
   return compiled;
 }
 
@@ -404,10 +544,15 @@ export function registerProfile(name, definition) {
   return copy(profile);
 }
 export function getProfiles() { return [...registry.keys()]; }
-export function getProfile(name) {
+export const isCurrentProfile = profile => registry.get(profile.id) === profile;
+export const isRegisteredProfileRevision = profile => revisions.get(`${profile.id}@${profile.version}`) === profile;
+export function registeredProfile(name) {
   const profile = registered(name);
   if (!profile) fail(`Unknown profile: ${name}`);
-  return copy(profile);
+  return profile;
+}
+export function getProfile(name) {
+  return copy(registeredProfile(name));
 }
 
 export function resolveProfile(model, options = {}) {
@@ -428,16 +573,37 @@ export function resolveProfile(model, options = {}) {
   return registry.get('default');
 }
 
-export function matches(type, allowed, definitions) {
-  if (allowed.includes('*')) return true;
-  const accepted = new Set(allowed.map(name => canonicalType(name, definitions)));
-  const visited = new Set(), pending = [canonicalType(type, definitions)];
+function ancestors(type, definitions) {
+  const visited = new Set(), pending = [type];
   while (pending.length) {
     const next = canonicalType(pending.pop(), definitions);
     if (!next || visited.has(next)) continue;
-    if (accepted.has(next)) return true;
-    visited.add(next); pending.push(...bases(definitions[next]));
+    visited.add(next);
+    pending.push(...bases(definitions[next]));
   }
+  return visited;
+}
+
+// Iterate this read-only set to classify an edge under all its canonical
+// supertypes. Only the compiler's deeply frozen definitions are cache keys.
+export function lineageOf(type, definitions) {
+  type = canonicalType(type, definitions);
+  const cache = typeAncestry.get(definitions);
+  let lineage = cache?.get(type);
+  if (!lineage) {
+    lineage = ancestors(type, definitions);
+    // Do not retain arbitrary unknown type names submitted by callers.
+    if (Object.hasOwn(definitions, type)) cache?.set(type, lineage);
+  }
+  return lineage;
+}
+
+export function matches(type, allowed, definitions) {
+  if (!allowed.length) return false;
+  if (allowed.includes('*')) return true;
+  if (!type) return false;
+  const lineage = lineageOf(type, definitions);
+  for (const name of allowed) if (lineage.has(canonicalType(name, definitions))) return true;
   return false;
 }
 
@@ -447,7 +613,7 @@ export function concreteSubtypes(type, definitions) {
   return Object.keys(definitions).filter(name => canonicalType(name, definitions) !== canonicalType(type, definitions) && !definitions[name].abstract && matches(name, [type], definitions)).sort();
 }
 
-function matchesPair(source, target, pair, definitions) {
+export function matchesPair(source, target, pair, definitions) {
   return matches(source, pair.from, definitions) && matches(target, pair.to, definitions) &&
     !matches(source, pair.fromExclude ?? [], definitions) && !matches(target, pair.toExclude ?? [], definitions);
 }
@@ -461,219 +627,18 @@ export function typeConnections(type, profile) {
   for (const name of Object.keys(profile.relationTypes).sort()) {
     const rule = profile.relationTypes[name];
     if (rule.abstract) continue;
-    const accepts = (source, target) => matches(source, rule.from, profile.nodeTypes) && matches(target, rule.to, profile.nodeTypes) &&
-      (!rule.pairs || rule.pairs.some(pair => matchesPair(source, target, pair, profile.nodeTypes)));
-    const targets = concrete.filter(other => accepts(type, other)), sources = concrete.filter(other => accepts(other, type));
+    const acceptsPair = (source, target) => !rule.pairs || rule.pairs.some(pair => matchesPair(source, target, pair, profile.nodeTypes));
+    // The requested type is constant for this entire list, so test its side
+    // once before enumerating the possible counterpart types.
+    const targets = matches(type, rule.from, profile.nodeTypes)
+      ? concrete.filter(other => matches(other, rule.to, profile.nodeTypes) && acceptsPair(type, other)) : [];
+    const sources = matches(type, rule.to, profile.nodeTypes)
+      ? concrete.filter(other => matches(other, rule.from, profile.nodeTypes) && acceptsPair(other, type)) : [];
     const summary = { type: name, allowSelf: rule.allowSelf, acyclic: !!rule.acyclic, directions: rule.directions ?? ['forward'] };
     if (targets.length) outgoing.push({ ...summary, counterparts: targets });
     if (sources.length) incoming.push({ ...summary, counterparts: sources });
   }
   return { type, abstract: profile.nodeTypes[type].abstract, outgoing, incoming };
-}
-
-export function visibleNodeIds(model, view, respectDisplay = true) {
-  const nodes = new Map(model.nodes.map(node => [node.id, node]));
-  const children = new Map();
-  for (const node of model.nodes) {
-    if (!children.has(node.parent)) children.set(node.parent, []);
-    children.get(node.parent).push(node.id);
-  }
-  const descendants = roots => {
-    const ids = new Set(roots), pending = [...ids];
-    while (pending.length) for (const child of children.get(pending.pop()) ?? [])
-      if (!ids.has(child)) { ids.add(child); pending.push(child); }
-    return ids;
-  };
-  const visible = view.include ? descendants(view.include) : new Set(nodes.keys());
-  // Exclusions always win, including when a descendant was explicitly included.
-  const hidden=respectDisplay?Object.keys(view.styles??{}).filter(id=>nodes.has(id)&&view.styles[id].display==='none'):[];
-  for (const id of descendants([...(view.exclude ?? []),...hidden])) visible.delete(id);
-  // Add only the ancestors needed by surviving selections, avoiding empty ghosts.
-  if (view.include) for (const id of [...visible]) {
-    const seen = new Set(); let parent = nodes.get(id)?.parent;
-    while (parent && !seen.has(parent)) { seen.add(parent); visible.add(parent); parent = nodes.get(parent)?.parent; }
-  }
-  return visible;
-}
-
-function validFormat(value, format) {
-  if (typeof value !== 'string') return false;
-  if (format === 'uri') return /^[A-Za-z][A-Za-z0-9+.-]*:\S+$/.test(value);
-  const date = value.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
-  if (!date) return false;
-  const year = Number(date[1]), month = Number(date[2]), day = Number(date[3]);
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  if (month < 1 || month > 12 || day < 1 || day > [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]) return false;
-  if (format === 'date') return date[4] === '';
-  const time = date[4].match(/^T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))$/);
-  return !!time && Number(time[1]) < 24 && Number(time[2]) < 60 && Number(time[3]) < 60 &&
-    (!time[4] || Number(time[5]) < 24 && Number(time[6]) < 60) && Number.isFinite(Date.parse(value));
-}
-
-export function profileDiagnostics(model, profile) {
-  const result = [], nodes = new Map(model.nodes.map(node => [node.id, node]));
-  const add = (message, item, extra = {}) => result.push({ severity: 'error', code: profile.id === 'default' ? 'ARCH_VALIDATION' : 'ARCH_SEMANTIC', message,
-    line: item?.loc?.line ?? null, column: item?.loc?.column ?? null, ...(item?.loc?.path !== undefined ? {path: item.loc.path} : {}), ...extra });
-  const abstractType = (type, kind, definitions, item) => {
-    const candidates = concreteSubtypes(type, definitions), topic = kind === 'node' ? 'types' : 'relations';
-    const help = `@help ${topic} ${registry.get(profile.id) === profile ? profile.id : '.'} ${type}`;
-    const detail = candidates.length ? `Concrete subtypes: ${candidates.slice(0, 12).join(', ')}${candidates.length > 12 ? ` (+${candidates.length - 12} more)` : ''}.`
-      : `No concrete subtypes are defined in profile ${profile.id}.`;
-    add(`Abstract ${kind} type cannot be instantiated: ${type}. ${detail} See ${help}`, item, { elementId: item.id, candidates, help });
-  };
-  const checkAttributes = (item, rule, builtins) => {
-    const values = { ...Object.fromEntries(builtins.filter(key => own(item, key)).map(key => [key, item[key]])), ...item.attributes };
-    for (const [name, value] of Object.entries(values)) {
-      const schema = rule.attributes[name];
-      const location = { loc: item.attributeLocs?.[name] ?? item.loc };
-      const extra = { elementId: item.id, attribute: name };
-      if (!schema && !builtins.includes(name)) { add(`Unknown attribute for ${item.type}: ${name}`, location, extra); continue; }
-      const type = schema?.type ?? 'string', many = !!schema?.many;
-      if (many !== Array.isArray(value)) { add(`${item.id}.${name}: expected ${many ? 'list' : type}`, location, extra); continue; }
-      const entries = many ? value : [value];
-      if (many && (entries.length < (schema.minItems ?? 0) || entries.length > (schema.maxItems ?? 4000))) add(`${item.id}.${name}: invalid list length`, location, extra);
-      if (many && schema.uniqueItems && new Set(entries).size !== entries.length) add(`${item.id}.${name}: Duplicate list entries are not allowed`, location, extra);
-      for (const entry of entries) {
-        if (type === 'integer' ? !Number.isInteger(entry) : typeof entry !== (type === 'reference' ? 'string' : type) || (type === 'number' && !Number.isFinite(entry))) {
-          add(`${item.id}.${name}: expected ${type}`, location, extra); continue;
-        }
-        if (!schema) continue;
-        if (schema.enum && !schema.enum.includes(entry)) add(`${item.id}.${name}: Value must be one of ${schema.enum.map(v => JSON.stringify(v)).join(', ')}`, location, extra);
-        if ((schema.min !== undefined && entry < schema.min) || (schema.max !== undefined && entry > schema.max)) add(`${item.id}.${name}: Number outside the allowed range`, location, extra);
-        if ((schema.minLength !== undefined && [...entry].length < schema.minLength) || (schema.maxLength !== undefined && [...entry].length > schema.maxLength)) add(`${item.id}.${name}: invalid text length`, location, extra);
-        if (schema.format && !validFormat(entry, schema.format)) add(`${item.id}.${name}: invalid format ${schema.format}`, location, extra);
-        if (type === 'reference') {
-          const target = nodes.get(entry);
-          if (!target) add(`${item.id}.${name}: unknown reference ${entry}`, location, extra);
-          else if (!matches(target.type, schema.targets, profile.nodeTypes)) add(`${item.id}.${name}: Reference type ${target.type} is not allowed`, location, extra);
-        }
-      }
-    }
-    for (const [name, schema] of Object.entries(rule.attributes)) if (schema.required && !own(values, name)) add(`${item.id}: Missing required attribute ${name}`, item, { elementId: item.id, attribute: name, incomplete:true });
-    for (const check of rule.comparisons ?? []) {
-      const a = rule.attributes[check.left], b = rule.attributes[check.right];
-      let left = values[check.left], right = values[check.right];
-      if (left === undefined || right === undefined || typeof left !== typeof right) continue;
-      if (a.format && (!validFormat(left, a.format) || !validFormat(right, b.format))) continue;
-      if (a.format === 'date' || a.format === 'date-time') { left = Date.parse(left); right = Date.parse(right); }
-      const ok = { '<': left < right, '<=': left <= right, '=': left === right, '!=': left !== right, '>=': left >= right, '>': left > right }[check.op];
-      if (!ok) add(`${item.id}: ${check.left} ${check.op} ${check.right} is not satisfied`, item, { elementId: item.id });
-    }
-  };
-  for (const node of model.nodes) {
-    const rule = profile.nodeTypes[node.type];
-    if (!rule) { add(`Unknown element type in profile ${profile.id}: ${node.type}`, node, { elementId: node.id }); continue; }
-    if (rule.abstract) abstractType(node.type, 'node', profile.nodeTypes, node);
-    if (node.parent) {
-      const parent = nodes.get(node.parent), parentRule = profile.nodeTypes[parent?.type];
-      if (parentRule && !parentRule.container) add(`${node.parent} is not a container`, node, { elementId: node.id });
-      else if (parentRule && !matches(node.type, parentRule.contains, profile.nodeTypes)) add(`${node.type} is not allowed in ${parent.type}`, node, { elementId: node.id });
-    }
-    checkAttributes(node, rule, NODE_PROPERTIES);
-  }
-  for (const edge of model.edges) {
-    const type = edge.type ?? profile.defaultRelation, rule = profile.relationTypes[type];
-    if (!rule) { add(type ? `Unknown relationship type in profile ${profile.id}: ${type}` : `Relationship ${edge.id} requires an explicit type`, edge, { elementId: edge.id }); continue; }
-    if (rule.abstract) abstractType(type, 'relationship', profile.relationTypes, edge);
-    const direction=edge.direction??'forward';
-    if(!['forward','both'].includes(direction))add(`${edge.id}: direction must be forward or both`,edge,{elementId:edge.id,attribute:'direction'});
-    else if(!(rule.directions??['forward']).includes(direction))add(`${edge.id}: ${type} does not allow direction ${direction}; allowed directions: ${(rule.directions??['forward']).join(', ')}`,edge,{elementId:edge.id,attribute:'direction'});
-    if (!rule.allowSelf && edge.source === edge.target) add(`${type}: Self-relationships are not allowed`, edge, { elementId: edge.id });
-    for (const [endpoint, types] of [['source', rule.from], ['target', rule.to]]) {
-      const node = nodes.get(edge[endpoint]);
-      if (node && !matches(node.type, types, profile.nodeTypes)) add(`${edge.id}: ${endpoint} of type ${node.type} is not allowed for ${type}`, edge, { elementId: edge.id });
-    }
-    if (rule.pairs && !rule.pairs.some(pair => {
-      const source = nodes.get(edge.source), target = nodes.get(edge.target);
-      return source && target && matchesPair(source.type, target.type, pair, profile.nodeTypes);
-    })) add(`${edge.id}: Type combination ${nodes.get(edge.source)?.type} → ${nodes.get(edge.target)?.type} is not allowed for ${type}`, edge, { elementId: edge.id });
-    checkAttributes({ ...edge, type }, rule, EDGE_PROPERTIES);
-  }
-  const counts = new Map();
-  for (const edge of model.edges) {
-    const pending = [edge.type ?? profile.defaultRelation];
-    const visited = new Set();
-    while (pending.length) {
-      const type = canonicalType(pending.pop(), profile.relationTypes);
-      if (!type || visited.has(type)) continue;
-      visited.add(type);
-      if (!counts.has(type)) counts.set(type, { source: new Map(), target: new Map() });
-      for (const endpoint of ['source', 'target']) {
-        const map = counts.get(type)[endpoint];
-        for(const id of new Set(edge.direction==='both'?[edge.source,edge.target]:[edge[endpoint]]))map.set(id,(map.get(id)??0)+1);
-      }
-      pending.push(...bases(profile.relationTypes[type]));
-    }
-  }
-  for (const [type, rule] of canonicalEntries(profile.relationTypes)) if (rule.acyclic) {
-    const adjacency = new Map(), state = new Map();
-    for (const edge of model.edges) if (matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes)) {
-      if (!adjacency.has(edge.source)) adjacency.set(edge.source, []);
-      adjacency.get(edge.source).push(edge);
-      if(edge.direction==='both') {
-        if(!adjacency.has(edge.target))adjacency.set(edge.target,[]);
-        adjacency.get(edge.target).push({...edge,source:edge.target,target:edge.source});
-      }
-    }
-    let cycle;
-    const visit = id => {
-      state.set(id, 1);
-      for (const edge of adjacency.get(id) ?? []) {
-        if (state.get(edge.target) === 1) { cycle = edge; return; }
-        if (!state.has(edge.target)) visit(edge.target);
-        if (cycle) return;
-      }
-      state.set(id, 2);
-    };
-    for (const id of adjacency.keys()) { if (!state.has(id)) visit(id); if (cycle) break; }
-    if (cycle) add(`${type}: Cycles are not allowed`, cycle, { elementId: cycle.id });
-  }
-  for (const [name, rule] of canonicalEntries(profile.relationTypes)) for (const key of ['outgoing', 'incoming']) if (rule[key]) {
-    const endpoint = key === 'outgoing' ? 'source' : 'target', applicable = key === 'outgoing' ? rule.from : rule.to;
-    for (const node of model.nodes) if (matches(node.type, applicable, profile.nodeTypes) || counts.get(name)?.[endpoint].has(node.id)) {
-      const count = counts.get(name)?.[endpoint].get(node.id) ?? 0;
-      if (count < rule[key].min || (rule[key].max !== null && count > rule[key].max)) add(`${node.id}: ${name}.${key} expected ${rule[key].min}–${rule[key].max ?? '∞'} relationships, found ${count}`, node, { elementId: node.id, ...(count<rule[key].min?{incomplete:true}:{}) });
-    }
-  }
-  for (const view of model.views) {
-    if(view.meta!==undefined)continue; // Source views do not project domain elements into a viewpoint.
-    if (!view.viewpoint) { if (profile.requireViewpoint) add(`View ${view.id} requires a viewpoint`, view, { viewId: view.id,incomplete:true }); continue; }
-    const rule = profile.viewpoints[view.viewpoint];
-    if (!rule) { add(`Unknown viewpoint: ${view.viewpoint}`, view, { viewId: view.id }); continue; }
-    const visible = visibleNodeIds(model, view, false), selectedNodes = model.nodes.filter(node => visible.has(node.id));
-    const selectedEdges = model.edges.filter(edge => visible.has(edge.source) && visible.has(edge.target));
-    for (const node of selectedNodes) if (!matches(node.type, rule.nodes, profile.nodeTypes)) add(`${view.id}: node type ${node.type} is not allowed in viewpoint ${view.viewpoint}`, node, { elementId: node.id, viewId: view.id });
-    for (const edge of selectedEdges) if (!matches(edge.type ?? profile.defaultRelation, rule.relations, profile.relationTypes)) add(`${view.id}: Relationship type ${edge.type ?? profile.defaultRelation} is not allowed`, edge, { elementId: edge.id, viewId: view.id });
-    for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id,incomplete:true });
-    for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id,incomplete:true });
-    for (const check of rule.connections ?? []) for (const node of selectedNodes) if (matches(node.type, check.nodes, profile.nodeTypes)&&!matches(node.type,check.nodesExclude??[],profile.nodeTypes)) {
-      const origins = new Set([node.id]);
-      if (check.through) {
-        const adjacent = new Map();
-        for (const edge of selectedEdges) if (matches(edge.type ?? profile.defaultRelation, check.through.relations, profile.relationTypes)) {
-          const from = check.through.direction === 'incoming' ? edge.target : edge.source;
-          const to = check.through.direction === 'incoming' ? edge.source : edge.target;
-          if (!adjacent.has(from)) adjacent.set(from, []);
-          adjacent.get(from).push(to);
-        }
-        for (const id of origins) for (const next of adjacent.get(id) ?? []) origins.add(next);
-      }
-      const connected = selectedEdges.filter(edge => matches(edge.type ?? profile.defaultRelation, check.relations, profile.relationTypes) &&
-        (check.referencedByAttributes ? check.referencedByAttributes.some(attr => [edge.attributes?.[attr]].flat().includes(node.id)) :
-        (((check.direction !== 'incoming'||edge.direction==='both') && origins.has(edge.source) && (!check.counterparts || matches(nodes.get(edge.target)?.type, check.counterparts, profile.nodeTypes))) ||
-         ((check.direction !== 'outgoing'||edge.direction==='both') && origins.has(edge.target) && (!check.counterparts || matches(nodes.get(edge.source)?.type, check.counterparts, profile.nodeTypes))))));
-      const endpoints = new Set(connected.map(edge => origins.has(edge.source) ? edge.target : edge.source));
-      const references = new Set([...origins].flatMap(id => (check.referenceAttributes ?? []).flatMap(attr => [nodes.get(id)?.attributes?.[attr]].flat())).filter(id =>
-        typeof id === 'string' && visible.has(id) && (!check.counterparts || matches(nodes.get(id)?.type, check.counterparts, profile.nodeTypes))));
-      const count = connected.length + [...references].filter(id => !endpoints.has(id)).length;
-      if (count < check.min || check.max !== null && count > check.max) add(`${view.id}: ${node.id} requires ${check.min}–${check.max ?? '∞'} ${check.direction} connections (${check.relations.join(', ')}${check.counterparts ? `; counterpart: ${check.counterparts.join(', ')}` : ''}${check.through ? `; directly or through ${check.through.direction} ${check.through.relations.join(', ')}` : ''}${check.referenceAttributes ? `; reference attributes: ${check.referenceAttributes.join(', ')}` : ''}${check.referencedByAttributes ? `; referenced by: ${check.referencedByAttributes.join(', ')}` : ''}); found ${count}`, node, { elementId: node.id, viewId: view.id,...(count<check.min?{incomplete:true}:{}) });
-    }
-    for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
-      for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter(v => typeof v === 'string')) if (!visible.has(id))
-        add(`${view.id}: ${item.id}.${attr} references ${id}, which must be visible in viewpoint ${view.viewpoint}`, item, { elementId: item.id, attribute: attr, viewId: view.id });
-    }
-  }
-  return result;
 }
 
 registerProfile('default', {

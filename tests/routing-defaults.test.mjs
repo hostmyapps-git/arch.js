@@ -13,6 +13,37 @@ const parse=text=>arch.parse(text,{profile});
 const layout=rules=>arch.layout(parse(source(rules)));
 const point=({x,y})=>({x,y});
 
+test('relationships and reference routes round by default and respect explicit overrides',()=>{
+ const automatic=layout('');
+ assert.ok(automatic.edges.every(edge=>edge.d.includes(' Q ')));
+ assert.deepEqual(automatic.edges.map(edge=>edge.d),layout('routes {curve rounded}').edges.map(edge=>edge.d));
+ const rules='route pickup {via (400,48), (400,48), (400,148)} route data -> pickup {from bottom via (510,-130)}';
+ const graph=layout(`routes {curve orthogonal} ${rules} route pickup {curve rounded}`);
+ assert.match(graph.edges[0].d,/Q 400 48/);
+ assert.doesNotMatch(graph.edges[1].d,/ Q /);
+ assert.doesNotMatch(graph.referenceNodes.find(ref=>ref.edgeId==='pickup').d,/ Q /);
+ assert.match(layout(rules).referenceNodes.find(ref=>ref.edgeId==='pickup').d,/ Q /);
+});
+
+test('automatic reference bends are rounded without changing the obstacle detour',()=>{
+ const input=`architecture "Detour" {
+   model {
+     actor a "A" actor b "B" item data "Data" actor wall "Obstacle"
+     relation pickup a -> b "Collects" {type flow payload [data]}
+   }
+   view v "V" {
+     place a at (0,0) place b at (500,100)
+     place data at (400,-240) place wall at (300,-90)
+   }
+ }`;
+ const [automatic]=arch.layout(input,{profile}).referenceNodes;
+ const [square]=arch.layout(input.replace('place wall','route data -> pickup {curve orthogonal} place wall'),{profile}).referenceNodes;
+ assert.deepEqual(automatic.points,square.points);
+ assert.match(automatic.d,/ Q /);
+ assert.equal(square.d,undefined);
+ assert.match(arch.renderToString(input,{profile}),/class="arch-reference-connector"[^>]+ Q /);
+});
+
 test('routes defaults apply to every relationship and reference connector, including otherwise automatic routes',()=>{
  const graph=layout('routes {curve straight from bottom}');
  for(const edge of graph.edges) {
@@ -25,8 +56,9 @@ test('routes defaults apply to every relationship and reference connector, inclu
   assert.deepEqual(ref.points[0],{x:ref.node.x+ref.node.width/2,y:ref.node.y+ref.node.height});
  }
  const automatic=layout(''),empty=layout('routes {}');
- assert.ok(empty.referenceNodes.every(r=>r.d===undefined),'empty defaults keep automatic obstacle avoidance');
+ assert.ok(empty.referenceNodes.every(r=>r.route===undefined),'empty defaults keep automatic obstacle avoidance');
  assert.deepEqual(empty.referenceNodes.map(r=>r.points),automatic.referenceNodes.map(r=>r.points));
+ assert.deepEqual(layout('routes {curve rounded}').referenceNodes.map(r=>r.points),automatic.referenceNodes.map(r=>r.points));
 });
 
 test('specific route properties override defaults regardless of source order while other properties remain inherited',()=>{

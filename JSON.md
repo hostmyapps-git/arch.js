@@ -67,19 +67,31 @@ andere Notation einschließlich Fehlerstellen und Korrekturkandidaten.
 | `architecture "Test" { … }` | `{ "architecture": { "name": "Test", … } }` |
 | `description "Text"` | `"description": "Text"` |
 | `config { profile naf41-uaf views all }` | `"config": { "profile": "naf41-uaf", "views": "all" }` |
+| `config { presentation dashboard views overview, detail }` | `"config": { "presentation": "dashboard", "views": ["overview", "detail"] }` |
 | `OperationalPerformer fighter "Fighter"` | `"elements": { "fighter": { "type": "OperationalPerformer", "name": "Fighter" } }` im Modell |
 | `relation control c -> f "Controls" { type LogicalInteraction }` | `"relations": { "control": { "from": "c", "to": "f", "name": "Controls", "type": "LogicalInteraction" } }` |
 | `view logical "Interactions" { viewpoint L3 }` | `"views": { "logical": { "name": "Interactions", "viewpoint": "L3" } }` |
-| `include a, b` / `exclude c` | `"include": ["a", "b"]` / `"exclude": ["c"]` |
+| `include a, b` oder `include [a, b]` / `exclude c` oder `exclude [c]` | `"include": ["a", "b"]` / `"exclude": ["c"]` |
 | `place a at (0, 20) size (280, 160)` | `"place": { "a": { "at": [0, 20], "size": [280, 160] } }` |
 | `place a at (b.right + 40, c.y - 20)` | `"place": { "a": { "at": ["b.right + 40", "c.y - 20"] } }` |
+| `place a right of b gap b.height / 4 align top` | `"place": { "a": { "relative": { "side": "right", "of": "b", "gap": "b.height / 4", "align": "top" } } }` |
 | `style a { iconPosition right showLabel false }` | `"style": { "a": { "iconPosition": "right", "showLabel": false } }` |
 | `routes { curve straight }` | `"routes": { "curve": "straight" }` |
 | `route control { from right to left }` | `"route": { "control": { "from": "right", "to": "left" } }` |
 | `route control { via (source.right + 40, target.y / 2) }` | `"route": { "control": { "via": [["source.right + 40", "target.y / 2"]] } }` |
 | `route information -> control { to 0.5 }` | `"route": { "information -> control": { "to": 0.5 } }` |
 | `diagram sequence { participants [c, f] }` | `"diagram": { "type": "sequence", "participants": ["c", "f"] }` |
+| `diagram state { initial start final done, cancelled }` | `"diagram": { "type": "state", "initial": "start", "final": ["done", "cancelled"] }` |
 | `view source "JSON" { @meta json }` | `"views": { "source": { "name": "JSON", "@meta": "json" } }` |
+
+Die DSL-Listen `include`, `exclude`, Tree-`nodes` und `propertyFields` akzeptieren
+Namen mit oder ohne eckige Klammern, auch einzelne Einträge. Im exportierten JSON
+bleiben sie Arrays. `include []` / `"include": []` wählt keine Elemente,
+`exclude []` entfernt nichts und `propertyFields []` leert die Feldauswahl.
+In `"exclude": ["l2.1", "l2.2"]` können auch Beziehungs-IDs stehen. Die
+Beziehungen entfallen aus Darstellung und Viewpoint-Prüfung der View.
+Tree-`nodes []` bleibt ungültig. Dies gilt für `propertyFields` auf View-,
+Diagramm- und Node-Style-Ebene; andere Listenoptionen behalten ihre Syntax.
 
 `name` steht für den Titel nach der ID, nicht für die ID selbst. IDs bleiben
 case-sensitive und folgen `[A-Za-z_][A-Za-z0-9_.-]*`. Numerische Objektschlüssel
@@ -176,6 +188,56 @@ zusätzliches `id` im selben Eintrag dürfen nicht kombiniert werden.
 
 ### Routing, Styles und Diagrammtypen
 
+Ein Zustandsdiagramm speichert virtuelle Punkte als `virtualInitial` und
+`virtualFinal`. Auf View-Ebene stehen ihre Positionen in `virtualPlace` und
+ihre Pfeilrouten in `virtualRoute`, jeweils mit der virtuellen ID als Schlüssel.
+Für modellierte Übergänge gilt das reguläre `route`-Objekt.
+
+```json
+{
+  "diagram": {
+    "type": "state",
+    "virtualInitial": {"id": "start", "target": "waiting"},
+    "virtualFinal": [{"id": "end", "source": "waiting", "event": "shutdown"}]
+  },
+  "virtualPlace": {"start": {"at": ["waiting.x", "waiting.y - 100"]}},
+  "virtualRoute": {
+    "start": {
+      "from": "bottom",
+      "to": {"side": "top", "position": 0.25},
+      "curve": "rounded",
+      "via": [["start.centerX", "waiting.y - 40"], ["waiting.x + waiting.width/4", "waiting.y - 40"]]
+    }
+  }
+}
+```
+
+Beide Punktdefinitionen erlauben optional `title` als sichtbare Beschriftung.
+
+Bei der DSL-Übersetzung von `style [a, b] { display none }` erhält jede ID
+ihren eigenen Eintrag im JSON-Objekt `style`. Der Export enthält die zuletzt
+gesetzten Werte pro ID und Eigenschaft.
+
+Gruppierte Routen wie `route r1, r2 { curve straight }` werden genauso in
+einzelne Einträge im JSON-Objekt `route` übersetzt. Bei mehreren Angaben
+enthält der Export pro Beziehung und Eigenschaft den zuletzt gesetzten Wert.
+
+`backgroundImage` ist ein String und kann in einer View, einem Element oder
+einem Node-Style stehen. `showBackgroundImage` ist ein boolescher Wert. In
+einer View steuert er die Elementbilder, im Node-Style die einzelne Karte.
+
+```json
+"overview": {
+  "name": "Übersicht",
+  "backgroundImage": "/images/site-plan.png",
+  "showBackgroundImage": true,
+  "style": {
+    "dc": { "backgroundImage": "/images/datacenter.jpg" },
+    "factory": { "showBackgroundImage": false }
+  }
+}
+```
+
 Numerische Node-Styles `width`, `height` und `fontSize` akzeptieren in Connected-
 und Tree-Views zusätzlich Ausdrücke als Strings:
 
@@ -196,8 +258,10 @@ Tree-Gruppenmaße sind nicht verfügbar; explizite Paket-Styles schon.
 Weitere Regeln: [HELP.md](HELP.md#berechnete-node-styles).
 
 Die vorhandenen Felder gelten unverändert. `via` ist eine Liste von Paaren,
-beispielsweise `[[250, 80], [250, 300]]`; `from`/`to` sind Portnamen oder Punkte,
-bei Zuordnungspfeilen ist `to` ein Anteil zwischen 0 und 1. Das Ziel eines
+beispielsweise `[[250, 80], [250, 300]]`. `from` und `to` akzeptieren Portnamen
+oder Koordinatenpaare mit Zahlen und Ausdrücken, etwa
+`"from": ["source.right", "source.y + 10"]`.
+Bei Zuordnungspfeilen ist `to` ein Anteil zwischen 0 und 1. Das Ziel eines
 Zuordnungspfeils steht im Schlüssel `"ELEMENT -> RELATION"`.
 
 `"label": "none"` verbirgt das ganze Kantenlabel, `"icon": "none"` nur dessen
@@ -208,8 +272,11 @@ und `"showLabel": false` sind unabhängig voneinander.
 Alle neun Renderer und ihre Einstellungen sind verfügbar; `"diagram": "matrix"`
 ist die Kurzform ohne weitere Einstellungen. Tree-Views akzeptieren beispielsweise
 `"diagram": {"type": "tree", "relations": ["CapabilityGeneralization"],
-"direction": "down", "parentDirection": "auto", "showLabels": true}`.
+"direction": "down", "parentDirection": "auto", "padding": [24, 56, 32, 16], "showLabels": true}`.
 `direction` akzeptiert `down`, `up`, `left`, `right`; `orientation` ist ein Alias.
+`padding` akzeptiert eine Zahl für alle Seiten oder vier Zahlen in der
+Reihenfolge oben, rechts, unten, links. Die DSL erlaubt die vier Werte
+mit oder ohne Klammern. JSON verwendet ein Array. Ohne Angabe gelten 48 pro Seite.
 Sie unterstützen die vorhandenen Node-Styles, ordnen und routen automatisch.
 Manuelle Routingfelder bleiben auf Connected-Views begrenzt. Genaue Regeln:
 [DIAGRAMS.md](DIAGRAMS.md), [HELP.md](HELP.md).
@@ -221,7 +288,8 @@ Benannte Tree-Gruppen in Connected-Views verwenden das DSL-Schlüsselwort `tree`
   "tree": {
     "hierarchy": {
       "nodes": ["horizon", "vision", "manpower", "coverage", "response"],
-      "direction": "up"
+      "direction": "up",
+      "padding": 24
     }
   },
   "place": {
@@ -237,6 +305,17 @@ Modellparent. Einzelne Mitglieder und Gruppengrößen werden automatisch bestimm
 `relations` filtert hier nur die Hierarchie; Querbeziehungen bleiben gerendert.
 
 ### Koordinatenreferenzen
+
+Ein Eintrag in `place` verwendet entweder `at` oder `relative`.
+`relative` benötigt `side` und die Anker-ID `of`. `gap` ist optional und
+akzeptiert Zahlen oder Koordinatenausdrücke. Ohne Angabe gilt das wirksame
+`spacing` der View. `align` ist optional und standardmäßig `center`.
+`align to member.centerY` entspricht `"align": {"to":"member.centerY"}`.
+Das Feld bezeichnet die auszurichtende Kante oder Mitte. Der Abstand bezieht
+sich auf den Anker in `of`.
+`size` bleibt neben der Positionsangabe zulässig, wo die Darstellung es
+unterstützt. Auch Einträge in `virtualPlace` können `relative` verwenden.
+Die Übersetzung erhält die relative Angabe.
 
 In `place.at` können beide Koordinaten unabhängig Zahlen oder Ausdrucksstrings
 sein. Strings unterstützen dieselben Referenzen und `+`, `-`, `*`, `/` wie die DSL;
@@ -259,7 +338,7 @@ Dies funktioniert in `route`, `routes` und Zuordnungsrouten mit Schlüssel
 `"information -> edge"`. Via verwendet absolute Diagrammkoordinaten nach
 Auflösung der Node-/Gruppenpositionen, auch innerhalb von Packages. Lokale
 Listen ersetzen die komplette Vorgabe; ein explizites `path` ersetzt `via`.
-`size`, `route.from`/`to` und Labelpositionen bleiben numerisch.
+`size` und `route.from`/`to` bleiben numerisch; Labelpunkte unterstützen Ausdrücke.
 Zirkelbezüge sind auch im Entwurfsmodus Fehler. Grenzen und Koordinatenräume:
 [SPEC.md](SPEC.md), Hilfe: `@help routing`.
 
@@ -348,13 +427,20 @@ Typen mit kompatibler Darstellung, `"none"` ist der Standard. Eine konkrete
 `"route": {"edgeId": {"sharePath": "none"}}` überschreibt die Vorgabe.
 Manuelle Geometrie einschließlich expliziter Seitenpositionen bleibt unabhängig. Die Option wird in beide Richtungen
 zwischen JSON und DSL erhalten; Details und Grenzen: [HELP.md](HELP.md).
+Ganze Trees verwenden `"diagram": {"type": "tree", "sharePath": "stereotypes"}`;
+benannte Gruppen `"tree": {"g": {"nodes": ["a", "b"], "sharePath": "all"}}`.
+In benannten Gruppen gilt Einzelroute vor Tree-Option vor View-`routes`.
+
+Connected-Views geben Sprungbögen als `"routes": {"crossings": "bridge",
+"crossingRadius": 6}` an. Einzelregeln wie
+`"route": {"edgeId": {"crossings": "none"}}` überschreiben die Werte pro Kante.
 
 Relative Andockpositionen an Knotenseiten entsprechen `from bottom 1/2 to left 0.25`:
 
 ```json
 "route": {
   "hasLocation": {
-    "from": {"side": "bottom", "position": "1/2"},
+    "from": {"side": "bottom", "position": "10 / source.width"},
     "to": {"side": "left", "position": 0.25}
   },
   "data -> pickup": {
@@ -364,12 +450,15 @@ Relative Andockpositionen an Knotenseiten entsprechen `from bottom 1/2 to left 0
 }
 ```
 
-`side` ist `top`, `right`, `bottom` oder `left`; `position` ist eine Zahl im
-Bereich 0–1 oder ein Bruch als String. Division durch null ist ungültig.
+`side` ist `top`, `right`, `bottom` oder `left`. `position` ist eine Zahl oder
+ein Ausdruck als String, dessen Ergebnis im Bereich 0–1 liegt.
+Division durch null ist ungültig.
 `top`/`bottom` zählen von links nach rechts, `left`/`right` von oben nach unten.
 Einfache Seitenstrings bleiben gültig und wählen die Mitte. Bei Zuordnungslinien
-bleibt `to` eine Zahl oder ein Bruch entlang des Relationspfads. Brüche werden
-beim Übersetzen/Meta-Export zu Dezimalzahlen normalisiert. Dieselben Endpunkt-
+setzt `to` die Position entlang des Relationspfads. Als Wert sind eine Zahl,
+ein Bruchstring oder ein Ausdruck wie `"to": "(data.centerX-a.x)/(b.right-a.x)"`
+zulässig. Das berechnete Ergebnis muss zwischen 0 und 1 liegen. Konstante
+Ausdrücke werden beim Übersetzen/Meta-Export zu Zahlen normalisiert. Dieselben Endpunkt-
 Objekte können in `routes` verwendet werden; konkrete Endpunkte ersetzen die
 gesamte geerbte Seiten-/Positionsangabe.
 
@@ -387,3 +476,55 @@ Das Fragment gehört in eine View. Defaults gelten auch für Zuordnungslinien;
 konkrete Felder haben Vorrang. `dasharray` akzeptiert Zahlenlisten,
 SVG-Zahlenstrings oder `"none"`; `[]` erzwingt ebenfalls eine durchgezogene Linie.
 Wertebereiche und Marker-/Sharing-Verhalten: [HELP.md](HELP.md).
+
+### View-Erweiterungen und Einbettungen
+
+`"extends": "s3"` übernimmt eine bestehende View. Einbettungen stehen als
+Objekt unter `embed`, dessen Schlüssel die Gruppen-ID ist:
+
+```json
+"embed": {"interfaces": {"view": "s3", "frame": true}}
+```
+
+Das entspricht `embed s3 as interfaces {frame true}`. Ohne `frame` ist die
+Darstellung nahtlos. Gruppen werden über `place` positioniert; ihre Maße und
+die eingebetteten Node-IDs sind Koordinatenreferenzen. Übersetzungen erhalten
+die Wiederverwendungsdeklarationen. Regeln und Grenzen: [HELP.md](HELP.md#views-wiederverwenden-extends-und-embed).
+
+Bei mehrfach dargestellten Knoten geben qualifizierte IDs die konkrete Karte
+an, etwa `"at": ["sub2.actor.right + 40", "sub2.actor.y"]`. Bei einer
+Host-Kante wählt `"route": {"noteLink": {"target": "sub2.actor", "to": "right"}}`
+die Zielkarte und den Port. `source` funktioniert analog.
+
+Labelpositionen unterstützen Ausdruckspaare wie
+`"label": ["source.centerX", "target.y - 20"]` sowie Pfadanteile:
+`"label": 0.3` oder `"label": "1/3"`. Ein Anteil setzt den Mittelpunkt entlang
+der vollständigen Route; 0 ist der Anfang, 1 das Ende. Diese Positionen sind
+explizit und erhalten keinen automatischen Versatz. Brüche normalisieren zu
+Dezimalzahlen, Koordinatenausdrücke bleiben erhalten. Siehe `@help routing`.
+
+In einer Zuordnungsroute wie `"event -> transition": {"to": 0.2, "label": 0.2}`
+bezieht sich `to` auf die Zielrelation und `label` auf den Zuordnungspfad.
+
+`"label": {"position": 0.5, "offset": 20}` verschiebt den Labelmittelpunkt
+20 SVG-Einheiten hinter die Pfadmitte. Positive Abstände gehen zum Ziel,
+negative zur Quelle; außerhalb des Pfads wird auf die Endpunkte begrenzt.
+DSL: `label 0.5 offset 20`. Offset ist eine endliche Zahl innerhalb ±10000000.
+
+Auch offset kann ein Ausdrucksstring sein:
+`"label": {"position": 0.5, "offset": "source.width / 2"}`.
+Er wird nach dem Layout anhand sichtbarer Node-/Gruppenkoordinaten ausgewertet
+und bleibt beim Übersetzen erhalten. Der Ergebnisbereich bleibt ±10000000.
+
+`"label": {"position": 0.5, "offset": 20, "sideOffset": -24}` setzt den
+Mittelpunkt erst entlang des Pfads und dann 24 SVG-Einheiten nach rechts in
+Pfadrichtung. `sideOffset` akzeptiert ebenfalls einen Ausdrucksstring und
+kann auch ohne `offset` gesetzt werden.
+
+`"sideOffset": -12` direkt im Routenobjekt verschiebt die vorhandene
+Labelposition seitlich. Ohne `label` ist die automatische Position der
+Ausgangspunkt. DSL: `route l5.7 { sideOffset -12 }`.
+
+`"config": {"showValidation": false}` blendet Prüfmarkierungen und den
+Validierungsfooter gemeinsam aus. Die Diagnosen und Strict-Prüfungen bleiben
+aktiv; alternativ API `{showValidation:false}` mit Vorrang vor config.

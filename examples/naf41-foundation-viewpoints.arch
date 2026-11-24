@@ -1,0 +1,270 @@
+architecture "NAFv4.1 · Architecture foundation" {
+  config { profile naf41-uaf views all }
+  model {
+    NafViewpoint logical "Logical Structure" { nafViewpoint L2 }
+    NafViewpoint resource "Resource Structure" { nafViewpoint P2 }
+    ArchitectureDescription description "SAR Concept 2025 Model" {
+      toBe true
+      architectureFramework "NAFv4.1"
+    }
+    View logicalView "SAR Logical Scenario"
+    View resourceView "SAR Resource Structure"
+    Post planner "Operational Planner" { isStandardConfiguration false stereotype "Stakeholder" }
+    Post lead "SAR SIC Project Lead" { isStandardConfiguration false stereotype "Stakeholder" }
+    Concern understanding "Understanding maritime SAR"
+    Concern resources "Resources required for deployment"
+    relation containsLogical description -> logicalView "contains" { type ContainsView }
+    relation containsResource description -> resourceView "contains" { type ContainsView }
+    relation governsLogical logical -> logicalView "governs" { type GovernsView }
+    relation governsResource resource -> resourceView "governs" { type GovernsView }
+    relation plannerConcern planner -> understanding "has" { type StakeholderHasConcern }
+    relation leadConcern lead -> resources "has" { type StakeholderHasConcern }
+    relation leadUnderstanding lead -> understanding "has" { type StakeholderHasConcern }
+    relation framesLogical logical -> understanding "frames" { type FramesConcern }
+    relation framesResource resource -> resources "frames" { type FramesConcern }
+    relation framesResourceUnderstanding resource -> understanding "frames" { type FramesConcern }
+
+    GlossaryTerm sar "SAR" { definition "Search and rescue" }
+    GlossaryTerm wbr "WBR" { definition "Waterborne rescue" }
+    Metadata metadata "Architecture metadata"
+    ContextualData context "SAR operational context"
+    Standard standard "SAR glossary and terminology standard"
+    relation termSAR sar -> description "characterizes" { type CharacterizesArchitectureDescription }
+    relation termWBR wbr -> description "characterizes" { type CharacterizesArchitectureDescription }
+    relation metadataLink metadata -> description "characterizes" { type CharacterizesArchitectureDescription }
+    relation contextLink context -> description "characterizes" { type CharacterizesArchitectureDescription }
+    relation standardContext standard -> context "describes" { type StandardDescribesContext }
+
+    ArchitectureDescriptionElement combatSAR "Combat SAR"
+    ArchitectureDescriptionElement referenceArchitecture "SAR Reference Architecture"
+    ElementCorrespondence includesCombatSAR "SAR Concept 2025 includes Combat SAR"
+    ElementCorrespondence implementsReference "SAR Concept 2025 implements SAR Reference Architecture"
+    CorrespondenceMethod embedsArchitecture "Embeds Architecture" {
+      rule "Relate the architecture description to an architecture element it includes."
+    }
+    CorrespondenceMethod appliesReference "Applies Reference" {
+      rule "Relate the architecture description to the reference architecture it implements."
+    }
+    relation governsInclusion embedsArchitecture -> includesCombatSAR "governs" { type GovernsCorrespondence }
+    relation governsImplementation appliesReference -> implementsReference "governs" { type GovernsCorrespondence }
+    relation inclusionDescription includesCombatSAR -> description "relates to" { type CorrespondenceRelatesElement }
+    relation inclusionElement includesCombatSAR -> combatSAR "relates to" { type CorrespondenceRelatesElement }
+    relation implementationDescription implementsReference -> description "relates to" { type CorrespondenceRelatesElement }
+    relation implementationElement implementsReference -> referenceArchitecture "relates to" { type CorrespondenceRelatesElement }
+
+    ArchitectureProject project "SAR Concept 2025 Project" { isStandardConfiguration false }
+    Methodology missionThreads "Mission Threads"
+    Methodology nafMethodology "NAFv4"
+    Standard togaf "TOGAF"
+    Standard nafInformationModel "NAFv4 Information Model"
+    relation usesMethod project -> missionThreads "uses" { type UsesMethodology }
+    relation extendsMethod missionThreads -> nafMethodology "extends" { type ExtendsMethodology }
+    relation documentsProject description -> project "documents" { type DocumentsArchitectureProject }
+    relation extendsStandard nafMethodology -> togaf "extends" { type MethodologyExtendsStandard }
+    relation appliesStandard nafMethodology -> nafInformationModel "applies" { type MethodologyAppliesStandard }
+
+    ArchitectureWorkProduct product "SAR concept work product"
+    ArchitectureStatus status "Ready for review"
+    View deploymentView "P2 - SAR SIC Deployment"
+    ArchitectureStatus deploymentDraft "Development Status: Draft"
+    ArchitectureStatus deploymentCompleteness "Completeness: 50%"
+    ArchitectureStatus deploymentMaturity "Maturity: Level 3"
+    ArchitectureStatus resourceApproved "Development Status: Approved"
+    ArchitectureStatus resourceCompleteness "Completeness: 100%"
+    ArchitectureStatus resourceMaturity "Maturity: Level 5"
+    ArchitectureVersion earlier "SAR concept 1.0" { version "1.0" date "2025-03-01" }
+    ArchitectureVersion current "SAR concept 1.1" { version "1.1" date "2025-06-01" }
+    relation statusOf status -> product "describes" { type ArchitectureStatusDescribesProduct }
+    relation isProduct description -> product "is a kind of" { type ArchitectureDescriptionGeneralization }
+    relation containsDeployment description -> deploymentView "contains" { type ContainsView }
+    relation deploymentStatus deploymentDraft -> deploymentView "describes" { type ArchitectureStatusDescribesProduct }
+    relation deploymentCompletion deploymentCompleteness -> deploymentView "describes" { type ArchitectureStatusDescribesProduct }
+    relation deploymentLevel deploymentMaturity -> deploymentView "describes" { type ArchitectureStatusDescribesProduct }
+    relation resourceStatus resourceApproved -> resourceView "describes" { type ArchitectureStatusDescribesProduct }
+    relation resourceCompletion resourceCompleteness -> resourceView "describes" { type ArchitectureStatusDescribesProduct }
+    relation resourceLevel resourceMaturity -> resourceView "describes" { type ArchitectureStatusDescribesProduct }
+    relation earlierVersion product -> earlier "has" { type ProductHasVersion }
+    relation currentVersion product -> current "has" { type ProductHasVersion }
+    relation supersedes current -> earlier "supersedes" { type ArchitectureVersionSupersedes }
+
+    ArchitectureDescription description2030Draft "SAR Concept 2030 Draft" {
+      toBe true
+      architectureFramework "NAFv4.1"
+    }
+    ArchitectureDescription description2030 "SAR Concept 2030" {
+      toBe true
+      architectureFramework "NAFv4.1"
+    }
+    ArchitectureVersion version18 "Version 1.8" { version "1.8" }
+    ArchitectureVersion version19 "Version 1.9" { version "1.9" }
+    ArchitectureVersion version20 "Version 2.0" { version "2.0" }
+    ArchitectureBaseline baseline2025 "SAR Concept 2025 Baseline"
+    ArchitectureBaseline baseline2030 "SAR Concept 2030 Baseline"
+    relation has2025Baseline description -> baseline2025 "has" { type ProductHasVersion }
+    relation has2030DraftVersion description2030Draft -> version19 "has" { type ProductHasVersion }
+    relation has2030Baseline description2030 -> baseline2030 "has" { type ProductHasVersion }
+    relation baseline2025Version baseline2025 -> version18 "is a kind of" { type ArchitectureVersionGeneralization }
+    relation baseline2030Version baseline2030 -> version20 "is a kind of" { type ArchitectureVersionGeneralization }
+    relation supersedes18 version19 -> version18 "supersedes" { type ArchitectureVersionSupersedes }
+    relation supersedes19 version20 -> version19 "supersedes" { type ArchitectureVersionSupersedes }
+
+    Measure response "Response time" { unit "minutes" }
+    MeasureGroup performance "SAR performance measures"
+    MeasureLibrary measures "Assessment measure library"
+    DesiredMetric responseTarget "Desired response time" { value 20 }
+    AchievedMetric responseResult "Observed response time" { value 18 }
+    relation groupMeasure performance -> response "aggregates" { type GroupsMeasure }
+    relation hostPerformance measures -> performance "hosts" { type HostsMeasure }
+    relation standardMeasure standard -> response "specifies" { type StandardSpecifiesMeasure }
+    relation assesses response -> description "assesses" { type MeasureAssessesArchitecture }
+    relation governsTarget response -> responseTarget "governs" { type GovernsMetric }
+    relation governsResult response -> responseResult "governs" { type GovernsMetric }
+
+    StandardGroup spiralGroup "FMN Spiral Group"
+    Standard spiral6 "Federated Mission Networking - Spiral 6"
+    Profile guidebook "FMN MPE FMCN Information Sharing Guidebook"
+    ArchitecturalConstraint uploadConstraint "Device Support for Aid Community Document Upload" { ruleKind Constraint }
+    ArchitecturalConstraint unclasConstraint "FMN Support UNCLAS Information Services" { ruleKind Constraint }
+    relation groupsSpiral6 spiralGroup -> spiral6 "aggregates" { type GroupsStandard }
+    relation referencesSpiral6 guidebook -> spiral6 "references" { type ReferencesStandard }
+    relation includesUpload guidebook -> uploadConstraint "includes" { type IncludesArchitecturalConstraint }
+    relation includesUnclas guidebook -> unclasConstraint "includes" { type IncludesArchitecturalConstraint }
+
+    ArchitectureMilestone review "Architecture review" { date "2025-06-01" }
+    relation definesStatus review -> status "defines" { type DefinesArchitectureStatus }
+    relation schedulesReview project -> review "schedules" { type SchedulesArchitecture }
+    relation definesEvolution project -> status "defines evolution of" { type DefinesArchitectureEvolution }
+  }
+  view a1 "A1 · Glossary" {
+    viewpoint A1
+    include [sar, wbr, description, metadata, context, standard]
+    diagram table { fields [title, type, definition] }
+  }
+  view a2 "A2 · Architecture products" {
+    viewpoint A2
+    include [logical, resource, description, logicalView, resourceView, planner, lead, understanding, resources]
+    diagram nafgrid
+  }
+  view a3 "A3 · Correspondence" {
+    viewpoint A3
+    include [description, combatSAR, referenceArchitecture, includesCombatSAR, implementsReference, embedsArchitecture, appliesReference]
+    style description, combatSAR, referenceArchitecture, includesCombatSAR, implementsReference, embedsArchitecture, appliesReference {
+      width 320
+      height 128
+    }
+    routes { dasharray none }
+    place description at (0, 0)
+    place combatSAR at (description.x - combatSAR.width - 80, description.bottom + 135)
+    place referenceArchitecture at (description.right + 80, combatSAR.y)
+    place includesCombatSAR at (combatSAR.x, combatSAR.bottom + 72)
+    place implementsReference at (referenceArchitecture.x, includesCombatSAR.y)
+    place embedsArchitecture at (includesCombatSAR.x, includesCombatSAR.bottom + 72)
+    place appliesReference at (implementsReference.x, implementsReference.bottom + 72)
+    route inclusionDescription {
+      from right to bottom 0.3
+      via (description.x + 0.3 * description.width, includesCombatSAR.centerY)
+    }
+    route implementationDescription {
+      from left to bottom 0.7
+      via (description.x + 0.7 * description.width, implementsReference.centerY)
+    }
+    route inclusionElement, implementationElement, governsInclusion, governsImplementation {
+      from top to bottom
+    }
+  }
+  view a4 "A4 · Architecture methodology" {
+    viewpoint A4
+    include [description, project, missionThreads, nafMethodology, togaf, nafInformationModel]
+  }
+  view a5 "A5 · Architecture status" {
+    viewpoint A5
+    include [description, product, deploymentView, resourceView, deploymentDraft, deploymentCompleteness, deploymentMaturity, resourceApproved, resourceCompleteness, resourceMaturity]
+    style product, description, deploymentView, resourceView { width 260 showIcon false }
+    style deploymentDraft, deploymentCompleteness, deploymentMaturity,
+          resourceApproved, resourceCompleteness, resourceMaturity { width 240 showIcon false }
+    routes { curve rounded dasharray none }
+
+    place description at (0, 0)
+    place product top of description gap 72
+    place deploymentView at (description.x - 320, description.bottom + 110)
+    place resourceView right of deploymentView gap 380 align top
+    place deploymentDraft at (deploymentView.x - 220, deploymentView.bottom + 70)
+    place deploymentCompleteness bottom of deploymentDraft gap 28 align left
+    place deploymentMaturity bottom of deploymentCompleteness gap 28 align left
+    place resourceApproved right of deploymentDraft gap 400 align top
+    place resourceCompleteness right of deploymentCompleteness gap 400 align top
+    place resourceMaturity right of deploymentMaturity gap 400 align top
+
+    route isProduct { from top to bottom curve straight }
+    route containsDeployment, containsResource { from bottom to top sharePath stereotypes }
+    route deploymentStatus, deploymentCompletion, deploymentLevel,
+          resourceStatus, resourceCompletion, resourceLevel {
+      from right to bottom
+      label 0 offset 50 sideOffset 15
+    }
+    route deploymentStatus { via (deploymentView.centerX, deploymentDraft.centerY) }
+    route deploymentCompletion { via (deploymentView.centerX, deploymentCompleteness.centerY) }
+    route deploymentLevel { via (deploymentView.centerX, deploymentMaturity.centerY) }
+    route resourceStatus { via (resourceView.centerX, resourceApproved.centerY) }
+    route resourceCompletion { via (resourceView.centerX, resourceCompleteness.centerY) }
+    route resourceLevel { via (resourceView.centerX, resourceMaturity.centerY) }
+  }
+  view a6 "A6 · Architecture versions" {
+    viewpoint A6
+    include [description, description2030Draft, description2030, version18, version19, version20, baseline2025, baseline2030]
+    style description, description2030Draft, description2030, version18, version19, version20, baseline2025, baseline2030 {
+      width 250
+      height 112
+      showIcon false
+    }
+    place version18 at (0, 0)
+    place version19 right of version18 gap 116 align top
+    place version20 right of version19 gap 116 align top
+    place baseline2025 bottom of version18 gap 80
+    place baseline2030 bottom of version20 gap 80
+    place description bottom of baseline2025 gap 80
+    place description2030Draft right of description gap 116 align top
+    place description2030 right of description2030Draft gap 116 align top
+    routes { curve straight dasharray none }
+    route supersedes18, supersedes19 { from left to right }
+    route has2025Baseline, has2030DraftVersion, has2030Baseline,
+          baseline2025Version, baseline2030Version { from top to bottom }
+  }
+  view a7 "A7 · Architecture metadata" {
+    viewpoint A7
+    include [response, performance, measures, responseTarget, responseResult, standard, description]
+  }
+  view a8 "A8 · Architecture standards" {
+    viewpoint A8
+    include [spiralGroup, spiral6, guidebook, uploadConstraint, unclasConstraint]
+    style spiralGroup, spiral6, guidebook, uploadConstraint, unclasConstraint {
+      width 300
+      height 120
+      showIcon false
+    }
+    place spiralGroup at (0, 0)
+    place spiral6 bottom of spiralGroup gap 80
+    place guidebook bottom of spiral6 gap 80
+    place unclasConstraint left of guidebook gap 200
+    place uploadConstraint top of unclasConstraint gap 42 align left
+    routes { curve rounded dasharray none }
+    route groupsSpiral6 { from bottom to top curve straight }
+    route referencesSpiral6 { from top to bottom curve straight }
+    route includesUnclas {
+      from left to right
+      curve straight
+      label (unclasConstraint.right + 48, unclasConstraint.centerY - 16)
+    }
+    route includesUpload {
+      from left to right
+      via (guidebook.x - 100, guidebook.centerY), (guidebook.x - 100, uploadConstraint.centerY)
+      label (uploadConstraint.right + 48, uploadConstraint.centerY - 16)
+    }
+  }
+  view ar "Ar · Review roadmap" {
+    viewpoint Ar
+    include [product, status, project, review, earlier, current]
+    exclude supersedes
+    diagram timeline { startAttribute date endAttribute date datedOnly true }
+  }
+}

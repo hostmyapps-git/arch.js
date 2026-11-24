@@ -206,7 +206,7 @@ Capability→Capability begrenzt.
 | `mappings[]` | `kind`, `relationship`, `source`, `target` und Dokumentation; rein beschreibend |
 | `nodeTypes.NAME` | `extends`, `template`, `abstract`, `container`, `contains`, `attributes`, `icon`, `accent`, `styleGroup`, `backgroundColor`, `comparisons` |
 | `relationTypes.NAME` | `extends`, `from`, `to`, `directions`, `style`, `abstract`, `allowSelf`, `attributes`, `outgoing`, `incoming`, `pairs`, `acyclic`, `referenceLabels`, `referenceDisplay`, `referenceOccurrences` |
-| `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections`, `references` |
+| `viewpoints.NAME` | `nodes`, `relations`, `requiredNodes`, `requiredRelations`, `connections`, `references`, `objectifications` |
 
 Profile, Typen und Viewpoints können außerdem `title`, `description`, `sources`
 und `limitations` für Registry und englische Laufzeithilfe enthalten.
@@ -450,8 +450,8 @@ Die Regel ersetzt den gewöhnlichen Endpunkt-Verbindungsnachweis.
 Relationsprofile können `referenceConnectorLabels: true` setzen, um die Texte
 aus referenceLabels an den Zuordnungslinien anzuzeigen. Standard false; gilt
 für Connected-Views und benannte Tree-Gruppen. Beschriftung am Pfadmittelpunkt,
-mit Zeilenumbruch und Exportgrenzen; Styling/Routing bleibt über die vorhandenen
-Zuordnungsrouten möglich. Keine eigene label-Option an diesen Routen.
+mit Zeilenumbruch und Exportgrenzen. `label` in einer Zuordnungsroute kann diese
+Beschriftung positionieren oder ausblenden.
 
 `sequenceMessage: true` an einem Relationsprofil kennzeichnet Sequenznachrichten.
 Ohne explizite messages-Auswahl werden solche ausgewählten Beziehungen als
@@ -463,6 +463,11 @@ positiven Integerwerten; ohne diese Option gelten Listen-/Deklarationsreihenfolg
 Default false. Nachrichtenreferenzen werden als Objektkarten mit Zuordnungslinie
 gezeichnet, einschließlich referenceConnectorLabels. Keine fachliche Sonderlogik
 für NAF-Typnamen im Renderer.
+
+`activityFlow: true` kennzeichnet gerichtete Ablaufkanten für `diagram activity`.
+Der Renderer berechnet die Stufen aus den sichtbaren gekennzeichneten Kanten.
+Der Wert wird an Untertypen vererbt und lässt sich dort mit `false` überschreiben.
+Inline-Profile verwenden `relation TYP { activityFlow true }`.
 
 `connections[].referenceAttributes` nennt optional Referenzattribute, die
 statt einer expliziten Beziehung als Gegenstellen-Nachweis zählen dürfen.
@@ -659,3 +664,51 @@ oder ohne Profilangabe. Mehrere Views werden mit Überschriften untereinander
 in einem eigenständigen SVG gerendert; ohne Auswahl bleibt die erste View der
 Standard. API-Priorität: `view` → `views` → `config.views` → erste View.
 Siehe [HELP.md](../HELP.md#eine-mehrere-oder-alle-views-rendern).
+
+### Sichtbarkeit modellierter Zuordnungen
+
+Viewpoint-`connections` unterstützen `visibility: "may" | "shall"` mit
+`min: 0`, ohne max/through/referencedByAttributes. Die übrigen Selektoren und
+referenceAttributes bestimmen die betroffenen Zuordnungen. `shall` untersucht
+bekannte Modellkanten auch bei ausgeschlossenen oder mit display none
+versteckten Endpunkten/Kanten. Fehlende Darstellung ergibt ARCH_MAPPING_HIDDEN
+(Strict-Fehler, Draft-Warnung). Fehlt jede Zuordnung im Modell, entsteht
+ARCH_MAPPING_REVIEW als nicht blockierender Vollständigkeitshinweis. `may`
+erlaubt das Weglassen. Regeln ohne visibility behalten ihre Kardinalitätssemantik.
+Diese Regel erzeugt weder Zuordnungen noch Ressourcen und berechnet keine
+unbekannte fachliche Vollständigkeit. Referenzbasierte Evidenz verlangt einen
+sichtbaren Zielknoten; vorhandene explizite Kanten müssen zusätzlich sichtbar sein.
+
+### Objectifications with legacy endpoint alternatives
+
+JSON viewpoints can define generic objectification checks, as used by NAF L2:
+
+```json
+"objectifications": [{
+  "nodes": ["Needline"],
+  "relations": ["Needline"],
+  "attribute": "needline",
+  "endpoints": {"source": "source", "target": "target"},
+  "allowLegacy": true,
+  "required": true
+}]
+```
+
+The binding attribute must be a scalar typed reference to the selected object
+types. All selector types are explicit and known. Endpoint attribute names
+must be distinct scalar reference attributes declared on the object types.
+allowLegacy requires the endpoint mapping. required and allowLegacy default
+to false. This metadata is supported in JSON profiles; it is not new inline
+profile DSL syntax.
+
+A selected object requires one selected bound relationship, or a complete
+legacy endpoint pair if allowed. Model-wide duplicate bindings and endpoint
+conflicts are rejected for objects involved in the view. Legacy endpoints must
+satisfy the selected relationship's endpoint/type-pair/self-link rules and be
+selected. required demands at least one matching relationship or valid legacy
+representation in the view; no object is required for a compact edge. Object
+cards need not be shown if only their relationship is selected. Typed references
+remain globally checked. Legacy references do not synthesize model edges.
+Graphical bindings still use referenceLabels/referenceDisplay/
+referenceConnectorLabels. Strict reports errors; draft keeps the diagram and
+reports notices. Existing referencedByAttributes checks remain unchanged.

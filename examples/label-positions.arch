@@ -1,0 +1,25 @@
+architecture "Calculated and relative labels" {
+  model {
+    service source "Source"
+    service target "Target"
+    service receiver "Receiver"
+    relation request source -> target "30% + half source width"
+    relation reply target -> source "Calculated coordinates"
+    relation onward target -> receiver "Halfway - half receiver height"
+  }
+  view labels "Label placement" {
+    place source at (0,0)
+    place target at (650,0)
+    place receiver at (1000,350)
+    route request {
+      from right to left curve bezier
+      via (source.right+100,source.y-220),(target.x-100,target.y-220)
+      label 0.3 offset source.width/2
+    }
+    route reply {
+      from left 0.75 to right 0.75 curve straight
+      label ((source.right+target.x)/2, source.bottom + 20)
+    }
+    route onward {from bottom to left curve rounded label 1/2 offset -receiver.height/2}
+  }
+}

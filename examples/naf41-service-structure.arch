@@ -1,6 +1,6 @@
 # NAFv4.1 p.108: same nine elements and eight directed relationships.
 # Node is the NAF vocabulary alias of the existing LogicalNode application type.
-# The concrete physical-resource adapter retains UAF isStandardConfiguration.
+# System supplies the concrete type and the stereotype reproduces the PDF label.
 architecture "NAFv4.1 · S2 Service Structure" {
   config { profile naf41-uaf }
   model {
@@ -12,8 +12,9 @@ architecture "NAFv4.1 · S2 Service Structure" {
     Service platform "Platform Service"
     Service storage "Storage Service"
     ServiceFunction getAreaOfInterest "Get Area of Interest"
-    PhysicalActiveResource airTraffic "Air Traffic Control System" {
+    System airTraffic "Air Traffic Control System" {
       isStandardConfiguration false
+      stereotype "Physical Active Resource"
     }
 
     relation consumes controller -> situation "consumes" { type ConsumesService }

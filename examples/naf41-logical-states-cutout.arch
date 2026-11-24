@@ -1,0 +1,55 @@
+# Directed relationships in the NAFv4.1 L5 cut-out, p.137.
+architecture "Search and Rescue — Logical States Cut-out" {
+  config { profile naf41-uaf }
+  model {
+    Node centre "Regional Coordination Center"
+    LogicalState waiting "Waiting"
+    LogicalState locating "Locating"
+    LogicalEvent signal "Search Start"
+    LogicalTransition begin "Begin locating"
+    OperationalActivity assess "Assess distress report"
+    LogicalFunction locate "Determine location"
+    LogicalMode assessment "Assessment mode"
+    LogicalMode location "Location mode"
+    LogicalStateGroup lifecycle "Coordination states"
+    LogicalStateGroup active "Active states"
+
+    relation waitingState centre -> waiting "has" { type HasLogicalState }
+    relation locatingState centre -> locating "has" { type HasLogicalState }
+    relation receive waiting -> locating "receive signal" { type LogicalStateTransition transition begin }
+    relation trigger signal -> begin "triggers" { type TriggersLogicalTransition }
+    relation enableAssess locating -> assess "enables" { type StateEnablesOperationalActivity }
+    relation enableLocate locating -> locate "enables" { type StateEnablesLogicalFunction }
+    relation assessMode assess -> assessment "has" { type HasLogicalMode }
+    relation locateMode locate -> location "has" { type HasLogicalMode }
+    relation groupWaiting lifecycle -> waiting "aggregates" { type GroupsLogicalState }
+    relation groupLocating active -> locating "aggregates" { type GroupsLogicalState }
+    relation nestedGroup lifecycle -> active "aggregates" { type AggregatesLogicalStateGroup }
+  }
+  view l5 "L5 — Cut-out" {
+    viewpoint L5
+    place centre at (640, 80)
+    place waiting at (425, 310)
+    place locating at (920, 310)
+    place lifecycle at (20, 310)
+    place active at (20, 520)
+    place begin at (675, 560)
+    place signal at (1050, 560)
+    place assess at (1250, 165)
+    place locate at (1250, 450)
+    place assessment at (1600, 165)
+    place location at (1600, 450)
+
+    route waitingState { from left to top via (waiting.centerX, centre.centerY) }
+    route locatingState { from right to top via (locating.centerX, centre.centerY) }
+    route receive { from right to left curve straight }
+    route begin -> receive { from top to 0.55 }
+    route trigger { from left to right curve straight }
+    route enableAssess { from right 1/4 to left via (locating.right + 45, locating.y + locating.height/4), (locating.right + 45, assess.centerY) }
+    route enableLocate { from right 3/4 to left via (locating.right + 75, locating.y + locating.height*3/4), (locating.right + 75, locate.centerY) }
+    route groupLocating {
+      from right to bottom 1/4
+      via (active.right + 55, active.centerY), (active.right + 55, 670), (locating.x + locating.width/4, 670)
+    }
+  }
+}

@@ -1,0 +1,62 @@
+# All relationship directions from the NAFv4.1 L4 cut-out on printed p.134.
+architecture "L4 — Incident Handling" {
+  config {profile naf41-uaf}
+  model {
+    Node centre "Coordination Centre"
+    Role controller "Duty Controller"
+    OperationalActivity handle "Handle Incident"
+    OperationalActivity record "Record Incident"
+    Capability coordination "Incident Coordination"
+    LogicalEvent assessed "Incident Assessed"
+    Service logging "Incident Logging Service"
+    EquipmentType workstation "Dispatch Workstation" {
+      isStandardConfiguration false
+      stereotype "Physical Active Resource"
+    }
+    OperationalFlow handover "Incident Handover"
+    InformationProduct report "Incident Report"
+
+    relation holds centre -> controller "holds" {type HoldsRole}
+    relation performHandle centre -> handle "performs" {type PerformsOperationalActivity}
+    relation performRecord controller -> record "performs" {type PerformsOperationalActivity}
+    relation aggregate handle -> record "aggregates" {type OperationalActivityAggregation}
+    relation supports handle -> coordination "supports" {type MapsToCapability}
+    relation control handle -> record "Operational Control Flow" {type OperationalControlFlow}
+    relation transfer handle -> record "Operational Flow" {type OperationalFlow flow handover}
+    relation conveysReport handover -> report "conveys" {type ConveysLogicalResource}
+    relation handlesReport record -> report "acts upon" {type ActsUponLogicalResource}
+    relation signals handle -> assessed "triggers" {type TriggersLogicalEvent}
+    relation onAssessment assessed -> record "triggers" {type TriggersOperationalActivity}
+    relation serviceTrace logging -> handle "relates to" {type RelatesServiceToOperationalActivity}
+    relation workstationTrace workstation -> record "enables" {type EnablesOperationalActivity}
+  }
+  view full "L4 · Cut-out" {
+    viewpoint L4
+    diagram connected
+    place centre at (0,190)
+    place handle at (380,190)
+    place record at (1000,190)
+    place controller at (1320,190)
+    place coordination at (380,-80)
+    place assessed at (690,-80)
+    place logging at (380,360)
+    style workstation {width 300}
+    place workstation at (960,360)
+    place handover at (690,550)
+    place report at (1320,550)
+
+    routes {curve rounded}
+    route holds {from top to top via (centre.centerX,-185),(controller.centerX,-185) label 1/2}
+    route control {from right 0.32 to left 0.32 curve straight label 1/4}
+    route aggregate {from right 0.54 to left 0.54 curve straight label 1/2}
+    route transfer {from right 0.82 to left 0.82 curve straight label 3/4}
+    route handover -> transfer {from top to 1/2 curve straight}
+    route signals {from right 0.12 to left via (655,handle.y+0.12*handle.height),(655,assessed.centerY) label 1/2}
+    route onAssessment {from right to top via (record.centerX,assessed.centerY) label 1/2}
+    route handlesReport {from bottom 0.9 to top via (record.x+0.9*record.width,320),(report.centerX,320) label 1/2}
+  }
+  view compact "L4 · Flow without object or payload cards" {
+    viewpoint L4
+    include centre, controller, handle, record
+  }
+}

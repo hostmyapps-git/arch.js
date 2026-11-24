@@ -12,8 +12,9 @@ export function validateMetaView(view) {
   const fail = message => { throw new ArchError(`View ${view.id}: ${message}`,view.loc,'ARCH_META'); };
   if (!META_FORMATS.includes(view.meta)) fail('meta must be json or dsl');
   if (view.diagram || view.trees || view.viewpoint || view.propertyFields!==undefined || view.include !== undefined || view.exclude !== undefined ||
-      Object.keys(view.places).length || Object.keys(view.styles).length || Object.keys(view.routes).length || view.referenceRoutes?.length ||
+      Object.keys(view.places).length || Object.keys(view.virtualPlaces ?? {}).length || Object.keys(view.styles).length || Object.keys(view.routes).length || Object.keys(view.virtualRoutes ?? {}).length || view.referenceRoutes?.length ||
       view.routeDefaults !== undefined || view.referenceDisplay !== undefined || view.referenceOccurrences !== undefined ||
+      view.backgroundImage !== undefined || view.showBackgroundImage !== undefined ||
       view.direction !== 'right' || view.spacing !== 80)
     fail('meta views support a source format and theme; model filters, viewpoints, diagrams and layout/style settings do not apply');
   return true;

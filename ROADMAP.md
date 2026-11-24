@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: 17.11.2026. Der erste Abschnitt hält den implementierten Ausgangspunkt
+Stand: 21.11.2026. Der erste Abschnitt hält den implementierten Ausgangspunkt
 fest; die folgenden Abschnitte sind ein priorisierter Ausblick ohne Terminzusage.
 Einsatzschwerpunkt und Grenzen gegenüber anderen Werkzeugen:
 [COMPARISON.md](COMPARISON.md). arch.js konzentriert sich auf gemeinsame
@@ -8,16 +8,22 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 
 ## Tatsächlich implementiert
 
+- Alle 47 NAFv4.1-Viewpoints mit Strukturprüfungen und einer Zuordnung
+  zu Darstellungsformen. Tabellarische Views, gewichtete Flüsse und das
+  NAF-Grid sind direkt verfügbar. Eigenständige Timing-, Parametrik-,
+  Herringbone- und ER-Notation bleiben offen. Siehe
+  [NAF-Abgleich](profiles/naf41/COVERAGE.md) und [Grenzen](profiles/naf41/GAPS.md).
+
 - S3-Beispiel von S.110 mit ServiceOperation-Alias, DataProductType-Spezialisierung,
   gemeinsamem konzeptionellen Parameter und has/involves-Kanten. Alternative
   Referenz-Nachweise in Viewpoint-Verbindungsregeln sichern owner/resource-
   Kompatibilität. Vollständige UML-Parameter-Ownership und Signatursemantik
   bleiben offen.
 
-- S2-Beispiel von S.108 mit ServiceAggregation, Node-Alias, konkretem PhysicalActiveResource und
+- S2-Beispiel von S.108 mit ServiceAggregation, Node-Alias, konkretem System und
   quellgerichteten ConsumesService/EnablesService/RealizesService-Adaptern.
-  Native UAF-Regeln bleiben erhalten. Die zusätzlichen Consumer-/Provider-
-  Rollen und relies-on/provides/delivers des S2-Cut-outs bleiben offen.
+  Native UAF-Regeln bleiben erhalten. Optionale Consumer-/Provider-Rollen
+  unterstützen auch relies-on, provides und delivers nach dem S2-Cut-out.
 
 - Generische Knoten-/Relationsaliase mit symmetrischer Typidentität,
   erhaltener Quellnotation und versionierter Profilwahl. Service ist im
@@ -208,6 +214,8 @@ Die ersten Versionen sind implementiert. Weitere Ausbauschritte:
 - Erweiterte Attributtypen: Einheiten und strukturierte Objektwerte.
   Flache Listen, Datums-/Zeitformate und typisierte Referenzen sind implementiert.
 - Wiederverwendbare Modellmodule und Imports mit klarer ID-Auflösung.
+  View-Wiederverwendung innerhalb einer Architektur ist bereits über `extends`
+  und `embed` verfügbar; dateiübergreifende Modellimporte bleiben davon getrennt.
 - Modellabfragen für Views statt ausschließlich expliziter `include`-Listen.
 - Diagnosewarnungen mit vollständigen Quellbereichen (Fehler mit Zeile/Spalte,
   eigenen Typschemata und mehreren semantischen Diagnosen sind implementiert).

@@ -1,0 +1,48 @@
+# NAFv4.1 P1, p.149. The UAF boolean values are illustrative.
+architecture "NAFv4.1 · P1 Resource Taxonomy" {
+  config { profile naf41-uaf }
+  model {
+    EquipmentType dsc "DSC Radio" { isStandardConfiguration false }
+    EquipmentType vhf "VHF Radio" { isStandardConfiguration false }
+    EquipmentType mf "MF Radio" { isStandardConfiguration false }
+    EquipmentType hf "HF Radio" { isStandardConfiguration false }
+    CapabilityConfiguration squadron "Heli Squadron" { isStandardConfiguration false }
+    LogicalEquipment device "Communication Device"
+    ResourceFunction voice "Transmit Voice Communication"
+
+    relation kindVhf vhf -> dsc "is a kind of" { type ResourceGeneralization }
+    relation kindMf mf -> dsc "is a kind of" { type ResourceGeneralization }
+    relation kindHf hf -> dsc "is a kind of" { type ResourceGeneralization }
+    relation groups squadron -> dsc "aggregates" { type GroupsPhysicalResource }
+    relation realizes dsc -> device "realizes" { type Implements }
+    relation performs dsc -> voice "performs" { type IsCapableToPerform }
+  }
+
+  view p1 "P1 · Resource Taxonomy" {
+    viewpoint P1
+    style squadron { width 280 }
+    tree radioTaxonomy {
+      nodes [dsc, vhf, mf, hf]
+      relations [ResourceGeneralization]
+      direction down
+      sharePath stereotypes
+    }
+    place radioTaxonomy at (0, 340)
+    place device at (dsc.centerX - device.width / 2, dsc.y - 250)
+    place voice at (dsc.right + 120, device.y)
+    place squadron at (dsc.x - squadron.width - 160, dsc.y - 130)
+
+    routes { curve rounded dasharray none }
+    route groups {
+      from right to top 1/4
+      via (dsc.x + dsc.width / 4, squadron.centerY)
+      label 0.38
+    }
+    route realizes { from top to bottom curve straight }
+    route performs {
+      from top 3/4 to bottom
+      via (dsc.x + 3/4 * dsc.width, device.bottom + 36), (voice.centerX, device.bottom + 36)
+      label 0.65
+    }
+  }
+}

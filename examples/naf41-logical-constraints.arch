@@ -1,0 +1,46 @@
+# NAFv4.1 p.144: four logical constraints and one requirement apply to three nodes.
+architecture "NAFv4.1 · L8 Logical Constraints" {
+  config { profile naf41-uaf }
+  model {
+    LogicalConstraint scalable "Must be Scalable"
+    LogicalConstraint integrate "Must be able to integrate new assets"
+    LogicalRequirement access "Requires access to all location data of all authorities"
+    LogicalConstraint independent "Must be able to operate independently"
+    LogicalConstraint permanent "Must be operated permanently"
+    Node assetControl "Asset Control"
+    Node search "Search"
+    Node tacticalC2 "Tactical C2"
+
+    relation scalesAssetControl scalable -> assetControl "applies to" { type ConstrainsLogical }
+    relation integratesAssetControl integrate -> assetControl "applies to" { type ConstrainsLogical }
+    relation requiresAccess access -> search "applies to" { type ConstrainsLogical }
+    relation independentSearch independent -> search "applies to" { type ConstrainsLogical }
+    relation independentC2 independent -> tacticalC2 "applies to" { type ConstrainsLogical }
+    relation permanentSearch permanent -> search "applies to" { type ConstrainsLogical }
+    relation permanentC2 permanent -> tacticalC2 "applies to" { type ConstrainsLogical }
+  }
+  view l8 "L8 · Logical Constraints" {
+    viewpoint L8
+    style scalable, integrate, access, independent, permanent { width 320 }
+    place scalable at (0, 0)
+    place integrate at (0, 160)
+    place access at (0, 320)
+    place independent at (0, 525)
+    place permanent at (0, 780)
+    place assetControl at (740, 80)
+    place search at (740, 450)
+    place tacticalC2 at (740, 780)
+    routes { curve rounded sharePath stereotypes dasharray none }
+    route requiresAccess { from right to top via (search.centerX, access.centerY) }
+    route independentSearch {
+      from top to left 1/4
+      via (independent.centerX, search.y + search.height/4)
+    }
+    route independentC2 { from right to top via (tacticalC2.centerX, independent.centerY) }
+    route permanentSearch {
+      from top to left 1/2
+      via (permanent.centerX, permanent.y - 90), (490, permanent.y - 90), (490, search.centerY)
+    }
+    route permanentC2 { from right to left }
+  }
+}

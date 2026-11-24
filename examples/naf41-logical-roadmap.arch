@@ -1,0 +1,35 @@
+# NAFv4.1 p.146: two readiness levels for Waterborne Rescue.
+# The PDF leaves milestone dates open. The dates below are illustrative.
+architecture "NAFv4.1 · Lr Logical Roadmap" {
+  config { profile naf41-uaf }
+  model {
+    Node waterborneRescue "Waterborne Rescue"
+    LogicalReadinessLevel wbrLow "WBR Low"
+    LogicalReadinessLevel wbrHigh "WBR High"
+    LogicalMilestone maintenance "Up to date maintenance" { date "2030-01-01" }
+    LogicalMilestone personnel "Trained Personnel" { date "2030-04-01" }
+    LogicalMilestone software "Latest Software" { date "2030-08-01" }
+
+    relation lowFulfils wbrLow -> waterborneRescue "fulfils" { type LogicalReadinessFulfilsResource }
+    relation highFulfils wbrHigh -> waterborneRescue "fulfils" { type LogicalReadinessFulfilsResource }
+    relation maintenanceLow maintenance -> wbrLow "defines" { type DefinesLogicalReadiness }
+    relation maintenanceHigh maintenance -> wbrHigh "defines" { type DefinesLogicalReadiness }
+    relation personnelLow personnel -> wbrLow "defines" { type DefinesLogicalReadiness }
+    relation personnelHigh personnel -> wbrHigh "defines" { type DefinesLogicalReadiness }
+    relation softwareHigh software -> wbrHigh "defines" { type DefinesLogicalReadiness }
+  }
+  view lr "Lr · Logical Roadmap" {
+    viewpoint Lr
+    style wbrLow, wbrHigh { width 280 }
+    place waterborneRescue at (380,0)
+    place wbrLow at (-60,190)
+    place wbrHigh at (760,190)
+    place maintenance at (380,360)
+    place personnel at (380,520)
+    place software at (380,680)
+    routes { curve rounded sharePath stereotypes dasharray none }
+    route lowFulfils, highFulfils { from top to bottom }
+    route maintenanceLow, personnelLow { from left to right }
+    route maintenanceHigh, personnelHigh, softwareHigh { from right to left }
+  }
+}

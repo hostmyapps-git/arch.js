@@ -1,0 +1,104 @@
+# NAFv4.1 pp.109–110: nine elements and nine directed relationships.
+# Geographic Location is one conceptual parameter shared by both operations.
+# Resource deliberately has no physical-resource trace, as in the example.
+architecture "NAFv4.1 · S7 Service Interface Parameters" {
+  config { profile naf41-uaf views all }
+  model {
+    Service situation "Situation Information Consolidation"
+    ServiceInterface picture "Situation Picture"
+    ServiceOperation submitLocation "submit Location Of Resource"
+    ServiceOperation setArea "set Area Of Interest"
+    ServiceOperationParameter geographicLocation "Geographic Location"
+    ServiceOperationParameter resource "Resource" {resource positionReport}
+    ServiceOperationParameter track "Track"
+    DataProductType positionReport "Position Report"
+    DataProductType targetTrackRecord "Target Track Record"
+
+    relation specifiesInterface situation -> picture "specifies" { type SpecifiesServiceInterface }
+    relation specifiesSubmit picture -> submitLocation "specifies" { type SpecifiesServiceOperation }
+    relation specifiesArea picture -> setArea "specifies" { type SpecifiesServiceOperation }
+    relation submitGeography submitLocation -> geographicLocation "has" { type HasServiceOperationParameter }
+    relation areaGeography setArea -> geographicLocation "has" { type HasServiceOperationParameter }
+    relation submitResource submitLocation -> resource "has" { type HasServiceOperationParameter }
+    relation submitTrack submitLocation -> track "has" { type HasServiceOperationParameter }
+    relation geographyProduct geographicLocation -> positionReport "involves" { type InvolvesPhysicalResource }
+    relation trackProduct track -> targetTrackRecord "involves" { type InvolvesPhysicalResource }
+    ServiceFunction receiving "Data Receiving"
+    ServiceFunction storing "Data Storing"
+    ServiceFunctionParameter incoming "Incoming data"
+    ServiceFunctionParameter payload "Data Payload"
+    InformationProduct report "Situational Report"
+    InformationProduct pictureProduct "Consolidated Situational Picture"
+    relation receivingEnables receiving -> situation "enables" {type EnablesService}
+    relation storingEnables storing -> situation "enables" {type EnablesService}
+    relation receivingParameter receiving -> incoming "has" {type HasServiceFunctionParameter}
+    relation storingParameter storing -> payload "has" {type HasServiceFunctionParameter}
+    relation incomingProduct incoming -> report "involves" {type InvolvesLogicalResource}
+    relation payloadProduct payload -> pictureProduct "involves" {type InvolvesLogicalResource}
+  }
+  view s3 "S3 · Service Interfaces" {
+    viewpoint S3
+    include situation,picture,submitLocation,setArea,geographicLocation,resource,track,positionReport,targetTrackRecord
+    place situation at (110,0)
+    style situation { width 300 }
+    place picture at (0,240)
+    style picture { width 520 }
+    place submitLocation at (0,500)
+    place setArea at (400,500)
+    style submitLocation { width 300 }
+    style setArea { width 300 }
+    place geographicLocation at (800,740)
+    place resource at (geographicLocation.x,1000)
+    place track at (geographicLocation.x,1260)
+    style geographicLocation { width 300 }
+    style resource { width 300 }
+    style track { width 300 }
+    place positionReport at (1240,geographicLocation.y)
+    place targetTrackRecord at (1240,track.y)
+    style positionReport { width 300 }
+    style targetTrackRecord { width 300 }
+    routes { curve orthogonal }
+    route specifiesInterface { from bottom to top }
+    route specifiesSubmit { from bottom to top via (picture.centerX,picture.bottom+80),(submitLocation.centerX,picture.bottom+80) }
+    route specifiesArea { from bottom to top via (picture.centerX,picture.bottom+80),(setArea.centerX,picture.bottom+80) }
+    route submitGeography { from bottom 1/2 to left 3/4 via (submitLocation.centerX,geographicLocation.y+geographicLocation.height*3/4) }
+    route areaGeography { from bottom 1/2 to left 1/4 via (setArea.centerX,geographicLocation.y+geographicLocation.height/4) }
+    route submitResource { from bottom to left via (submitLocation.centerX,resource.centerY) }
+    route submitTrack { from bottom to left via (submitLocation.centerX,track.centerY) }
+    route geographyProduct { from right to left }
+    route trackProduct { from right to left }
+  }
+  view s7 "S7 · Extended operation parameters" {
+    extends s3
+    viewpoint S7
+    include receiving,storing,incoming,payload,report,pictureProduct
+    place receiving at (submitLocation.x,track.bottom+180)
+    place storing at (receiving.x,receiving.bottom+180)
+    place incoming at (geographicLocation.x,receiving.y)
+    place payload at (incoming.x,storing.y)
+    place report at (positionReport.x,incoming.y)
+    place pictureProduct at (report.x,payload.y)
+    place situation at (-400,240)
+    style receiving {width 300}
+    style storing {width 300}
+    style incoming {width 300}
+    style payload {width 300}
+    style report {width 300}
+    style pictureProduct {width 300}
+    route specifiesInterface {from right to left curve straight}
+    route receivingEnables {from left to bottom via (situation.centerX,receiving.centerY)}
+    route storingEnables {from left to bottom via (situation.centerX,storing.centerY)}
+  }
+  view embeddedS7 "S7 · Embedded S3" {
+    viewpoint S7
+    include receiving,storing,incoming,payload,report,pictureProduct
+    embed s3 as interfaces {frame true}
+    place receiving at (interfaces.x,interfaces.bottom+120)
+    place storing at (receiving.x,receiving.bottom+120)
+    place incoming at (receiving.right+120,receiving.y)
+    place payload at (incoming.x,storing.y)
+    place report at (incoming.right+120,incoming.y)
+    place pictureProduct at (report.x,payload.y)
+    place interfaces at (0,0)
+  }
+}

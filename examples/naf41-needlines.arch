@@ -1,0 +1,36 @@
+# NAFv4.1 p.129: four Nodes and six directed Needlines.
+architecture "L2 — Logical Structure" {
+  config {profile naf41-uaf}
+  model {
+    Node search "Search"
+    Node assetControl "Asset Control"
+    Node rescue "Rescue"
+    Node tacticalC2 "Tactical C2"
+    relation controlSearch search -> assetControl "control" {type Needline}
+    relation status search -> rescue "status" {type Needline}
+    relation taskRescue assetControl -> rescue "tasking" {type Needline}
+    relation controlAsset assetControl -> tacticalC2 "control" {type Needline}
+    relation rescueTask tacticalC2 -> rescue "rescue" {type Needline}
+    relation taskSearch tacticalC2 -> search "tasking" {type Needline}
+  }
+  view l2 "L2 — Logical Structure" {
+    viewpoint L2
+    place search at (160,0)
+    place assetControl at (900,0)
+    place rescue at (search.x,400)
+    place tacticalC2 at (assetControl.x,rescue.y)
+    routes {curve rounded}
+    route controlSearch {from right to left}
+    route status {from bottom to top}
+    route taskRescue {
+      from bottom 1/4 to top 3/4
+      via (assetControl.x+assetControl.width/4,220),(rescue.x+rescue.width*3/4,220)
+    }
+    route controlAsset {from bottom 3/4 to top}
+    route rescueTask {from left to right}
+    route taskSearch {
+      from bottom to left
+      via (tacticalC2.centerX,tacticalC2.bottom+100),(0,tacticalC2.bottom+100),(0,search.centerY)
+    }
+  }
+}

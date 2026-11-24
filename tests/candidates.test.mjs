@@ -25,7 +25,7 @@ test('abstract node diagnostics list concrete descendants from generic multiple 
   for (const type of diagnostic.candidates) assert.equal(arch.validate(document(`${type} item "Item"`)).valid, true);
   assert.throws(() => arch.parse(document('Base item "Item"')), error => error.diagnostics[0].candidates.includes('Direct'));
   assert.match(arch.help('types candidate_demo Base'), /Concrete subtypes\nDiamond ID "Title"/);
-  assert.match(arch.renderToString('@help types candidate_demo Base'), /Direct ID &quot;Title&quot;/);
+  assert.match(arch.renderToString('@help types candidate_demo Base').replace(/<[^>]+>/g,''), /Direct ID &quot;Title&quot;/);
   const empty = arch.validate(document('Empty item "Item"')).diagnostics[0];
   assert.deepEqual(empty.candidates, []); assert.match(empty.message, /No concrete subtypes/);
   assert.match(arch.help('types candidate_demo Empty'), /No concrete subtypes/);
@@ -45,11 +45,11 @@ test('inline profiles use the current-profile help selector and preserve snapsho
   assert.deepEqual(diagnostic.candidates, ['Concrete']);
   const help = source.replace('model {Base n "N"}', diagnostic.help);
   assert.equal(arch.validate(help).valid, true);
-  assert.match(arch.renderToString(help), /Concrete ID &quot;Title&quot;/);
+  assert.match(arch.renderToString(help).replace(/<[^>]+>/g,''), /Concrete ID &quot;Title&quot;/);
   assert.match(arch.help('types . Base', {profile}), /Diamond/);
   const parsed = arch.parse('@help types candidate_demo Base');
   arch.registerProfile('candidate_demo', {nodeTypes:{Base:{abstract:true}, Replacement:{extends:'Base'}}});
-  assert.match(arch.renderToString(parsed), /Replacement ID/);
+  assert.match(arch.renderToString(parsed).replace(/<[^>]+>/g,''), /Replacement ID/);
   arch.registerProfile('candidate_demo', profile);
 });
 

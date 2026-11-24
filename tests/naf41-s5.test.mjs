@@ -54,7 +54,7 @@ test('S5 supports all cut-out patterns and legacy compact ownership, mode and ev
 test('S5 validates binding cardinality, selected evidence, typed links, ownership and group cycles',()=>{
  const orphan=example.replace(' transition loss}','}').replace(/route loss -> stateChange[^}]+}/,'');
  assert.equal(arch.validate(orphan).valid,false);
- assert.match(arch.validate(orphan).diagnostics.map(d=>d.message).join('\n'),/referenced by: transition/);
+ assert.match(arch.validate(orphan).diagnostics.map(d=>d.message).join('\n'),/ServiceStateTransition relationship bound through transition/);
  const draft=arch.validate(orphan.replace('profile naf41-uaf','profile naf41-uaf validation draft'));
  assert.ok(draft.valid);assert.ok(draft.diagnostics.some(d=>d.message.includes('loss')));
  const duplicate=example.replace('relation triggers','relation secondChange outOfService -> inService "Return" {type ServiceStateTransition transition loss}\n relation triggers');

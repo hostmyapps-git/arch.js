@@ -31,7 +31,7 @@ test('via subtraction without spaces resolves known references and preserves amb
 });
 
 test('shared route defaults resolve after overrides, including ignored paths and hidden unused anchors',()=>{
-  const g=arch.layout(doc(`${at} routes {curve straight via (c.x - 100,c.y - 40)} route e {via (a.right + 30,a.y)}`));
+  const g=arch.layout(doc(`${at} routes {via [(c.x - 100,c.y - 40)] curve straight} route e {via (a.right + 30,a.y)}`));
   assert.deepEqual(edge(g).points[1],{x:270,y:40});assert.deepEqual(edge(g,'f').points[1],{x:800,y:-40});
   const hidden=doc(`${at} routes {curve straight via (c.x,0)} route e {via (a.right + 30,a.y)} style c {display none}`);
   assert.equal(arch.validate(hidden).valid,true);assert.equal(arch.layout(hidden).edges.length,1);
@@ -53,7 +53,7 @@ test('reference connector via expressions use canonical cards, defaults/override
   const profile={defaultRelation:'exchange',nodeTypes:{service:{template:'service'},document:{template:'artifact'}},relationTypes:{exchange:{style:'flow',attributes:{payload:{type:'reference',targets:['document'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
   const model='service a "A" service b "B" document info "Report" relation e a -> b "Sends" {payload [info]} relation f b -> a "Replies" {payload [info]}';
   for(const occurrences of ['shared','perEdge']) {
-    const source=doc(`referenceOccurrences ${occurrences} routes {curve straight via (a.right + 40,a.y - 60)} route info -> e {via (info.centerX + 20,a.y - 100), (b.x - 20,b.centerY) curve bezier}`,model);
+    const source=doc(`referenceOccurrences ${occurrences} routes {curve straight via (a.right + 40,a.y - 60)} route info -> e {via [(info.centerX + 20,a.y - 100), (b.x - 20,b.centerY)] curve bezier}`,model);
     const g=arch.layout(source,{profile}),info=get(g,'info'),ref=g.referenceNodes.find(r=>r.edgeId==='e');
     assert.ok(!info.referenceOnly);assert.equal(ref.node,info);assert.match(ref.d,/ C /);
     assert.deepEqual(ref.points[1],{x:info.x+info.width/2+20,y:get(g,'a').y-100});
@@ -62,7 +62,7 @@ test('reference connector via expressions use canonical cards, defaults/override
   }
 });
 
-test('via validates targets and arithmetic, retains placement cycle errors and keeps other point fields numeric',()=>{
+test('via validates targets and arithmetic and retains placement cycle errors',()=>{
   for(const [view,pattern]of [
     ['route e {via (missing.x,0)}',/Unknown via reference/],
     ['route e {via (e.x,0)}',/Unknown via reference/],
@@ -71,15 +71,47 @@ test('via validates targets and arithmetic, retains placement cycle errors and k
     ['route e {via (a.x / 0,0)}',/Division by zero/],
     ['route e {via (a.foo,0)}',/Invalid placement coordinate/],
     ['route e {curve bezier via (a.x,0)}',/two control points/],
+    ['route e {via []}',/Expected: \(/],
+    ['route e {via [(a.x,0)}',/Expected: \]/],
     ['place a at (b.x,0) place b at (a.x,0) route e {via (a.x,b.y)}',/Circular placement dependency/],
   ]) {const report=arch.validate(doc(view));assert.equal(report.valid,false,view);assert.match(report.diagnostics[0].message,pattern);}
   assert.throws(()=>arch.layout(doc(`${at} route e {via (a.x / (b.width - 220),0)}`)),/Division by zero/);
   assert.throws(()=>arch.layout(doc(`${at} route e {via (b.x + 10000000,0)}`)),/outside the range/);
-  for(const field of ['from (a.x,0)','to (b.x,0)','label (a.x,b.y)'])assert.equal(arch.validate(doc(`route e {${field}}`)).valid,false);
+});
+
+test('calculated from/to tuples follow final card positions and sizes and round-trip through JSON',()=>{
+  const source=doc(`${at} style a {width 300 height 360} style b {height 140}
+    route e {from (a.x+a.width, b.centerY) to left curve straight}
+    route f {from (b.right, b.y + b.height / 2) to (c.x, c.y + 10) curve straight}`);
+  const graph=arch.layout(source);
+  assert.deepEqual(edge(graph).points,[{x:320,y:310},{x:620,y:310}]);
+  assert.deepEqual(edge(graph,'f').points,[{x:840,y:310},{x:900,y:10}]);
+  const json=arch.translate(source);
+  assert.deepEqual(JSON.parse(json).architecture.views.v.route.e.from,['a.x + a.width','b.centerY']);
+  const options={idPrefix:'calculated-ports'};
+  assert.equal(arch.renderToString(json,options),arch.renderToString(source,options));
+  assert.equal(arch.renderToString(arch.translate(json),options),arch.renderToString(source,options));
+});
+
+test('calculated endpoints validate effective references after overrides and a free path',()=>{
+  const path='M 0 0 L 100 0';
+  const defaults=`${at} style c {display none} routes {from (c.right, c.centerY)}`;
+  const local=arch.layout(doc(`${defaults} route e {from (a.right, b.centerY) to left curve straight}`));
+  assert.deepEqual(edge(local).points[0],{x:240,y:288});
+  const free=arch.layout(doc(`${defaults} route e {path "${path}"}`));
+  assert.equal(edge(free).d,path);
+  assert.ok(Number.isFinite(edge(free).label.x));
+  for(const [view,pattern]of [
+    [defaults,/Hidden or excluded from reference: c/],
+    ['route e {to (missing.x, 0)}',/Unknown to reference: missing/],
+    ['route e {from (a.width / 0, 0)}',/Division by zero/],
+  ]) assert.match(arch.validate(doc(view)).diagnostics[0].message,pattern);
 });
 
 test('via JSON/DSL/meta translation preserves expressions with coordinate JSON diagnostics and both standalone bundles',async()=>{
-  const source=doc(`${at} route e {via (a.right + 40,b.y / 2), ((b.x + c.x) / 2,b.y) curve bezier}`),expected=arch.renderToString(source,{idPrefix:'via'}),json=arch.translate(source);
+  const waypoints='(a.right + 40,b.y / 2), ((b.x + c.x) / 2,b.y)';
+  const source=doc(`${at} route e {via [${waypoints}] curve bezier}`),expected=arch.renderToString(source,{idPrefix:'via'}),json=arch.translate(source);
+  assert.equal(arch.renderToString(doc(`${at} route e {via ${waypoints} curve bezier}`),{idPrefix:'via'}),expected);
   assert.deepEqual(JSON.parse(json).architecture.views.v.route.e.via[0],['a.right + 40','b.y / 2']);
   assert.equal(arch.renderToString(json,{idPrefix:'via'}),expected);assert.equal(arch.renderToString(arch.translate(json),{idPrefix:'via'}),expected);
   assert.match(arch.renderToString(source.replace('model{','@meta json\nmodel{')),/a.right \+ 40/);

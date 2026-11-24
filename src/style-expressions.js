@@ -1,6 +1,6 @@
 import {ArchError} from './errors.js';
-import {visibleNodeIds} from './profiles.js';
-import {coordinateTerms,evaluateCoordinate} from './placement.js';
+import {coordinateTerms,evaluateCoordinate,evaluateTerms} from './placement.js';
+import { findCard } from './view-occurrences.js';
 
 export const STYLE_NUMBERS=['width','height','fontSize'];
 const referenceFields=[...STYLE_NUMBERS,...STYLE_NUMBERS.map(f=>`style.${f}`)];
@@ -10,6 +10,9 @@ const fail=(message,loc)=>{throw new ArchError(message,loc,'ARCH_STYLE');};
 function terms(value,loc,known) {
   try{return coordinateTerms(value,loc,known,referenceFields);}
   catch(error){if(error instanceof ArchError)fail(`Style expression: ${error.message}`,loc);throw error;}
+}
+export function styleReferences(style, known) {
+  return STYLE_NUMBERS.flatMap(field => typeof style[field] === 'string' ? terms(style[field], style.loc, known).filter(term => term.ref !== undefined) : []);
 }
 export function styleNumber(value,loc) {
   const parsed=terms(value,loc);
@@ -25,25 +28,29 @@ export function checkStyleNumber(value,field,loc) {
 // Style dimensions depend on explicit style cells or pre-layout card metrics.
 // Positions, package contents and tree-group boxes intentionally do not enter
 // this graph: they are determined after intrinsic card measurement.
-export function styleExpressionPlan(model,profile,view) {
-  const all=new Map(model.nodes.map(n=>[n.id,n])),known=new Set(all.keys());
-  const visible=visibleNodeIds(model,view),nodes=new Map(model.nodes.filter(n=>visible.has(n.id)).map(n=>[n.id,n]));
-  let hasExpressions=false;
+export function styleExpressionPlan(graph,profile,view,presentation) {
+  const all = graph.nodesById;
+  let known, visible;
   const expressions=new Map();
   for(const [id,style]of Object.entries(view.styles))if(all.has(id))for(const field of STYLE_NUMBERS)if(style[field]!==undefined) {
-    checkStyleNumber(style[field],field,style.loc);
     if(typeof style[field]!=='string')continue;
-    hasExpressions=true;const parsed=terms(style[field],style.loc,known);
+    known ??= new Set([...all.keys(), ...(presentation?.byName.keys() ?? [])]);
+    visible ??= graph.project(view);
+    const parsed = terms(style[field], style.loc, known);
     for(const token of parsed)if(token.ref!==undefined) {
-      if(!nodes.has(token.ref))fail(`Unknown or hidden style reference: ${token.ref}; use a visible node`,style.loc);
-      if(token.field.startsWith('style.')&&view.styles[token.ref]?.[token.field.slice(6)]===undefined)
+      const card = findCard(presentation, token.ref, style.loc, 'ARCH_STYLE');
+      const modelId = card?.node.id ?? token.ref;
+      if(!visible.ids.has(modelId))fail(`Unknown or hidden style reference: ${token.ref}; use a visible node`,style.loc);
+      if(token.field.startsWith('style.')&&(card?.owner ? card.style : view.styles[modelId])?.[token.field.slice(6)]===undefined)
         fail(`Missing explicit style value: ${token.ref}.${token.field}; set it or use ${token.ref}.${token.field.slice(6)} for the effective card value`,style.loc);
-      if(['width','height'].includes(token.field)&&profile.nodeTypes[nodes.get(token.ref).type]?.container)
+      if(['width','height'].includes(token.field)&&profile.nodeTypes[all.get(modelId).type]?.container)
         fail(`Style expressions cannot reference final package size ${token.ref}.${token.field}; use ${token.ref}.style.${token.field} instead`,style.loc);
+      if (card) token.ref = card.id;
     }
     expressions.set(key(id,`style.${field}`),parsed);
   }
-  if(!hasExpressions)return null;
+  if(!expressions.size)return null;
+  const nodes = new Map((presentation?.nodes ?? visible.nodes).map(n => [n.id, n]));
   const dependencies=new Map();
   for(const [id,node]of nodes) {
     for(const field of STYLE_NUMBERS) {
@@ -70,23 +77,24 @@ export function styleExpressionPlan(model,profile,view) {
     const cycle=[...chain.slice(seen.get(cell)),cell].map(k=>JSON.parse(k).join('.'));
     fail(`Circular style dependency: ${cycle.join(' -> ')}`,view.styles[JSON.parse(cell)[0]]?.loc??view.loc);
   }
-  return {nodes,known,expressions,order};
+  return {nodes,expressions,order};
 }
 
-export function resolveStyleExpressions(plan,view,measure) {
+export function resolveStyleExpressions(plan,view,measure,metrics=new Map(), explicitStyles) {
   if(!plan)return null;
   const values=new Map(),styles=Object.fromEntries(Object.entries(view.styles).map(([id,s])=>[id,{...s}])),measured=new Map();
   for(const cell of plan.order) {
     const [id,field]=JSON.parse(cell),style=styles[id]??={},loc=style.loc??view.loc;let value;
+    const embedded = metrics.get(id);
     if(field.startsWith('style.')) {
-      const name=field.slice(6);value=style[name];
+      const name=field.slice(6);value=embedded ? explicitStyles?.get(embedded)?.[name] : style[name];
       if(plan.expressions.has(cell)) {
-        try{value=evaluateCoordinate(value,t=>values.get(key(t.ref,t.field)),loc,plan.known,referenceFields);}
+        try{value=evaluateTerms(plan.expressions.get(cell),t=>values.get(key(t.ref,t.field)),loc);}
         catch(error){if(error instanceof ArchError)fail(`Style expression ${id}.${field}: ${error.message}`,loc);throw error;}
         checkStyleNumber(value,name,loc);style[name]=value;styles[id]=style;
       }
-    } else if(field==='fontSize')value=style.fontSize??15;
-    else if(field==='width')value=style.width??view.places[id]?.size?.x??220;
+    } else if(field==='fontSize')value=embedded?.textStyle?.title??style.fontSize??15;
+    else if(field==='width')value=embedded?.width??style.width??view.places[id]?.size?.x??220;
     else {
       const card=measure(plan.nodes.get(id),style);measured.set(id,card);value=card.height;
     }

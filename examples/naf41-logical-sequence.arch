@@ -1,0 +1,27 @@
+# NAFv4.1 p.140: three logical resources, three lifelines, and four messages.
+architecture "NAFv4.1 · L6 Logical Sequence" {
+  config { profile naf41-uaf }
+  model {
+    Node search "Search"
+    Node controller "SAR Asset Controller"
+    LogicalEquipment vessel "Onshore Rescue Vessel"
+    LogicalLifeline searchLine "Search Lifeline"
+    LogicalLifeline controllerLine "SAC Lifeline"
+    LogicalLifeline vesselLine "Rescue Vessel Lifeline"
+    relation searchTimeline searchLine -> search "represents a timeline of" { type RepresentsLogicalResource }
+    relation controllerTimeline controllerLine -> controller "represents a timeline of" { type RepresentsLogicalResource }
+    relation vesselTimeline vesselLine -> vessel "represents a timeline of" { type RepresentsLogicalResource }
+    relation request searchLine -> controllerLine "request rescue" { type LogicalSequenceInteraction order 1 }
+    relation control controllerLine -> vesselLine "control rescue" { type LogicalSequenceInteraction order 2 }
+    relation vesselStatus vesselLine -> controllerLine "status" { type LogicalSequenceInteraction order 3 }
+    relation controllerStatus controllerLine -> searchLine "status" { type LogicalSequenceInteraction order 4 }
+  }
+  view l6 "L6 · Logical Sequence" {
+    viewpoint L6
+    diagram sequence {
+      participants [searchLine, controllerLine, vesselLine]
+      orderAttribute order
+      showContext true
+    }
+  }
+}

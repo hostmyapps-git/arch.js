@@ -1,6 +1,7 @@
 import { ArchError } from './errors.js';
-import {placementCoordinate} from './placement.js';
+import { placementAlignmentError, placementAlignments, placementCoordinate } from './placement.js';
 import {STYLE_NUMBERS,styleNumber} from './style-expressions.js';
+import { diagramOptionName } from './diagrams.js';
 
 const own = (o, k) => Object.hasOwn(o, k);
 const record = o => o !== null && typeof o === 'object' && !Array.isArray(o);
@@ -125,6 +126,27 @@ export function jsonToDSL(input) {
     if (!Array.isArray(value) || value.length !== 2 || value.some(v => typeof v !== 'number' || !Number.isFinite(v))) error('Expected a coordinate pair [x, y]', path);
     return `(${value.join(', ')})`;
   };
+  const placement = (rule, path, virtual = false) => {
+    keys(rule, virtual ? ['at','relative'] : ['at','relative','size'], path);
+    const size = own(rule, 'size') ? ` size ${point(rule.size, child(path, 'size'))}` : '';
+    if (!own(rule, 'relative')) return `at ${placementPoint(rule.at, child(path, 'at'))}${size}`;
+    if (own(rule, 'at')) error('Choose at or relative for placement', path);
+    const spec = rule.relative, rp = child(path, 'relative');
+    keys(spec, ['side','of','gap','align'], rp);
+    const allowed = placementAlignments(spec.side);
+    if (!allowed) error('Relative placement side must be right, top, left or bottom', child(rp, 'side'));
+    const anchor = id(spec.of, child(rp, 'of'));
+    let align = '';
+    if (own(spec, 'align')) {
+      const ap = child(rp, 'align'), reference = record(spec.align);
+      if (reference) keys(spec.align,['to'],ap);
+      const invalid = placementAlignmentError(spec.side, spec.align);
+      if (invalid) error(invalid, reference ? child(ap,'to') : ap);
+      align = reference ? ` align to ${spec.align.to}` : ` align ${spec.align}`;
+    }
+    const gap = own(spec, 'gap') ? ` gap ${placementCoordinate(spec.gap, {path:child(rp, 'gap')})}` : '';
+    return `${spec.side} of ${anchor}${gap}${align}${size}`;
+  };
   const entries = (value, path) => {
     if (Array.isArray(value)) return value.map((v, i) => { const p = child(path, i); obj(v, p); return [id(v.id, child(p, 'id')), v, p]; });
     return Object.entries(obj(value, path)).map(([key, v]) => {
@@ -223,23 +245,54 @@ export function jsonToDSL(input) {
       emit('}', p);
     }
   };
-  const routing = (value, path) => {
+  const routing = (value, path, reference = false) => {
     obj(value, path); emit('{', path);
+    const fractionText = value => typeof value === 'string' && /^\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*\/\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*$/.test(value);
     const fraction = (value, p) => {
       if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1) return String(value);
-      if (typeof value === 'string' && /^\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*\/\s*-?(?:\d+(?:\.\d*)?|\.\d+)\s*$/.test(value)) return value.trim();
+      if (fractionText(value)) return value.trim();
       error('Port/attachment position must be a number between 0 and 1 or a fraction such as "1/2"', p);
     };
     for (const [key, v] of Object.entries(value)) {
       const p = child(path, key);
-      if (key === 'via') {
+      if (key === 'to' && reference) {
+        const position = placementCoordinate(v, {path:p});
+        if (typeof position === 'number' && (position < 0 || position > 1)) error('Reference route to must be between 0 and 1', p);
+        emit(`to ${fractionText(v) ? v.trim() : position}`, p);
+      } else if (key === 'source' || key === 'target') {
+        emit(`${key} ${id(v, p)}`, p);
+      } else if (key === 'via') {
         if (!Array.isArray(v) || !v.length) error('Expected a nonempty list of coordinate pairs', p);
         emit(`via ${v.map((pair, i) => placementPoint(pair, child(p, i))).join(', ')}`, p);
       } else if (['from', 'to'].includes(key) && record(v)) {
         keys(v, ['side', 'position'], p);
         if (!['top', 'right', 'bottom', 'left'].includes(v.side)) error('Positioned port side must be top, right, bottom or left', child(p, 'side'));
-        emit(`${key} ${v.side} ${fraction(v.position, child(p, 'position'))}`, p);
-      } else if (['from', 'to', 'label'].includes(key) && Array.isArray(v)) emit(`${key} ${point(v, p)}`, p);
+        const positionPath = child(p, 'position');
+        const position = placementCoordinate(v.position, {path:positionPath});
+        if (typeof position === 'number' && (position < 0 || position > 1)) error('Port position must be between 0 and 1', positionPath);
+        const expression = typeof v.position === 'string' ? v.position.trim().replace(/\s+/g, ' ') : position;
+        emit(`${key} ${v.side} ${expression}`, positionPath);
+      } else if (key==='sideOffset') {
+        let value;
+        try {value=placementCoordinate(v);}
+        catch (err) {error(err.message,p);}
+        emit(`sideOffset ${value}`,p);
+      } else if(key==='label'&&Array.isArray(v))emit(`label ${placementPoint(v,p)}`,p);
+      else if (key==='label'&&record(v)) {
+        keys(v,['position','offset','sideOffset'],p);
+        const offsets=['offset','sideOffset'].filter(name=>own(v,name));
+        if (!offsets.length) error('Expected offset or sideOffset',p);
+        let declaration=`label ${fraction(v.position,child(p,'position'))}`;
+        for (const name of offsets) {
+          let value;
+          try {value=placementCoordinate(v[name]);}
+          catch (err) {error(err.message,child(p,name));}
+          declaration+=` ${name} ${value}`;
+        }
+        emit(declaration,p);
+      }
+      else if(key==='label'&&v!=='none'&&!Array.isArray(v))emit(`label ${fraction(v,p)}`,p);
+      else if (['from', 'to'].includes(key) && Array.isArray(v)) emit(`${key} ${placementPoint(v, p)}`, p);
       else if (key === 'to' && typeof v === 'string' && v.includes('/')) emit(`to ${fraction(v, p)}`, p);
       else if (key === 'label' && v === 'none') emit('label none', p);
       else field(key, v, p);
@@ -267,16 +320,25 @@ export function jsonToDSL(input) {
           if(!['json','dsl'].includes(v))error('meta must be json or dsl',vp);
           emit(`@meta ${v}`,vp);
         }
-        else if (['place', 'style', 'route'].includes(key)) {
+        else if(key==='extends') emit(`extends ${id(v,vp)}`,vp);
+        else if(key==='embed') {obj(v,vp);for(const [alias,spec]of Object.entries(v)){const ep=child(vp,alias);keys(spec,['view','frame'],ep);emit(`embed ${id(spec.view,ep)} as ${id(alias,ep)} {`,ep);if(own(spec,'frame')){if(typeof spec.frame!=='boolean')error('frame must be true or false',ep);emit(`frame ${spec.frame}`,ep);}emit('}',ep);}}
+        else if(key==='virtualPlace') {
+          for (const [target,rule] of Object.entries(obj(v,vp))) {
+            const rp=child(vp,target);
+            emit(`place virtual ${id(target,rp)} ${placement(rule,rp,true)}`,rp);
+          }
+        }
+        else if (['place', 'style', 'route', 'virtualRoute'].includes(key)) {
           obj(v, vp);
           for (const [target, rule] of Object.entries(v)) {
             const rp = child(vp, target); obj(rule, rp);
-            if (key === 'route') {
+            if (key === 'virtualRoute') {
+              emit(`route virtual ${id(target,rp)}`,rp); routing(rule,rp);
+            } else if (key === 'route') {
               const pair = target.match(/^([A-Za-z_][A-Za-z0-9_.-]*)\s*->\s*([A-Za-z_][A-Za-z0-9_.-]*)$/);
-              emit(`route ${pair ? `${pair[1]} -> ${pair[2]}` : id(target, rp)}`, rp); routing(rule, rp);
+              emit(`route ${pair ? `${pair[1]} -> ${pair[2]}` : id(target, rp)}`, rp); routing(rule, rp, Boolean(pair));
             } else if (key === 'place') {
-              keys(rule, ['at', 'size'], rp);
-              emit(`place ${id(target, rp)} at ${placementPoint(rule.at, child(rp, 'at'))}${own(rule, 'size') ? ` size ${point(rule.size, child(rp, 'size'))}` : ''}`, rp);
+              emit(`place ${id(target, rp)} ${placement(rule,rp)}`, rp);
             } else {
               emit(`style ${id(target, rp)} {`, rp);
               for(const [key,value]of Object.entries(rule)) {
@@ -296,14 +358,35 @@ export function jsonToDSL(input) {
           if (typeof v === 'string') emit(`diagram ${id(v, vp)}`, vp);
           else {
             obj(v, vp); emit(`diagram ${id(v.type, child(vp, 'type'))} {`, vp);
-            for (const [option, a] of Object.entries(v)) if (option !== 'type') field(option, a, child(vp, option));
+            for (const [option, a] of Object.entries(v)) if (option !== 'type') {
+              const name = diagramOptionName(v.type,option), path = child(vp,option);
+              if (name==='virtualInitial' || name==='virtualFinal') {
+                const initial=name==='virtualInitial';
+                if (v.type!=='state') error(`${name} requires a state diagram`,path);
+                if (!initial && !Array.isArray(a)) error('virtualFinal requires a list',path);
+                for (const [i,spec] of (initial?[a]:a).entries()) {
+                  const bp=initial?path:child(path,i), endpoint=initial?'target':'source';
+                  keys(spec,initial?['id','target','title']:['id','source','title','event'],bp);
+                  const marker=`virtual ${id(spec.id,child(bp,'id'))}${own(spec,'title')?` ${text(spec.title,child(bp,'title'))}`:''}`;
+                  const target=id(spec[endpoint],child(bp,endpoint));
+                  if (initial) emit(`initial ${marker} -> ${target}`,bp);
+                  else if (own(spec,'event')) {
+                    emit(`final ${target} -> ${marker} {`,bp);
+                    emit(`event ${id(spec.event,child(bp,'event'))}`,child(bp,'event'));
+                    emit('}',bp);
+                  } else emit(`final ${target} -> ${marker}`,bp);
+                }
+              } else if (name==='final') {
+                const ids = Array.isArray(a) ? a.map((value,i)=>id(value,child(path,i))) : [id(a,path)];
+                emit(`final [${ids.join(', ')}]`,path);
+              } else field(name,a,path);
+            }
             emit('}', vp);
           }
         } else if (['include', 'exclude'].includes(key)) {
           const values = Array.isArray(v) ? v : [v];
-          if (!values.length) error('Expected a nonempty identifier list', vp);
-          emit(`${key} ${values.map((a, i) => id(a, Array.isArray(v) ? child(vp, i) : vp)).join(', ')}`, vp);
-        } else if (['direction', 'theme', 'viewpoint', 'referenceDisplay', 'referenceOccurrences'].includes(key)) emit(`${key} ${id(v, vp)}`, vp);
+          emit(values.length ? `${key} ${values.map((a, i) => id(a, Array.isArray(v) ? child(vp, i) : vp)).join(', ')}` : `${key} []`, vp);
+        } else if (['direction', 'theme', 'viewpoint', 'represents', 'referenceDisplay', 'referenceOccurrences'].includes(key)) emit(`${key} ${id(v, vp)}`, vp);
         else field(key, v, vp);
       }
       emit('}', p);

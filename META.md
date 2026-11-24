@@ -1,5 +1,12 @@
 # Meta-Views: Architekturquelle anzeigen und übersetzen
 
+Im Quellen-SVG unterscheiden Syntaxfarben Schlüssel, Typen, Direktiven und
+Werte. Der Zeilenzähler bleibt bei umgebrochenen Zeilen eindeutig. Die
+Studio-Vorschau markiert bei Syntaxfehlern das betroffene Zeichen, zeigt den
+Ausschnitt mit Zeilennummern und stellt Korrekturkandidaten als Code dar.
+Ein Klick auf die Positionsangabe springt zur betreffenden Zeile und Spalte.
+Kopieren und Download verwenden die vollständige Übersetzung.
+
 ## Als Teil der Architektur und des SVG-Exports
 
 Eine View kann die vollständige Architektur als JSON oder DSL zeigen:

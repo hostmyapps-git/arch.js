@@ -1,0 +1,32 @@
+# L2 p.128 objectification plus an explicitly modeled logical payload.
+architecture "L2 — Objectified Needline" {
+  config {profile naf41-uaf}
+  model {
+    Node controller "Controller"
+    Node rescue "Rescue"
+    Needline taskingNeed "Rescue tasking"
+    InformationProduct taskingOrder "Tasking Order"
+    relation tasking controller -> rescue "tasking" {type Needline needline taskingNeed}
+    relation payload taskingNeed -> taskingOrder "conveys" {type ConveysLogicalResource}
+  }
+  view objectified "Objectified Needline" {
+    viewpoint L2
+    place controller at (0,0)
+    place rescue at (720,0)
+    place taskingNeed at (240,280)
+    place taskingOrder at (720,280)
+    route tasking {from right to left curve straight}
+    route taskingNeed -> tasking {from top to 1/2 curve straight}
+    route payload {from right to left curve straight}
+  }
+  view compact "Same Needline, without object or payload cards" {
+    viewpoint L2
+    include controller,rescue
+    place controller at (0,0)
+    place rescue at (720,0)
+  }
+  view withoutPayload "Known payload omitted (may show)" {
+    extends objectified
+    exclude taskingOrder
+  }
+}

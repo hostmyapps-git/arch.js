@@ -79,8 +79,10 @@ view taxonomy "Capability Taxonomy" {
     orientation down
     levelGap 96
     siblingGap 48
+    padding [24, 56, 32, 16]
     curve rounded
     showLabels true
+    sharePath stereotypes
   }
 }
 ```
@@ -101,12 +103,27 @@ bilden alle sichtbaren Beziehungen die Hierarchie.
 - `levelGap` / `siblingGap`: Mindestabstände in SVG-Einheiten, jeweils 16–800;
   Standard 96/48. Unterschiedliche Kartengrößen und Kantenlabels vergrößern den
   nötigen Platz. Eltern werden über der Mitte des ersten/letzten Kindes
-  zentriert; unabhängige Unterbäume überlappen sich nicht. Geschwister und Wurzeln
+  zentriert. Unterbäume werden anhand ihrer tatsächlich belegten Bereiche je
+  Ebene zusammengeschoben: Ein Geschwisterknoten ohne tiefe Nachkommen kann
+  freien Platz oberhalb eines breiten Unterbaums nutzen. Karten und automatische
+  Labels behalten ihren Mindestabstand; überlappende Nachkommen verhindern ein
+  weiteres Zusammenschieben. Geschwister und Wurzeln
   folgen der Elementreihenfolge im Modell.
+- `padding 24` setzt dieselbe Außenpolsterung auf allen Seiten.
+  `padding [24, 56, 32, 16]` setzt oben, rechts, unten und links einzeln.
+  Die Klammern sind optional. Standard sind 48 SVG-Einheiten pro Seite. Werte von 0 bis 10000000 sind
+  zulässig. Die Abstände zwischen den Karten bleiben davon unabhängig.
 - `curve rounded` (Standard) oder `orthogonal`; `showLabels true` (Standard)
   oder `false`. Keine manuellen `place`-/`route`-/`routes`-Blöcke und keine
   grafischen Referenzkarten. Profilkonfigurierte Referenztexte bleiben in Labels
   beziehungsweise Tooltips erhalten.
+- `sharePath none` (Standard), `stereotypes` oder `all`: gemeinsame Abschnitte
+  bei gleichem Start-/Zielknoten. `stereotypes` bündelt exakt gleiche Typen,
+  `all` auch verschiedene Typen mit kompatibler Darstellung. Semantische Kanten
+  und einzelne Labels bleiben erhalten. Die Bündelung braucht freie Korridore
+  und genug Labelplatz. `curve rounded` rundet die äußeren Knicke ab und führt
+  die seitlichen Linien mit Bögen in den gemeinsamen Stamm. Einzelrouten sind
+  in Connected-Views verfügbar.
 
 Die Node-Karten verwenden die vorhandenen Templates/Icons und Styles:
 `fontSize`, Mindest-`width`/`height`, `iconPosition`, Feldschalter, Farben,
@@ -139,6 +156,7 @@ view c2 "C2" {
     nodes [horizon, vision, manpower, coverage, response]
     direction up
     parentDirection source
+    padding [24, 56, 32, 16]
   }
   // Optional: komplette Gruppe und externe Karte frei positionieren
   place hierarchy at (300, 0)
@@ -166,16 +184,27 @@ Packages liegen, aber nicht über Package-Grenzen hinweg. Die Package-Semantik
 und Darstellung bleiben erhalten. Einzelne Mitglieder erhalten kein `place`;
 `place GRUPPE` positioniert den Ursprung ihrer Bounding Box einschließlich
 Layoutabstand. Innerhalb eines Packages sind die Koordinaten relativ zum Inhalt.
+Bei benannten Gruppen gehört `padding` zur Box, die `place` und
+Koordinatenreferenzen verwenden. Die Connected-View berechnet ihren eigenen
+äußeren SVG-Rand.
 Die Gruppengröße ergibt sich automatisch; `size` und Gruppen-Styles sind nicht
 verfügbar. Styling erfolgt weiterhin auf den Nodes und Beziehungen.
 
 Interne Hierarchiekanten erhalten Tree-Routen. `route` kann Ports, Stützpunkte,
 Kurve, Labelposition/-Icon und Sichtbarkeit wie gewohnt überschreiben.
-Für `curve` und Labeltext gilt: konkrete Route vor Gruppen-`curve`/`showLabels`
+Für `curve`, Labeltext und `sharePath` gilt: konkrete Route vor Gruppen-`curve`/`showLabels`/`sharePath`
 vor View-`routes`. `showLabels false` blendet Text aus; `label none` entfernt
 das gesamte Label einschließlich Icon. Grafische Referenzkarten und ihre Routen
 bleiben verfügbar. Ausgeblendete Nodes/Kanten nehmen nicht am Layout teil,
 das vollständige Modell bleibt Gegenstand der Profilprüfung.
+`tree hierarchy {nodes [a,b,c] sharePath stereotypes}` bündelt die ausgewählten
+internen Hierarchiekanten; externe Kanten behalten die View-/Einzelroutenvorgaben.
+Vergleich der Modi und beider Tree-Formen:
+[tree-shared-paths.arch](examples/tree-shared-paths.arch).
+Das kompakte Layout gilt automatisch für ganze Trees und benannte Gruppen,
+in allen vier Richtungen und auch für Wälder. Beispiel:
+[compact-tree.arch](examples/compact-tree.arch). Manuell überschriebene Routen
+und Labelpositionen bleiben in benannten Gruppen ausdrücklich steuerbar.
 
 Tree-Gruppen sind nur im Connected-Renderer verfügbar. Pro Gruppe gelten
 dieselben Strukturgrenzen wie für ganze Trees: keine Zyklen, Mehrfacheltern,
@@ -241,18 +270,99 @@ vollständige Berechnung von Ausführungsintervallen. Interaktionsfragmente wie
 ## Zustand: `state`
 
 ```arch
-diagram state { initial start finals [end] }
+diagram state { initial start final [done, cancelled] }
 ```
 
-Sichtbare Elemente bilden Zustände oder explizit ausgewählte Pseudoknoten,
-Beziehungen bilden gerichtete Übergänge. `initial` und `finals` markieren
-Initial-/Endpseudoknoten; sie ersetzen deren normale Karte durch die entsprechende
-Notation. Anfangs- und Endknoten müssen verschieden sein. In den Initialknoten
-darf kein Übergang hineinführen, aus Endknoten keiner hinausführen.
+Zustände erscheinen als abgerundete Rechtecke. `initial` zeichnet einen
+ausgefüllten Punkt, `final` zeichnet Punkte mit Außenring. `final done, cancelled`
+und `final [done, cancelled]` sind gleichwertig. `final done` reicht für einen
+Endzustand. Die frühere Schreibweise `finals` bleibt beim Einlesen gültig.
+Das Diagramm setzt den Initialknoten oben und Endzustände unten. Reguläre Zustände folgen der
+Modellreihenfolge. Initial- und Endknoten müssen verschieden sein. In den
+Initialknoten darf kein Übergang hineinführen, aus Endzuständen keiner hinaus.
+Ihre Verbindungen stammen aus den modellierten `relation`-Übergängen.
+Der Renderer stellt eine flache Region dar. In UML hat jede Region höchstens
+einen Initialknoten. [UML 2.5.1, Abschnitt 14.2.3.7](https://www.omg.org/spec/UML/2.5.1/PDF)
 
-Übergangstitel können Ereignisse/Guards dokumentieren. Schleifen werden
-gezeichnet. Hierarchische/orthogonale Zustände, History-Pseudoknoten,
-Entry-/Exit-Aktionen und ausführbare Zustandsautomaten sind noch nicht enthalten.
+Mit `place ID at (X, Y)` positionierst du normale Zustände und modellierte
+Initial- und Endknoten an der linken oberen Ecke ihrer Symbolfläche. Die
+Ausdrücke können Maße und Koordinaten sichtbarer Zustände und virtueller
+Punkte verwenden. Zustände ohne `place` werden automatisch angeordnet.
+Der Renderer berechnet die Übergänge nach der Platzierung neu.
+
+```arch
+place waiting at (0, 0)
+place located at (waiting.x, waiting.bottom + 120)
+place rescued at (waiting.right + 220, waiting.y)
+```
+
+Virtuelle Start- und Endpunkte samt Pfeilen können direkt in der View stehen.
+Die Endpunkte auf der Zustandsseite sind sichtbare Modellelemente. Der Name
+in Anführungszeichen ist ein optionaler sichtbarer Titel. Für mehrere virtuelle
+Endpunkte wiederholst du `final` mit einer eigenen ID pro Punkt.
+
+```arch
+view l5State "State transitions" {
+  viewpoint L5
+  diagram state {
+    initial virtual start "Start" -> waiting
+    final waiting -> virtual end "End" { event shutdown }
+  }
+  place virtual start at (waiting.x, waiting.y - 100)
+  place virtual end at (waiting.right + 340, 520)
+  route virtual start {
+    from bottom to top 1/4
+    curve rounded
+    via (start.centerX, waiting.y - 40), (waiting.x + waiting.width/4, waiting.y - 40)
+  }
+}
+```
+
+`event shutdown` referenziert optional ein modelliertes Ereignis. Ein
+virtueller Initialpunkt belegt dieselbe Rolle wie ein modellierter Initialpunkt.
+Alle virtuellen IDs sind pro View eindeutig und bleiben außerhalb des Modells.
+Ohne `place virtual` ordnet der Renderer die Punkte automatisch an. `at` gibt
+die linke obere Ecke der Symbolfläche in View-Koordinaten an und erlaubt
+Ausdrücke mit sichtbaren Zuständen und virtuellen Punkten als Ankern.
+
+Mit `route virtual ID { … }` steuerst du den Pfeil des virtuellen Punkts.
+Beim Initialpunkt verläuft er **vom Punkt zum Zustand**, beim Endpunkt
+**vom Zustand zum Punkt**. Einen modellierten Übergang steuerst du per
+`route RELATION_ID { … }`. Beide Varianten unterstützen `from`, `to`, `via` und `curve`
+direkt im View-Block. `from` und `to` akzeptieren eine Seite mit optionaler
+Position zwischen 0 und 1, etwa `top 1/4`, oder ein absolutes Koordinatenpaar.
+Bei Kreisen folgt der gewählte Anschluss dem sichtbaren Rand. Koordinaten und
+Seitenpositionen können auf sichtbare Zustände und virtuelle Punkte verweisen.
+
+- `curve rounded` (Standard) rundet die Ecken der rechtwinkligen Route.
+- `curve orthogonal` verbindet die Wegpunkte mit rechtwinkligen Ecken.
+- `curve straight` verbindet Anschlüsse und Wegpunkte mit geraden Segmenten.
+  Eine Selbstschleife ohne Wegpunkte verwendet den automatischen Schleifenpfad.
+- `curve bezier` zeichnet eine kubische Bézierkurve. Mit `via` gibst du
+  genau zwei Kontrollpunkte an. Ohne `via` berechnet der Renderer sie aus
+  den Anschlüssen.
+
+Bei rein automatischer Anordnung verlaufen Übergänge zwischen
+aufeinanderfolgenden Zuständen senkrecht.
+Rücksprünge, Schleifen und weitere parallele Übergänge erhalten getrennte
+Pfade und Andockpunkte. Ihre Beschriftungen stehen neben dem jeweiligen Pfad
+in freien Bereichen zwischen den Zustandszeilen.
+
+Ein Profil kann einen Relationstyp mit `stateTrigger` als Zustandsübergang
+kennzeichnen. Der Wert nennt ein Referenzattribut mit dem auslösenden Ereignis.
+In einer so typisierten View zeichnet der Renderer diese Übergänge und die
+zugehörigen Zustände sowie explizite Initial- und Endknoten. Der Ereignisname
+steht in einem farblich abgesetzten Feld, das eine kurze Linie mit dem Pfeil
+verbindet. Der Übergangstitel
+steht darunter. Kontext wie Besitzer und Ereignis-Objekte kann in der
+View für die Profilprüfung ausgewählt bleiben. In generischen Views ohne diese
+Kennzeichnung bilden die ausgewählten Elemente und Beziehungen das Diagramm.
+
+`examples/naf41-logical-states.arch` zeigt das L5-Modell als Connected-View
+und als Zustandsdiagramm. `LogicalStateTransition` verwendet `event` für
+kompakte Trigger. Zusammengesetzte und orthogonale Zustände, Ein-/Austrittspunkte
+an ihrem Rand, History, Entry-/Exit-Aktionen und ausführbare Zustandsautomaten
+sind noch nicht enthalten.
 
 ## Aktivität / Swimlanes: `activity`
 
@@ -260,28 +370,57 @@ Entry-/Exit-Aktionen und ausführbare Zustandsautomaten sind noch nicht enthalte
 diagram activity {
   lanes [operations, crew]
   laneAttribute owner
+  layout auto
   initial start
-  finals [end]
+  final [end]
   decisions [decision]
   forks [split]
   joins [merge]
 }
 ```
 
-Alle Listen sind optional. `lanes` sind sichtbare Modellknoten, deren Titel die
-Verantwortungsbereiche beschriften. Alle anderen sichtbaren Knoten benötigen
-bei vorhandenen Lanes eine Zuordnung über das Attribut `owner` oder das mit
-`laneAttribute` gewählte Feld. Dieses Feld muss das verwendete Profil erlauben;
-empfohlen ist eine typisierte Referenz. Lane-Knoten sind keine Ablaufendpunkte.
-Ohne Lanes entsteht ein Aktivitätsdiagramm ohne Verantwortungsbereiche.
+Alle Listen sind optional. Die Titel der in `lanes` angegebenen Knoten
+beschriften die Verantwortungsbereiche. `laneAttribute` legt fest, aus
+welchem Attribut die Zuordnung gelesen wird. Ohne diese Angabe verwendet
+arch.js `owner` oder leitet die Lane aus `PerformsOperationalActivity` und
+`IsCapableToPerform` ab. Bei mehreren passenden Performern ist eine explizite
+Zuordnung erforderlich. Performer-Beziehungen und `HoldsRole` zwischen Lanes
+bleiben in der Viewpoint-Validierung erhalten. Das Diagramm zeigt die
+Aktivitäten und ihre Ablaufkanten. Ohne Lanes entsteht ein Aktivitätsdiagramm
+ohne Verantwortungsbereiche.
 
-Aktivitäten werden in Modellreihenfolge angeordnet. Entscheidungen erhalten
-Rauten und benötigen mindestens zwei ausgehende Beziehungen. Forks und Joins
+`layout auto` ist der Standard. Sobald sichtbare Beziehungen mit
+`activityFlow true` im Profil vorhanden sind, bestimmen sie die Ablaufstufen.
+`layout flow` wählt dieselbe Ablaufanordnung ausdrücklich. Ohne markierte
+Kanten gilt die Modellreihenfolge, die sich auch mit `layout model` festlegen
+lässt. `naf41-uaf` markiert `OperationalControlFlow` und `LogicalControlFlow`.
+
+Zweige auf derselben Stufe können sich über mehrere Lanes eine Zeile teilen.
+Innerhalb einer Lane erhalten sie Unterzeilen in Modellreihenfolge. Ein
+Zusammenführungsknoten folgt der spätesten Vorgängerstufe. Schleifen bilden
+Gruppen mit stabiler Modellreihenfolge, und Aktivitäten ohne sichtbare
+Ablaufkante folgen danach. Die Stufen geben eine Leserichtung für den Ablauf an.
+
+Entscheidungen erhalten Rauten und benötigen mindestens zwei ausgehende
+Beziehungen. Forks und Joins
 werden als Balken dargestellt und benötigen mindestens zwei Ausgänge bzw.
 Eingänge. Ein Element darf nur eine dieser Kontrollknotenarten besitzen.
-Start/Ende verhalten sich wie im Zustandsdiagramm. Kantenbeschriftungen können
-Bedingungen dokumentieren. Die Darstellung ist keine vollständige BPMN-
-Implementierung und simuliert keine Tokens, Guards oder Parallelität.
+Start/Ende verhalten sich wie im Zustandsdiagramm. Kantenbeschriftungen sitzen
+auf dem tatsächlichen Pfad. Wenn Platz vorhanden
+ist, wird die Ziel-Lane bevorzugt. Die Lane-Trennlinie lässt an der Kreuzung
+Platz für die Kante.
+Vorwärtskanten biegen zwischen den Aktivitäten ab, Rückkanten laufen links
+und Selbstschleifen rechts um die Aktivität.
+
+Einzelne Kanten kannst du im View-Block mit `from`, `to` und `via` führen.
+`route l4.7 { from bottom 1/4 to top 3/4 }` dockt bei einem Viertel der
+Quellunterseite und drei Vierteln der Zieloberseite an. `from` und `to`
+akzeptieren `auto`, alle vier Seiten mit optionaler berechenbarer Position
+zwischen `0` und `1` sowie absolute Koordinatenpaare `(X,Y)`. Ohne Seitenposition
+liegt der Andockpunkt in der Mitte. Wegpunkte sind optionale Zwischenpunkte
+in absoluten View-Koordinaten. Der rechtwinklige Pfad durchläuft sie in
+Listenreihenfolge. Ausdrücke können sichtbare Aktivitäten und Lanes referenzieren.
+Die Darstellung simuliert keine BPMN-Tokens, Guards oder Parallelität.
 
 ## Beziehungs-/Traceability-Matrix: `matrix`
 
@@ -343,10 +482,16 @@ Attribute (Standard: `start`, `end`). ISO-Kalenderdaten oder ISO-Datumszeiten mi
 Zeitzone werden akzeptiert. Für zusätzliche Schema-Prüfungen sollten die Felder
 im Profil mit `format date` oder `format date-time` definiert werden.
 Start muss vor oder gleich Ende liegen. Gleiche Werte erzeugen einen
-Meilenstein, Zeiträume einen Balken. Beziehungen werden als Abhängigkeiten
-gezeichnet. Zeilen folgen der Modellreihenfolge; die Achse wird aus den Daten
-gebildet und in UTC beschriftet. Auch Zeiträume mit nur einem Datumstag bleiben
-sichtbar. Es gibt noch keine Terminplanung, Ressourcenberechnung, kritischen
+Meilenstein, Zeiträume einen Balken. Ein `LogicalMilestone` mit `date` lässt
+sich mit `diagram timeline { startAttribute date endAttribute date }` direkt
+darstellen. Mit `datedOnly true` bleiben Elemente, bei denen beide Datumsfelder
+leer sind, Teil der fachlichen Viewpoint-Validierung und erscheinen ohne
+eigene Zeile. Ein Element mit nur einem gesetzten Datumsfeld benötigt auch
+das zweite. Mit `style ID1, ID2 { display none }` kann man gezielt Elemente
+ausblenden. Zeilen folgen der Modellreihenfolge und zeigen
+links Name und Zeitraum. Balken, Meilenstein-Rauten und Abhängigkeitspfeile liegen
+auf einer Zeitachse, deren UTC-Raster sich am Datumsbereich orientiert. Auch kurze
+Zeiträume bleiben sichtbar. Es gibt noch keine Terminplanung, Ressourcenberechnung, kritischen
 Pfade, Ist-/Soll-Baselines oder persistente Modellversionierung.
 
 ## Properties auf normalen Karten
@@ -478,14 +623,16 @@ Die Darstellungsoptionen sind nicht zwischen allen Renderern austauschbar:
 | Node-`fontSize`, `width`, `height` im Style | Ja, Größen sind Mindestwerte; auch arithmetische Referenzen auf sichtbare Karten/Styles | Tree: ja; übrige Spezialrenderer: eigene Maße |
 | Template-/Iconwahl | Vorhandene Templates und registrierte Icons | Tree verwendet dieselben Karten/Templates; sonst bestimmt die Spezialnotation die Form |
 | Hintergrund-/Akzentfarben und `opacity` | Im Node-/Package-Style | Je nach gezeichnetem Primitive: Karten und Timeline-Balken verwenden Hintergrund/Fülltransparenz; Heatmap verwendet ihre Wertskala, Klasse zusätzlich Akzente. Keine allgemeine Übertragung aller Styles. |
+| `backgroundImage` auf der Zeichenfläche | Ja | Ja, in allen Diagrammtypen |
+| `backgroundImage` auf Elementkarten | Ja, einschließlich Packages, Referenzkarten und Logo-Modus | Auf Karten in Tree, Class, Sequence, State und Activity. Matrixzellen, Heatmap-Felder, Timeline-Balken und Zustands-/Aktivitätssymbole verwenden ihre eigene Darstellung. |
 
 `showLabel` bedeutet bei einem Connected-Node nur den Titel, bei einer Route
 deren Labeltext. Stereotyp, Beschreibung, Technologie und Icon haben eigene
 Schalter. `label none` an einer Route entfernt dagegen den gesamten Labelrahmen
 mit Text und Icon. Syntaxbeispiele stehen in [HELP.md](HELP.md).
 
-- `include` wählt aus; `exclude` entfernt Elemente einschließlich ihrer
-  Nachkommen und hat immer Vorrang. Beziehungen mit ausgeblendeten Endpunkten
+- `include` wählt Elemente aus. `exclude` entfernt Elemente einschließlich ihrer
+  Nachkommen oder einzelne Beziehungen anhand ihrer ID. Beziehungen mit ausgeblendeten Endpunkten
   verschwinden. Container-Vorfahren werden nur für überlebende Auswahlen ergänzt.
   Fachliche Viewpoint-Pflichten werden auf die verbleibende Ansicht angewendet.
   Referenzen der
@@ -519,10 +666,11 @@ gegenüber Mermaid, PlantUML, Graphviz und D2 steht in
 
 `npm run check` baut beide Bundles und prüft alte wie neue Beispiele.
 `tests/diagrams.test.mjs` enthält positive und negative Fälle für alle sieben
-Renderer, beide Themes, Profilvalidierung, Escaping, Snapshot-Isolation und
-Bundle-Gleichheit. Browserprüfungen testen alle sieben Ansichten in beiden
-Themes auf abgeschnittene SVG-Inhalte sowie Live-Fehlerkorrektur. Screenshots
-liegen unter `test-results/diagram-*-light.png` bzw. `*-dark.png`.
+ursprünglichen Spezialrenderer sowie für Tabellen und Sankey. Die Tests prüfen
+beide Themes, Profildaten, Escaping, Snapshot-Isolation und Bundle-Gleichheit.
+Chromium prüft auch die neuen NAF-Ansichten einschließlich des Rasters in
+beiden Themes. Die Screenshots liegen unter `test-results/diagram-*.png`
+und `test-results/coverage-*.png`.
 
 `tests/tree-groups.test.mjs` prüft gemischte C2-Ansichten, mehrere Gruppen,
 Package-Containment, vier Richtungen, unveränderte Modellidentität,
@@ -544,6 +692,8 @@ Labels/Icons und IDs bleiben pro Beziehung erhalten. Die Automatik benötigt
 freie Korridore und Labelplatz; manuelle `via`/`path`, `straight`/`bezier` und
 containerübergreifende Kanten bleiben unabhängig. Gemeinsame Junctions werden
 rechtwinklig gezeichnet. Details: [HELP.md](HELP.md), `@help routing`.
+Ganze Tree-Views akzeptieren denselben Modus in `diagram tree {sharePath stereotypes}`;
+benannte Gruppen können ihn lokal überschreiben.
 
 Das [Cr-Beispiel nach NAFv4.1 S.103](examples/naf41-capability-roadmap.arch)
 kombiniert Phasenaggregation und Trigger in einer Connected-View. Die Hierarchie
@@ -616,3 +766,177 @@ Nachrichten und sortiert danach. Ohne Option gelten messages-Listenreihenfolge
 oder Deklarationsreihenfolge. Die übrigen Regeln für returns/asyncMessages
 bleiben erhalten. Manuelles place/route gehört weiterhin in Connected-Views.
 Beispiel: [S6](examples/naf41-service-sequence.arch).
+
+## Wiederverwendete Views
+
+`extends SOURCE` übernimmt Auswahl und Darstellung mit lokalen Overrides.
+Connected-Views können Connected-/Tree-Views über `embed SOURCE [as GROUP]`
+als unveränderten Teilbereich aufnehmen. `place GROUP` und Gruppen-/Node-
+Koordinatenreferenzen verbinden Einbettungen mit dem äußeren Diagramm.
+Ohne Optionen nahtlos; `{frame true}` aktiviert Rahmen und Quellview-Titel.
+Mehrere Einbettungen können denselben Modellknoten zeigen. `GROUP.NODE`
+adressiert eine bestimmte Karte. Andere Quellrenderer sowie Meta-/Help-Views
+werden abgewiesen. [Regeln und Beispiele](HELP.md#views-wiederverwenden-extends-und-embed).
+
+## L2 Needlines und Objektifizierung
+
+Connected-Views zeichnen `Needline`-Kanten direkt zwischen Nodes, ohne zusätzliche
+Objektkarten zu verlangen. `needline OBJECT_ID` auf einer solchen Kante bindet
+eine optionale Needline-Karte; der vorhandene Referenzrenderer ergänzt die
+„is equal to“-Zuordnung. Sie unterstützt `route OBJECT_ID -> EDGE_ID`,
+Seitenpositionen, Brüche, via und freie Pfade. Die explizite semantische
+`ConveysLogicalResource`-Beziehung führt vom Needline-Objekt zur logischen
+Payload. Objektkarte und bekannte Payload können in einer View fehlen.
+Vollständige Legacy-Endpunktreferenzen bleiben modellierbar, erzeugen aber
+keine automatischen Kanten. Beispiele: [L2](examples/naf41-needlines.arch) und
+[Cut-out](examples/naf41-needlines-cutout.arch).
+
+## Tabellarische Ansichten mit `table`
+
+```arch
+view glossary "Glossary" {
+  viewpoint A1
+  include [sar, wbr]
+  diagram table { fields [title, type, definition] }
+}
+```
+
+`mode elements` ist die Voreinstellung. Mit `mode relationships` wird aus
+jeder sichtbaren Beziehung eine Zeile. In diesem Modus zeigen `source` und
+`target` die Namen der Endpunkte. `fields` bestimmt die Spaltenreihenfolge.
+Neben den Standardfeldern stehen die im Profil deklarierten Attribute der
+ausgewählten Typen zur Verfügung.
+
+## Gewichtete Flüsse mit `sankey`
+
+```arch
+diagram sankey { relations [LogicalInteraction] weightAttribute volume }
+```
+
+Der Renderer zeichnet die Endpunkte der gefilterten Beziehungen und skaliert
+die Breite der Bänder nach deren Gewicht. Ohne `weightAttribute` zählt jede
+Beziehung als eine Einheit. Bei angegebenem Attribut benötigt jede gezeichnete
+Beziehung einen positiven numerischen Wert. Für Zyklen oder bidirektionale
+Beziehungen eignet sich `connected`. Das [L3-Beispiel](examples/naf41-interactions-cutout.arch)
+enthält beide Darstellungen desselben Informationsaustauschs.
+
+## NAF-Viewpoints mit `nafgrid`
+
+| Ebene | Verantwortung |
+| --- | --- |
+| arch.js-Kern | Validiert die Rasteroptionen, ordnet Produkte und Diagramme anhand ihres Viewpoints zu, berechnet Anordnung und Darstellung und macht die Kacheln im Dashboard navigierbar. `viewpointGrid` bietet ein automatisches Standardraster. |
+| Profil | Definiert die Viewpoints und ihre Regeln. Das NAF-Profil liefert die Zeilen, Spalten, Zellpositionen, Stilgruppen und die vertikale Zelle für `L2-L3`. Eigene Profilraster können Darstellungsvorgaben setzen. |
+| Architektur-DSL | Wählt das Profil und den Diagrammtyp, modelliert Produkte und deklariert Diagramme. `viewpoint` ordnet ein Diagramm zu, `include` legt die Auswahl fest und der `diagram`-Block steuert die Anzeige für diese View. |
+
+Das [interaktive Beispiel](examples/viewpoint-grid.arch) ist in der Studio-Demo
+unter **How viewpoint grids work** verfügbar. Im View-Menü kannst du zwischen
+dem vollständigen Raster, modellierten Diagrammen, der Auswahl und einem
+leeren Raster wechseln.
+
+```arch
+NafViewpoint logicalStructure "Logical Structure" { nafViewpoint L2 }
+View logicalScenario "SAR Logical Scenario" { viewpoint logicalStructure }
+```
+
+Das Profil `naf41-uaf` definiert die Matrix in `viewpointGrid` und aktiviert
+`diagram nafgrid` für `viewpoint A2`. **Products** zeigt die in der View enthaltenen
+modellierten `View`-Elemente. Der Zellcode kommt aus `nafViewpoint`, aus der
+ID eines gewöhnlichen `Viewpoint` oder aus dessen Titel, etwa
+`"L2 Logical Scenario"`. Produkte ohne passende Zellzuordnung erscheinen
+unter der Matrix.
+
+**Diagrams** erfasst die deklarierten `view`-Blöcke nach ihrem `viewpoint`.
+Wähle Diagramme über ihre IDs im `include` der Raster-View aus. Dieselbe
+Liste kann auch Modellelemente enthalten. Ein enthaltenes `View`-Produkt
+wird ebenfalls ausgewählt, wenn ein ausgewähltes Diagramm es über
+`represents logicalScenario` referenziert.
+
+```arch
+view shortlist "Delivery shortlist" {
+  viewpoint A2
+  include [l2, p2]
+  diagram nafgrid { show selected }
+}
+```
+
+`show all` zeigt standardmäßig das vollständige Raster. `show selected`
+beschränkt das Raster und die Kacheldetails im Dashboard auf die Auswahl.
+Mit `include []` und `show selected` erhältst du ein leeres Raster.
+`show modeled` zeigt nur Kacheln, für deren Viewpoint ein Diagramm im DSL
+deklariert ist. Mit `viewpoints` kannst du die Viewpoint-Codes in jedem
+Anzeigemodus einschränken. Beide Listenschreibweisen sind möglich.
+
+```arch
+view modeledGrid "Modeled NAF views" {
+  viewpoint A2
+  include []
+  diagram nafgrid {
+    show modeled
+    viewpoints [L2, P2]
+    diagrams list
+  }
+}
+```
+
+Im Beispiel zeigt das Raster nur vorhandene L2- und P2-Diagramme.
+`include []` erzeugt ein Raster ohne markierte Auswahl und ohne modellierte
+Produkte. In `show modeled` sind die Diagramme dann normal lesbar.
+
+Die NAF-Kacheln verwenden dieselben Stilgruppen und dieselbe
+Fülldeckkraft von 20 % wie farbige Knoten. Ein stärkerer Rahmen kennzeichnet
+ausgewählte Kacheln. Eine graue Fläche mit 90 % Deckkraft dämpft die
+Füllung und Beschriftung der übrigen Kacheln. Das gilt auch bei
+`products none diagrams none`.
+Die Kachel `L2-L3` ist schmal und trägt einen um 90° gedrehten Viewpoint-Code.
+Ein Klick öffnet im Dashboard die zugehörigen Produkte und Diagramme.
+Die Auswahl bleibt beim Navigieren erhalten.
+
+```arch
+diagram nafgrid { products list diagrams count }
+```
+
+`count` (Standard), `list` und `none` sind für beide Optionen verfügbar. Die Einstellung
+steuert die sichtbaren Angaben in der Kachel. Die Detailansicht im Dashboard
+enthält weiterhin die zugehörigen Einträge.
+
+### Standardraster und eigene Profilraster
+
+`diagram viewpointGrid` ordnet die Viewpoints eines Profils automatisch an.
+Ein registriertes JSON-Profil kann unter `diagrams` eigene Namen und Layouts
+für denselben Renderer angeben. Ein Eintrag ohne `layout` verwendet das
+Standardraster. Beispiel als Ausschnitt eines Profils mit dem Viewpoint `L2`.
+
+```json
+{
+  "diagrams": {
+    "deliveryGrid": {
+      "renderer": "viewpointGrid",
+      "layout": {
+        "title": "Delivery overview",
+        "columns": ["Structure"],
+        "rows": [
+          { "title": "Logical", "color": "#21658b", "darkColor": "#87cff0" }
+        ],
+        "cells": [
+          { "id": "L2", "row": 0, "col": 0, "products": "list" }
+        ]
+      }
+    }
+  }
+}
+```
+
+Verwende dafür `diagram deliveryGrid`. `products` und `diagrams` können am
+Layout oder an einzelnen Zellen gesetzt werden. Das Layout kann außerdem
+`show` vorgeben. Optionen im `diagram`-Block haben Vorrang vor Zell- und
+Layoutvorgaben.
+
+Eine Zeile kann mit `"styleGroup": "logical"` die Knotenpalette einer
+Stilgruppe übernehmen. Alternativ sind `color` und `darkColor` für eigene
+Zeilenfarben verfügbar. `"vertical": true` stellt eine Zelle schmal mit
+gedrehtem Viewpoint-Code dar.
+
+[Beispiel mit A1–Ar](examples/naf41-foundation-viewpoints.arch).
+
+Die [Darstellungsmatrix](profiles/naf41/COVERAGE.md#representation-by-viewpoint)
+ordnet die Renderer den Repräsentationsformen aller 47 Viewpoints zu.

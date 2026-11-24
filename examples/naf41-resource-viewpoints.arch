@@ -1,0 +1,239 @@
+architecture "NAFv4.1 · Physical resources" {
+  config { profile naf41-uaf views [p2, p3, p4, mapping, p5, p6, p7, p8, pr] }
+  model {
+    CapabilityConfiguration squadron "Heli Squadron" { isStandardConfiguration true }
+    CapabilityConfiguration fleet "Maritime Rescue Surface Fleet" { isStandardConfiguration true }
+    EquipmentType helicopter "NH90" { isStandardConfiguration true }
+    EquipmentType hoist "NH90 Rescue Hoist" { isStandardConfiguration true }
+    EquipmentType radio "DSC Radio" { isStandardConfiguration true }
+    EquipmentType command "Command Post" { isStandardConfiguration true }
+    PostType pilot "NH90 Pilot" { isStandardConfiguration false }
+    PostType operator "Winch Operator" { isStandardConfiguration false }
+    DataProductType voice "Voice Data" { stereotype "Physical Passive Resource" }
+    ResourceInteraction channel "Radio Channel"
+    Protocol protocol "VHF Mode 2"
+    Standard vhf "VHF"
+    relation squadronHeli squadron -> helicopter "aggregates" { type GroupsPhysicalResource }
+    relation squadronHoist squadron -> hoist "aggregates" { type GroupsPhysicalResource }
+    relation squadronRadio squadron -> radio "aggregates" { type GroupsPhysicalResource }
+    relation squadronOperator squadron -> operator "aggregates" { type GroupsPhysicalResource }
+    relation heliHoist helicopter -> hoist "aggregates" { type ResourceAggregation }
+    relation pilotHeli pilot -> helicopter "depends on" { type PhysicalDependency }
+    relation pilotRadio pilot -> radio "depends on" { type PhysicalDependency }
+    relation operatorHoist operator -> hoist "depends on" { type PhysicalDependency }
+    relation radioVoice radio -> voice "depends on" { type PhysicalDependency }
+    relation signal radio -> command "Radio Channel" { type ResourceInteraction interaction channel }
+    relation radioProtocol radio -> protocol "implements" { type ResourceImplementsProtocol }
+    relation commandProtocol command -> protocol "implements" { type ResourceImplementsProtocol }
+    relation channelProtocol channel -> protocol "conforms to" { type InteractionConformsTo }
+    relation channelVhf channel -> vhf "conforms to" { type InteractionConformsTo }
+    relation channelVoice channel -> voice "conveys" { type ConveysPhysicalResource }
+
+    ResourceFunction approach "Execute Hover Manoeuvre"
+    ResourceFunction respond "Conduct Tactical Response"
+    ResourceFunction base "Return to Base"
+    ResourceFunction deploy "Deploy Rescue Winch"
+    ResourceFunction confirm "Confirm Extraction Complete"
+    ResourceFunction transmit "Transmit SITREP"
+    ResourceFunction receive "Receive SITREP"
+    OperationalActivity control "Control Rescue"
+    Service rescue "Maritime Rescue Service"
+    ServiceFunction rescueFunction "Rescue"
+    ResourceFlow sitrepFlow "SITREP Flow"
+    DataProductType report "Situational Report"
+    relation approachRespond approach -> respond "" { type FunctionalFlow }
+    relation respondBase respond -> base "" { type FunctionalFlow }
+    relation respondDeploy respond -> deploy "aggregates" { type ResourceFunctionAggregation }
+    relation respondConfirm respond -> confirm "aggregates" { type ResourceFunctionAggregation }
+    relation respondTransmit respond -> transmit "aggregates" { type ResourceFunctionAggregation }
+    relation respondReceive respond -> receive "aggregates" { type ResourceFunctionAggregation }
+    relation operatorDeploy operator -> deploy "performs" { type IsCapableToPerform }
+    relation operatorConfirm operator -> confirm "performs" { type IsCapableToPerform }
+    relation pilotApproach pilot -> approach "performs" { type IsCapableToPerform }
+    relation pilotTransmit pilot -> transmit "performs" { type IsCapableToPerform }
+    relation commandReceive command -> receive "performs" { type IsCapableToPerform }
+    relation reportFlow transmit -> receive "" { type ResourceFlow flow sitrepFlow }
+    relation reportPayload sitrepFlow -> report "conveys" { type ConveysPhysicalResource }
+    relation realizeControl respond -> control "realizes" { type Implements }
+    relation realizeFunction respond -> rescueFunction "realizes" { type Implements }
+    relation serviceFunction rescueFunction -> rescue "enables" { type EnablesService }
+
+    ResourceState moving "Moving to extraction point"
+    ResourceState hovering "Hovering"
+    ResourceState rescuing "Rescuing"
+    ResourceState exiting "Exiting"
+    ResourceStateGroup progress "Tactical Response In Progress"
+    ResourceTransition arrive "Transition to Hovering"
+    ResourceTransition identify "Subject Identified"
+    ResourceTransition rescued "Subject Rescued"
+    ResourceEvent arrival "Extraction Point Arrival"
+    relation heliMoving helicopter -> moving "has" { type HasResourceState }
+    relation heliHovering helicopter -> hovering "has" { type HasResourceState }
+    relation heliRescuing helicopter -> rescuing "has" { type HasResourceState }
+    relation heliExiting helicopter -> exiting "has" { type HasResourceState }
+    relation groupMoving progress -> moving "aggregates" { type GroupsResourceState }
+    relation groupHovering progress -> hovering "aggregates" { type GroupsResourceState }
+    relation groupRescuing progress -> rescuing "aggregates" { type GroupsResourceState }
+    relation groupExiting progress -> exiting "aggregates" { type GroupsResourceState }
+    relation stateArrive moving -> hovering "Arrive" { type ResourceStateTransition transition arrive }
+    relation stateIdentify hovering -> rescuing "Identify subject" { type ResourceStateTransition transition identify }
+    relation stateRescued rescuing -> exiting "Subject rescued" { type ResourceStateTransition transition rescued }
+    relation eventArrive arrival -> arrive "triggers" { type TriggersResourceTransition }
+    relation enableApproach moving -> approach "enables" { type StateEnablesResourceFunction }
+    relation enableDeploy rescuing -> deploy "enables" { type StateEnablesResourceFunction }
+    relation enableConfirm rescuing -> confirm "enables" { type StateEnablesResourceFunction }
+
+    ResourceLifeline radioLine "DSC Radio Lifeline"
+    ResourceLifeline commandLine "Command Post Lifeline"
+    ResourceInteraction response "Situational Response"
+    relation representsRadio radioLine -> radio "represents a timeline of" { type RepresentsResource }
+    relation representsCommand commandLine -> command "represents a timeline of" { type RepresentsResource }
+    relation sendResponse radioLine -> commandLine "Situational Response" { type ResourceSequenceInteraction order 1 interaction response }
+
+    DataModel sarData "SAR Data Model" { kind Physical }
+    DataEntity position "Last Known Position"
+    DataEntity object "Search Object"
+    DataEntity area "Search Area"
+    DataEntity person "Standard Person Info"
+    DataEntity status "Search Status"
+    DataAttribute time "Time" { owner position }
+    DataAttribute source "Source of Report" { owner position }
+    DataAttribute positionCoordinates "Coordinates" { owner position }
+    DataAttribute location "Location" { owner object }
+    DataAttribute areaCoordinates "Search Area Coordinates" { owner area }
+    DataAttribute personLocation "Person Location" { owner person }
+    DataAttribute operationalStatus "Operational Search Status" { owner status }
+    relation specifiesObject sarData -> object "specifies" { type SpecifiesData }
+    relation specifiesArea sarData -> area "specifies" { type SpecifiesData }
+    relation specifiesPerson sarData -> person "specifies" { type SpecifiesData }
+    relation specifiesStatus sarData -> status "specifies" { type SpecifiesData }
+    relation positionObject position -> object "aggregates" { type AggregatesDataEntity }
+    relation positionArea position -> area "aggregates" { type AggregatesDataEntity }
+    relation positionPerson position -> person "aggregates" { type AggregatesDataEntity }
+    relation positionTime position -> time "aggregates" { type AggregatesDataAttribute }
+    relation positionSource position -> source "aggregates" { type AggregatesDataAttribute }
+    relation positionCoords position -> positionCoordinates "aggregates" { type AggregatesDataAttribute }
+    relation objectLocation object -> location "aggregates" { type AggregatesDataAttribute }
+    relation areaCoords area -> areaCoordinates "aggregates" { type AggregatesDataAttribute }
+    relation personLoc person -> personLocation "aggregates" { type AggregatesDataAttribute }
+    relation statusValue status -> operationalStatus "aggregates" { type AggregatesDataAttribute }
+
+    ResourceConstraint enclosure "IP6x" { ruleKind Constraint }
+    ResourceRequirement immersion "IP66"
+    ResourceRequirement certified "Certified NATO Secret"
+    ResourceRequirement availability "24/7 Continuous Operation"
+    relation enclosureApplies enclosure -> radio "applies to" { type ConstrainsResource }
+    relation immersionApplies immersion -> radio "applies to" { type ConstrainsResource }
+    relation immersionRelates immersion -> enclosure "relates to" { type ResourceRequirementConstraint }
+    relation certifiedApplies certified -> radio "applies to" { type ConstrainsResource }
+    relation availabilityApplies availability -> respond "applies to" { type ConstrainsResource }
+
+    ResourceReadinessLevel readiness "Fleet X Low"
+    LogicalReadinessLevel wbr "WBR Low"
+    ResourceMilestone maintenance "Up-to-date maintenance" { date "2030-01-01" }
+    ResourceMilestone training "Trained personnel" { date "2031-01-01" }
+    LogicalMilestone logicalMaintenance "Up-to-date maintenance" { date "2030-01-01" }
+    LogicalMilestone logicalTraining "Trained personnel" { date "2031-01-01" }
+    relation fleetDelivery readiness -> fleet "delivers" { type ResourceReadinessDeliversConfiguration }
+    relation readinessTrace readiness -> wbr "relates to" { type TracesLogicalReadiness }
+    relation maintenanceDefinition maintenance -> readiness "defines" { type DefinesResourceReadiness }
+    relation trainingDefinition training -> readiness "defines" { type DefinesResourceReadiness }
+    relation maintenanceTrace maintenance -> logicalMaintenance "corresponds to" { type ResourceMilestoneCorrespondsToLogical }
+    relation trainingTrace training -> logicalTraining "corresponds to" { type ResourceMilestoneCorrespondsToLogical }
+  }
+  view p2 "P2 · Resource structure" {
+    viewpoint P2
+    include [squadron, helicopter, hoist, radio, pilot, operator, voice]
+    style voice { width 280 }
+    place squadron at (0, 0)
+    place helicopter at (380, 185)
+    place hoist at (760, 185)
+    place radio at (380, 370)
+    place voice at (760, 370)
+    place pilot at (0, 370)
+    place operator at (760, 0)
+    route squadronHoist { from bottom 0.95 to top
+      via [(squadron.x + 0.95*squadron.width, hoist.y - 54), (hoist.centerX, hoist.y - 54)] }
+    route squadronOperator { from right 0.30 to left curve straight }
+    route squadronRadio { from bottom 0.75 to top
+      via [(squadron.x + 0.75*squadron.width, radio.y - 45), (radio.centerX, radio.y - 45)] }
+    route pilotHeli { from top to left via (pilot.centerX, helicopter.centerY) }
+  }
+  view p3 "P3 · Resource interactions" {
+    viewpoint P3
+    include [radio, command, channel, protocol, vhf, voice]
+    style voice { width 280 }
+    exclude radioVoice
+  }
+  view p4 "P4 · Resource functions" {
+    viewpoint P4
+    include [approach, respond, base, deploy, confirm, transmit, receive, operator, pilot, command, control, sitrepFlow, report]
+    routes { curve rounded }
+    place approach at (0, 190)
+    place respond at (370, 190)
+    place base at (760, 190)
+    place control at (respond.x, 0)
+    place deploy at (0, 400)
+    place confirm at (370, 400)
+    place transmit at (760, 400)
+    place receive at (1170, 400)
+    place operator at (170, 610)
+    place pilot at (470, 805)
+    place command at (receive.x + 100, 610)
+    place sitrepFlow at (940, 610)
+    place report at (sitrepFlow.x, 805)
+    route approachRespond, respondBase { curve straight }
+    route pilotApproach {
+      from left to left
+      via [(approach.x - 82, pilot.centerY), (approach.x - 82, approach.centerY)]
+    }
+    route operatorDeploy { from top 0.25 to bottom
+      via (deploy.centerX, operator.y - 30) }
+    route operatorConfirm { from top 0.75 to bottom
+      via (confirm.centerX, operator.y - 70) }
+    route respondReceive { from bottom 0.8 to top
+      via [(respond.x + 0.8*respond.width, respond.bottom + 35), (receive.centerX, respond.bottom + 35)] }
+  }
+  view mapping "L4–P4 · Activity to function" {
+    viewpoint L4-P4
+    include [respond, control, rescueFunction]
+    diagram matrix { rows [respond] columns [control, rescueFunction] relations [Implements] }
+  }
+  view p5 "P5 · Resource states" {
+    viewpoint P5
+    include [helicopter, moving, hovering, rescuing, exiting, progress, arrive, identify, rescued, arrival, approach, deploy, confirm]
+    diagram state
+  }
+  view p6 "P6 · Resource sequence" {
+    viewpoint P6
+    include [radio, command, radioLine, commandLine, response]
+    exclude signal
+    diagram sequence { showContext true orderAttribute order }
+  }
+  view p7 "P7 · Data model" {
+    viewpoint P7
+    include [sarData, position, object, area, person, status, time, source, positionCoordinates, location, areaCoordinates, personLocation, operationalStatus]
+    diagram class { attributes [time, source, positionCoordinates, location, areaCoordinates, personLocation, operationalStatus] }
+    place sarData at (0, 0)
+    place status at (540, 0)
+    place object at (-540, 365)
+    place area at (0, 365)
+    place person at (540, 365)
+    place position at (0, 755)
+  }
+  view p8 "P8 · Resource constraints" {
+    viewpoint P8
+    include [radio, respond, enclosure, immersion, certified, availability]
+    diagram table { mode relationships fields [source, title, target] }
+  }
+  view pr "Pr · Resource roadmap" {
+    viewpoint Pr
+    include [fleet, readiness, wbr, maintenance, training, logicalMaintenance, logicalTraining]
+  }
+  view roadmap "Pr · Dated milestones" {
+    viewpoint Pr
+    include [fleet, readiness, maintenance, training]
+    diagram timeline { startAttribute date endAttribute date }
+    style fleet, readiness { display none }
+  }
+}

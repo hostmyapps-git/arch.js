@@ -1,0 +1,75 @@
+architecture "How viewpoint grids work" {
+  description "Explore the three layers, then use the View menu to compare the full NAF grid, modeled views, selected tiles, and an empty selection."
+  config { profile naf41-uaf views responsibilities }
+  model {
+    GlossaryTerm engine "arch.js core" {
+      definition "Interprets the grid options, assigns products and diagrams to tiles, and draws the SVG. The dashboard handles navigation."
+    }
+    GlossaryTerm framework "Profile" {
+      definition "Defines viewpoint IDs, row and column positions, colors, and layout defaults. L2-L3 is marked as a narrow, vertical tile."
+    }
+    GlossaryTerm document "Architecture DSL" {
+      definition "Chooses the profile and diagram type. Declares the actual products and diagrams and selects entries with include."
+    }
+
+    ArchitectureDescription rescue "Rescue architecture" {
+      toBe true
+      architectureFramework "NAFv4.1"
+    }
+    NafViewpoint logicalStructure "Logical Structure" { nafViewpoint L2 }
+    View logicalProduct "Rescue coordination view" { viewpoint logicalStructure }
+    Post planner "Rescue planner" { isStandardConfiguration false stereotype Stakeholder }
+    Concern coordination "Coordinate a rescue"
+    relation containsProduct rescue -> logicalProduct "contains" { type ContainsView }
+    relation governsProduct logicalStructure -> logicalProduct "governs" { type GovernsView }
+    relation hasConcern planner -> coordination "has" { type StakeholderHasConcern }
+    relation framesConcern logicalStructure -> coordination "frames" { type FramesConcern }
+
+    Node centre "Coordination centre"
+    Node team "Rescue team"
+    Needline request "Request assistance" { source centre target team }
+    HighLevelOperationalConcept concept "Rescue coordination"
+  }
+
+  view responsibilities "Who defines what?" {
+    viewpoint A1
+    include [engine, framework, document]
+    propertyFields [definition]
+    style [engine, framework, document] { width 245 height 167 showStereotype false showIcon false }
+    style engine { backgroundColor SlateBlue }
+    style framework { backgroundColor DarkOrange }
+    style document { backgroundColor SeaGreen }
+    place engine at (0, 0)
+    place framework right of engine gap 18
+    place document right of framework gap 18
+  }
+
+  view allTiles "Show all viewpoints" {
+    viewpoint A2
+    include [rescue, logicalStructure, logicalProduct, planner, coordination, logicalDiagram]
+    diagram nafgrid { show all }
+  }
+  view modeledTiles "Show modeled viewpoints" {
+    viewpoint A2
+    include []
+    diagram nafgrid { show modeled viewpoints [L2, L2-L3, L7] diagrams list }
+  }
+  view selectedTiles "Show selected viewpoints" {
+    extends allTiles
+    diagram nafgrid { show selected products list diagrams list }
+  }
+  view emptyTiles "Show an empty selection" {
+    extends selectedTiles
+    include []
+  }
+
+  view logicalDiagram "Rescue coordination diagram" {
+    viewpoint L2
+    include [centre, team, request]
+    represents logicalProduct
+  }
+  view conceptDiagram "Rescue concept diagram" {
+    viewpoint L2-L3
+    include concept
+  }
+}

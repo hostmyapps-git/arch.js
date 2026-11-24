@@ -23,6 +23,9 @@ test('config views chooses a single view, a list in requested order, or all decl
  assert.equal(arch.layout(arch.parse(source('views [detail]'))).view.id,'detail');
  const all=arch.layout(arch.parse(source('views all')));assert.equal(all.kind,'views');assert.deepEqual(all.layouts.map(g=>g.view.id),['overview','detail','matrix']);
  assert.deepEqual(sectionIds(xml(arch.renderToString(source('views [matrix, overview]')))),['matrix','overview']);
+ const unbracketed=source('views matrix,\n overview validation draft','profile default');
+ assert.deepEqual(sectionIds(xml(arch.renderToString(unbracketed))),['matrix','overview']);
+ assert.deepEqual(JSON.parse(arch.translate(unbracketed)).architecture.config.views,['matrix','overview']);
  assert.equal(arch.layout(arch.parse('architecture "Implicit" {config {views all} model {}}')).view.id,'default');
 });
 
@@ -41,13 +44,14 @@ test('API view overrides API views, which overrides config; lists and literal ID
  const namedAll='architecture "Named all" {config {views [all]} model {} view first "First" {} view all "Literal all" {}}';
  assert.equal(arch.layout(arch.parse(namedAll)).view.id,'all');assert.equal(arch.layout(arch.parse(namedAll),{view:'all'}).view.id,'all');
  assert.equal(arch.layout(arch.parse(namedAll),{views:'all'}).layouts.length,2);
+ assert.deepEqual(arch.layout(namedAll.replace('[all]','all, first')).layouts.map(g=>g.view.id),['all','first']);
  for(const options of [{views:[]},{views:['overview','overview']},{views:['missing']},{views:true},{views:null},{view:[]},{view:''}]) {
   assert.equal(arch.validate(source(),options).valid,false,JSON.stringify(options));assert.throws(()=>arch.renderToString(source(),options),arch.ArchError);
  }
 });
 
 test('config selection rejects unknown IDs, duplicates and malformed values with source locations',()=>{
- for(const selection of ['views missing','views [overview, missing]','views []','views [overview, overview]','views true','views 1','views all views detail']) {
+ for(const selection of ['views missing','views [overview, missing]','views []','views [overview, overview]','views overview, overview','views overview, missing','views overview,','views true','views 1','views all views detail']) {
   const report=arch.validate(source(selection));assert.equal(report.valid,false,selection);assert.ok(report.diagnostics[0].line>0);assert.throws(()=>arch.parse(source(selection)),arch.ArchError);
  }
  const model=arch.parse(source('views all'));model.config.views=['missing'];assert.equal(arch.validate(model).valid,false);

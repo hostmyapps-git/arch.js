@@ -65,6 +65,46 @@ test('attachment fractions follow curved relationship paths and remain independe
  assert.ok(r.anchor.y<48);assert.match(r.d,/ C /);assert.deepEqual(edge.label,{x:800,y:200});
 });
 
+test('calculated attachment fractions use final geometry and round-trip through JSON and DSL',()=>{
+ const expression='(data.centerX-a.x)/(b.right-a.x)';
+ const text=source(`route pickup {path "M 220 48 C 300 -100 500 -100 600 48"}
+   route data -> pickup {from top to ${expression} curve straight}`);
+ const model=arch.parse(text,{profile}),original=JSON.stringify(model.views[0].referenceRoutes);
+ const graph=arch.layout(model),r=ref(graph),edge=graph.edges.find(edge=>edge.id==='pickup');
+ const [a,b]=['a','b'].map(id=>graph.nodes.find(n=>n.id===id));
+ const expected=(r.node.x+r.node.width/2-a.x)/(b.x+b.width-a.x);
+ assert.equal(r.route.to,expected);
+ assert.deepEqual(point(r.anchor),point(pointOnPath(pathSamples(edge.d),expected)));
+ assert.deepEqual(r.points.at(-1),point(r.anchor));
+ assert.equal(JSON.stringify(model.views[0].referenceRoutes),original);
+ const json=arch.translate(text,{format:'json'});
+ assert.equal(typeof JSON.parse(json).architecture.views.v.route['data -> pickup'].to,'string');
+ for(const input of [json,arch.translate(json,{format:'dsl'})]) {
+  assert.deepEqual(ref(arch.layout(input,{profile})).anchor,r.anchor);
+ }
+ assert.equal(ref(graphOf(source('route data -> pickup {to (3 - 1) / 4}'))).route.to,.5);
+});
+
+test('calculated attachment fractions validate visible references and resolved range',()=>{
+ const text=position=>source(`route data -> pickup {to ${position}}`);
+ assert.match(arch.validate(text('missing.centerX / 100'),{profile}).diagnostics[0].message,/Unknown reference route to reference: missing/);
+ assert.throws(()=>graphOf(text('(b.right-a.x)/100')),/Reference route to must be between 0 and 1/);
+ assert.throws(()=>graphOf(text('1/(a.width-a.width)')),/[Dd]ivision by zero/);
+ assert.throws(()=>graphOf(text('c.width / 1000').replace('place c at (1200,0)','exclude c')),/Hidden or excluded reference route to reference: c/);
+});
+
+test('automatic relation labels move only when an attachment overlaps and keep their position on a tie',()=>{
+ const layout=(path,label='')=>graphOf(source(`route pickup {path "M 220 48 L 600 48" ${label}}
+   route data -> pickup {path "${path}"}`)).edges.find(edge=>edge.id==='pickup').label;
+ const clear='M 520 -140 L 520 48';
+ const crossing='M 410 -140 Q 410 -40 410 48';
+ const allPositionsBlocked='M 410 -140 L 410 120 L 520 120 L 520 48';
+ assert.deepEqual(layout(clear),{x:410,y:48});
+ assert.deepEqual(layout(crossing),{x:410,y:73.5});
+ assert.deepEqual(layout(allPositionsBlocked),{x:410,y:48});
+ assert.deepEqual(layout(crossing,'label 0.5'),{x:410,y:48});
+});
+
 test('free SVG reference paths preserve their exact data, conservative bounds and safe validation',()=>{
  const d='M 480 -185 C -900 -700 1300 -700 410 48';
  const graph=graphOf(source(`route data -> pickup {path "${d}"}`)),r=ref(graph);
@@ -86,7 +126,7 @@ test('reference routing rejects unknown or unrelated targets, invalid controls, 
   ['route data -> pickup {from nowhere}',/Unknown port/],
   ['route data -> pickup {curve cubic}',/Unknown curve/],
   ['route data -> pickup {curve bezier via (0,0)}',/two control points/],
-  ['route data -> pickup {label (0,0)}',/Unknown routing attribute/],
+  ['route data -> pickup {label 1.01}',/between 0 and 1/],
   ['route data -> pickup {to 0.1 to 0.2}',/Duplicate routing attribute/],
   ['route data -> pickup {} route data -> pickup {}',/Duplicate reference route/],
   ['route data -> pickup {} diagram class {}',/only supported for connected/]
@@ -100,6 +140,35 @@ test('reference routing rejects unknown or unrelated targets, invalid controls, 
  const model=arch.parse(source('route data -> pickup {}'),{profile});
  model.views[0].referenceRoutes.push(model.views[0].referenceRoutes[0]);assert.equal(arch.validate(model).valid,false);
  assert.match(arch.renderToString('@help routing'),/route NODE_ID/);
+});
+
+test('connector labels support path fractions, offsets, explicit points and hiding independently of the carrying edge',()=>{
+ const captionProfile={...profile,relationTypes:{flow:{...profile.relationTypes.flow,referenceConnectorLabels:true}}};
+ const options={profile:captionProfile,idPrefix:'reference-caption'};
+ const routing='route data -> pickup {from top 0.5 to 0.2 label 0.2 curve straight}';
+ const text=source(`route pickup {label (800,200)} ${routing}`),graph=arch.layout(text,options),r=ref(graph);
+ const [a,b]=r.points;
+ assert.ok(Math.hypot(r.connectorLabel.x-(a.x+(b.x-a.x)*0.2),r.connectorLabel.y-(a.y+(b.y-a.y)*0.2))<1e-9);
+ assert.deepEqual(graph.edges.find(e=>e.id==='pickup').label,{x:800,y:200});
+ assert.deepEqual(point(r.anchor),point(b));
+ assert.equal(arch.renderToString(arch.translate(text),options),arch.renderToString(text,options));
+
+ const manual=source('route data -> pickup {path "M 0 -200 L 0 100" label 1/3 offset data.width / 2}');
+ const offset=ref(arch.layout(manual,options));
+ assert.deepEqual(point(offset.connectorLabel),{x:0,y:Math.min(100,-100+offset.node.width/2)});
+ const clamped=ref(arch.layout(manual.replace('data.width / 2','1000'),options));
+ assert.deepEqual(point(clamped.connectorLabel),{x:0,y:100});
+ const side=ref(arch.layout(manual.replace('data.width / 2','data.width / 2 sideOffset -24'),options));
+ assert.deepEqual(point(side.connectorLabel),{x:-24,y:offset.connectorLabel.y});
+ const standalone=ref(arch.layout(source('route data -> pickup {path "M 0 -200 L 0 100" sideOffset 24}'),options));
+ assert.deepEqual(point(standalone.connectorLabel),{x:24,y:-50});
+ const absolute=arch.layout(manual.replace('1/3 offset data.width / 2','(data.x, -900)'),options);
+ assert.deepEqual(point(ref(absolute).connectorLabel),{x:480,y:-900});
+ bounded(absolute,{x:480,y:-910});
+ const hidden=arch.layout(source('routes {label none} route data -> pickup {label none}'),options);
+ assert.equal(ref(hidden).connectorLabel,undefined);
+ assert.ok(ref(hidden,'delivery').connectorLabel);
+ assert.equal(ref(arch.layout(source(routing),{profile})).connectorLabel,undefined);
 });
 
 test('routes address per-edge occurrences too; hidden references and labels-only views retain their presentation',()=>{

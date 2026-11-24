@@ -253,13 +253,19 @@ Namen; `extends` bleibt echte Spezialisierung. Ursprüngliche Namen bleiben in
 Diagrammen und JSON-/DSL-Übersetzungen erhalten. `mappings` dokumentiert
 Framework-/Versionszuordnungen und konvertiert keine Modelle automatisch.
 
-Mit `config { profile "naf41-uaf@4.1.0-arch.16" }` lässt sich eine geladene
+Mit `config { profile "naf41-uaf@4.1.0-arch.33" }` lässt sich eine geladene
 Revision ausdrücklich auswählen. `arch.getProfileVersions('naf41-uaf')` zeigt
 verfügbare Versionen; unqualifizierte IDs wählen die zuletzt registrierte.
 Explizit versionierte Definitionen benötigen bei Änderungen eine neue Version.
 Hilfe: `@help aliases naf41-uaf`, `@help mappings naf41-uaf` und
 `@help types naf41-uaf Service`. Format, Grenzen und Migration:
 [Aliase und Mappings](profiles/naf41/ALIASES.md).
+
+Die [NAFv4.1-Übersicht](profiles/naf41/COVERAGE.md) zeigt Modellregeln und
+Darstellungsmöglichkeiten für alle 47 Viewpoints. Die Beispiele zu
+[physischen Ressourcen](examples/naf41-resource-viewpoints.arch) und
+[Architecture Foundation](examples/naf41-foundation-viewpoints.arch) ergänzen
+die Viewpoints nach P1.
 
 Oder ein vereinfachtes eigenes Profil direkt im Dokument definieren:
 
@@ -337,6 +343,20 @@ Das neue Beispiel **NAFv4.1 · Search & Rescue** zeigt neun verknüpfte Ansichte
 Nach dem UAF-Basisscript `profiles/naf41-uaf.js` laden und im Dokument
 `config { profile naf41-uaf }` auswählen; `profiles/profiles.js` enthält es bereits.
 
+Für L1 sind `LogicalActor` und `LogicalEquipment` als unterscheidbare Untertypen
+von `OperationalPerformer` verfügbar. Das [vollständige Beispiel von S.127](examples/naf41-logical-taxonomy.arch)
+steht in der Demo unter **NAFv4.1 · Logical Taxonomy**. Reine Gliederungs- und
+Spezialisierungsknoten brauchen keine künstlichen Activities oder Performer.
+Angezeigte Ressourcen bleiben ihrer Node-Gruppierung zugeordnet; Details und
+Prüfgrenzen stehen in der [Profilanleitung](profiles/naf41/README.md#l1-logical-taxonomy-pp126127).
+
+L2 unterstützt `Needline` als gerichtete Beziehung zwischen Nodes sowie optional
+als objektifizierte Karte mit „is equal to“-Zuordnung. `ConveysLogicalResource`
+verbindet diese Karte mit ihrer logischen Payload. Beispiele:
+[L2 von S.129](examples/naf41-needlines.arch) und
+[Objektifizierung mit optionaler Payload](examples/naf41-needlines-cutout.arch).
+Bestehende Needline-Objekte mit `source`/`target` bleiben unterstützt.
+
 Die C2-Bezeichnung `Goal` ist als Untertyp von UAF `EnterpriseGoal` verfügbar.
 Beide funktionieren mit `SpecifiesGoal` und denselben C2-Regeln. Beispiel:
 `Goal coverage "Increase Coverage"` und
@@ -374,14 +394,19 @@ allgemeinen Service, `SatisfiesServicePolicy` vom Service zur Policy.
 Demo als **NAFv4.1 · Service Taxonomy**. `ServicePolicy` benötigt weiterhin
 `ruleKind`; das Beispiel wählt ausdrücklich `Constraint`.
 
-S2 unterstützt `Node` als Alias von LogicalNode und den konkreten Anwendungs-
-typ `PhysicalActiveResource` mit dem geerbten Pflichtfeld
-`isStandardConfiguration`. Die quellgerichteten Relationen ConsumesService,
+S2 unterstützt `Node` als Alias von `LogicalNode`. Seit `4.1.0-arch.34`
+ist `PhysicalActiveResource` ein abstrakter Alias von `ResourcePerformer`.
+Das Referenzmodell verwendet `System` mit dem geerbten Pflichtfeld
+`isStandardConfiguration`. Ältere Modelle mit dem konkreten Adapter können
+`naf41-uaf@4.1.0-arch.33` aus den mitgelieferten Profilskripten wählen.
+Die quellgerichteten Relationen ConsumesService,
 EnablesService und RealizesService sowie die Gruppierungsrelation
 ServiceAggregation ergänzen das vollständige
 [S2-Beispiel von S.108](examples/naf41-service-structure.arch), auch in der Demo
-als **NAFv4.1 · Service Structure**. Native UAF-Endpunkte bleiben unverändert;
-spezielle Consumer-/Provider-Rollen aus dem S2-Cut-out sind weiterhin offen.
+als **NAFv4.1 · Service Structure**. Optionale Consumer- und Provider-Rollen
+können Services konsumieren oder bereitstellen und sich über
+`ServiceRoleReliesOnNode` auf logische Knoten stützen. `DeliversService`
+verbindet den liefernden Knoten mit dem Service.
 
 S3 ergänzt `ServiceOperation` als Alias von ServiceMethod sowie `DataProductType`
 als physischen passiven Datenprodukttyp. Das
@@ -442,10 +467,11 @@ config { views all }
 ```
 
 ```arch
-config { profile naf41-uaf views [overview, detail] }
+config { profile naf41-uaf views overview, detail }
 ```
 
-Für genau eine View genügt `config { views detail }`. Mehrere Views erscheinen
+Die Liste kann auch in eckigen Klammern stehen. Für genau eine View genügt
+`config { views detail }`. Mehrere Views erscheinen
 mit ihren Titeln untereinander innerhalb eines eigenständigen SVGs. Die Liste
 bestimmt die Reihenfolge; `all` verwendet die Reihenfolge der Definitionen.
 Ein konkreter API-Aufruf hat Vorrang:
@@ -461,6 +487,81 @@ Im Dropdown zeigt **Configured views** die Konfiguration; einzelne Views können
 weiterhin separat ausgewählt werden. SVG-Download, Markdown und `renderAll`
 unterstützen die Auswahl ebenfalls. Beispiel:
 [multiple-views.arch](examples/multiple-views.arch). Hilfe: `@help views`, `@help config`.
+
+`backgroundImage "/images/site-plan.png"` in einer View setzt ein Bild hinter
+das Diagramm. Elementbilder werden mit `showBackgroundImage true` in der View
+oder im jeweiligen Node-Style sichtbar. Icons lassen sich separat steuern.
+[Syntax und Beispiele](HELP.md#hintergrundbilder-für-views-und-elemente)
+
+## Architektur-Dashboard
+
+**Architecture dashboard** öffnet in der Beispieloberfläche den Katalog aller
+Views, Elemente und Beziehungen. Klicke auf eine Karte, Kante oder
+Kantenbeschriftung, um Eigenschaften, Endpunkte und Verwendungen in anderen
+Views zu sehen. **Fit** passt das Diagramm an Breite und Höhe der Fläche an
+und begrenzt die Größe auf das Originalmaß. **Source** zeigt die Definition
+der aktiven View mit ihren Elementen, Beziehungen und benötigten
+View-Definitionen aus `extends` und `embed`. **DSL** und **JSON** bieten
+Syntaxhervorhebung und **Copy source** kopiert die gewählte Fassung. Die
+Ausgabe wird aus dem Modell erzeugt. Kommentare und Originalformatierung
+sind daher nicht enthalten. Die Quellansicht ist auch im HTML-Export verfügbar.
+Im
+Präsentationsmodus blättern die Pfeiltasten zwischen den Views. **Download HTML**
+exportiert die Darstellung und Navigation in eine eigenständige HTML-Datei.
+**Help** öffnet die integrierte Referenz mit Vor- und Zurücknavigation.
+Der HTML-Export enthält die Hauptthemen und die im Modell verwendeten
+Viewpoint-, Element- und Beziehungstypen.
+
+```arch
+config {
+    presentation dashboard
+    views overview, detail
+}
+```
+
+`presentation dashboard` öffnet das Dashboard in der Studio-Vorschau und bei
+`arch.render()` und `arch.renderAll()`. Standard ist `presentation diagram`.
+Die erste ausgewählte View bestimmt den Einstieg. Bei `views all` oder ohne
+`views` öffnet die erste deklarierte View. Der Katalog enthält weiterhin alle
+Views. Die SVG-Ausgabe verwendet die konfigurierte Auswahl und Reihenfolge.
+Bei DOM-Renderaufrufen kann `{ presentation: 'diagram' }` die Konfiguration
+übersteuern.
+
+```js
+arch.renderDashboard(container, source, { view: 'overview' });
+const html = arch.renderDashboardToHTML(source);
+const report = arch.architectureReport(source, {
+  validation: 'strict', checkRendering: true
+});
+```
+
+Mit `represents MODEL_ID` in einer View verknüpfst du ein Modellelement mit dem
+betreffenden Diagramm. Das Dashboard zeigt diese Verknüpfung in beide Richtungen.
+In JSON lautet der View-Schlüssel `"represents"`.
+
+Der Report enthält für jede View die fachliche Auswahl, die für die Darstellung
+projizierten Elemente und Beziehungen sowie Validierungsmeldungen.
+`checkRendering` prüft den SVG-Export aller Views. Für die Überprüfung einer
+Datei im Terminal verwenden die Befehle standardmäßig die strikte Validierung.
+
+```sh
+node scripts/architecture-report.mjs model.arch
+node scripts/architecture-report.mjs model.arch --vim
+node scripts/architecture-report.mjs model.arch --html > dashboard.html
+```
+
+`--draft` aktiviert die Teilvorschau mit Hinweisen zu ausgelassenen Deklarationen.
+Die HTML-Ausgabe verwendet die Teilvorschau, damit verfügbare Views sichtbar bleiben.
+In Vim lädt `:cexpr system('node scripts/architecture-report.mjs ' . shellescape(expand('%:p')) . ' --vim')`
+die geprüften Meldungen in die Quickfix-Liste, sofern `errorformat` das Format
+`%f:%l:%c: %t: %m` enthält.
+
+Für kompakte Layouts kannst du `row a, b, c { gap 32 align center }` oder
+`column [a, b, c] { gap 24 align left }` verwenden. Die erste Karte wird zum
+Anker, und die folgenden Karten übernehmen den angegebenen Abstand. Mit
+`routes { avoidObstacles true }` sucht arch.js freie Korridore für automatische
+orthogonale oder gerundete Routen und weicht bei automatischen Labels auf freie
+Positionen aus, sofern eine passende Position verfügbar ist.
 
 ## JSON-Icons
 
@@ -517,6 +618,10 @@ const model = parse(source);
 const svg = renderToString(model, { view: 'detail', theme: 'dark' });
 ```
 
+Wenn eine Integration SVG und Layoutdaten gemeinsam benötigt, liefert
+`renderDiagram(sourceOrModel, options)` beides als `{ graph, svg }` aus einem
+Layoutdurchlauf. [Interne Architektur und Benchmarks](ARCHITECTURE.md)
+
 Voraussetzung Node.js >=22. Browserbundles sind eigenständig. Direkte Node-
 Importe verwenden die gepinnten XML-/SVG-Pakete aus `dependencies`;
 Build-/Browser-Testwerkzeuge bleiben Entwicklungsabhängigkeiten.
@@ -544,6 +649,10 @@ Browser-Screenshots landen unter
 Neben dem Knoten-Kanten-Renderer sind acht weitere Darstellungen
 enthalten: Tree/Taxonomie, Sequenz, Zustand, Aktivität/Swimlanes, Matrix, Capability Map/Heatmap,
 Zeitachse/Gantt und Klassenansicht mit Detailbereichen und Ports.
+
+Aktivitätsdiagramme ordnen Swimlane-Knoten nach den im Profil gekennzeichneten
+Ablaufkanten an. `layout model` wählt die Deklarationsreihenfolge.
+[DIAGRAMS.md](DIAGRAMS.md#aktivität--swimlanes-activity)
 
 Eine Taxonomie wird automatisch mit zentrierten Eltern über ihren Kindern
 angeordnet; Generalisierungen behalten ihre Richtung vom Kind zum Elternteil:
@@ -617,7 +726,8 @@ route requires {
 Das funktioniert ebenfalls in `routes`-Vorgaben und bei Zuordnungslinien wie
 `route information -> requires`. Die Punkte verwenden die endgültigen absoluten
 Diagrammkoordinaten, auch innerhalb von Packages. JSON bewahrt die Ausdrücke
-als Strings. Endpunkt- und Labelpositionen bleiben numerisch.
+als Strings. Auch Endpunkttupel wie `from (vision.right, maritime.centerY)`
+und Labelpunkte können mit den endgültigen Positionen und Größen rechnen.
 
 In `index.html` zeigt **Seven diagram renderers** alle sieben Ansichten.
 Eine View wählt beispielsweise `diagram sequence { messages [request, response] }`.
@@ -731,3 +841,24 @@ ServiceInteraction-Nachrichten auch im Sequence-Renderer, mit optionalem
 Kontextbereich und Sortierung über orderAttribute. Beispiele:
 [Service Sequence](examples/naf41-service-sequence.arch) und
 [S6 Cut-out](examples/naf41-service-sequence-cutout.arch).
+
+Views lassen sich wiederverwenden: `extends s3` übernimmt Auswahl und
+Darstellung mit lokalen Ergänzungen/Overrides. `embed s3` bettet die View als
+verschiebbare Gruppe ein; `embed s3 as interfaces {frame true}` ergänzt Alias
+und sichtbaren Rahmen. Positionierung: `place interfaces at (0,0)`.
+[Details und Grenzen](HELP.md#views-wiederverwenden-extends-und-embed),
+[Beispiel](examples/view-reuse.arch).
+
+Routenlabels können berechnet oder entlang der Route positioniert werden:
+`label (source.centerX, source.y - 20)`, `label 0.3` oder
+`label 0.5 offset 20`. Der feste Offset ist ein Abstand entlang des Pfads;
+negative Werte gehen zurück zur Quelle. Details: `@help routing`,
+[Beispiel](examples/label-positions.arch).
+
+S7 unterscheidet bekannte, ausgeblendete Pflichtzuordnungen (`!`) von noch nicht
+modellierten Zuordnungen (`?`). Die zweite Kategorie ist eine offene
+Vollständigkeitsprüfung, kein bewiesener Kardinalitätsfehler. Connected/Tree
+markieren die Karten; der Footer erklärt die Hinweise. Für einen bereinigten
+Export: `config {showValidation false}` oder API `{showValidation:false}`.
+Die Validierung bleibt aktiv. [Beispiel](examples/mapping-review.arch),
+[Details](HELP.md#prüfmarkierungen-für-ressourcenzuordnungen).

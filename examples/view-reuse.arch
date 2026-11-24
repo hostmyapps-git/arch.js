@@ -1,0 +1,36 @@
+architecture "Reusable service views" {
+  config {views all}
+  model {
+    service service "Coordination Service"
+    interface api "Coordination Interface"
+    service operation "Request Sortie"
+    database data "Position Report"
+    service receive "Receive Data"
+    relation specifies service -> api "specifies"
+    relation offers api -> operation "offers"
+    relation parameter operation -> data "uses"
+    relation enables receive -> service "enables"
+  }
+  view s3 "Service interface structure" {
+    include service,api,operation,data
+    place service at (0,0)
+    place api at (360,0)
+    place operation at (360,200)
+    place data at (720,200)
+    style service {width 260}
+    routes {curve rounded}
+  }
+  view extended "Extended view" {
+    extends s3
+    include receive
+    place receive at (service.x,operation.bottom+120)
+    style service {height 140}
+  }
+  view embedded "Embedded view" {
+    embed s3 as structure {frame true}
+    place structure at (0,0)
+    include receive
+    place receive at (structure.x,structure.bottom+100)
+    route enables {curve rounded via (service.centerX-100,receive.centerY)}
+  }
+}

@@ -1,0 +1,30 @@
+architecture "S7 mapping visibility" {
+  config {profile naf41-uaf validation draft}
+  model {
+    ServiceFunction receiving "Data Receiving"
+    ServiceFunctionParameter unmodeled "Mapping not modeled"
+    ServiceFunctionParameter hidden "Known mapping hidden"
+    ServiceFunctionParameter complete "Visible mapping"
+    InformationProduct hiddenProduct "Known report"
+    InformationProduct visibleProduct "Visible report"
+    relation owner1 receiving -> unmodeled "has" {type HasServiceFunctionParameter}
+    relation owner2 receiving -> hidden "has" {type HasServiceFunctionParameter}
+    relation owner3 receiving -> complete "has" {type HasServiceFunctionParameter}
+    relation hiddenMapping hidden -> hiddenProduct "involves" {type InvolvesLogicalResource}
+    relation visibleMapping complete -> visibleProduct "involves" {type InvolvesLogicalResource}
+  }
+  view s7 "S7 · Review required" {
+    viewpoint S7
+    place receiving at (0,180)
+    place unmodeled at (460,0)
+    place hidden at (460,180)
+    place complete at (460,360)
+    place hiddenProduct at (900,180)
+    place visibleProduct at (900,360)
+    style unmodeled {width 300}
+    style hidden {width 300}
+    style complete {width 300}
+    style hiddenMapping {display none}
+    routes {curve rounded}
+  }
+}

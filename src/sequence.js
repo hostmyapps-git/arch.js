@@ -5,45 +5,96 @@ import {matches} from './profiles.js';
 // Generic profile metadata identifies message relationships without framework names.
 export function sequenceProjection(nodes,edges,c,profile,view) {
   const tagged=edges.filter(e=>profile.relationTypes[e.type??profile.defaultRelation]?.sequenceMessage);
-  const messageRules=Object.entries(profile.relationTypes).filter(([,rule])=>rule.sequenceMessage);
   const taggedMode=tagged.length>0||(profile.viewpoints?.[view.viewpoint]?.requiredRelations??[]).some(type=>profile.relationTypes[type]?.sequenceMessage);
-  const selected=new Set(c.participants??[]);
-  let messages=c.messages?c.messages.map(id=>edges.find(e=>e.id===id)).filter(Boolean)
-    :taggedMode?tagged:selected.size?edges.filter(e=>selected.has(e.source)&&selected.has(e.target)):edges;
-  const endpointIds=new Set(messages.flatMap(e=>[e.source,e.target]));
-  const fallback=taggedMode&&!endpointIds.size?nodes.filter(n=>messageRules.some(([,rule])=>matches(n.type,rule.from,profile.nodeTypes)||matches(n.type,rule.to,profile.nodeTypes))).map(n=>n.id):[...endpointIds];
-  const participants=(c.participants??(taggedMode||c.showContext?fallback:nodes.map(n=>n.id))).map(id=>nodes.find(n=>n.id===id)).filter(Boolean);
+  let messages = edges;
+  if (c.messages) {
+    const byId = new Map(edges.map(edge => [edge.id, edge]));
+    messages = c.messages.map(id => byId.get(id)).filter(Boolean);
+  } else if (taggedMode) {
+    messages = tagged;
+  } else if (c.participants?.length) {
+    const selected = new Set(c.participants);
+    messages = edges.filter(edge => selected.has(edge.source) && selected.has(edge.target));
+  }
+
+  let participants = nodes;
+  if (c.participants) {
+    const byId = new Map(nodes.map(node => [node.id, node]));
+    participants = c.participants.map(id => byId.get(id)).filter(Boolean);
+  } else if (taggedMode || c.showContext) {
+    const endpoints = new Set();
+    for (const edge of messages) { endpoints.add(edge.source); endpoints.add(edge.target); }
+    if (taggedMode && !endpoints.size) {
+      const rules = Object.values(profile.relationTypes).filter(rule => rule.sequenceMessage);
+      participants = nodes.filter(node => rules.some(rule =>
+        matches(node.type, rule.from, profile.nodeTypes) || matches(node.type, rule.to, profile.nodeTypes)));
+    } else {
+      // Preserve the message endpoint order in the implicit participant list.
+      const byId = new Map(nodes.map(node => [node.id, node]));
+      participants = [...endpoints].map(id => byId.get(id)).filter(Boolean);
+    }
+  }
   if(c.orderAttribute) {
-    const orders=messages.map(e=>e.attributes?.[c.orderAttribute]??e[c.orderAttribute]);
+    const order = edge => edge.attributes?.[c.orderAttribute] ?? edge[c.orderAttribute];
+    const orders = messages.map(order);
     if(orders.some(n=>!Number.isSafeInteger(n)||n<1)||new Set(orders).size!==orders.length)
       throw new ArchError(`View ${view.id}: ${c.orderAttribute} requires unique positive integer values on selected sequence messages`,view.loc);
-    messages=[...messages].sort((a,b)=>(a.attributes?.[c.orderAttribute]??a[c.orderAttribute])-(b.attributes?.[c.orderAttribute]??b[c.orderAttribute]));
+    messages = [...messages].sort((a,b) => order(a) - order(b));
   }
   return {participants,messages};
 }
 
-export function drawSequence({nodes,edges,c,profile,view,out,card,path,label,rect,esc,bg,muted,text,dark,wrap}) {
+export function drawSequence({nodes,edges,c,profile,view,out,card,path,label,rect,esc,bg,muted,text,dark,measureOnly}) {
   const {participants,messages}=sequenceProjection(nodes,edges,c,profile,view),byId=new Map(nodes.map(n=>[n.id,n]));
   const participantIds=new Set(participants.map(n=>n.id));
-  const refs=e=>e.referenceDisplay==='labels'?[]:(e.referenceItems??relationshipReferences(e,profile.relationTypes[e.type??profile.defaultRelation]??{})).filter(r=>byId.has(r.id)&&!participantIds.has(r.id));
-  const objectIds=new Set(messages.flatMap(e=>refs(e).map(r=>r.id)));
+  const references = new Map(), objectIds = new Set();
+  for (const message of messages) {
+    const items = message.referenceDisplay === 'labels' ? [] : (
+      message.referenceItems ?? relationshipReferences(message, profile.relationTypes[message.type ?? profile.defaultRelation] ?? {})
+    ).filter(ref => byId.has(ref.id) && !participantIds.has(ref.id));
+    references.set(message.id, items);
+    for (const item of items) objectIds.add(item.id);
+  }
   const context=c.showContext?nodes.filter(n=>!participantIds.has(n.id)&&!objectIds.has(n.id)):[];
-  const gap=Math.max(320,...participants.map(n=>n.title.length*8+40),...messages.map(e=>refs(e).length*260+60));
+  const contextIds=new Set(context.map(node=>node.id));
+  const above=new Map(), aboveIds=new Set();
+  if (context.length) {
+    const candidates=edges.filter(edge=>participantIds.has(edge.source)&&contextIds.has(edge.target)&&
+      profile.relationTypes[edge.type??profile.defaultRelation]?.sequenceContext==='above');
+    const targetCounts=new Map();
+    for (const {target} of candidates) targetCounts.set(target,(targetCounts.get(target)??0)+1);
+    // A shared context element stays a single card in the side area.
+    for (const edge of candidates) if (targetCounts.get(edge.target)===1&&!above.has(edge.source)) {
+      above.set(edge.source,edge);
+      aboveIds.add(edge.target);
+    }
+  }
+  const sideContext=context.filter(node=>!aboveIds.has(node.id));
+  const gap=Math.max(320,...participants.map(n=>n.title.length*8+40),...messages.map(e=>references.get(e.id).length*260+60));
   const mainWidth=Math.max(600,participants.length*gap+160),contextX=mainWidth+100;
-  const headerY=context.length?100:25;
-  const rowHeight=e=>refs(e).length?260:Math.max(90,Math.min(2,wrap(e.title,32).length)*18+50);
+  const headerY=above.size?195:sideContext.length?100:25;
+  // At most two label rows fit in the standard 90px gap. Only object
+  // cards reserve a taller row, so text wrapping is purely presentational.
+  const rowHeight = edge => references.get(edge.id).length ? 260 : 90;
   const sequenceHeight=headerY+140+messages.reduce((sum,e)=>sum+rowHeight(e),0);
-  const height=Math.max(sequenceHeight,context.length?headerY+Math.ceil(context.length/2)*190+100:0);
-  let width=context.length?contextX+760:mainWidth;
+  const height=Math.max(sequenceHeight,sideContext.length?headerY+Math.ceil(sideContext.length/2)*190+100:0);
+  let width=sideContext.length?contextX+760:mainWidth;
   const xs=new Map(),drawn=new Map();
-  participants.forEach((n,i)=>{const x=60+i*gap;xs.set(n.id,x+110);drawn.set(n.id,card(n,x,headerY,220,90));path(`M${x+110} ${headerY+90} V${height-25}`,false,true);});
-  context.forEach((n,i)=>drawn.set(n.id,card(n,contextX+(i%2)*460,headerY+Math.floor(i/2)*190,240,90)));
+  const returns = new Set(c.returns), asyncMessages = new Set(c.asyncMessages);
+  participants.forEach((n,i)=>{
+    const x=60+i*gap, contextEdge=above.get(n.id);
+    xs.set(n.id,x+110);
+    if (contextEdge) drawn.set(contextEdge.target,card(byId.get(contextEdge.target),x,25,220,90));
+    drawn.set(n.id,card(n,x,headerY,220,90));
+    path(`M${x+110} ${headerY+90} V${height-25}`,false,true);
+  });
+  sideContext.forEach((n,i)=>drawn.set(n.id,card(n,contextX+(i%2)*460,headerY+Math.floor(i/2)*190,240,90)));
   let y=headerY+130;
   for(const [i,e]of messages.entries()) {
-    const items=refs(e),a=xs.get(e.source),b=xs.get(e.target),self=a===b;
+    const items=references.get(e.id),a=xs.get(e.source),b=xs.get(e.target),self=a===b;
     if(items.length)y+=150;
     const anchor={x:self?a+65:(a+b)/2,y:self?y+17.5:y};
-    const ret=(c.returns??[]).includes(e.id),async=(c.asyncMessages??[]).includes(e.id);
+    const ret=returns.has(e.id),async=asyncMessages.has(e.id);
     out.push(`<g data-edge="${esc(e.id)}" data-message="${i+1}" data-message-kind="${ret?'return':async?'async':'sync'}">`);
     if(self){path(`M${a} ${y} h65 v35 h-65`,!async,ret);if(async)path(`M${a+10} ${y+29} L${a} ${y+35} l10 6`);}
     else {path(`M${a} ${y} H${b}`,!async,ret);if(async)path(`M${b+(b>a?-10:10)} ${y-6} L${b} ${y} l${b>a?-10:10} 6`);}
@@ -68,11 +119,14 @@ export function drawSequence({nodes,edges,c,profile,view,out,card,path,label,rec
     }
     y+=rowHeight(e)-(items.length?150:0);
   }
-  const messageIds=new Set(messages.map(e=>e.id));
-  if(c.showContext)for(const [i,e]of edges.filter(e=>!messageIds.has(e.id)&&drawn.has(e.source)&&drawn.has(e.target)).entries()) {
+  if (measureOnly || !c.showContext) return { width, height };
+  for(const [i,e]of edges.filter(e=>!references.has(e.id)&&drawn.has(e.source)&&drawn.has(e.target)).entries()) {
     const a=drawn.get(e.source),b=drawn.get(e.target);let d,lx,ly;
-    if(participantIds.has(e.source)&&context.some(n=>n.id===e.target)) {
-      const top=20+(i%4)*14,ax=a.x+a.width/2,bx=b.x+b.width/2;
+    if(above.get(e.source)===e) {
+      const x=a.x+a.width/2, end=b.y+b.height;
+      d=`M${x} ${a.y} V${end}`;lx=x+98;ly=(a.y+end)/2;
+    } else if(participantIds.has(e.source)&&contextIds.has(e.target)&&!aboveIds.has(e.target)) {
+      const top=(above.size?133:20)+(i%4)*14,ax=a.x+a.width/2,bx=b.x+b.width/2;
       d=`M${ax} ${a.y} V${top} H${bx} V${b.y}`;lx=(ax+bx)/2;ly=top-4;
     } else if(a.x<contextX&&b.x>=contextX) {
       // Approach context cards from the row gutter so an attachment to the

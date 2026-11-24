@@ -67,7 +67,7 @@ test('help exposes both directions, discoverable links, inline profiles, empty r
   assert.match(arch.help('connections connections_demo D'),/\(none\)/);
   assert.match(arch.help('connections . A',{profile:schema}),/Route: A -> B/);
   const inline = 'architecture "Local" { config { type A {} type B {} relation Connect {from A to B} }\n @help connections . A\n }';
-  assert.match(arch.renderToString(inline),/Connect: A -&gt; B/);
+  assert.match(arch.renderToString(inline).replace(/<[^>]+>/g,''),/Connect: A -&gt; B/);
   assert.match(arch.renderMarkdown('```arch\n'+inline+'\n```'),/data-arch-help="connections"/);
   for (const query of ['connections connections_demo Missing','connections missing A','connections connections_demo A extra']) {
     assert.equal(arch.validate('@help '+query).valid,false); assert.throws(()=>arch.help(query),arch.ArchError);

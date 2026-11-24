@@ -1,0 +1,33 @@
+architecture "Compact tree layout" {
+  model {
+    service rescue "Rescue"
+    service waterborne "Waterborne Rescue"
+    service airborne "Airborne Rescue"
+    service space "Space Rescue"
+    artifact information "Information Product"
+    person crew "Crew"
+    system communication "Communication Device"
+    system vessel "Rescue Vessel"
+    relation water rescue -> waterborne "aggregates" {type flow}
+    relation air rescue -> airborne "aggregates" {type flow}
+    relation orbital rescue -> space "aggregates" {type flow}
+    relation info waterborne -> information "aggregates" {type flow}
+    relation team waterborne -> crew "aggregates" {type flow}
+    relation device waterborne -> communication "aggregates" {type flow}
+    relation ship waterborne -> vessel "aggregates" {type flow}
+  }
+  view down "Compact vertical tree" {
+    diagram tree {direction down sharePath stereotypes}
+  }
+  view right "Compact horizontal tree" {
+    diagram tree {direction right sharePath stereotypes}
+  }
+  view named "Compact named group" {
+    tree hierarchy {
+      nodes rescue,waterborne,airborne,space,information,crew,communication,vessel
+      direction down
+      sharePath stereotypes
+    }
+    place hierarchy at (0,0)
+  }
+}

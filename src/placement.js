@@ -1,5 +1,5 @@
 import {ArchError} from './errors.js';
-import {visibleNodeIds} from './profiles.js';
+import { findCard } from './view-occurrences.js';
 
 export const POSITION_FIELDS=['x','y','width','height','right','bottom','centerX','centerY'];
 const limit=1e7;
@@ -105,13 +105,77 @@ export function placementCoordinate(value,loc) {
 }
 
 export function evaluateCoordinate(value,reference,loc,known,allowedFields) {
-  const result=calculate(coordinateTerms(value,loc,known,allowedFields),reference,loc);
+  return evaluateTerms(coordinateTerms(value,loc,known,allowedFields),reference,loc);
+}
+
+export function evaluateTerms(terms, reference, loc) {
+  const result=calculate(terms,reference,loc);
   coordinateTerms(result,loc);return result;
 }
 
 export function boxCoordinate(box,field) {
   return field==='right'?box.x+box.width:field==='bottom'?box.y+box.height:
     field==='centerX'?box.x+box.width/2:field==='centerY'?box.y+box.height/2:box[field];
+}
+
+const alignments = {
+  right:['top','center','bottom'],
+  left:['top','center','bottom'],
+  top:['left','center','right'],
+  bottom:['left','center','right'],
+};
+export const placementAlignments = side => typeof side === 'string' && Object.hasOwn(alignments, side) ? alignments[side] : undefined;
+const horizontalPlacement = side => side === 'right' || side === 'left';
+const alignmentFields = side => horizontalPlacement(side) ? ['y','centerY','bottom'] : ['x','centerX','right'];
+const lastField = reference => reference.slice(reference.lastIndexOf('.') + 1);
+
+export function placementAlignmentError(side, align) {
+  const allowed = placementAlignments(side);
+  if (allowed.includes(align)) return;
+  if (align && typeof align === 'object') {
+    const fields = alignmentFields(side);
+    if (!Array.isArray(align) && Object.keys(align).length === 1 && Object.hasOwn(align, 'to') && typeof align.to === 'string' &&
+        /^[A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z]+$/.test(align.to) && fields.includes(lastField(align.to))) return;
+    return `Relative placement ${side} align to requires ${fields.map(field => `ID.${field}`).join(', ')}`;
+  }
+  return `Relative placement ${side} align must be ${allowed.join(', ')}, or to ID.FIELD`;
+}
+
+function relativePoint(id, {side, of, gap, align='center'}, spacing, loc) {
+  const allowed = placementAlignments(side);
+  if (!allowed) fail('Relative placement side must be right, top, left or bottom', loc);
+  if (typeof of !== 'string' || !/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(of)) fail('Relative placement requires an anchor ID after of', loc);
+  const invalid = placementAlignmentError(side, align);
+  if (invalid) fail(invalid, loc);
+  const [axis,cross,size,crossSize] = horizontalPlacement(side) ? ['x','y','width','height'] : ['y','x','height','width'];
+  const fields = alignmentFields(side);
+  const index = typeof align === 'string' ? allowed.indexOf(align) : fields.indexOf(lastField(align.to));
+  const alignmentAnchor = typeof align === 'string' ? `${of}.${fields[index]}` : align.to;
+  const distance = placementCoordinate(gap === undefined ? spacing : gap, loc);
+  const primary = side === 'left' || side === 'top'
+    ? `${of}.${axis} - ${id}.${size} - (${distance})`
+    : `${of}.${side} + (${distance})`;
+  const secondary = index === 0 ? alignmentAnchor
+    : index === 1 ? `${alignmentAnchor} - ${id}.${crossSize} / 2` : `${alignmentAnchor} - ${id}.${crossSize}`;
+  return {[axis]:primary, [cross]:secondary};
+}
+
+// Expand after view inheritance so omitted gaps use the effective spacing.
+// Retain the authored rule for JSON, source translation and inspection.
+export function expandRelativePlacements(view) {
+  const expand = places => {
+    let expanded = places;
+    for (const [id, place] of Object.entries(places ?? {})) {
+      if (place.relative === undefined) continue;
+      if (!place.relative || typeof place.relative !== 'object' || Array.isArray(place.relative))
+        fail('Expected a relative placement rule with side and of', place.loc);
+      if (expanded === places) expanded = {...places};
+      expanded[id] = {...place, at:relativePoint(id, place.relative, view.spacing, place.loc)};
+    }
+    return expanded;
+  };
+  const places = expand(view.places), virtualPlaces = expand(view.virtualPlaces);
+  return places === view.places && virtualPlaces === view.virtualPlaces ? view : {...view, places, virtualPlaces};
 }
 
 // Track translation coefficients when arithmetic is affine in the parent origin.
@@ -139,22 +203,34 @@ function originCoefficients(tokens) {
 // Freeze automatic layout once, then resolve symbolic placements in dependency order.
 // Dependencies include parent translations, group membership, context alignment and
 // package dimensions, so indirect cycles cannot escape through an automatic box.
-export function placementPlan(model,profile,view) {
-  const expressions=new Map(),known=new Set([...model.nodes.map(n=>n.id),...Object.keys(view.trees??{})]);
+export function placementPlan(graph, profile, view, classCards = false, presentation) {
+  const expressions = new Map();
+  const trees = presentation?.trees ?? view.trees ?? {};
+  let known;
   for(const [id,place]of Object.entries(view.places))for(const axis of ['x','y']) {
-    const terms=coordinateTerms(place.at?.[axis],place.loc,known);
-    if(typeof place.at[axis]==='string')expressions.set(key(id,axis),terms);
+    const value = place.at?.[axis];
+    if (typeof value === 'string') {
+      known ??= new Set([...graph.nodesById.keys(), ...Object.keys(trees), ...(presentation?.byName.keys() ?? [])]);
+      const terms = coordinateTerms(value, place.loc, known);
+      if (presentation) for (const term of terms) {
+        if (term.ref !== undefined) term.ref = findCard(presentation, term.ref, place.loc, 'ARCH_PLACEMENT')?.id ?? term.ref;
+      }
+      expressions.set(key(id,axis), terms);
+    } else {
+      coordinateTerms(value, place.loc);
+    }
   }
   if(!expressions.size)return null;
-  const visible=visibleNodeIds(model,view),items=new Map(model.nodes.filter(n=>visible.has(n.id)).map(n=>[n.id,{id:n.id,parent:n.parent,container:profile.nodeTypes[n.type]?.container}]));
+  const projection = presentation ?? graph.project(view);
+  const items = new Map(projection.nodes.map(n => [n.id, { id:n.id, parent:n.parent, container:!classCards && profile.nodeTypes[n.type]?.container }]));
   const owners=new Map(),groups=new Map();
-  for(const [id,options]of Object.entries(view.trees??{})) {
+  for(const [id,options]of Object.entries(trees)) {
     const members=options.nodes.filter(id=>items.has(id));if(!members.length)continue;
-    const group={id,parent:items.get(members[0]).parent,group:true,options};items.set(id,group);groups.set(id,group);
+    const group={id,parent:options._embed ? null : items.get(members[0]).parent,group:true,options};items.set(id,group);groups.set(id,group);
     for(const member of members){owners.set(member,id);items.get(member).parent=id;}
   }
-  const anchors=new Map(),edges=model.edges.filter(e=>visible.has(e.source)&&visible.has(e.target)&&view.styles[e.id]?.display!=='none');
-  for(const item of items.values())if(!item.group&&!item.container&&!item.parent&&!view.places[item.id]) {
+  const anchors = new Map(), edges = projection.edges;
+  for(const item of owners.size ? items.values() : [])if(!item.group&&!item.container&&!item.parent&&!view.places[item.id]) {
     const link=edges.find(e=>e.source===item.id&&owners.has(e.target)||e.target===item.id&&owners.has(e.source));
     if(!link)continue;
     const member=link.source===item.id?link.target:link.source,group=groups.get(owners.get(member));if(group.parent)continue;
@@ -204,7 +280,7 @@ export function placementPlan(model,profile,view) {
   return {items,owners,anchors,children,expressions,order:queue};
 }
 
-export function resolvePlacements(model,profile,view,nodes,groupStates,plan=placementPlan(model,profile,view)) {
+export function resolvePlacements(view,nodes,groupStates,plan) {
   if(!plan)return;
   const boxes=new Map([...nodes,...groupStates.map(s=>s.proxy)].map(n=>[n.id,n]));
   const initial=new Map([...boxes].map(([id,n])=>[id,{x:n.x,y:n.y,width:n.width,height:n.height}])),values=new Map();

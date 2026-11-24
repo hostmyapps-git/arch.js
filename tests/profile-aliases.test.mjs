@@ -119,7 +119,7 @@ test('metamodel mappings remain descriptive and help distinguishes aliases from 
   assert.equal(arch.validate(source('Goal g "G"'),{profile:p}).valid,false);
   assert.match(arch.help('aliases',{profile:p}),/Service -> System/);
   assert.match(arch.help('types . Service',{profile:p}),/Canonical type: System/);
-  assert.match(arch.help('types . System',{profile:p}),/Aliases: Service, AnotherService/);
+  assert.match(arch.help('types . System',{profile:p}),/Aliases: AnotherService, Service/);
   assert.match(arch.help('mappings',{profile:p}),/NAF@4.1.Goal -> UAF@1.0.Base/);
   assert.match(arch.help('mappings',{profile:p}),/do not convert/);
   const snapshot=JSON.parse(JSON.stringify(compiled));assert.deepEqual(compileProfile(snapshot).mappings,compiled.mappings);

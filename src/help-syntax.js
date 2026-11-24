@@ -31,6 +31,20 @@ const usage = {
 };
 const fail = message => { throw new ArchError(message, {}, 'ARCH_HELP'); };
 export const syntax = topic => usage[topic] ?? `@help${topic ? ` ${topic}` : ''}`;
+export const queryFor = (...parts) => parts.map(part => /[\s"#]/.test(part) ? JSON.stringify(part) : part).join(' ');
+
+export function helpHref(query, base) {
+  if (base) {
+    try {
+      const url = new URL(base);
+      if (['https:', 'http:', 'file:'].includes(url.protocol)) {
+        url.searchParams.set('help', query);
+        return url.href;
+      }
+    } catch { /* Standalone SVGs can use a host-provided fragment handler. */ }
+  }
+  return '#arch-help=' + encodeURIComponent(query);
+}
 
 function tokens(source) {
   const values = [];

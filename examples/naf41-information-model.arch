@@ -1,0 +1,26 @@
+# NAFv4.1 p.142: a report, its template, and three information entities.
+# The represents arrow follows the scope and cut-out on p.141.
+architecture "NAFv4.1 · L7 Information Model" {
+  config { profile naf41-uaf }
+  model {
+    InformationProduct report "Situational Report"
+    InformationModel reportTemplate "Situational Report Template"
+    InformationEntity terrain "Terrain Information"
+    InformationEntity tracks "Tracks"
+    InformationEntity reportingUnit "Reporting Unit"
+    relation represents reportTemplate -> report "represents" { type RepresentsInformationProduct }
+    relation specifiesTerrain reportTemplate -> terrain "specifies" { type SpecifiesInformation }
+    relation specifiesTracks reportTemplate -> tracks "specifies" { type SpecifiesInformation }
+    relation specifiesUnit reportTemplate -> reportingUnit "specifies" { type SpecifiesInformation }
+  }
+  view l7 "L7 · Information Model" {
+    viewpoint L7
+    place report at (0, 0)
+    place reportTemplate at (360, 0)
+    place terrain at (0, 210)
+    place tracks at (360, 210)
+    place reportingUnit at (720, 210)
+    routes { curve rounded sharePath stereotypes dasharray none }
+    route specifiesTerrain, specifiesTracks, specifiesUnit { from bottom to top }
+  }
+}

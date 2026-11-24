@@ -1,6 +1,8 @@
 // Presentation-only fan-in/fan-out networks. Every relationship keeps its full
 // path for reference attachments; only its private branch is painted separately.
-import {routeStyleKey} from './route-styles.js';
+import {effectiveDasharray, routeStyleKey} from './route-styles.js';
+import {pathPoint, roundedCorner} from './svg-path.js';
+import {DEFAULT_CURVE} from './routing-options.js';
 const opposite = {left:'right',right:'left',top:'bottom',bottom:'top'};
 function side(box,p) {
   const distances=[['left',Math.abs(p.x-box.x)],['right',Math.abs(p.x-box.x-box.width)],['top',Math.abs(p.y-box.y)],['bottom',Math.abs(p.y-box.y-box.height)]];
@@ -19,7 +21,106 @@ function crosses(points,box) {
   });
 }
 
-export function shareEdgePaths(edges,nodes,routes,path) {
+// Bound each outer bend by the nearest other attachment so it cannot consume
+// another junction or paint any part of the shared spine twice.
+function spineBends(values) {
+  const counts = new Map();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  const positions = [...counts.keys()].sort((a,b) => a-b);
+  const first = positions[0], last = positions.at(-1);
+  const bends = new Map();
+  if (counts.get(first) === 1) bends.set(first, positions[1]);
+  if (counts.get(last) === 1) bends.set(last, positions.at(-2));
+  return bends;
+}
+
+function clearBend(before, corner, after, obstacles) {
+  const bend = roundedCorner(before, corner, after);
+  if (!bend) return null;
+  const {enter,leave} = bend;
+  const sweep = {x:Math.min(enter.x,leave.x),y:Math.min(enter.y,leave.y),
+    width:Math.abs(enter.x-leave.x),height:Math.abs(enter.y-leave.y)};
+  return obstacles.some(node => overlap(sweep,node)) ? null : bend;
+}
+
+function terminal(point, corner, neighbor, obstacles) {
+  const bend = neighbor && clearBend(point, corner, neighbor, obstacles);
+  if (bend) return { point, join:bend.leave,
+    inward:` L ${pathPoint(bend.enter)} Q ${pathPoint(corner)} ${pathPoint(bend.leave)}`,
+    outward:` Q ${pathPoint(corner)} ${pathPoint(bend.enter)} L ${pathPoint(point)}` };
+  return { point, join:corner, inward:` L ${pathPoint(corner)}`, outward:` L ${pathPoint(point)}` };
+}
+
+// Use the same radius for both arms so they meet at a single point on the
+// stem. An aligned leaf can reach that point along the stem's axis.
+function roundedJunction(junction, hubPoint, cross, values, obstacles) {
+  const center = junction[cross];
+  let lower = -Infinity, upper = Infinity;
+  for (const value of values) {
+    if (value < center) lower = Math.max(lower,value);
+    else if (value > center) upper = Math.min(upper,value);
+  }
+  if (!Number.isFinite(lower) || !Number.isFinite(upper)) return null;
+  const distance = Math.min(center-lower,upper-center);
+  const low = clearBend({...junction,[cross]:center-distance},junction,hubPoint,obstacles);
+  const high = clearBend({...junction,[cross]:center+distance},junction,hubPoint,obstacles);
+  return low && high ? {corner:junction,low:low.enter,high:high.enter,join:low.leave} : null;
+}
+
+function spineCommands(leaf, hub, cross, incoming, merge) {
+  if (!merge || leaf[cross] === hub[cross]) return ` L ${pathPoint(incoming?hub:leaf)}`;
+  const arcStart=leaf[cross]<hub[cross]?merge.low:merge.high;
+  return incoming ? ` L ${pathPoint(arcStart)} Q ${pathPoint(merge.corner)} ${pathPoint(hub)}` :
+    ` Q ${pathPoint(merge.corner)} ${pathPoint(arcStart)} L ${pathPoint(leaf)}`;
+}
+
+function manualSharedPaths(edges,routes,shared) {
+  // Geometry is authored in full. Extract coincident terminal commands only
+  // when both routes still have a private branch after the shared stroke.
+  const reverse = commands => {
+    const points = commands.map(command=>command.split(' ').slice(-2).join(' '));
+    return [`M ${points.at(-1)}`, ...commands.slice(1).map((cmd,index)=>cmd[0]==='L'
+      ? `L ${points[index]}` : `${cmd.split(' ').slice(0,-2).join(' ')} ${points[index]}`).reverse()];
+  };
+  const used = new Set();
+  for (const incoming of [false,true]) {
+    const groups = new Map();
+    for (const edge of edges) {
+      const route = routes.get(edge.id);
+      if (!route?.via?.length || route.path || !['all','stereotypes'].includes(route.sharePath) || used.has(edge.id) ||
+          edge.source===edge.target || effectiveDasharray(edge).length || !['orthogonal','rounded'].includes(route.curve ?? DEFAULT_CURVE)) continue;
+      const forward = edge.d.split(/ (?=[LQ] )/);
+      const commands = incoming ? reverse(forward) : forward;
+      if (commands.length<3) continue;
+      const key = JSON.stringify([incoming?edge.target:edge.source,commands[0],commands[1],edge.style,
+        edge.direction??'forward',routeStyleKey(edge),route.sharePath,route.sharePath==='stereotypes'?(edge.canonicalType??edge.type):null]);
+      if (!groups.has(key)) groups.set(key,[]);
+      groups.get(key).push({edge,commands});
+    }
+    for (const group of groups.values()) {
+      if (group.length<2 || new Set(group.map(({edge})=>incoming?edge.source:edge.target)).size<2) continue;
+      const first=group[0], shortest=Math.min(...group.map(item=>item.commands.length));
+      let count=2;
+      while(count<shortest-1 && group.every(item=>item.commands[count]===first.commands[count])) count++;
+      const trunk=first.commands.slice(0,count);
+      const junction=`M ${trunk.at(-1).split(' ').slice(-2).join(' ')}`;
+      const id=`shared-waypoints-${shared.length+1}`;
+      for (const {edge,commands} of group) {
+        const branch=[junction,...commands.slice(count)];
+        edge.drawD=(incoming?reverse(branch):branch).join(' ');
+        edge.drawStart=incoming;
+        edge.drawEnd=!incoming;
+        edge.sharedPath=id;
+        used.add(edge.id);
+      }
+      const {style,direction,color,width}=first.edge;
+      shared.push({id,part:'stem',edgeIds:group.map(item=>item.edge.id),types:[...new Set(group.map(item=>item.edge.type))],
+        d:(incoming?reverse(trunk):trunk).join(' '),style,direction,color,width,drawStart:!incoming,drawEnd:incoming});
+    }
+  }
+}
+
+export function shareEdgePaths(edges,nodes,routes) {
   const boxes=new Map(nodes.map(n=>[n.id,n])),used=new Set(),shared=[];
   const eligible=edge=>{
     const r=routes.get(edge.id)??{};
@@ -36,7 +137,7 @@ export function shareEdgePaths(edges,nodes,routes,path) {
       if(!hub||!leaf||hub.container||leaf.container||hub.parent!==leaf.parent)continue;
       const hubPoint=incoming?edge.points.at(-1):edge.points[0],leafPoint=incoming?edge.points[0]:edge.points.at(-1),port=side(hub,hubPoint);
       if(!port||side(leaf,leafPoint)!==opposite[port])continue;
-      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?(edge.canonicalType??edge.type):null,edge.style,edge.direction??'forward',r.curve??'orthogonal',routeStyleKey(edge)]);
+      const key=JSON.stringify([hub.id,port,r.sharePath,r.sharePath==='stereotypes'?(edge.canonicalType??edge.type):null,edge.style,edge.direction??'forward',r.curve??DEFAULT_CURVE,routeStyleKey(edge)]);
       if(!groups.has(key))groups.set(key,[]);
       groups.get(key).push({edge,hub,leaf,port,leafPoint});
     }
@@ -71,21 +172,43 @@ export function shareEdgePaths(edges,nodes,routes,path) {
           if(!label)break;
         }
         if(edge.labelLines.length||edge.labelIcon)labels.push(labelBox(edge,label));
-        plans.push({edge,points,label,branch:incoming?[leafPoint,fork]:[fork,leafPoint]});
+        plans.push({edge,points,label,leafPoint,fork});
       }
       if(plans.length!==group.length)continue;
       const id=`shared-${shared.length/2+1}`,prototype=group[0].edge;
       const metadata={id,edgeIds:group.map(c=>c.edge.id),types:[...new Set(group.map(c=>c.edge.type))],style:prototype.style,direction:prototype.direction};
       for(const key of ['color','width','dasharray'])if(prototype[key]!==undefined)metadata[key]=prototype[key];
-      const spine=[{...junction,[cross]:Math.min(...crossValues)},{...junction,[cross]:Math.max(...crossValues)}];
-      const stem=incoming?[junction,hubPoint]:[hubPoint,junction];
-      shared.push({...metadata,part:'spine',d:path(spine,false),drawStart:false,drawEnd:false},
-        {...metadata,part:'stem',d:path(stem,false),drawStart:!incoming,drawEnd:incoming});
-      for(const {edge,points,label,branch}of plans) {
-        Object.assign(edge,{points,d:path(points,false),drawD:path(branch,false),label,sharedPath:id,drawStart:incoming,drawEnd:!incoming});
+      const rounded=(routes.get(prototype.id).curve??DEFAULT_CURVE)==='rounded';
+      const bends=rounded?spineBends(crossValues):null;
+      const merge=rounded?roundedJunction(junction,hubPoint,cross,crossValues,obstacles):null;
+      const join=(point,corner)=>{
+        const neighbor=bends?.get(corner[cross]);
+        return terminal(point,corner,neighbor===undefined?null:{...junction,[cross]:neighbor},obstacles);
+      };
+      const hubTerminal=merge?terminal(hubPoint,merge.join):join(hubPoint,junction);
+      let first=hubTerminal.join, last=first;
+      for(const {edge,points,label,leafPoint,fork}of plans) {
+        const leafTerminal=merge&&fork[cross]===junction[cross]?terminal(leafPoint,merge.join):join(leafPoint,fork);
+        if(leafTerminal.join[cross]<first[cross])first=leafTerminal.join;
+        if(leafTerminal.join[cross]>last[cross])last=leafTerminal.join;
+        const [from,to]=incoming?[leafTerminal,hubTerminal]:[hubTerminal,leafTerminal];
+        const connector=spineCommands(leafTerminal.join,hubTerminal.join,cross,incoming,merge);
+        const d=`M ${pathPoint(from.point)}${from.inward}${connector}${to.outward}`;
+        const drawD=incoming?`M ${pathPoint(leafTerminal.point)}${leafTerminal.inward}`:
+          `M ${pathPoint(leafTerminal.join)}${leafTerminal.outward}`;
+        Object.assign(edge,{points,d,drawD,label,sharedPath:id,drawStart:incoming,drawEnd:!incoming});
         used.add(edge.id);
       }
+      const stem=incoming?`M ${pathPoint(hubTerminal.join)}${hubTerminal.outward}`:
+        `M ${pathPoint(hubTerminal.point)}${hubTerminal.inward}`;
+      // Paint each arm and the stem only once. Use the same connector commands
+      // in the complete relationship paths for labels and reference cards.
+      const arm=end=>`M ${pathPoint(incoming?end:hubTerminal.join)}${spineCommands(end,hubTerminal.join,cross,incoming,merge)}`;
+      const spine=merge?`${arm(first)} ${arm(last)}`:`M ${pathPoint(first)} L ${pathPoint(last)}`;
+      shared.push({...metadata,part:'spine',d:spine,drawStart:false,drawEnd:false},
+        {...metadata,part:'stem',d:stem,drawStart:!incoming,drawEnd:incoming});
     }
   }
+  manualSharedPaths(edges,routes,shared);
   return shared;
 }

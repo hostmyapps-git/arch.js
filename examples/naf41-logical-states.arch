@@ -1,0 +1,66 @@
+# NAFv4.1 L5 example, p.138.
+architecture "Search and Rescue — Logical States" {
+  config { profile naf41-uaf }
+  model {
+    Node centre "Regional Coordination Center"
+    LogicalActor crew "Crew"
+    LogicalState waiting "Waiting for Distress Signal"
+    LogicalState located "Location determined"
+    LogicalState inNeed "In need of rescue"
+    LogicalState rescued "Rescued"
+    LogicalEvent searchStart "Search Start"
+    LogicalEvent searchExit "Search Exit"
+
+    relation centreWaiting centre -> waiting "has" { type HasLogicalState }
+    relation centreLocated centre -> located "has" { type HasLogicalState }
+    relation crewInNeed crew -> inNeed "has" { type HasLogicalState }
+    relation crewRescued crew -> rescued "has" { type HasLogicalState }
+
+    relation receive waiting -> located "receive signal" { type LogicalStateTransition event searchStart }
+    relation noAssistance located -> waiting "no assistance required" { type LogicalStateTransition event searchExit }
+    relation assistance located -> inNeed "assistance required" { type LogicalStateTransition }
+    relation stable inNeed -> rescued "crew stable" { type LogicalStateTransition }
+    relation secure rescued -> waiting "crew secure" { type LogicalStateTransition event searchExit }
+  }
+  view l5 "L5 — Logical States" {
+    viewpoint L5
+    place centre at (0, 500)
+    place crew at (1280, 500)
+    place waiting at (350, 0)
+    place located at (350, 320)
+    place inNeed at (990, 320)
+    place rescued at (990, 0)
+    place searchStart at (0, 150)
+    place searchExit at (660, 190)
+
+    route receive { from bottom 1/4 to top 1/4 curve straight label 5/6 }
+    route noAssistance { from top 3/4 to bottom 3/4 curve straight label 5/6 }
+    route assistance { from right to left curve straight }
+    route stable { from top to bottom curve straight }
+    route secure { from left to right curve straight }
+    route searchStart -> receive { from right to 1/2 }
+    route searchExit -> noAssistance { from left to 2/5 }
+    route searchExit -> secure { from top to 2/5 }
+    route centreWaiting {
+      from left to left
+      via (centre.x - 45, centre.centerY), (centre.x - 45, waiting.centerY)
+    }
+    route centreLocated {
+      from top to left
+      via (centre.centerX, located.centerY)
+    }
+    route crewInNeed {
+      from top to right
+      via (crew.centerX, inNeed.centerY)
+    }
+    route crewRescued {
+      from right to right
+      via (crew.right + 45, crew.centerY), (crew.right + 45, rescued.centerY)
+    }
+  }
+  view l5State "L5 — State Transitions" {
+    include centre, crew, waiting, located, inNeed, rescued, searchStart, searchExit
+    viewpoint L5
+    diagram state
+  }
+}

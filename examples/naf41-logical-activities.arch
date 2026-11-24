@@ -1,0 +1,61 @@
+# L4 logical activities and role allocation, NAFv4.1 pp.134–135.
+architecture "Search and Rescue — Logical Activities" {
+  config {profile naf41-uaf}
+  model {
+    Node vessel "Vessel in distress"
+    Node centre "Regional Coordination Center"
+    Node rescue "Waterborne Rescue"
+    Role controller "SAR Asset Controller"
+    OperationalActivity report "Reports Problem"
+    OperationalActivity log "Log Distress"
+    OperationalActivity assess "Assess Situation"
+    OperationalActivity deploy "Deploy Assets"
+    OperationalActivity respond "Respond to Situation"
+
+    relation holds centre -> controller "holds" {type HoldsRole}
+    relation performReport vessel -> report "performs" {type PerformsOperationalActivity}
+    relation performLog centre -> log "performs" {type PerformsOperationalActivity}
+    relation performAssess centre -> assess "performs" {type PerformsOperationalActivity}
+    relation performDeploy controller -> deploy "performs" {type PerformsOperationalActivity}
+    relation performRespond rescue -> respond "performs" {type PerformsOperationalActivity}
+    relation reportToLog report -> log "Operational Control Flow" {type OperationalControlFlow}
+    relation logToAssess log -> assess "Operational Control Flow" {type OperationalControlFlow}
+    relation assessToDeploy assess -> deploy "Operational Control Flow" {type OperationalControlFlow}
+    relation deployToRespond deploy -> respond "Operational Control Flow" {type OperationalControlFlow}
+  }
+  view l4 "L4 · Logical Activities" {
+    viewpoint L4
+    diagram connected
+    style vessel {width 220 height 96}
+    style centre {width 220 height 360}
+    style rescue {width 220 height 96}
+    style controller {width 240 height 96}
+    style report {width 256 height 96}
+    style log {width 256 height 96}
+    style assess {width 256 height 96}
+    style deploy {width 256 height 96}
+    style respond {width 256 height 96}
+    place vessel at (0,0)
+    place centre at (0,132)
+    place controller at (330,396)
+    place rescue at (0,528)
+    place report at (520,0)
+    place log at (712,132)
+    place assess at (904,264)
+    place deploy at (1096,396)
+    place respond at (1288,528)
+
+    routes {curve straight}
+    route holds {from right 13/15 to left}
+    route performLog {from right 2/15 to left}
+    route performAssess {from right to left}
+    route reportToLog {from bottom 7/8 to top 1/8}
+    route logToAssess {from bottom 7/8 to top 1/8}
+    route assessToDeploy {from bottom 7/8 to top 1/8}
+    route deployToRespond {from bottom 7/8 to top 1/8}
+  }
+  view l4Swimlane "L4 · Activity lanes" {
+    viewpoint L4
+    diagram activity { lanes [vessel, centre, controller, rescue] }
+  }
+}

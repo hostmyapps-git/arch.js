@@ -138,8 +138,10 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
   dabei unzulässig. Referenzen erzeugen keine automatischen Modellkanten.
   `through: {relations, direction: "incoming"|"outgoing"}` erweitert den Nachweis
   auf transitiv erreichbare Knoten entlang ausgewählter Kanten der explizit
-  genannten Relationstypen (einschließlich Untertypen). Standard incoming;
-  Wildcards sind unzulässig. Startknoten und erreichbare Knoten zählen gemeinsam,
+  genannten Relationstypen (einschließlich Untertypen). Eine Liste solcher
+  Objekte erlaubt mehrere Relationstypen mit eigener Laufrichtung pro Schritt.
+  Die Standardrichtung ist `incoming`. Wildcards sind unzulässig.
+  Startknoten und erreichbare Knoten zählen gemeinsam,
   dieselbe Nachweiskante nur einmal, auch bei mehreren Pfaden. Referenzattribute
   werden gegebenenfalls ebenfalls an diesen Knoten ausgewertet. Es entstehen
   keine Modellkanten. View-Auswahl und Gegenstellentypfilter bleiben wirksam;
@@ -150,15 +152,38 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
   der genannten Relationstypen den Knoten über ein typisiertes Referenzattribut
   referenzieren. Explizite Relations-/Attributnamen, `direction: "either"`, keine
   counterparts/referenceAttributes/through. Jede Beziehung zählt einmal, auch
-  bei mehreren passenden Attributen. S5 erzwingt damit genau eine ausgewählte
-  Übergangskante je Transitionselement. Knotentyp und Relationstyp dürfen denselben
+  bei mehreren passenden Attributen. S6 verwendet dies für Interaktionsobjekte.
+  `distinctCounterparts: true` zählt bei gewöhnlichen Verbindungsregeln
+  unterschiedliche Gegenstellen und fasst parallele Kanten zum selben Ziel
+  zusammen. Knotentyp und Relationstyp dürfen denselben
   Namen besitzen; die Namespaces bleiben getrennt. Keine impliziten Modellkanten.
 - Viewpoint-`references`: `{ nodes | relations, attributes }` verlangt sichtbare
   Zielknoten für ausgewählte skalare/mehrwertige Referenzattribute. Optionale
   fehlende Werte bleiben erlaubt; Pflichtwerte bestimmt das Attributschema.
+- Viewpoint-`objectifications`: `{nodes, relations, attribute, endpoints?, allowLegacy?, required?, payload?, stateEventRelations?}`
+  prüft optional objektifizierte Beziehungen. Selektoren sind explizite bekannte
+  Typen; `attribute` ist eine skalare typisierte Referenz von Kante zu Objekt.
+  Ein ausgewähltes Objekt benötigt eine ausgewählte gebundene Kante oder bei
+  `allowLegacy: true` ein vollständiges, passendes Endpunktreferenzpaar. Die
+  Zuordnung heißt `endpoints: {source: "source", target: "target"}`; beide
+  Attributnamen müssen verschieden und skalare Referenzen am Objekttyp sein.
+  Modellweit doppelte Bindungen und widersprechende Endpunktangaben werden für
+  die an der View beteiligten Objekte abgewiesen. Legacy-Endpunkte beachten
+  Typ-/Paar-/Selbstkantenregeln der Beziehung und müssen ausgewählt sein.
+  `required: true` verlangt mindestens eine Kante oder gültige Legacy-Form;
+  beide Boolean-Optionen sind standardmäßig false. Kompakte Kanten benötigen
+  keine sichtbare Objektkarte. Die Prüfung erzeugt keine Modellkanten.
+  `payload: {attribute, relations}` verlangt in ausgewählten Kanten eine
+  sichtbare typisierte Nutzlast über das Verweisattribut oder über eine
+  der angegebenen ausgehenden Beziehungen des gebundenen Objekts.
+  `stateEventRelations` identifiziert explizite Triggerkanten zum
+  Übergangsobjekt. State-Diagramme zeigen diese Events am Übergang und fassen
+  Wiederholungen aus dem kompakten Event-Attribut zusammen.
 - Dokumentationsfelder `title`, `description`, `sources`, `limitations` sind
   auf Profilen, Knoten-/Relationstypen und Viewpoints zulässig und werden von
-  Registry/Hilfe erhalten. Texte/Längen werden geprüft; keine Codeausführung.
+  Registry/Hilfe erhalten. `representations` ergänzt bei Viewpoints Hinweise
+  zu den fachlich vorgesehenen und den im Renderer verfügbaren Formen.
+  Die Werte sind reine Texte mit Längenprüfung.
 - Relations-`referenceLabels` ordnet Referenzattributen Beschriftungen zu,
   beispielsweise `{ "conveyed": "Conveys" }`. Connected-Ansichten zeigen die
   aufgelösten Titel und IDs zusätzlich zum unveränderten Beziehungstitel.
@@ -175,7 +200,7 @@ künftige Erweiterungen des generischen Schemas bzw. Renderers.
   Basistyp geerbt; die View überschreibt es lokal. Bereits sichtbare oder
   explizit platzierte Karten bleiben gemeinsam. Ausgeblendete Ziele bleiben
   erhalten; Kurven-/Bogenanker werden aus dem gerenderten SVG-Pfad berechnet.
-- `pairs`, `comparisons`, `connections`, `references` sind JSON-Regeln. Der vereinfachte
+- `pairs`, `comparisons`, `connections`, `references`, `objectifications` sind JSON-Regeln. Der vereinfachte
   Inline-Block unterstützt Mehrfachvererbung, die erweiterten Attributfelder
   und `acyclic`; komplexere Profile werden registriert und per ID gewählt.
 
@@ -214,12 +239,12 @@ binär abgebildeten Beziehungen `ProtectsInContext` / `SameAs` mit unaufgelöste
 Quelltypen. Die vollständige Anleitung steht unter
 [profiles/uaf/README.md](profiles/uaf/README.md).
 
-`profiles/naf41-uaf.json`, Version `4.1.0-arch.16`, ist ein separates
+`profiles/naf41-uaf.json`, Version `4.1.0-arch.41`, ist ein separates
 strukturelles NAFv4.1-Anwendungsprofil auf Basis von `uaf`. Es enthält alle
 47 Viewpoint-IDs der NATO-Ausgabe 2026.03, englische Beschreibungen mit
-Quellseiten und explizite Anwendungsadapter: 81 zusätzliche Knotentypen und
-122 zusätzliche Relationen ergeben mit dem Basisprofil 294 Knoten- und
-165 Relationstypen sowie drei Knotennamen als Aliase. Pflichtinhalte werden durch sichtbare Verknüpfungen und
+Quellseiten und explizite Anwendungsadapter. Der generierte
+[Abdeckungsnachweis](profiles/naf41/COVERAGE.md) führt aktuelle Typzahlen und
+Regeln auf. Pflichtinhalte werden durch sichtbare Verknüpfungen und
 ausgewählte sichtbare Referenzen ergänzt. C7 verlangt beispielsweise die
 Kette Measure → AssessmentCriterion → Capability statt isolierter Messgrößen.
 Das bedeutet keine vollständige normative NAFv4.1-/UAF-Konformität.
@@ -268,10 +293,11 @@ Constraint ist eine explizite Wahl und steht nicht im PDF. Das vollständige
 S1-Beispiel nutzt Connected samt gefilterter Tree-Gruppe und externer Policy.
 
 S2 verwendet `Node` als Alias des bisherigen `LogicalNode`-Adapters
-(`extends OperationalArchitecture`). `PhysicalActiveResource` ist ein konkreter
-Untertyp von `ResourcePerformer` mit geerbtem Pflichtfeld
-`isStandardConfiguration`; ein Alias würde die abstrakte Basis nicht
-instanziierbar machen. `ConsumesService` (Node → Service), `EnablesService`
+(`extends OperationalArchitecture`). Ab Revision `4.1.0-arch.34` ist
+`PhysicalActiveResource` ein abstrakter Alias von `ResourcePerformer`.
+Konkrete Untertypen wie `System` erben das Pflichtfeld
+`isStandardConfiguration`. Die mitgelieferte Revision `4.1.0-arch.33`
+unterstützt frühere Instanzen des Adapters. `ConsumesService` (Node → Service), `EnablesService`
 (ServiceFunction → Service) und `RealizesService` (ResourcePerformer → Service)
 bilden die Richtungen von S.107–108 ab. Native Consumes, IsCapableToPerform und
 Implements bleiben unverändert. ServiceAggregation bildet die aggregates-Kanten
@@ -279,8 +305,7 @@ als eigenständige gerichtete Gruppierung ab; ServiceComposition bleibt separat
 mit Kompositionsnotation erhalten. Aggregation erlaubt gemeinsam referenzierte
 Mitglieder. Beide Beziehungen verbieten jeweils Selbstbezüge/Zyklen;
 vollständige UML-Besitz-/Lebenszyklussemantik ist nicht implementiert. Die speziellen
-Consumer-/Provider-Rollen samt relies-on/provides/delivers aus dem Cut-out
-bleiben offen. Beispiel: [Service Structure](examples/naf41-service-structure.arch).
+Consumer-/Provider-Rollen unterstützen relies-on, provides und delivers aus dem Cut-out. Beispiel: [Service Structure](examples/naf41-service-structure.arch).
 
 Der C2-Cut-out auf S.90 zeigt `desires` von EnterprisePhase zu Capability,
 EnterpriseVision und Goal. Dafür stehen `DesiresCapability`, `DesiresVision`
@@ -407,6 +432,10 @@ pro Seite, optionale Teilstringsuche und eine Navigation per Folgebefehl. Typ-,
 Relations- und Viewpoint-Details stammen aus dem kompilierten Profil einschließlich
 Vererbung. Explizite Namen im Befehl werden bei Ausgabe aufgelöst, ansonsten gilt
 das ausgewählte Profil. Die Hilfe wird vollständig in beide Browserbundles gebaut.
+Die Einstiegsseite und ihre Detailseiten verknüpfen Themen, Typen und
+Beziehungen. `render` und `renderAll` aktivieren je Hilfeblock einen Verlauf
+mit Back, Forward, Reference und Up. Das Studio synchronisiert ihn mit dem
+Browserverlauf. `helpBaseURL` kann absolute Referenzlinks für SVG-Exporte setzen.
 
 Für abstrakte Knoten-/Relationstypen ermitteln Hilfe und Diagnosen dieselben
 konkreten direkten und indirekten Untertypen aus `abstract`/`extends`, einschließlich
@@ -550,17 +579,28 @@ architecture "Customer platform" {
 - Optional `viewpoint ID` bindet eine View an Regeln des ausgewählten Profils.
   Geprüft werden alle Views einschließlich impliziter Container-Vorfahren.
   `requireViewpoint: true` im Profil verlangt eine Bindung für jede View.
-- `include ID, ID, …` wählt Elemente aus; Packages schließen ihre Nachkommen ein,
+- `include ID, ID, …` oder `include [ID, ID, …]` wählt Elemente aus; Packages schließen ihre Nachkommen ein,
   Kinder ihre Vorfahren. Ohne `include` sind alle Elemente sichtbar.
-- `exclude ID, ID, …` entfernt Elemente samt Nachkommen aus dieser Auswahl.
+- `exclude ID, ID, …` oder `exclude [ID, ID, …]` entfernt Elemente samt Nachkommen oder einzelne Beziehungen aus der View-Auswahl. Das Ausschließen einer Beziehung lässt ihre Endpunkte ausgewählt.
   Ausschlüsse haben immer Vorrang, auch bei explizitem `include` derselben ID
   oder eines Nachkommen und unabhängig von der Reihenfolge der Direktiven.
   Erst danach werden benötigte Container-Vorfahren ergänzt. Automatisch
   benötigte Vorfahren entfallen, wenn kein ausgewähltes Kind mehr übrig bleibt;
   explizit ausgewählte Container bleiben auch ohne Kinder sichtbar.
+  `include []` wählt keine Elemente aus; `exclude []` entfernt nichts.
+  Die Listenoptionen `include`, `exclude`, Tree-`nodes` und `propertyFields`
+  akzeptieren durch Kommas getrennte Namen mit oder ohne eckige Klammern.
+  Einzelne Namen werden ebenfalls als Liste gespeichert. Leere Listen benötigen
+  `[]`; Tree-`nodes []` bleibt wegen fehlender Mitglieder ungültig.
+  Für `propertyFields` gilt dies auf View-, Diagramm- und Node-Style-Ebene.
   Beziehungen sind nur sichtbar, wenn beide Endpunkte übrig bleiben.
-  Unbekannte Ausschluss-IDs sind Fehler. Fachliche Modellvalidierung bleibt global.
+  Die Viewpoint-Prüfung verwendet die verbleibenden Beziehungen. Unbekannte
+  Ausschluss-IDs sind Fehler. Fachliche Modellvalidierung bleibt global.
 - `place ID at (X, Y)`; optional `size (BREITE, HOEHE)` (Mindestmaß 160 × 96).
+- `row [a, b, c] { gap 32 align center }` und
+  `column a, b, c { gap 24 align left }` verketten relative Platzierungen.
+  Die erste ID bleibt der Anker. Jede weitere ID erhält eine eigene
+  relative Regel. JSON verwendet pro ID das Feld `place.relative`.
   Die Höhe wächst bei langen Texten über das angegebene Mindestmaß hinaus.
   Positionen innerhalb eines Packages beziehen sich auf dessen **Inhaltsursprung**:
   links 28, oben 72 Einheiten nach Package-Ursprung. Mehrzeilige Package-Titel
@@ -568,6 +608,22 @@ architecture "Customer platform" {
   Negative Kinderkoordinaten erweitern den inneren Ursprung um ihren negativen
   Mindestwert; die relativen Abstände der Kinder bleiben erhalten. Top-Level ist
   absolut. Package-Größen wachsen mindestens bis zu ihren sichtbaren Kindern.
+- `place ID SIDE of ANCHOR [gap EXPR] [align ALIGNMENT]` platziert einen
+  sichtbaren Knoten oder eine Layoutgruppe an einer Kante eines sichtbaren
+  Ankers. Die Seiten sind `right`, `top`, `left` und `bottom`. `gap` ist
+  der Kantenabstand in SVG-Einheiten und akzeptiert dieselben Ausdrücke wie
+  Koordinaten. Ohne `gap` gilt das wirksame `spacing` der View. `align` ist
+  standardmäßig `center`. Links und rechts sind auch `top` und `bottom`
+  möglich, oben und unten auch `left` und `right`. `gap` und `align` sind
+  in beliebiger Reihenfolge zulässig. Die Angabe kann mit `size` enden, wo
+  Größenangaben unterstützt werden. `place virtual ID` akzeptiert dieselbe
+  relative Angabe für virtuelle State-Punkte. Die Vererbungsauflösung geht
+  der Umwandlung in Koordinatenausdrücke voraus. So verwenden geerbte Regeln
+  den Abstand der darstellenden View und die bestehenden Zyklusprüfungen.
+  `align to ID.FIELD` verwendet einen separaten sichtbaren Referenzkasten
+  für die Querachse. Bei `left`/`right` sind `y`, `centerY` und `bottom`
+  zulässig. Bei `top`/`bottom` sind es `x`, `centerX` und `right`.
+  Dieselbe Kante oder Mitte beider Kästen wird ausgerichtet.
 - `place`-Koordinaten akzeptieren Rechnungen mit `+`, `-`, `*`, `/` aus Zahlen und
   `ID.x`, `.y`, `.width`, `.height`, `.right`, `.bottom`, `.centerX`, `.centerY`.
   Beispiel: `place maritime at (coverage.x + 20, vision.y - 40)`.
@@ -578,14 +634,13 @@ architecture "Customer platform" {
   `root.x-offset.y` deren y-Koordinate; `root.x - offset.y` erzwingt dagegen
   die Subtraktion. Bindung berücksichtigt auch verborgene deklarierte IDs,
   damit ein ausgeblendeter Anker nicht als andere Rechnung umgedeutet wird.
-  Die Regeln gelten gleichermaßen für `place`, `via`, DSL und JSON.
+  Die Regeln gelten für `place` und Routingkoordinaten in DSL und JSON.
   Referenzen gelten für sichtbare Nodes/Tree-Gruppen derselben View, inklusive
   automatisch angeordneter Mitglieder. Punkt vor Strich; gleichrangige Operatoren
   werden linksassoziativ ausgewertet. Klammern und unäre Vorzeichen sind möglich.
   Maximal 32 Operanden und 16 Klammer-Ebenen pro Koordinate; keine Codeausführung.
-  Nur `at` unterstützt
-  Ausdrücke; zusätzlich unterstützt `via` dieselbe Grammatik. `size`, Endpunkt-
-  und Labelpunkte bleiben numerisch. Reine Zahlenarithmetik wird
+  `at`, `from`-/`to`-Tupel, `via` und Labelpunkte unterstützen diese Grammatik.
+  `size` verwendet zwei Zahlen. Reine Zahlenarithmetik wird
   zu Zahlen normalisiert, symbolische Ausdrücke bleiben im Quellmodell erhalten.
   Division durch null und nichtendliche Zwischenwerte sind Fehler. Konstante
   Nenner werden beim Einlesen geprüft, layoutabhängige Nenner beim Auflösen.
@@ -609,8 +664,10 @@ architecture "Customer platform" {
   Automatische grafische Referenzkarten, die als Anker verwendet werden, erhalten
   eine kanonische Position im normalen Layout. Aufgelöste symbolische Koordinaten
   müssen endlich und im Bereich ±10.000.000 liegen.
-- `via (AUSDRUCK, AUSDRUCK), …` unterstützt dieselben Felder, Operatoren,
-  Klammern und Grenzen für normale Routen, Zuordnungslinien und `routes`-Vorgaben.
+- `via (X1, Y1), (X2, Y2)` und `via [(X1, Y1), (X2, Y2)]` geben dieselbe
+  nichtleere Wegpunktliste an. Koordinatenausdrücke unterstützen dieselben Felder,
+  Operatoren, Klammern und Grenzen wie `place`. Beide Listenformen gelten für
+  Einzelrouten, `routes`-Vorgaben und Zuordnungslinien.
   `src/via.js` prüft Referenzen und löst effektive Routen nach Platzierung/Package-
   Größen/Tree-Gruppen unmittelbar vor dem Routing auf. Alle Werte sind absolute
   View-Koordinaten, auch für Nodes in Packages. Eine lokale `via`-Liste ersetzt
@@ -627,6 +684,11 @@ architecture "Customer platform" {
   ausschließlich die Darstellung. Die 13 Standardtypen sind zugleich die
   verfügbaren Templates. Fachliche Typen wählen im Profil ein Template;
   Container behalten ihren Containercharakter und akzeptieren nur `package`.
+- `style [ID, ID, …] { … }` und `style ID, ID, … { … }` wenden denselben
+  Block auf eine nichtleere Liste an. Pro Ziel und Eigenschaft gilt der letzte
+  explizit gesetzte Wert in Quellreihenfolge. Eigenschaften, die spätere Blöcke
+  auslassen, bleiben erhalten. Die Style-Regeln des jeweiligen Ziels gelten
+  auch bei gemischten Listen aus Element- und Relations-IDs.
 - `style ID { display logo; icon PACK.NAME }` zeigt viewlokal nur Rechteck
   und Logo mit erhaltenem Seitenverhältnis. Titel/Typ bleiben zugänglich und
   im Modell erhalten; sichtbare Beschriftung/Beschreibung entfallen. Gilt für
@@ -638,6 +700,18 @@ architecture "Customer platform" {
   Kopfbereich und passen die Kopfhöhe an. Im Logo-Modus bleibt das Icon ohne
   Vorgabe zentriert, mit Vorgabe wird es innerhalb des gepolsterten Rechtecks
   seitlich ausgerichtet. Seitenverhältnis und Farben bleiben erhalten.
+- `view ID "Titel" { backgroundImage "URL" }` setzt ein sichtbares Bild hinter
+  den SVG-Inhalt. Elemente können `backgroundImage "URL"` im Modell oder im
+  View-Style angeben. Die Bildquelle im Style hat Vorrang.
+  Der boolesche Schalter `showBackgroundImage` im Style überschreibt den
+  Vorgabewert der View für das jeweilige Element. Standard ist `false`.
+  Das Bild bleibt ein eigenes SVG-Element hinter Text und Icon. Es verwendet
+  `xMidYMid slice` und wird auf den Kartenumriss begrenzt. View-Bilder haben
+  0,3 Deckkraft, Elementbilder 0,25. Akzeptiert sind Pfade in Anführungszeichen, HTTP(S)-URLs
+  und Base64-Rasterbilder (PNG, JPEG, GIF, WebP, AVIF).
+  `extends` erbt die View-Einstellungen. `embed` zeichnet das Quellbild im
+  Bereich der eingebetteten View und übernimmt deren effektiv sichtbare
+  Elementbilder.
 - `showIcon`, `showLabel`, `showStereotype`, `showDescription`, `showTechnology`
   im Node-Style sind boolesche Sichtbarkeitsschalter (Standard jeweils `true`).
   `showLabel` betrifft den Titel, `showStereotype` die Typ-/Stereotypzeile.
@@ -673,16 +747,38 @@ architecture "Customer platform" {
 - `routes { from PORT; to TARGET; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD"; icon PACK.NAME; iconPosition POSITION;
   showIcon BOOLEAN; showLabel BOOLEAN; sharePath MODUS;
-  color FARBE; width ZAHL; dasharray MUSTER }` setzt Vorgaben für alle fachlichen Kanten
+  color FARBE; width ZAHL; dasharray MUSTER; crossings MODUS; crossingRadius ZAHL }` setzt Vorgaben für alle fachlichen Kanten
   und grafischen Zuordnungspfeile einer Connected-View. Jede Eigenschaft einer
   konkreten `route` hat Vorrang vor derselben Vorgabe, unabhängig von der
   Reihenfolge im Quelltext. Nicht überschriebene Eigenschaften werden geerbt.
   `to` als Port/absoluter Punkt gilt für fachliche Kanten; ein Wert von 0 bis 1
-  gilt für Zuordnungspfeile. `label`, `icon`, `iconPosition` gelten nur für
-  Labels fachlicher Kanten.
+  gilt für Zuordnungspfeile. Gemeinsame Label-Vorgaben gelten für fachliche
+  Kanten. `route ELEMENT -> RELATION` akzeptiert `label` für vom Profil
+  aktivierte Beschriftungen. Der Bruch und ein optionaler Offset beziehen
+  sich auf den Zuordnungspfad. Absolute Punkte und `label none` gelten ebenfalls.
   Konkrete `from`/`to`/`via`/`curve`-Angaben ersetzen einen geerbten freien
   `path`; ein expliziter konkreter `path` steuert weiterhin den gesamten Pfad.
   Ein leerer `routes {}`-Block ändert das automatische Routing nicht.
+- Deckungsgleiche gerade Abschnitte gestrichelter Beziehungspfade mit gleicher
+  sichtbarer Farbe, Breite und Strichfolge werden im SVG einmal gezeichnet.
+  Der zuerst gezeichnete Pfad bestimmt den Strich an der Überlagerung. Das
+  gilt für orthogonale und diagonale Abschnitte inklusive manueller `via`
+  und bereits gebündelter Pfade. Eine SVG-Maske blendet die doppelten
+  Striche aus. Pfeilspitzen werden unabhängig von der Maske gezeichnet.
+- `crossings bridge|none` konfiguriert Sprungbögen bei Kreuzungen fachlicher
+  Kanten in Connected-Views. Standard ist `bridge` mit `crossingRadius 6`,
+  zulässig sind 2–24 SVG-Einheiten. Die Einzelroute überschreibt die View-Vorgabe
+  und legt fest, ob diese Kante einen Bogen bekommen darf. Der SVG-Renderer
+  erkennt innere Schnitte gerader Abschnitte nach `sharePath` und Labelplatzierung.
+  Er überspringt zu enge Kreuzungen und schützt Andockstellen und Abzweigungen.
+  Deckungsgleiche Strecken überspringen die Kreuzung gemeinsam. Der Radius
+  folgt der zuletzt gezeichneten Route auf dieser Strecke. Steht eine
+  Routenoption oder eine nahe Abzweigung im Weg, wird die Gegenrichtung
+  geprüft. Kompatible gestrichelte Bögen verwenden dieselbe SVG-Maske wie
+  deckungsgleiche gerade Abschnitte.
+  Gemeinsame Pfadabschnitte, eingebettete Routen und freie SVG-Pfade behalten
+  ihre eigene Darstellung und können als Gegenkante erkannt werden. Sprungbögen
+  ändern ausschließlich den gezeichneten SVG-Pfad.
 - `color`, `width`, `dasharray` in `routes`, fachlichen Einzelrouten und
   `route ELEMENT -> RELATION` stylen Linien in Connected-Views samt benannten
   Tree-Gruppen. Konkrete Werte überschreiben Vorgaben feldweise. Farben sind
@@ -691,8 +787,10 @@ architecture "Customer platform" {
   Labeltext, Rahmen und Icons behalten eigene Theme-/Packfarben.
   `width` ist eine endliche SVG-Strichbreite von 0.1 bis 64, Standard 1.5.
   `dasharray` ist `none`, `[]` oder eine Liste mit 1–32 endlichen Zahlen zwischen
-  0 und 10000, mindestens eine positiv. SVG-Zahlenstrings mit Leerzeichen/Kommas
-  sind gleichwertig erlaubt, keine Einheiten/Prozentwerte. Ungerade Listen werden
+  0 und 10000, mindestens eine positiv. Kommagetrennte Listen mit mehreren
+  Zahlen können auch ohne eckige Klammern stehen, etwa `dasharray 8, 4`.
+  SVG-Zahlenstrings mit Leerzeichen/Kommas sind gleichwertig erlaubt, ohne
+  Einheiten oder Prozentwerte. Ungerade Listen werden
   verdoppelt; leere Listen/none bedeuten durchgezogen. Ohne Wert bleiben
   Dependency/Realization-Kanten bei 6 5, alle anderen Kanten und Zuordnungslinien
   durchgezogen. Das Quellmodell behält die geschriebene Form; Layoutdaten tragen
@@ -705,30 +803,49 @@ architecture "Customer platform" {
   weiterhin keine route/routes-Blöcke.
 - `sharePath none|stereotypes|all` in `routes` oder einer fachlichen `route`
   steuert automatische Fan-in-/Fan-out-Bündelung in Connected-Views inklusive
-  benannter Tree-Gruppen. Standard `none`; `stereotypes` vergleicht den exakten
+  benannter Tree-Gruppen. Ebenso in `diagram tree {sharePath MODUS}` und
+  `tree ID {nodes [...] sharePath MODUS}` verfügbar. In benannten Gruppen gilt
+  Einzelroute vor Gruppenoption vor View-`routes`; nur ausgewählte interne
+  Hierarchiekanten erben die Gruppenoption. Ganze Tree-Views behalten ihre
+  automatische Geometrie ohne route/routes-Blöcke. Standard `none`; `stereotypes` vergleicht den exakten
   Relationstyp, `all` erlaubt unterschiedliche Typen. Linienstil, Pfeilrichtung, Farbe, Breite, Strichmuster,
   Kurvenart und gemeinsamer Start-/Zielport müssen kompatibel sein.
   Nur Geschwisterknoten desselben Containers werden gebündelt. Fan-in wird zuerst
-  verarbeitet; jede Kante gehört höchstens einem Bündel an. Manuelle `via`/`path`,
+  verarbeitet; jede Kante gehört höchstens einem Bündel an. Für die automatische
+  Bündelung bleiben manuelle `via`/`path`,
   absolute Endpunkte, explizit positionierte Seitenports, `straight`/`bezier`, parallele Verbindungen, Hindernisse
-  oder unzureichender Labelplatz behalten das bisherige Routing. Gemeinsame
-  Junctions sind rechtwinklig, auch bei `rounded`. IDs und Labels/Icons bleiben
+  oder unzureichender Labelplatz behalten das bisherige Routing. `rounded`
+  rundet die äußeren Enden und bei freiem Platz den Übergang beider Seiten in
+  den gemeinsamen Stamm ab. Ein in Stammrichtung liegender Ast verläuft gerade.
+  IDs und Labels/Icons bleiben
   pro Beziehung; automatische Labels liegen auf privaten Ästen, explizite
   Labelpunkte bleiben erhalten. `graph.edges[].d` und `points` beschreiben den
   vollständigen logischen Pfad für Zuordnungen. `drawD`, `drawStart`, `drawEnd`
   und `sharedPath` steuern die private Zeichnung, `graph.sharedPaths` enthält
   einmal gezeichneten Stamm und Querabschnitt samt beteiligten Kanten-IDs.
   Zuordnungslinien erben `sharePath` nicht und werden selbst nicht gebündelt.
+- Durchgezogene, kompatible `via`-Routen mit `sharePath` können einen exakt
+  übereinstimmenden Anfangs- oder Endabschnitt gemeinsam zeichnen. Ihre
+  vollständigen Pfade bleiben für Labels und Zuordnungen verfügbar.
+- `routes { avoidObstacles true }` sucht freie Korridore für automatische
+  gerundete oder orthogonale Routen und freie Positionen für ihre automatisch
+  gesetzten Labels. Wenn die Suche keinen geeigneten Korridor findet, gilt der
+  ursprüngliche Pfad. Einzelrouten können `avoidObstacles false` setzen.
+- In einzelnen Connected-Routen bezeichnen `routeSource` und `routeTarget`
+  die Endpunkte der jeweils gerouteten Beziehung. Gleichnamige Knoten oder
+  Gruppen haben Vorrang.
 - `route RELATION { from PORT; to PORT; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD" }`.
-- `route ELEMENT_ID -> RELATION_ID { from PORT; to FRACTION;
+- `route ELEMENT_ID -> RELATION_ID { from PORT; to EXPRESSION;
   via (X,Y), …; curve ART; path "SVG-PFAD" }` routet den grafischen
   Zuordnungspfeil separat. Das Element muss über `referenceLabels` des Profils
   an der Relation referenziert sein. Funktioniert mit gemeinsamen und
   `perEdge`-Karten; die fachliche Relation bleibt unverändert.
   `from` ist ein Kartenport oder absoluter Punkt; `to` ist eine Position von
   0 (Relationsanfang) bis 1 (Relationsende), gemessen entlang des gerenderten
-  Relationspfads. Ohne `to` bleibt die automatische Ankerposition erhalten.
+  Relationspfads. `to` akzeptiert Zahlen, Brüche und Ausdrücke mit sichtbaren
+  Geometriereferenzen. Die Auswertung erfolgt nach dem Layout. Ohne `to`
+  bleibt die automatische Ankerposition erhalten.
   Wegpunkte, Kurven und freie Pfade verwenden die normale Routing-Geometrie;
   manuelle Routen ersetzen die automatische Hindernisumgehung. `path` ersetzt
   den gesamten Zuordnungspfad einschließlich Start-/Endpunkt. Keine Labels.
@@ -758,9 +875,10 @@ architecture "Customer platform" {
   Ausgeblendete Labels bilden keine Hindernisse und vergrößern die SVG-Grenzen
   nicht. Unterstützt auch freie und Bezier-Pfade.
 - Ports: `auto|top|right|bottom|left` oder absolutes Tupel `(X,Y)`.
-  Die vier festen Seiten akzeptieren eine optionale Position: `from bottom 1/2
-  to left 0.25`. Werte sind Dezimalzahlen oder Brüche (`1/2`, auch `1 / 2`),
-  ausgewertet im geschlossenen Bereich 0–1; Division durch null ist ungültig.
+  Die vier festen Seiten akzeptieren optionale Zahlen oder Ausdrücke wie
+  `from bottom 10 / source.width to left 1/2`. Symbolische Ausdrücke werden
+  nach dem Layout ausgewertet. Das Ergebnis muss im geschlossenen Bereich 0–1
+  liegen; Division durch null ist ungültig.
   `top`/`bottom` zählen von links nach rechts, `left`/`right` von oben nach unten.
   Ohne Position gilt 0.5, bei 0/1 die jeweilige Ecke. `auto` akzeptiert keinen
   Positionswert. Relative Ports folgen den endgültigen Knotenmaßen und -positionen.
@@ -769,11 +887,16 @@ architecture "Customer platform" {
   auf die linke Seitenmitte zurück. Gilt auch für Paketknoten und Kanten in
   Tree-Gruppen innerhalb von Connected-Views. Bei Zuordnungspfeilen ist `from`
   ein solcher Kartenport; `to 1/2` bleibt ein Anteil am Zielrelationspfad.
-  Intern sind positionierte Ports `{side, position}`, Brüche werden numerisch
-  normalisiert. Absolute Endpunkttupel bleiben rein numerisch; `path` hat Vorrang.
-  Wegpunkte und Labelpositionen sind **absolute** Diagrammkoordinaten.
-- Kurven: `orthogonal` (Standard), `straight`, `rounded`, `bezier`.
-  Wegpunkte werden bei orthogonal/straight/rounded exakt durchlaufen;
+  Intern sind positionierte Ports `{side, position}`. Konstante Ausdrücke werden
+  numerisch normalisiert. Endpunkttupel wie `from (source.right, target.centerY)`
+  verwenden dieselben Ausdrücke wie `via`. Endpunkte, Wegpunkte und Labelpunkte
+  sind **absolute** Diagrammkoordinaten und werden nach dem Layout aufgelöst.
+  `path` hat Vorrang vor Endpunkten und Wegpunkten.
+- `route r1, r2 { … }` und `route [r1, r2] { … }` gelten für jede genannte
+  Beziehung. Pro Beziehung und Eigenschaft gewinnt der letzte `route`-Block,
+  der die Eigenschaft setzt. Diese Angaben haben Vorrang vor `routes`-Vorgaben.
+- Kurven `rounded` (Standard), `orthogonal`, `straight` und `bezier`.
+  Wegpunkte bestimmen bei orthogonal/straight/rounded den Verlauf.
   Rundungen schneiden Ecken mit Radius bis 10 ab. Bezier akzeptiert ohne
   Wegpunkte automatisch bestimmte Kontrollpunkte oder genau zwei explizite
   Kontrollpunkte. `path` hat Vorrang vor Ports, Wegpunkten und Kurven.
@@ -806,7 +929,9 @@ Node/ESM: `import * as arch from './src/arch.js'`.
 | `getProfileVersions(id)` | geladene Revisionsstrings; `getProfile("id@version")` liefert eine bestimmte Revision |
 | `layout(sourceOrModel, { view, views, profile })` | DSL-/JSON-Quelle oder geparstes Modell → Architektur mit Boxen/Pfaden oder Hilfe mit Textzeilen; jeweils Begrenzungen |
 | `renderToString(sourceOrModel, { view, views, theme, idPrefix, profile })` | eigenständiger SVG-String |
+| `renderDiagram(sourceOrModel, options)` | `{ graph, svg }` aus einem Layoutdurchlauf. Dieselben Optionen wie bei `renderToString`. |
 | `render(target, sourceOrModel, options)` | ersetzt Inhalt eines DOM-Elements; gibt SVG zurück |
+| `attachDraftDetails(svg, graph)` | aktiviert die anklickbaren Draft-Details für ein bereits eingefügtes SVG und das zugehörige Layout aus `renderDiagram()`; gibt SVG zurück |
 | `renderAll({ root, selector, …options })` | rendert `pre > code.language-arch` und `[data-arch]`; gibt SVG-Liste zurück |
 | `renderMarkdown(markdown, options)` | sicherer HTML-String für Absätze, Überschriften und Code-Fences, darin Inline-SVG |
 | `registerIconPack(name, pack)` | prüft und registriert ein JSON-Iconpack atomar |
@@ -814,8 +939,16 @@ Node/ESM: `import * as arch from './src/arch.js'`.
 | `renderIconToString(name, { size, title })` | einzelnes Icon als zugängliches, eigenständiges SVG; Standardgröße 24, Bereich größer 0 bis 512 |
 | `ArchError` | Fehler mit `message`, `line`, `column`, `code` und gegebenenfalls JSON-`path` |
 
+`render()` und `renderAll()` aktivieren die Elementdetails in Draft-Ansichten
+automatisch in Browsern mit HTML-Popover-Unterstützung. Die Anzeige ist ein
+HTML-Element neben dem SVG. Sie liest Modelldaten aus dem Layout, trennt die
+Modell-ID von der Darstellungs-ID eingebetteter Knoten und filtert
+Validierungshinweise nach Element und View. `showValidation false` blendet
+diese Hinweise aus. `renderToString()` erzeugt ein statisches SVG.
+
 `config { views all }` rendert alle Views in Definitionsreihenfolge;
-`views [detail, overview]` wählt eine geordnete Teilmenge, `views detail` eine
+`views detail, overview` und `views [detail, overview]` wählen eine geordnete
+Teilmenge, `views detail` eine
 View. Registrierte und Inline-Profile können die Option enthalten; sie ist kein
 Teil des Profilschemas. Listen müssen nichtleer, eindeutig und aus bekannten
 View-IDs bestehen. `views [all]` adressiert eine einzelne View mit dieser ID.
@@ -825,8 +958,14 @@ Priorität: API-`view` → API-`views` → `config.views` → erste View. Mehrer
 werden mit sichtbaren, umgebrochenen Titeln untereinander in einem eigenständigen
 SVG mit getrennten inneren Viewports ausgegeben. Renderer und eigene Themes
 bleiben erhalten, ein API-Theme überschreibt alle Views. IDs/Marker/Icon-Referenzen
-werden je View isoliert. `render`, Markdown, `renderAll` und Download unterstützen
-denselben SVG-Ausgabetyp; `@help` bleibt eine einzelne Seite.
+werden je View isoliert. SVG-Download und Markdown verwenden diese Auswahl.
+`@help` bleibt eine einzelne Seite.
+
+`config { presentation dashboard }` öffnet den interaktiven HTML-Katalog in
+der Studio-Vorschau sowie in `render()` und `renderAll()`. Die erste ausgewählte
+View bestimmt die Startansicht. Der Katalog führt alle deklarierten Views auf.
+`presentation diagram` ist der Standard. `options.presentation` übersteuert
+die Config für DOM-Aufrufe. SVG-APIs verwenden weiterhin die View-Auswahl.
 
 `layout()` liefert bei mehreren Views `kind: 'views'`, `layouts` pro View,
 `sections` mit Überschriften und Positionen sowie gemeinsame `bounds`. Die
@@ -1054,8 +1193,11 @@ unverändert. Das Arbeitsprotokoll steht in `PROGRESS.md`.
 ## Erweiterte Diagrammrenderer
 
 View-Syntax: `diagram TYPE { OPTION WERT … }`; Listen werden als `[ID, ID]`
-angegeben. Ohne Einstellung gilt weiterhin `connected`. Zusätzlich sind
-`tree`, `sequence`, `state`, `activity`, `matrix`, `heatmap`, `timeline`, `class` enthalten.
+angegeben. In `state` und `activity` akzeptiert `final` auch `ID, ID` und
+`ID`. `finals` wird beim Einlesen auf `final` normalisiert. Ohne Diagrammtyp gilt
+weiterhin `connected`. Zusätzlich sind
+`tree`, `sequence`, `state`, `activity`, `matrix`, `heatmap`, `timeline`, `class`,
+`table`, `sankey` und `nafgrid` enthalten.
 Das JSON-Modell speichert die Einstellung in `view.diagram: { type, … }`.
 Die existierenden APIs wählen weiterhin die View über `options.view`.
 
@@ -1077,10 +1219,24 @@ sieben Views. Es gibt keine automatische vollständige UML-/BPMN-/NAF-Konformit�
 `relations` (Typfilter einschließlich Vererbung), `parentDirection auto|source|target`,
 `direction down|up|left|right` (Alias `orientation`, nicht gleichzeitig),
 `levelGap`/`siblingGap` (16–800, Standard 96/48),
-`curve rounded|orthogonal`, `showLabels` (Boolean, Standard true).
+`padding` (eine Zahl oder vier kommagetrennte Werte mit optionalen eckigen
+Klammern, Reihenfolge oben, rechts, unten, links. Jeweils 0–10000000 SVG-Einheiten,
+Standard 48 je Seite),
+`curve rounded|orthogonal`, `showLabels` (Boolean, Standard true),
+`sharePath none|stereotypes|all` (Standard none).
 `auto` verwendet bei Generalisierungen das Ziel als Elternteil, sonst die Quelle.
 Modellrichtung und Marker bleiben erhalten. Eltern sind über ihren geordneten
 Kindern zentriert; variable Karten- und Labelmaße gehen in die Abstände ein.
+Geschwister und Wurzeln werden anhand belegter Querintervalle je Tiefe gepackt,
+statt die gesamte rechteckige Unterbaumbreite freizuhalten. Dadurch dürfen
+flache Geschwister freien Platz über/neben breiten Nachkommen nutzen. Bei
+gemeinsam belegten Tiefen bleiben Karten und automatische Labels mindestens
+um `siblingGap` getrennt; zwischen Wurzeln gilt der doppelte Abstand.
+Die Berechnung bleibt iterativ, erhält die Reihenfolge und gilt auch in
+benannten Gruppen und allen vier Richtungen. Individuelle Routen/Labelpunkte
+werden wie bisher anschließend angewendet.
+Bei einer ganzen Tree-View bestimmt `padding` die SVG-Ränder. Bei einem
+benannten Baum bildet es die Gruppenbox für Aufstellung und Referenzen.
 Node-Styles, Icons/Templates, Sichtbarkeit, Farben und Größen werden über die
 bestehenden Connected-Karten gerendert. Packages sind flache Karten, keine
 verschachtelten Boxen. Zyklen, Selbstkanten, mehrere Eltern, parallele und
@@ -1096,7 +1252,7 @@ Layoutknoten erscheinen nicht in `nodes`/SVG. Modellparent/Identität bleiben er
 Gruppen unterstützen alle Tree-Optionen; Filter betreffen ausschließlich die
 Hierarchiebildung, andere Kanten bleiben Connected-Kanten. `route` und grafische
 Referenzen funktionieren auch an internen Kanten. Konkrete Routen übersteuern
-Gruppen-`curve`/`showLabels`, diese übersteuern entsprechende `routes`-Vorgaben.
+Gruppen-`curve`/`showLabels`/`sharePath`, diese übersteuern entsprechende `routes`-Vorgaben.
 Mitglieder: eindeutige sichtbare Nicht-Container unter demselben Modellparent,
 höchstens eine Gruppe pro Node. Gruppen dürfen in Packages liegen. `place GRUPPE`
 setzt den Bounding-Box-Ursprung; keine individuelle Mitgliederposition/Größenvorgabe
@@ -1134,6 +1290,52 @@ sind möglich. Negative Koordinaten und verschobene Ports/Karten/Labels fließen
 in die Bounding Box ein. Kanten folgen den endgültigen Positionen automatisch.
 `route`/`routes`/`via`, Tree-Gruppen und grafische Referenzkarten bleiben für Class
 unzulässig. Beispiel: `examples/property-fields.arch`.
+
+Bei `diagram state` kann eine Relationsregel `stateTrigger` auf ein typisiertes
+Referenzattribut setzen. Subtypen erben die Angabe, Aliase verwenden die Regel
+ihres Zieltyps. Die State-Projektion verwendet passende Übergänge, ihre
+Endpunkttypen und explizite Initial- und Endknoten. Titelnamen der referenzierten
+Ereignisse stammen aus dem Modell. Die semantische Viewpoint-Auswahl gilt
+weiter für die Profilprüfung. `src/state.js` ordnet die sichtbaren Zustände an
+und vergibt getrennte seitliche Pfade und Ports für die Rücksprünge.
+`initial virtual ID "Titel" -> STATE` und
+`final STATE -> virtual ID "Titel" { event EVENT }` werden erst nach der
+fachlichen Projektion in Renderknoten und Übergänge aufgelöst. Titel und
+`event` sind optional. `place virtual ID at (X,Y)` für virtuelle Punkte und
+`place ID at (X,Y)` für modellierte Zustände verwenden einen gemeinsamen
+Platzierungsplan mit Geometrieankern und Zyklusprüfung. Ein platziertes
+Modellelement löst nach der Koordinatenauflösung neues Routing für alle
+Zustandsübergänge aus. Die Pfade berücksichtigen Zustandssymbole und bereits
+belegte Segmente. Negative Koordinaten fließen in die SVG-Bounds ein.
+
+Zustandsübergänge akzeptieren `from`, `to`, `via` und `curve` im View-Block.
+`route RELATION_ID` adressiert einen modellierten Übergang und
+`route virtual ID` den Pfeil eines virtuellen Punkts. Der Zustandsrenderer
+löst berechnete Routen nach der Platzierung gegen die sichtbaren Symbolboxen
+auf. Gewählte Seitenanschlüsse liegen am Symbolrand. `rounded` (Standard),
+`orthogonal` und `straight` verwenden `via` in Deklarationsreihenfolge.
+`bezier` interpretiert zwei `via`-Punkte als kubische Kontrollpunkte und
+berechnet ohne `via` eigene Kontrollpunkte. Die expliziten Pfade einschließlich
+der Bézier-Extrempunkte fließen auch bei automatischer Knotenplatzierung
+in die SVG-Bounds ein.
+
+`diagram activity` unterstützt `layout auto` (Standard), `flow` und `model`.
+`auto` und `flow` ordnen den sichtbaren Graphen nach Relationsregeln mit
+`activityFlow: true` an. Subtypen erben die Angabe und können sie überschreiben.
+Ohne passende Kanten und bei `model` gilt die Deklarationsreihenfolge.
+`src/activity-layout.js` verdichtet stark zusammenhängende Komponenten zu
+Gruppen und berechnet im resultierenden DAG die längste Vorgängerkette pro
+Gruppe. Gruppen derselben Stufe teilen sich Zeilen, soweit ihre Lanes frei sind.
+SCC-Mitglieder und unverbundene Aktivitäten behalten ihre relative
+Deklarationsreihenfolge. Die Zeilenplanung wird für Messung und SVG wiederverwendet.
+
+Swimlanes akzeptieren `from`, `to` und `via` pro `route ID`. Endpunkte sind
+`auto`, Seiten mit optionaler Position oder absolute Koordinatenpaare. Die
+Ausdrücke verwenden nach dem Lane-Layout die absoluten Boxen sichtbarer
+Aktivitäten und Lanes. `src/activity-routing.js` erzeugt orthogonale Pfade,
+führt Seitenanschlüsse in Richtung der gewählten Seite und unterbricht
+Lane-Rahmen an den Schnittstellen. Pfade außerhalb der Lane-Rahmen erweitern
+die SVG-Bounds.
 
 View-`style` unterstützt `opacity ZAHL` im Bereich 0–1, ausschließlich für die
 Füllung. Standard: 0,2 bei benannten/Hex-Hintergründen, sonst 1. Text, Icons und
@@ -1254,3 +1456,137 @@ eine direkte Parameter→DataModel-Kante. Native DataModel.kind bleibt Pflicht.
 Das [S3-Beispiel](examples/naf41-service-interfaces.arch) ist mit allen neun
 Knoten und neun Kanten ausführbar; Signaturen, Parameterreihenfolge/-richtung
 und Konsistenz gleichzeitig angegebener Referenzen/Kanten bleiben offen.
+
+## View reuse
+
+`extends VIEW_ID` erlaubt eine Basis pro regulärer View. Die effektive Auswahl
+wird übernommen, lokales include addiert, lokales exclude subtrahiert.
+Beziehungsausschlüsse einer Basis gelten auch in abgeleiteten Views. Styles,
+Routen und Routenvorgaben werden feldweise, Plätze vollständig überschrieben.
+Nicht überschriebene View-Einstellungen werden geerbt. Quellen bleiben intakt.
+
+`embed VIEW_ID [as GROUP_ID] [{frame BOOLEAN}]` bindet eine Connected-/Tree-
+Quellview als positionierbare Gruppe in eine Connected-View ein. Gruppen-ID
+standardmäßig gleich Quell-ID; frame standardmäßig false. Mitglieder behalten
+Modellidentität, Maße, interne Positionen und logische Routen. Mehrere
+Einbettungen dürfen dasselbe Modellelement oder dieselbe Beziehung zeigen.
+Für Layout-Referenzen ist `GROUP.NODE` eindeutig adressierbar, auch als
+verschachtelter Pfad. Bloße Node-IDs erfordern eine einzige sichtbare Karte.
+Bei doppelter Darstellung verwenden Layout und SVG qualifizierte IDs und
+führen die Modell-ID zusätzlich als `modelId` bzw. `data-model-id`.
+Doppelte qualifizierte Adressen und Zyklen werden bei der Validierung gemeldet.
+Interne Overrides erfolgen in der jeweiligen Quellview. Die Host-View prüft
+die fachliche Vereinigung der enthaltenen Elemente und Beziehungen.
+
+Einzelne Host-Routen können `source CARD_ID` und `target CARD_ID` angeben.
+Die Karte muss zum jeweiligen Modellendpunkt gehören. Bei mehrdeutigen
+grafischen Referenzen an Host-Kanten wählt `route GROUP.NODE -> EDGE_ID`
+die Karte. JSON übernimmt `source` und `target` als Strings im Route-Objekt
+und `embed` als Objekt GROUP → {view, frame?}.
+
+Routenlabels in Connected-Views akzeptieren `label (EXPR,EXPR)` oder
+`label FRACTION`. Punktkoordinaten haben dieselbe begrenzte arithmetische
+Grammatik und sichtbaren Geometrieanker wie via und werden nach dem Layout
+aufgelöst; auch bei explizitem path. FRACTION ist eine Zahl in [0,1] oder ein
+Bruch; ausgewertet wird die vollständige logische Pfadlänge nach gemeinsamem
+Routing, einschließlich Kurven/Selbstschleifen. Kurvenlängen werden abgetastet.
+Bei Kanten mit grafischen Referenzen prüft Arch.js die automatische
+Labelposition anhand der fertigen Zuordnungspfade. Ein Zuordnungspfad, der
+den Labelkasten kreuzt, löst einen Vergleich mit beiden seitlich versetzten
+Positionen aus. Die niedrigste Anzahl von Überlagerungen gewinnt, gefolgt von
+der niedrigsten Anzahl von Pfeilkreuzungen. Bei Gleichstand hat die
+Ausgangsposition Vorrang.
+Explizite Labels überspringen automatischen Versatz und Seitenwahl. Dieselbe
+Syntax gilt in Einzelrouten von Zuordnungspfeilen. JSON verwendet Ausdruckspaare,
+numerische Anteile oder Bruchstrings; label none bleibt unverändert gültig.
+
+`label FRACTION offset EXPR` ergänzt einen festen Abstand entlang des Pfads,
+positiv Richtung Ziel und negativ Richtung Quelle. Die resultierende Pfadposition
+wird auf [0,Pfadlänge] begrenzt; bei Länge null bleibt der Pfadpunkt unverändert.
+EXPR verwendet dieselbe begrenzte Arithmetik und finalen sichtbaren Geometrieanker wie via; das Ergebnis muss endlich innerhalb ±10000000 sein. JSON verwendet für diese Form
+`label: {position: FRACTION, offset: EXPR}`. Sie ersetzt eine geerbte
+Labelposition vollständig und ist nicht mit einem Label-Koordinatenpaar kombinierbar.
+
+`label FRACTION [offset EXPR] sideOffset EXPR` verschiebt den Mittelpunkt nach
+der Längsposition orthogonal zur lokalen Tangente. Positiv liegt links in
+Pfadrichtung, negativ rechts. Bei Knicken zählt am Übergang das ankommende
+Segment. Pfade der Länge null behalten ihren Punkt. `sideOffset` hat dieselben
+Ausdrucksregeln, Einheiten und Grenzen wie `offset`. Beide sind optional und
+nutzen im JSON-Objekt neben `position` jeweils ihren DSL-Namen.
+
+`sideOffset EXPR` als eigener Routeneintrag verschiebt den vorhandenen
+Labelmittelpunkt. Bei automatischen Labels erfolgt die Verschiebung nach der
+automatischen Seitenwahl. Wenn die Labelposition außerhalb des Pfads liegt,
+bestimmt das zum ursprünglichen Anker nächstgelegene Segment die Richtung.
+In JSON steht `sideOffset` dafür direkt im Routenobjekt.
+
+## Darstellung und Prüfung bekannter Zuordnungen
+
+Viewpoint-connections können visibility may/shall mit min 0 und ohne
+max/through/referencedByAttributes angeben. shall verlangt Sichtbarkeit aller
+bekannten, durch Relations-/Endpunkt-/Referenzselektoren passenden Zuordnungen
+im Umfang des ausgewählten Parameters; display none und exclude werden als
+Darstellungszustände berücksichtigt. Fehlende Darstellung: ARCH_MAPPING_HIDDEN,
+Strict-Fehler bzw. Draft-Warnung. Keine modellierte Zuordnung: nicht blockierendes
+ARCH_MAPPING_REVIEW, reviewRequired true, kein allein daraus abgeleitetes
+conformant false. Normale Kardinalitätsregeln bleiben unverändert.
+
+Connected/Tree markieren betroffene Karten mit ? (Review) oder ! (ausgeblendete
+Pflichtzuordnung); alle Renderer können den erklärenden Footer anzeigen.
+showValidation ist eine optionale boolesche Architekturkonfiguration und
+API-Option (API vor config, Standard true). false entfernt beide Anzeigeformen,
+ändert aber keine Validierungsdiagnosen und umgeht keine Strict-Fehler.
+Markierungen sind Darstellungsannotation, keine Modellelemente.
+
+## Syntax-Wiederaufnahme für die Live-Vorschau
+
+`syntaxRecovery` ist eine optionale boolesche Render-Option. Die API-Option
+hat Vorrang vor `config.syntaxRecovery`, der Standard der Render-API ist
+`false`. `parsePreview(source, options)` und der Browser-Editor verwenden
+`true` als Standard. `parse`, `validate` und `translate` parsen den
+übergebenen DSL- oder JSON-Quelltext strikt.
+
+Die Render-API versucht zuerst, die vollständige Quelle zu parsen. Bei einem
+lokalisierbaren DSL-Fehler kann sie am nächsten erkennbaren Eintrag in
+`model`, `view`, `architecture` oder in einem abgegrenzten Paket
+wiederaufsetzen. Fehlerhafte Deklarationen einschließlich angefangener
+Blöcke werden verworfen.
+Fehlende äußere Blockenden am Dateiende werden gemeldet und können ergänzt
+werden. Die Wiederaufnahme benötigt einen lesbaren Architekturkopf, eine
+lesbare Konfiguration und einen erkennbaren Modellblock.
+
+In der DSL-Teilvorschau werden Deklarationen mit unbekanntem Elementtyp oder
+unbekanntem explizitem Beziehungstyp vorübergehend entfernt. Die Diagnose
+`ARCH_UNKNOWN_TYPE` enthält die betroffene ID, die Fundstelle und nahe
+Schreibweisen konkreter Typen aus dem aktiven Profil.
+Fehlt einem Beziehungseintrag der Typ und gibt das Profil keinen Standard
+vor, wird die Beziehung vorübergehend mit `ARCH_MISSING_TYPE` gemeldet und
+ausgelassen. Explizit leere Typangaben werden genauso behandelt.
+Bei fehlenden oder unbekannten Beziehungstypen nennt `candidates` bis zu
+vier konkrete Typen aus dem aktiven Profil. Die Vorschläge berücksichtigen
+bekannte Endpunkttypen einschließlich Vererbung, die Richtung, definierte
+Typkombinationen und Selbstbeziehungen. Ähnliche vollständige Namen oder
+Namensanfänge haben Vorrang.
+
+Verletzt eine deklarierte Beziehung die `from`-, `to`- oder `pairs`-Regeln
+ihres Profiltyps, blendet die DSL-Teilvorschau die Kante vorübergehend aus.
+`ARCH_RELATION_ENDPOINT_TYPE` zeigt den Endpunktfehler und gegebenenfalls
+passende Beziehungstypen. Parse und Validierung prüfen die ursprüngliche
+Deklaration streng.
+
+Eine nach dem Viewpoint unzulässige Beziehung wird in der DSL-Teilvorschau
+aus der betroffenen View-Projektion gefiltert. Der Modelleintrag und die
+Auswahl der Beziehung in anderen Viewpoints bleiben verfügbar.
+`ARCH_VIEWPOINT_RELATION` nennt die View, die Beziehungs-ID und die
+Fundstelle. Die reguläre Modellvalidierung meldet den Fehler weiterhin.
+
+Das verbleibende Modell durchläuft die Profil- und Layoutprüfung für den
+gewählten Validierungsmodus. Überspringt die Vorschau einen Modelleintrag,
+erscheinen unvollständige Profilanforderungen in dieser Teilvorschau als
+Draft-Hinweise. Alle übrigen blockierenden Prüfungen bleiben wirksam.
+Referenzen auf eindeutig verworfene Elemente
+werden in Endpunkten, profilierten Referenzattributen und unterstützten
+View-Anweisungen bereinigt. Die Syntax- und Typdiagnosen stehen in
+`renderDiagram(...).graph.syntaxDiagnostics` und im roten SVG-Bereich
+`[data-arch-syntax]`. Der SVG-Bereich zeigt die ersten 20 Fehler und zählt
+weitere Treffer. Er ist unabhängig von `showValidation`.

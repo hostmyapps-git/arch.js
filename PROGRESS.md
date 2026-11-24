@@ -1,5 +1,261 @@
 # Umsetzungsfortschritt
 
+## Abstrakte physische Ressourcen (22.11.2026)
+
+- `naf41-uaf@4.1.0-arch.34` verwendet `PhysicalActiveResource` als abstrakten
+  Alias von `ResourcePerformer`. S2 verwendet `System` und L4
+  `EquipmentType` für die konkreten Ressourcen. Die Karten zeigen die
+  NAF-Kategorie über `stereotype`.
+- Die Browser-Profile registrieren auch die eingefrorene Revision
+  `4.1.0-arch.33`. Die Tests prüfen die konkrete Altdeklaration mit
+  Versionsbindung, den abstrakten Typ mit Kandidatenhilfe und die migrierte
+  S2-Deklaration.
+
+## NAFv4.1-Abgleich und Hilfe-Navigation (21.11.2026)
+
+- Scope, Cut-outs und Darstellungsformen aller 47 Viewpoints mit
+  `naf41-uaf@4.1.0-arch.33` abgeglichen. Objektifizierte logische und physische
+  Interaktionen, Ressourcenflüsse, Zustandswechsel und Foundation-Beziehungen
+  ergänzt. Die ausführbaren Beispielmodelle reichen bis Pr und Ar.
+- Die Renderer `table`, `sankey` und `nafgrid` ergänzen die vorhandenen
+  Diagramme. Matrix und dichte P-Beispiele überarbeitet. Die
+  [Coverage-Übersicht](profiles/naf41/COVERAGE.md) führt Renderoptionen und
+  verbleibende Notationsgrenzen auf.
+- Anklickbare `@help`-Einstiegsseite, Querverweise, lexikographische
+  Kataloge und Verlauf ergänzt. `@meta` färbt Quelltext und hebt Diagnoseorte
+  und Korrekturkandidaten im Studio hervor.
+
+## Architektur- und Performanceprüfung (19.11.2026)
+
+- Verarbeitung in Lexer, Modellvalidierung, Profilregeln und Layout getrennt.
+  View-Projektionen und Ausdruckspläne werden pro Aufruf wiederverwendet.
+  `renderDiagram()` liefert dem Editor Geometrie und SVG aus einem Durchlauf.
+- Beziehungskompatibilität, Viewpoint-Regeln, Rangbildung, Textumbruch und
+  Spezialdiagramme beschleunigt. Die Platzierung bei kleinem `spacing`
+  terminiert auch bei dicht gestapelten oder fest platzierten Karten.
+- [ARCHITECTURE.md](ARCHITECTURE.md) dokumentiert Modulgrenzen,
+  Datenverantwortung, Algorithmen und Ergebnisse. `scripts/benchmark.mjs`
+  reproduziert die Laufzeitmessungen. 274 SVG-Vergleiche mit dem vorherigen
+  Quellstand ergaben identische Ausgaben.
+
+## L2-Needlines und Objektifizierung (19.11.2026)
+
+- Profilrevision `4.1.0-arch.21`: gerichtete `Needline`-Kanten zwischen Nodes
+  ergänzt, mit optionalem typisiertem `needline`-Verweis auf ein gleichnamiges
+  Modellelement. Der bestehende Referenzrenderer zeichnet die separat routbare
+  „is equal to“-Zuordnung. `ConveysLogicalResource` modelliert die explizite
+  Beziehung vom Needline-Objekt zur logischen Payload.
+- L2 verlangt eine Needline-Kante oder eine gültige Legacy-Form. Objektkarten
+  sind optional; vollständige `source`-/`target`-Referenzen bleiben unterstützt,
+  ohne implizite Modellkanten zu erzeugen. Bekannte Payloads und conveys-Kanten
+  dürfen entsprechend may show ausgeblendet werden; Typprüfungen bleiben aktiv.
+- Generische JSON-Viewpoint-Regel `objectifications` prüft eindeutige Bindung,
+  Endpunktkonsistenz und Legacy-Alternativen. Verwaiste Objekte, unvollständige
+  Paare, falsche Referenz-/Endpunkttypen und doppelte Bindungen werden geprüft.
+  S5/S6 behalten ihre bisherigen Prüfregeln. Legacy-Endpunkte folgen den
+  Typ-/Paar-/Selbstkantenregeln der Beziehung; ausgewählte Objekte benötigen
+  ausgewählte Bindung oder sichtbare Legacy-Endpunkte.
+- Vollständiges Beispiel S.129 mit vier Nodes/sechs Kanten und Cut-out mit
+  objektifizierter, kompakter und Payload-ausgeblendeter View als Demos ergänzt.
+  Hilfe, Profilanleitung, SPEC, HELP, DIAGRAMS, Coverage und GAPS aktualisiert.
+- Build, alle **395 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  JSON/Bundles, Legacy-Beispiele, Referenzrouting, Draft-Hinweise, optionale
+  Karten/Payloads und beide Themes geprüft; Screenshots
+  `test-results/naf41-l2-{example,objectified}-{light,dark}.png` visuell geprüft.
+
+## Kompakte Tree-Ebenen (19.11.2026)
+
+- Tree-Layout packt belegte Querintervalle je Tiefe statt vollständiger
+  rechteckiger Unterbaumbreiten. Flache Geschwister und einzelne Wurzeln nutzen
+  freien Platz über/neben breiten Nachkommen. Karten und automatische Labels
+  behalten ihren Mindestabstand; gemeinsam belegte Ebenen begrenzen die
+  Verdichtung. Reihenfolge und Zentrierung über erstem/letztem Kind bleiben.
+- Gilt automatisch für ganze Trees und benannte Gruppen, vier Richtungen,
+  variable Kartenmaße und Wälder; keine neue Option nötig. Berechnung bleibt
+  iterativ, verarbeitete Kindkonturen werden freigegeben. Bestehende manuelle
+  Routen/Labelpositionen bleiben nachgelagerte Overrides.
+- Demo `examples/compact-tree.arch`, Hilfe, SPEC und DIAGRAMS ergänzt.
+  Tests prüfen konkret den freien Platz neben Waterborne Rescue, konkurrierende
+  tiefe Unterbäume, variable Karten/Labels/Icons, deterministische asymmetrische
+  Wälder, Gruppierung, geteilte Pfade, JSON und beide Bundles.
+- Build, alle **387 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Echte SVG-Karten-/Labelgrenzen in beiden Themes auf Überschneidungen geprüft;
+  Screenshots `test-results/compact-tree-*.png` visuell kontrolliert.
+
+## Gemeinsame Pfade in Trees (19.11.2026)
+
+- `sharePath none|stereotypes|all` in ganzen `diagram tree`-Views und benannten
+  `tree`-Gruppen ergänzt. Default bleibt none. Ganze Trees verwenden dieselbe
+  Bündelungslogik wie Connected; Typ-/Stilkompatibilität, freie Korridore und
+  ausreichender Labelplatz bleiben Voraussetzung. Geteilte Junctions bleiben
+  rechtwinklig, einzelne semantische Kanten und Labels bleiben erhalten.
+- In benannten Gruppen gilt Einzelroute vor Gruppenoption vor View-`routes`.
+  Die Gruppeneinstellung gilt für ihre internen Hierarchiekanten. Bündelung
+  erfolgt nach Platzierung und individuellen Routen; manuelle Geometrie und
+  externe Kanten behalten das bestehende Verhalten. Keine Änderung der
+  Hierarchiesemantik oder Freigabe manueller Routen in ganzen Tree-Views.
+- Vergleichsdemo `examples/tree-shared-paths.arch`, Hilfe, SPEC, DIAGRAMS,
+  HELP, JSON und Browserbundles aktualisiert. Tests prüfen beide Tree-Formen,
+  alle vier Richtungen, Pfeilmarker, Modi, Typ-/Stilgrenzen, Rangfolge, negative
+  Gruppenpositionen, externe Kanten, JSON, unveränderten Input und Bundles.
+- Build, alle **382 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Light-/Dark-Screenshots `test-results/tree-shared-paths-*.png` visuell geprüft.
+
+## Einheitliche Listenschreibweisen (19.11.2026)
+
+- `include`, `exclude`, Tree-`nodes` und `propertyFields` akzeptieren Namen
+  mit oder ohne eckige Klammern. Kommas bleiben zwischen Einträgen nötig;
+  einzelne Namen werden ebenfalls zu Arrays. `propertyFields` unterstützt
+  beide Formen auf View-, Diagramm- und Node-Style-Ebene.
+- `[]` bezeichnet ausdrücklich eine leere Liste: include wählt nichts,
+  exclude entfernt nichts und propertyFields leert die Auswahl. Leere
+  Tree-Mitgliedschaft bleibt ungültig. Zitierte Tree-/Property-Namen bleiben
+  kompatibel, andere Listenoptionen behalten ihre bisherige Grammatik.
+- Leere include/exclude-Arrays auch in der JSON-Quelle und Übersetzung
+  unterstützt. Laufzeithilfe, SPEC, HELP, JSON-Dokumentation und Bundles aktualisiert.
+- Build, alle **377 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Regressionstests prüfen 64 Formkombinationen, Einzel-/Leerfälle, fehlerhafte
+  Listen, Quellpositionen, JSON/DSL/Meta und beide Browserbundles/Themes.
+
+## L1-Taxonomie und logische Ressourcen (19.11.2026)
+
+- Profilrevision `4.1.0-arch.20`: `LogicalActor` und `LogicalEquipment` als
+  unterscheidbare konkrete Anwendungstypen unter `OperationalPerformer` ergänzt,
+  einschließlich Quellen, Mapping-Metadaten und englischer Laufzeithilfe.
+- L1 verlangt einen logischen Node, aber keine künstliche Activity oder direkte
+  Performer-Zuordnung an jedem Gliederungs-/Spezialisierungsknoten. Angezeigte
+  aktive Ressourcen brauchen eine Node-Gruppierung direkt oder über sichtbare
+  Generalisierungs-Vorfahren; Activities und optionale passive Ressourcen eine
+  direkte Zuordnung. Relevanz und vollständiger fachlicher Umfang bleiben
+  Prüfaufgaben. Native UAF-Regeln und bestehende Typnamen bleiben erhalten.
+- Vollständiges Beispiel von S.127 mit 12 Nodes und 11 Kanten als editierbare
+  Demo ergänzt. Tests decken Pflichtgruppierungen, optionale Inhalte, alte
+  Typnamen, Spezialisierungen, unsichtbare Vorfahren, Zyklen, JSON und Bundles ab.
+  Build, alle **372 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Light-/Dark-Screenshots `test-results/naf41-l1-*.png` visuell geprüft.
+
+## S8-ServicePolicy-Zuordnung (19.11.2026)
+
+- Profilrevision `4.1.0-arch.19` erlaubt `SatisfiesServicePolicy` auch in S8,
+  entsprechend Service → ServicePolicy im Cut-out und Beispiel auf S.121–122.
+  Die vorhandene inverse Relation bleibt kompatibel. Service-Kontext bleibt
+  optional; die Pflichtgruppierung Policy → ServiceConstraint bleibt erhalten.
+- Regressionstests prüfen explizite View-Auswahl, beide Richtungsvarianten,
+  falsche Endpunkte, fehlende Gruppierung sowie JSON- und Browserbundle-Parität.
+  Build, alle **367 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+
+## Sichtbare Mapping-Prüfung und may/shall (19.11.2026)
+
+- Profilrevision `4.1.0-arch.18`: S3 darf Ressourcenabbildungen ausblenden;
+  S7 verlangt Sichtbarkeit bekannter relevanter Kanten/Referenzziele. Die
+  bisherige pauschale Mindestkardinalität je Ressourcenparameter entfällt.
+  Fehlende Modellzuordnungen bleiben nicht blockierende Prüfaufgaben.
+- Generisches `connections[].visibility` may/shall ergänzt. Bekannte, durch
+  exclude oder display none versteckte Pflichtabbildungen liefern
+  ARCH_MAPPING_HIDDEN (Strict-Fehler, Draft-Warnung). Keine Modellzuordnung:
+  ARCH_MAPPING_REVIEW, valid true und reviewRequired true ohne allein daraus
+  abgeleitetes conformant false. Eigentümer-/Typprüfungen bleiben unverändert.
+- Connected/Tree zeigen ? bzw. ! neben betroffenen Karten; Tooltip, zugängliche
+  Beschriftung und Footer erklären die Stelle. Andere Renderer behalten den
+  Footer. Keine zusätzlichen Modellkanten oder Platzhalterressourcen erzeugt.
+- `config {showValidation false}` bzw. API `{showValidation:false}` entfernt
+  Marker und Footer gemeinsam. Diagnosen und Strict-Prüfung bleiben aktiv.
+  Sichtbarkeit eingefrorener Kanten bleibt auch bei embed von S3 nach S7 erhalten.
+- Hilfe, Dokumentation, Coverage und Demo aktualisiert. Build, alle
+  **365 Node-Testgruppen** und vollständige Chromium-Suite bestanden. SVG,
+  JSON, Mehrfachviews, Einbettungen, Exportoption und beide Themes geprüft;
+  Screenshot `test-results/mapping-review-light.png` visuell kontrolliert.
+
+## Berechenbare Labelabstände (19.11.2026)
+
+- `label FRACTION offset EXPR` akzeptiert jetzt arithmetische Ausdrücke wie
+  `source.width / 2` oder `-(target.height + 20)` mit den sichtbaren finalen
+  Geometrieankern von via. Der Ergebniswert ist weiterhin ein Abstand entlang
+  der Route; Vorzeichen, Endpunktbegrenzung und Verhalten bei Länge null bleiben.
+- JSON-offset unterstützt Ausdrucksstrings; DSL/JSON/Meta erhalten diese.
+  Unbekannte/unsichtbare Anker, ungültige Rechnungen und Ergebnisüberschreitungen
+  werden geprüft. Explizite SVG-Pfade unterdrücken die Offsetberechnung nicht.
+- Laufzeithilfe, Dokumentation, Demo und Bundles aktualisiert. Build, alle
+  **358 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Browservergleich mit tatsächlicher Pfadlänge und visueller Kontrolle des
+  Beispiels `test-results/label-positions-light.png` abgeschlossen.
+
+## Berechnete Routenlabels und Pfadabstände (19.11.2026)
+
+- `label (EXPR,EXPR)` unterstützt dieselbe begrenzte Arithmetik wie place/via,
+  inklusive finaler Node-, Paket-, Tree- und Embed-Geometrie. Labelkoordinaten
+  werden auch bei explizitem SVG-path ausgewertet. Sichtbare Referenzkarten,
+  die als Anker dienen, bleiben kanonisch.
+- `label FRACTION` setzt den Mittelpunkt entlang des vollständigen logischen
+  Pfads. Dezimalwerte 0–1 und Brüche sind erlaubt; Wegpunkte, Kurven,
+  Selbstschleifen und gemeinsame Pfade werden berücksichtigt. Kurven verwenden
+  die vorhandene Pfadabtastung.
+- `label FRACTION offset NUMBER` ergänzt einen festen Abstand in SVG-Einheiten,
+  positiv zum Pfadende und negativ zum Anfang. Ergebnisse werden auf die
+  Endpunkte begrenzt. Bei Länge null bleibt der Pfadpunkt unverändert.
+  Diese Formen sind explizite Positionen ohne automatischen Seitenversatz.
+- JSON unterstützt Ausdruckspaare, numerische Anteile/Bruchstrings und
+  `{position,offset}`. DSL/JSON/Meta erhalten Ausdrücke und Abstände;
+  lokale Angaben ersetzen geerbte Labelpositionen vollständig.
+- Hilfe, Dokumentation, Demo und beide Bundles aktualisiert. Build, alle
+  **356 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Browser-Pfadlängen, Rundläufe, Sichtbarkeit, Fehlerfälle und feste Abstände
+  geprüft; Screenshot `test-results/label-positions-light.png` visuell geprüft.
+
+## Zeichenfläche ohne unbenutzten Ursprung (19.11.2026)
+
+- Connected-SVG-Grenzen umfassen den gezeichneten Inhalt mit Rand statt immer
+  zusätzlich `(0,0)`. Dadurch bleibt nach einer geerbten Platzierungsänderung
+  kein leerer Bereich bis zur früheren Position bestehen. Modellkoordinaten,
+  relative Referenzen und Routing bleiben unverändert.
+- Sichtbare Einbettungsrahmen zählen ausdrücklich zu den Grenzen; leere Views
+  behalten endliche Standardmaße. Positive/negative Verschiebungen und die
+  gemeldete S3-Erweiterung sind als Regression abgedeckt.
+- Build, alle **347 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Screenshot `test-results/s3-extended-fit.png` visuell geprüft.
+
+## S7: logische Funktionsparameter und Informationsprodukte (19.11.2026)
+
+- Profilrevision `4.1.0-arch.17` ergänzt `InvolvesLogicalResource` von
+  ServiceFunctionParameter zu OperationalExchangeItem, einschließlich
+  InformationProduct/InformationElement. Physische Produkte und aktive Typen
+  bleiben als Ziele dieser Beziehung ausgeschlossen.
+- `HasServiceFunctionParameter` und S7-Servicekontext über EnablesService
+  ergänzt. S7 verlangt für jeden Funktionsparameter sichtbare Funktions- und
+  Nutzdatenzuordnungen über Links oder owner/resource-Referenzen. Die Attribute
+  sind global optional; alte physische resource-Referenzen bleiben kompatibel.
+- Beide S7-Zweige als Beispiel mit erweitertem/eingebettetem S3 verfügbar;
+  für den in der Druckvorlage nicht zugeordneten Resource-Operationsparameter
+  wird eine explizite Ressourcenreferenz ergänzt. Kein zusätzlicher nativer
+  UAF-Typ oder ungesichertes Alias eingeführt; logische Ziele verwenden die
+  bestehende OperationalExchangeItem-Kategorie.
+- 294 semantische Knotentypen, drei Aliase, 167 Relationen, 47 Viewpoints.
+  Hilfe, Dokumentation, Coverage, Demo und Profilskripte aktualisiert.
+- Build, alle **345 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Richtung, Zieltypen, fehlende/unsichtbare Zuordnungen, Draft, Kompatibilität,
+  S3-Wiederverwendung, JSON und beide Bundles/Themes geprüft. S7-Screenshot
+  `test-results/naf41-s7-light.png` visuell geprüft.
+
+## View-Wiederverwendung: extends und embed (19.11.2026)
+
+- `extends VIEW` übernimmt Auswahl und Darstellung; lokale Includes/Excludes,
+  feldweise Styles/Routen und vollständige Platzierungs-Overrides werden vor
+  Validierung aufgelöst. Die Quellviews und das Modell bleiben unverändert.
+- `embed VIEW [as GROUP] [{frame true}]` erhält das interne Layout einer
+  Connected-/Tree-View in einer Connected-View. Gruppen können verschoben und
+  als Koordinatenanker verwendet werden; äußere Kanten docken an internen Nodes
+  an. Verschachtelung und geerbte Einbettungen sind unterstützt.
+- Einmalige Darstellung, Konflikt-/Zyklendiagnosen, eingefrorene interne
+  Darstellung, separate Quell-/Ziel-Viewpoint-Prüfung und erhaltene Referenzkarten
+  ergänzt. Geteilte Quellpfade werden als vollständige logische Kanten gezeichnet.
+- JSON/DSL/Meta, Laufzeithilfe, Dokumentation und zwei Demo-Beispiele ergänzt.
+  NAF-Beispiel zeigt den Operationsparameter-Zweig von S7, keine vollständige
+  Umsetzung der noch fehlenden logischen Funktionsparameter-Beziehungen.
+- Build, alle **341 Node-Testgruppen** und vollständige Chromium-Suite bestanden.
+  Vererbung, Einbettung, verschachtelte Gruppen, Pakete, gemeinsame Referenzkarten,
+  äußere Routen, JSON, beide Bundles und Themes geprüft. Screenshot
+  `test-results/view-reuse-light.png` visuell geprüft.
+
 ## Abstand zwischen Relations- und Zuordnungslabels (18.11.2026)
 
 - Automatische Relationslabels mit grafischen Referenzen prüfen nach dem

@@ -20,6 +20,87 @@ test('placement sums align independent coordinates, offsets and dimensions regar
   assert.deepEqual([node(numbers,'a').x,node(numbers,'a').y],[25,15]);
 });
 
+test('relative placement uses final card sizes and aligns the requested edges', () => {
+  const anchor = 'place b at (300,200) size (280,160)';
+  for (const [placement, expected] of [
+    ['right of b gap b.height / 4', [620,230]],
+    ['left of b align bottom gap 20', [80,260]],
+    ['top of b gap 1/2 * b.height align right', [380,20]],
+    ['bottom of b gap (b.width - a.width) / 2 align left', [300,400]],
+    ['bottom of b gap -20', [340,340]],
+  ]) {
+    const graph = arch.layout(doc(`place a ${placement} size (200,100) ${anchor}`));
+    const {x,y} = node(graph,'a');
+    assert.deepEqual([x,y],expected,placement);
+  }
+});
+
+test('relative placement uses inherited spacing and survives DSL, JSON and meta round trips', () => {
+  const source = doc('spacing 40 place a right of b place b at (300,100)')
+    .replace(/}$/, 'view detail "Detail" {extends v spacing 120}}');
+  const model = arch.parse(source), before = JSON.stringify(model);
+  assert.equal(node(arch.layout(model,{view:'v'}),'a').x,560);
+  assert.equal(node(arch.layout(model,{view:'detail'}),'a').x,640);
+  assert.equal(JSON.stringify(model),before);
+  const explicit = source.replace('right of b','right of b gap b.height / 4 align top');
+  const json = arch.translate(explicit), parsed = JSON.parse(json);
+  assert.deepEqual(parsed.architecture.views.v.place.a,{relative:{side:'right',of:'b',gap:'b.height / 4',align:'top'}});
+  const options = {views:'all',idPrefix:'relative-placement'};
+  const svg = arch.renderToString(explicit,options);
+  assert.equal(arch.renderToString(json,options),svg);
+  assert.equal(arch.renderToString(arch.translate(json),options),svg);
+  assert.match(arch.renderToString(explicit.replace('model {','@meta dsl\nmodel {'),{view:'meta-dsl'})
+    .replace(/<[^>]+>/g,''),/place a right of b gap b\.height \/ 4 align top/);
+
+  parsed.architecture.views.v.place.a.relative.align = 'left';
+  assert.match(arch.validate(parsed).diagnostics[0].path,/place\/a\/relative\/align$/);
+  parsed.architecture.views.v.place.a.at = [0,0];
+  assert.match(arch.validate(parsed).diagnostics[0].message,/Choose at or relative/);
+});
+
+test('relative placements use the same cycle, visibility and partial-preview checks as coordinates', () => {
+  for (const [statement, expected] of [
+    ['place a right of b place b bottom of a', /Circular placement dependency/],
+    ['place a top of b align to c.centerX place c bottom of b align to a.centerX', /Circular placement dependency/],
+    ['place a top of b style b {display none}', /Unknown or hidden placement reference: b/],
+    ['place a top of b gap b.height / 0', /Division by zero/],
+    ['place a right of b align left', /align must be top, center, bottom/],
+    ['place a left of b gap 24 gap 36', /Duplicate relative placement option: gap/],
+  ]) assert.match(arch.validate(doc(statement)).diagnostics[0].message,expected);
+
+  const partial = arch.layout(arch.parsePreview(doc(
+    'place a right of b place c bottom of a gap b.height / 4',body.replace('service b "B"','servcie b "B"'))));
+  assert.ok(partial.syntaxDiagnostics.some(d => d.elementId === 'b'));
+  assert.deepEqual(partial.nodes.map(({id})=>id),['a','c']);
+  assert.deepEqual(Object.keys(partial.view.places),[]);
+  const droppedAlignment = arch.layout(arch.parsePreview(doc(
+    'place c bottom of a align to b.centerX',body.replace('service b "B"','servcie b "B"'))));
+  assert.deepEqual(Object.keys(droppedAlignment.view.places),[]);
+});
+
+test('relative placement works with named groups, embedded anchors, class cards and virtual states', () => {
+  const group = arch.layout(doc('tree group {nodes [a,b]} place group right of c gap 40 align top place c at (100,200)'));
+  assert.equal(group.treeGroups[0].bounds.x,360);
+  assert.equal(group.treeGroups[0].bounds.y,200);
+  const embedded = arch.layout(doc('include [c] embed sub as copy place c right of copy gap 30 align to copy.a.y')
+    .replace(/}$/, 'view sub "Sub" {include [a,b]}}'));
+  assert.equal(node(embedded,'c').x,embedded.treeGroups[0].bounds.x + embedded.treeGroups[0].bounds.width + 30);
+  assert.equal(node(embedded,'c').y,node(embedded,'a').y);
+
+  const relative = doc('diagram class place b at (0,0) place a right of b gap 40 align top');
+  const absolute = relative.replace('right of b gap 40 align top','at (b.right + 40, b.y)');
+  const options = {idPrefix:'relative-variant'};
+  assert.equal(arch.renderToString(relative,options),arch.renderToString(absolute,options));
+
+  const state = doc(`include [a,b] diagram state {initial virtual start -> a}
+    place a at (0,0) place b right of a gap 50
+    place virtual start top of a gap 80`);
+  const json = arch.translate(state);
+  assert.deepEqual(JSON.parse(json).architecture.views.v.virtualPlace.start,{relative:{side:'top',of:'a',gap:80}});
+  assert.match(arch.renderToString(state,options),/data-state="start"/);
+  assert.equal(arch.renderToString(state,options),arch.renderToString(json,options));
+});
+
 test('reference parsing preserves dotted/hyphenated IDs, negatives, compact arithmetic and finite limits',()=>{
   const source=doc('place a at (group.part-1.x+20-5, group.part-1.y -20 + 1e1) place group.part-1 at (-40,100)',body+'service group.part-1 "ID"');
   const g=arch.layout(source);assert.deepEqual([node(g,'a').x,node(g,'a').y],[-25,90]);
@@ -105,14 +186,14 @@ test('unknown/excluded/hidden targets are rejected, and graphical references use
   const info=node(g,'info');assert.ok(!info.referenceOnly);assert.equal(node(g,'c').x,info.x+info.width+40);assert.equal(g.referenceNodes.length,1);assert.equal(g.referenceNodes[0].node,info);
 });
 
-test('DSL/JSON/meta preserve symbolic expressions and report JSON paths; endpoint/size points stay numeric',async()=>{
+test('DSL/JSON/meta preserve symbolic expressions and report JSON paths; sizes use numeric pairs',async()=>{
   const source=doc('place a at (b.x + 20,c.y - 40) place b at (300,100) place c at (0,400)'),json=arch.translate(source),expected=arch.renderToString(source,{idPrefix:'same'});
   assert.deepEqual(JSON.parse(json).architecture.views.v.place.a.at,['b.x + 20','c.y - 40']);
   assert.equal(arch.renderToString(json,{idPrefix:'same'}),expected);assert.equal(arch.renderToString(arch.translate(json),{idPrefix:'same'}),expected);
   assert.match(arch.renderToString(source.replace('model {','@meta json\nmodel {')),/b.x \+ 20/);
   const invalid=JSON.parse(json);invalid.architecture.views.v.place.a.at[0]='missing.x';assert.match(arch.validate(invalid).diagnostics[0].path,/place\/a/);
   invalid.architecture.views.v.place.a.at[0]='b.wdth';assert.match(arch.validate(invalid).diagnostics[0].path,/place\/a\/at\/0/);
-  for(const view of ['place a at (0,0) size (b.width,96)','route ab {from (b.x,0)}'])assert.equal(arch.validate(doc(view)).valid,false);
+  assert.equal(arch.validate(doc('place a at (0,0) size (b.width,96)')).valid,false);
   assert.match(arch.help('routing'),/Coordinate references/);
   const arithmetic=source.replace('b.x + 20','b.x + 20 * 2').replace('c.y - 40','(c.y - 40) / 2');
   for(const file of ['arch.js','arch.min.js']) {

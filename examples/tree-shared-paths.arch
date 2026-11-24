@@ -1,0 +1,35 @@
+architecture "Tree path sharing" {
+  config {
+    type item {template node}
+    relation groups {style flow}
+    relation supports {style flow}
+    defaultRelation groups
+  }
+  model {
+    item root "Root"
+    item a "First member"
+    item b "Second member"
+    item c "Supported element"
+    relation first root -> a "groups" {type groups}
+    relation second root -> b "groups" {type groups}
+    relation third root -> c "supports" {type supports}
+  }
+  view stereotypes "Same stereotypes" {
+    diagram tree {sharePath stereotypes}
+  }
+  view all "All compatible types" {
+    diagram tree {sharePath all}
+  }
+  view separate "Separate paths" {
+    diagram tree {sharePath none}
+  }
+  view named "Named tree group" {
+    routes {sharePath all}
+    tree hierarchy {
+      nodes root,a,b,c
+      direction down
+      sharePath stereotypes
+    }
+    place hierarchy at (0,0)
+  }
+}

@@ -62,6 +62,14 @@ test('labels and icons remain distinct; explicit positions and hidden labels are
  assert.ok(svg.includes('data-shared-for="e1 e2"'));
 });
 
+test('the shared stem rounds its bend when the hub is at the end of the shared spine',()=>{
+ const s=source('routes {curve rounded sharePath all}').replace('(700,150)','(700,-220)');
+ const g=arch.layout(s,{profile}),[spine,stem]=g.sharedPaths;
+ assert.match(stem.d,/ Q /);
+ assert.deepEqual(pathSamples(stem.d)[0],pathSamples(spine.d)[0]);
+ for(const edge of g.edges)assert.equal(edge.d.endsWith(stem.d.slice(stem.d.indexOf(' Q '))),true);
+});
+
 test('obstructed corridors and insufficient space fall back to independent routes',()=>{
  const obstructed=source('routes {sharePath stereotypes} place block at (500,100)').replace('actor hub "Hub"','actor hub "Hub" actor block "Obstacle"');
  assert.equal(arch.layout(obstructed,{profile}).sharedPaths,undefined);

@@ -60,7 +60,7 @@ test('architecture-level help renders the user example and honors config without
 test('help reads live registries, shows inherited profile rules and uses selected profile', () => {
   const parsed = arch.parse('@help iconpacks');
   arch.registerIconPack('help_dynamic', { icons: { '0': { paths: ['M0 0H4V4Z'] }, cloud: { paths: ['M0 0H1V1Z'] } } });
-  assert.match(arch.renderToString(parsed), /help_dynamic · 2 icons/);
+  assert.match(arch.renderToString(parsed).replace(/<[^>]+>/g,''), /help_dynamic · 2 icons/);
   assert.match(arch.help('profiles'), /help_company/);
   assert.match(arch.help('profiles help_company'), /Catalog|@help viewpoints help_company/);
   assert.match(arch.help('types', { profile: 'help_company' }), /Product/);
@@ -97,12 +97,32 @@ test('diagram help is driven by valid option fields; syntax examples can actuall
     const end = lines.findIndex((line, i) => i > start && line === '}');
     assert.doesNotThrow(() => arch.renderToString(lines.slice(start, end + 1).join('\n'), { profile: 'default' }));
   }
-  const inline = arch.help('config').split('\n'), start = inline.indexOf('config {');
+  const inline = arch.help('config').split('\n'), start = inline.indexOf('config {',inline.indexOf('Custom inline profile'));
   const end = inline.findIndex((line, i) => i > start && line === '}');
   const config = inline.slice(start, end + 1).join('\n');
   assert.doesNotThrow(() => arch.renderToString(`architecture "Inline" { ${config} model { actor a "A" product p "P" { owner "Team" } relation e a -> p "Uses" } }`));
   assert.equal([...arch.help('colors').matchAll(/^\w+  #[a-f0-9]{6}$/gm)].length, 147);
   assert.match(arch.help('colors BLUE'), /aliceblue/);
+});
+
+test('help separates configuration values from multiline DSL examples', () => {
+  const graph = arch.layout('@help config');
+  const example = graph.sections.find(section=>section.title==='Dashboard example');
+  assert.equal(example.format,'dsl');
+  assert.deepEqual(example.lines,['config {','  presentation dashboard','  views [overview, detail]','}']);
+  const source = `architecture "Browser presentation" {
+    ${example.lines.join('\n')}
+    model { service portal "Portal" }
+    view overview "Overview" {}
+    view detail "Detail" {}
+  }`;
+  assert.equal(arch.parse(source).config.presentation,'dashboard');
+  assert.deepEqual(arch.parse(source).config.views,['overview','detail']);
+  for (const option of ['diagram','dashboard','views']) {
+    const row = graph.rows.find(row=>row.text.startsWith(option+'  —'));
+    assert.equal(row.termsRemaining,option.length);
+  }
+  assert.ok(graph.rows.some(row=>row.text==='  views [overview, detail]' && row.format==='dsl' && row.inset));
 });
 
 test('invalid help commands are clear diagnostics and never execute text', () => {
@@ -145,4 +165,18 @@ test('both browser bundles include help and match source output without DOM glob
       assert.equal(context.arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }), arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }));
     }
   }
+});
+
+test('help provides sorted catalog links and standalone links to a configured reference host',()=>{
+  const profile={nodeTypes:{Zebra:{}, apple:{}, Beta:{}}};
+  const definition=arch.layout('@help types',{profile});
+  const names=definition.sections.find(section=>section.title==='node types').lines.map(line=>line.split(' ')[0]);
+  assert.deepEqual(names,['apple','Beta','Zebra']);
+  const landing=arch.renderToString('@help',{helpBaseURL:'https://example.test/studio/?mode=local'});
+  assert.match(landing,/href="https:\/\/example\.test\/studio\/\?mode=local&amp;help=viewpoints"/);
+  assert.match(landing,/data-arch-help-query="profiles"/);
+  const types=arch.renderToString('@help types',{profile});
+  assert.ok(types.indexOf('data-arch-help-query="types . apple"')<types.indexOf('data-arch-help-query="types . Beta"'));
+  const unsafe=arch.renderToString('@help',{helpBaseURL:'javascript:void(0)'});
+  assert.doesNotMatch(unsafe,/href="javascript:/);
 });

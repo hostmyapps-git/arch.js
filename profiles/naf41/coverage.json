@@ -1,6 +1,6 @@
 {
   "profile": "naf41-uaf",
-  "version": "4.1.0-arch.16",
+  "version": "4.1.0-arch.43",
   "sources": [
     {
       "role": "viewpoint authority",
@@ -25,12 +25,13 @@
   "counts": {
     "nativeUafTypes": 211,
     "inheritedToolAdapters": 2,
-    "applicationNodeAdapters": 81,
-    "applicationRelations": 122,
+    "applicationNodeAdapters": 99,
+    "nodeOverrides": 2,
+    "applicationRelations": 212,
     "relationAliases": 0,
-    "nodeAliases": 3,
-    "totalNodes": 294,
-    "totalRelations": 165,
+    "nodeAliases": 10,
+    "totalNodes": 312,
+    "totalRelations": 254,
     "viewpoints": 47
   },
   "aliases": {
@@ -48,12 +49,34 @@
       },
       "Node": {
         "target": "LogicalNode",
-        "description": "NAF S2/L1 Node vocabulary for the existing logical-node application type. Its UAF projection is OperationalArchitecture through LogicalNode, not OperationalPerformer or a physical System.",
+        "description": "NAF S2/L1/L4 Node vocabulary for the existing logical-node application type. Its UAF projection is OperationalArchitecture through LogicalNode.",
         "sources": [
-          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127, 134–135 (NAFv4.1, 2026.03)"
         ],
         "limitations": [
           "Explicit arch.js application mapping. This is not a native UAF or ADMBw stereotype named Node, nor an assertion that every OperationalArchitecture must be called Node."
+        ]
+      },
+      "Role": {
+        "target": "OperationalRole",
+        "description": "NAF L4 vocabulary for a role held by a logical Node. The application profile resolves Role to the UAF 1.0 OperationalRole type.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 134–135 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/uaf/UAFP-1.0.xmi — OperationalRole"
+        ],
+        "limitations": [
+          "HoldsRole and PerformsOperationalActivity express the explicit links in the NAF example. Native UAF role ownership and action-level execution semantics are outside this projection."
+        ]
+      },
+      "PhysicalActiveResource": {
+        "target": "ResourcePerformer",
+        "description": "Abstract NAF physical active resource category mapped to UAF ResourcePerformer. Use a concrete subtype such as System for the S2 air traffic control system. Set stereotype \"Physical Active Resource\" to reproduce the caption in the example.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 151–152 (NAFv4.1, 2026.03)"
+        ],
+        "limitations": [
+          "The application alias covers the full ResourcePerformer hierarchy. Models instantiating the former concrete adapter can pin naf41-uaf@4.1.0-arch.33."
         ]
       },
       "ServiceOperation": {
@@ -65,6 +88,44 @@
         ],
         "limitations": [
           "Application vocabulary mapping, not a claim that all native UML operation-owner, method and ownedParameter constraints are implemented."
+        ]
+      },
+      "ResourceFunction": {
+        "target": "Function",
+        "description": "NAF Resource Function vocabulary resolved to UAF 1.0 Function. The written name is preserved in the model and diagram.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 148–149 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 157 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/uaf/UAFP-1.0.xmi — Function"
+        ]
+      },
+      "PostType": {
+        "target": "Post",
+        "description": "P2 vocabulary for a type of post. The native UAF Post supplies the resource semantics.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 152 (NAFv4.1, 2026.03)"
+        ]
+      },
+      "ArchitectureDescription": {
+        "target": "ArchitecturalDescription",
+        "description": "NAF Architecture Description vocabulary from the A1 cut-out and example, resolved to UAF 1.0 ArchitecturalDescription in this application profile.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 172–173 (NAFv4.1, 2026.03)",
+          "ReferenceDocs/uaf/UAFP-1.0.xmi — ArchitecturalDescription"
+        ]
+      },
+      "Methodology": {
+        "target": "ArchitectureMethodology",
+        "description": "NAF A4 vocabulary for the methodology used by an architecture project. Resolves to the ArchitectureMethodology application type.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 178–179 (NAFv4.1, 2026.03)"
+        ]
+      },
+      "Profile": {
+        "target": "StandardProfile",
+        "description": "NAF A8 vocabulary for a profile that references applicable standards or other profiles and includes architectural constraints.",
+        "sources": [
+          "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 186–188 (NAFv4.1, 2026.03)"
         ]
       }
     }
@@ -127,7 +188,29 @@
       },
       "description": "Application projection of NAF logical grouping nodes through LogicalNode extends OperationalArchitecture. Node is a vocabulary alias of LogicalNode within arch.js, not an alias of the entire UAF OperationalArchitecture category.",
       "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127 (NAFv4.1, 2026.03)"
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108, 126–127, 134–135 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "Role"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalRole"
+      },
+      "description": "Application-profile vocabulary equivalence for the L4 role usage. Executable identity is defined by aliases.nodeTypes.Role.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 134–135 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/uaf/UAFP-1.0.xmi — OperationalRole"
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
@@ -139,6 +222,48 @@
       "source": {
         "framework": "NAF",
         "version": "4.1",
+        "type": "LogicalActor"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalPerformer"
+      },
+      "description": "Distinct concrete application subtype for the logical Crew concept in the L1 example. Not an alias of all operational performers or a physical ActualPerson.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 126–127 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "LogicalEquipment"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalPerformer"
+      },
+      "description": "Distinct concrete application subtype for the logical equipment in the L1 example, separate from physical ResourcePerformer implementations.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 126–127 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
         "type": "PhysicalActiveResource"
       },
       "target": {
@@ -146,9 +271,53 @@
         "version": "1.0",
         "type": "ResourcePerformer"
       },
-      "description": "Concrete application subtype for the NAF example vocabulary. ResourcePerformer remains abstract and retains its native attributes; this is deliberately not an alias.",
+      "description": "Application-profile identity for the abstract category. Executable identity is defined by aliases.nodeTypes.PhysicalActiveResource.",
       "sources": [
-        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)"
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 151–152 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "EquipmentType"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ResourceArtifact"
+      },
+      "description": "A distinct application subtype for the equipment taxonomy shown in P1. It inherits the native attributes and physical resource relationship endpoints.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 148–149 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "ResourceFunction"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "Function"
+      },
+      "description": "Application-profile vocabulary equivalence. Executable identity is defined by aliases.nodeTypes.ResourceFunction.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 148–149 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 157 (NAFv4.1, 2026.03)"
       ],
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
@@ -196,6 +365,70 @@
       "limitations": [
         "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
       ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "InformationEntity"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "InformationElement"
+      },
+      "description": "Concrete information-model entity using the existing InformationElement base. This application subtype retains native relationship compatibility without asserting equivalent framework definitions.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 141–142 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "specialization",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "LogicalConstraint"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "OperationalConstraint"
+      },
+      "description": "Concrete application subtype for L8 constraints. The constrained rule kind follows from the declared type.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 143–144 (NAFv4.1, 2026.03)"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
+    },
+    {
+      "kind": "node",
+      "relationship": "equivalent",
+      "source": {
+        "framework": "NAF",
+        "version": "4.1",
+        "type": "ArchitectureDescription"
+      },
+      "target": {
+        "framework": "UAF",
+        "version": "1.0",
+        "type": "ArchitecturalDescription"
+      },
+      "description": "A1 application-profile vocabulary equivalence. Executable identity is defined by aliases.nodeTypes.ArchitectureDescription.",
+      "sources": [
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 172–173 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/uaf/UAFP-1.0.xmi — ArchitecturalDescription"
+      ],
+      "limitations": [
+        "Structural application mapping in arch.js; not the complete UML/SysML semantics or an official NATO/OMG implementation guide."
+      ]
     }
   ],
   "adapters": [
@@ -212,7 +445,6 @@
     "CapabilityMilestone",
     "CapabilityProject",
     "ServiceGroup",
-    "PhysicalActiveResource",
     "ServiceConstraint",
     "ServiceFunctionParameter",
     "ServiceOperationParameter",
@@ -230,31 +462,46 @@
     "ServiceProvider",
     "ServiceConsumer",
     "LogicalNode",
+    "LogicalActor",
+    "LogicalEquipment",
     "Needline",
+    "LogicalInteraction",
+    "OperationalFlow",
     "LogicalState",
     "LogicalEvent",
     "LogicalMode",
+    "LogicalFunction",
+    "LogicalTransition",
+    "LogicalStateGroup",
     "LogicalLifeline",
     "InformationModel",
+    "InformationEntity",
     "InformationAttribute",
     "InformationAttributeType",
     "InformationProduct",
+    "LogicalConstraint",
     "LogicalRequirement",
     "LogicalSpecification",
     "LogicalRationale",
     "LogicalReadinessLevel",
     "LogicalMilestone",
     "LogicalProject",
+    "EquipmentType",
     "PhysicalPassiveResource",
     "DataEntity",
     "PhysicalMaterial",
     "ResourceInteraction",
+    "ResourceFlow",
     "ResourceState",
+    "ResourceTransition",
+    "ResourceStateGroup",
     "ResourceEvent",
     "ResourceMode",
     "ResourceLifeline",
     "DataAttribute",
     "DataAttributeType",
+    "ActualDataProduct",
+    "PhysicalCharacteristic",
     "ResourceRequirement",
     "ResourceSpecification",
     "ResourceRationale",
@@ -262,6 +509,7 @@
     "ResourceMilestone",
     "ResourceProject",
     "GlossaryTerm",
+    "ContextualData",
     "ArchitectureWorkProduct",
     "ArchitectureMethodology",
     "MethodologyExtension",
@@ -270,6 +518,7 @@
     "ArchitectureVersion",
     "ArchitectureBaseline",
     "ArchitectureMilestone",
+    "ArchitectureDescriptionElement",
     "ElementCorrespondence",
     "CorrespondenceMethod",
     "MeasureGroup",
@@ -279,19 +528,29 @@
     "StandardGroup",
     "StandardProfile",
     "StandardLibrary",
-    "ServiceInterfaceParameter"
+    "ArchitecturalConstraint",
+    "ServiceInterfaceParameter",
+    "NafViewpoint"
+  ],
+  "nodeOverrides": [
+    "View",
+    "ArchitecturalDescription"
   ],
   "viewpointCoverage": {
     "C1": {
       "title": "Capability Taxonomy",
       "page": 88,
       "status": "structural application checks",
+      "formats": "Tables, hierarchies and diagrams with generalizations/properties",
+      "renderers": "table, tree, connected, class",
       "limitations": []
     },
     "C2": {
       "title": "Enterprise Vision",
       "page": 90,
       "status": "structural application checks",
+      "formats": "Structured text and composite structure",
+      "renderers": "table for structured properties, connected for composite structure",
       "limitations": [
         "EnterprisePhase is the required planning-phase representation in this mapping; ActualEnterprisePhase can additionally record actual states.",
         "The C2 cut-out permits desires from an enterprise phase to a capability, vision or goal. Every planning phase requires at least one of these links; a direct DesiresCapability is not mandatory when DesiresVision/DesiresGoal is present."
@@ -301,6 +560,8 @@
       "title": "Capability Dependencies",
       "page": 92,
       "status": "structural application checks",
+      "formats": "Nested boxes, class and composite structure",
+      "renderers": "connected with packages or tree groups, class",
       "limitations": [
         "Not every displayed capability must have a CapabilityDependency: specialization/grouping context is allowed, as SAR demonstrates in the p.93 example. The view requires at least one dependency; completeness of relevant real-world dependencies cannot be checked automatically."
       ]
@@ -309,18 +570,24 @@
       "title": "Standard Processes",
       "page": 94,
       "status": "structural application checks",
+      "formats": "Tables and diagrams with traceability",
+      "renderers": "table, matrix, connected",
       "limitations": []
     },
     "C5": {
       "title": "Effects",
       "page": 96,
       "status": "structural application checks",
+      "formats": "Tables and structural diagrams",
+      "renderers": "table, connected",
       "limitations": []
     },
     "C7": {
       "title": "Performance Criteria",
       "page": 98,
       "status": "structural application checks",
+      "formats": "Tables and class diagrams",
+      "renderers": "table, class, connected",
       "limitations": [
         "EffectivenessCriterion and its subtypes are excluded from the per-assessment-criterion mandatory characterization/evaluation checks. Their links are optional, following p.98 and the Time to find example on p.99. Ordinary assessment criteria still require the complete capability-criterion-measure chain.",
         "EvaluatesCriterion is directed from Measure to AssessmentCriterion, following the p.98 cut-out. The evaluates arrows on p.99 are drawn in the opposite direction; that illustration does not change endpoint compatibility."
@@ -330,12 +597,18 @@
       "title": "Planning Constraints",
       "page": 100,
       "status": "structural application checks",
+      "formats": "Tables, benefits, or parametric diagrams",
+      "renderers": "table, connected",
+      "representationNote": "Benefit-specific and parametric notation require a custom view.",
       "limitations": []
     },
     "Cr": {
       "title": "Capability Roadmap",
       "page": 102,
       "status": "structural application checks",
+      "formats": "Gantt-style chart",
+      "renderers": "timeline, connected for the example structure",
+      "representationNote": "Plot ranges and milestones with explicit dates.",
       "limitations": [
         "The p.103 example omits explicit milestone nodes because milestones are properties of an increment. Cr therefore does not require visible CapabilityMilestone nodes or incoming DefinesIncrement at every increment. Explicit visible milestones still require a DefinesIncrement link; the optional milestones reference attribute may point to model elements outside the view. Implicit milestone completeness is not checked.",
         "AggregatesEnterprisePhase and TriggersEnterprisePhase are authored binary application adapters, directed whole-to-part and triggering-to-following phase. Each type is acyclic and disallows self-links as an application rule. No single-parent ownership, UML TemporalPart/slot semantics, execution, guards or date ordering between phases is inferred.",
@@ -347,6 +620,8 @@
       "title": "Service Taxonomy",
       "page": 104,
       "status": "structural application checks",
+      "formats": "Tables, hierarchy and class diagrams",
+      "renderers": "table, tree, class",
       "limitations": [
         "Service aliases ServiceSpecification in both directions, preserving written labels and inherited service rules. This is not an implementation of the UAF 1.2 service metamodel. ServiceGeneralization points from the specialized service to its general service. Multiple inheritance is permitted by the profile; a whole-view tree still requires one hierarchy parent per node.",
         "SatisfiesServicePolicy points from service to policy, following pp.104–105. ServicePolicySatisfiedBy is the retained inverse application link, not a direction change to existing models. Native ServicePolicy still requires its ruleKind attribute; the p.105 drawing does not specify that value.",
@@ -358,21 +633,25 @@
       "title": "Service Structure",
       "page": 106,
       "status": "structural application checks",
+      "formats": "Tables, matrices, dependency graphs and diagrams",
+      "renderers": "table, matrix, connected",
       "limitations": [
         "Node is an alias of the application LogicalNode, a subtype of OperationalArchitecture. This models the logical grouping/architecture meaning of a NAF Node, not a physical System, runtime instance or drawing template.",
         "The pp.107–108 directions are node to service (ConsumesService), function to service (EnablesService), and physical active resource to service (RealizesService). Native Consumes, IsCapableToPerform and Implements are unchanged; they are not interchangeable aliases of these adapters.",
         "ServiceAggregation projects whole service to member service (aggregates in the source), with a solid directed link and no exclusive ownership. ServiceComposition remains a separate relationship with composition notation. Both reject cycles/self-links; full UML ownership/lifecycle semantics are not implemented. ServiceDependency remains dependent service to required service.",
-        "Per-service structural checks count ServiceAggregation/ServiceComposition/ServiceDependency, not optional node/function/resource traces. Service Consumer and Service Provider role projections and their relies-on/provides/delivers relationships are not yet implemented as dedicated NAF concepts; do not substitute generic nodes or native Consumes for those roles."
+        "Per-service structural checks count ServiceAggregation/ServiceComposition/ServiceDependency, not optional node/function/resource traces. Optional provider and consumer roles may provide or consume the same service and rely on a logical Node. The Node can independently deliver or consume a service."
       ]
     },
     "S3": {
       "title": "Service Interfaces",
       "page": 109,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected, class",
       "limitations": [
         "ServiceOperation is an application-profile vocabulary alias of UAF ServiceMethod (a UML Operation stereotype). DataProductType is a separate DataElement/PhysicalPassiveResource specialization. Native UAF and ADMBw definitions are unchanged.",
         "HasServiceOperationParameter runs from operation to parameter; InvolvesPhysicalResource runs from parameter to a physical passive resource/data product. The p.110 Geographic Location parameter is shared by two operations. These are conceptual associations, not exclusive UML Parameter ownership.",
-        "Legacy owner/resource references remain valid and, when provided, must be visible. An owner reference can satisfy the required operation association instead of a has link; identical link/reference evidence is counted once. S3 does not require a resource for every parameter, matching the Resource parameter in p.110.",
+        "Legacy owner/resource references remain valid. Owners must be visible; resource traces may be omitted in S3. An owner reference can satisfy the required operation association instead of a has link; identical link/reference evidence is counted once. S3 does not require a resource for every parameter, matching the Resource parameter in p.110.",
         "An optional DataModel trace uses SpecifiesData from model to DataElement/DataProductType. A parameter does not link directly to a DataModel. Full UML operation signatures, parameter ordering/directions and consistency between simultaneous link/reference declarations require review."
       ]
     },
@@ -380,6 +659,8 @@
       "title": "Service Functions",
       "page": 111,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected, tree",
       "limitations": [
         "Each selected function must enable a selected service directly or through selected aggregating ancestors. Legacy service-to-function IsCapableToPerform remains accepted. This is contextual coverage, not inheritance of behavior or implicit model edges.",
         "Provider and consumer are explicit contextual application roles, with optional represents references. Cut-out links are directed structural projections; no execution, notification delivery, exclusive ownership or full UML activity decomposition is asserted."
@@ -389,6 +670,8 @@
       "title": "Service States",
       "page": 113,
       "status": "structural application checks",
+      "formats": "Diagrams and state diagrams",
+      "renderers": "connected, state",
       "limitations": [
         "The transition node and edge share a type name in separate namespaces. Bind the object node via the edge transition attribute; is equal to is the graphical reference connector, not a separate edge with an edge ID as endpoint. Each selected transition object binds exactly one selected state edge.",
         "Legacy owner/function/event references remain accepted. State/mode ownership is checked in S5 through an explicit link or selected reference; duplicate contradictory ownership is rejected. Cross-state same-service consistency, conflicting event representations, guards, reachability, execution and omitted model elements require review."
@@ -398,6 +681,8 @@
       "title": "Service Sequence",
       "page": 116,
       "status": "structural application checks",
+      "formats": "Sequence diagrams",
+      "renderers": "sequence, connected for the example structure",
       "limitations": [
         "Interaction objects bind exactly one selected lifeline message; message endpoints belong to the edge. Lifelines represent services and are not objectified interactions. Compact event/operation/represents references remain supported; explicit context links are optional.",
         "Sequence views support object cards and is equal to attachments. showContext true draws other selected cards and relationships in a context area. orderAttribute order sorts and checks unique positive message positions; otherwise declaration order or an explicit messages list determines display order. No execution, temporal constraints, UML fragments or event/operation-reference consistency is asserted."
@@ -407,46 +692,69 @@
       "title": "Service Interface Parameters",
       "page": 119,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected, class",
       "limitations": [
-        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Operation parameters may use explicit has/involves links instead of owner/resource references; S7 requires both associations, whereas S3 makes the resource trace optional."
+        "Use ServiceOperationParameter or ServiceFunctionParameter: the unqualified UAF ServiceParameter lacks the required owner/payload projection. Both parameter kinds may use explicit has/involves links or owner/resource references. S7 requires owner association and visibility of known resource mappings; missing model mappings are non-blocking review notices; function parameters involve logical OperationalExchangeItems, while operation parameters involve physical resources. Legacy physical function-parameter references remain accepted. S3 makes the operation resource trace optional."
       ]
     },
     "S8": {
       "title": "Service Constraints",
       "page": 121,
       "status": "structural application checks",
+      "formats": "Tables, diagrams, free text and parametric diagrams",
+      "renderers": "table for structured properties, connected",
+      "representationNote": "Formula evaluation and dedicated parametric notation are outside the renderer.",
       "limitations": []
     },
     "Sr": {
       "title": "Service Roadmap",
       "page": 123,
       "status": "structural application checks",
+      "formats": "Gantt-style chart, tables and high-level dashboard",
+      "renderers": "timeline, table, connected",
+      "representationNote": "Arrange multiple focused views for a dashboard-style overview.",
       "limitations": []
     },
     "C1-S1": {
       "title": "Service to Capability",
       "page": 125,
       "status": "structural application checks",
+      "formats": "Matrices and diagrams",
+      "renderers": "matrix, connected",
       "limitations": []
     },
     "L1": {
       "title": "Logical Taxonomy",
       "page": 126,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Connected shapes and tables",
+      "renderers": "tree, connected, table",
+      "limitations": [
+        "LogicalActor and LogicalEquipment are distinct concrete application subtypes of OperationalPerformer, not aliases or native UAF 1.0 stereotypes.",
+        "Grouping and specialization nodes do not each require a direct performer or activity. The p.127 example contains no activity; single-node taxonomies are accepted. Which resources/behavior are relevant and whether all relevant elements are present require review.",
+        "Selected active resources require node grouping directly or through selected OperationalGeneralization ancestors. Selected behavior can inherit grouping via LogicalBehaviorGeneralization. Selected passive resources require an incoming GroupsLogicalResource from a node. Capability traces and passive resources are optional; existing UAF types remain supported."
+      ]
     },
     "L2": {
       "title": "Logical Structure",
       "page": 128,
       "status": "structural application checks",
+      "formats": "Connected shapes, composite structure and rich pictures",
+      "renderers": "connected with packages, images and icons",
       "limitations": [
-        "Needline source/target are references rendered in class details, not native UML AssociationClass ends. Structural hierarchy can use GroupsLogicalResource."
+        "Needline is both a node and relationship name in separate namespaces. Compact edges need no object card; the edge needline attribute binds the optional object and draws is equal to. An object can be omitted from a view without removing its Needline edge.",
+        "Each selected Needline object requires one selected bound edge or a complete legacy source/target pair with selected endpoints. Binding is unique across the model; simultaneous endpoint references must match the edge. Legacy references do not synthesize extra model edges or their visualization.",
+        "At least one Needline edge or complete legacy object is required; LogicalDependency alone is not a substitute. Conveyed resources and their ConveysLogicalResource links are optional presentation context, including when known mappings exist. Structural hierarchy uses GroupsLogicalResource. Payload completeness, transport details and full UML association-class semantics require review."
       ]
     },
     "L2-L3": {
       "title": "Logical Concept",
       "page": 130,
       "status": "structural application checks",
+      "formats": "Rich picture",
+      "renderers": "connected with images, icons and manual placement",
+      "representationNote": "The author supplies the scene artwork.",
       "limitations": [
         "Rich pictures/external illustrations and their interpretation require human review. This permissive concept view is intentionally not a substitute for formal viewpoints."
       ]
@@ -455,184 +763,273 @@
       "title": "Logical Interactions",
       "page": 131,
       "status": "structural application checks",
+      "formats": "Tables, information-flow diagrams and Sankey diagrams",
+      "renderers": "table, connected, sankey",
+      "representationNote": "Sankey uses acyclic directed links and an optional numeric weight.",
       "limitations": [
-        "LogicalInteraction.conveyed is typed and nonempty; edge payloads may be shared with other views. UAF OperationalExchange may supplement, but not replace, the application interaction."
+        "The p.131 cut-out permits optional Needline edges, their object cards, logical Node endpoints, and requested resources. Nodes shown for structure or needline context do not each require a LogicalInteraction.",
+        "Supply at least one selected payload via the conveyed attribute or a ConveysLogicalResource link from the bound interaction object. Needline resource context is optional. The needline reference points to the Needline object.",
+        "An interaction object can bind to its carrying edge and trace to a Needline or convey a logical resource. Compact edges can record selected payloads directly. The optional volume attribute can drive a weighted Sankey diagram."
       ]
     },
     "L4": {
       "title": "Logical Activities",
       "page": 133,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Hierarchies, activity, process and collaboration diagrams",
+      "renderers": "tree, activity with optional swimlanes, connected",
+      "limitations": [
+        "Role is an application vocabulary alias of UAF 1.0 OperationalRole. HoldsRole represents its logical Node context when both appear in the view. Roles can be shown without their holding Nodes in an activity-focused view.",
+        "Each selected activity requires a visible incoming allocation from a Node, Role or legacy OperationalAgent. Native IsCapableToPerform remains available for OperationalAgent allocations.",
+        "OperationalFlow is optional and separate from the required control flow. Its optional object card binds to one selected edge via flow. Payload resources and conveys links may be omitted from the view. LogicalObjectFlow still uses a typed conveyed list."
+      ]
     },
     "L5": {
       "title": "Logical States",
       "page": 136,
       "status": "structural application checks",
+      "formats": "Connected shapes and finite state/transition diagrams",
+      "renderers": "connected, state",
       "limitations": [
-        "State-machine execution, same-owner transitions and guard completeness require review."
+        "Connected diagrams draw compact event triggers on state-to-state edges and attach objectified transitions through the transition reference. Event visibility is optional.",
+        "State-machine execution, cross-owner transitions, consistency between compact and objectified triggers, and guard completeness require review."
       ]
     },
     "L6": {
       "title": "Logical Sequence",
       "page": 139,
       "status": "structural application checks",
+      "formats": "Sequence, event trace and timing diagrams",
+      "renderers": "sequence, connected",
+      "representationNote": "Relative sequence order is supported. Use a separate dated timeline for real timestamps.",
       "limitations": [
-        "Interaction fragments, concurrency and sequence ordering consistency require review."
+        "Each selected lifeline represents exactly one selected logical active resource through an explicit relationship or a compact reference.",
+        "LogicalSequenceInteraction supports compact event and activity references. Bind a LogicalInteraction object to the message to show explicit event and behavior links.",
+        "Interaction fragments and concurrency require review. Use orderAttribute order to sort and validate message order in a sequence diagram."
       ]
     },
     "L7": {
       "title": "Information Model",
       "page": 141,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Entity–relationship and class diagrams",
+      "renderers": "class, connected",
+      "representationNote": "Draw typed associations and properties. Crow’s-foot multiplicity notation remains open.",
+      "limitations": [
+        "InformationEntity specializes InformationElement. Both satisfy the entity requirement and can be specified by an InformationModel.",
+        "RepresentsInformationProduct follows the scope and cut-out on p.141. The reversed arrow in the p.142 example is treated as a likely editorial error.",
+        "An included attribute belongs to one visible entity. Attribute types can be omitted from the view. Compact owner and attributeType references remain valid."
+      ]
     },
     "L8": {
       "title": "Logical Constraints",
       "page": 143,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Statements, business rules, matrices and parametric diagrams",
+      "renderers": "table for structured rules, matrix, connected",
+      "representationNote": "Human review is required for rule interpretation.",
+      "limitations": [
+        "A requirement can relate to a constraint as in the cut-out, or apply directly to a logical subject as in the p.144 example. The example omits explicit requirement-to-constraint links; sharing a subject does not establish such a link.",
+        "LogicalConstraint specializes OperationalConstraint. Its declared type implies ruleKind Constraint. The native OperationalConstraint retains its required ruleKind."
+      ]
     },
     "Lr": {
       "title": "Logical Roadmap",
       "page": 145,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Time-based charts, Gantt charts and dashboards",
+      "renderers": "timeline, connected",
+      "limitations": [
+        "The cut-out and example use LogicalReadinessFulfilsResource from readiness level to resource. Existing models can use the inverse FulfilsLogicalReadiness direction. Either link satisfies the readiness association.",
+        "DefinesLogicalEvolution and SchedulesLogical describe optional project context. The example on p.146 leaves dates open; LogicalMilestone requires an ISO date in this profile."
+      ]
     },
     "P1": {
       "title": "Resource Taxonomy",
       "page": 147,
       "status": "structural application checks",
+      "formats": "Tables, matrices, composite structure, block and class diagrams",
+      "renderers": "table, matrix, connected, class",
       "limitations": [
-        "Resource/function taxonomy may consist of a single root; decomposition and classification completeness require review."
+        "The p.149 notes make relationships between mandatory elements optional. Relevant scope and taxonomy completeness require review.",
+        "Use a named tree filtered to ResourceGeneralization for the taxonomy and connected placement for contextual groups and traces. Aggregation allows shared membership and rejects cycles within the relationship type."
       ]
     },
     "P2": {
       "title": "Resource Structure",
       "page": 150,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Composite, block, internal block, physical resource and class diagrams",
+      "renderers": "connected with packages and manual ports, class",
+      "representationNote": "Full SysML part/port notation remains open.",
+      "limitations": [
+        "The passive resource in the p.152 example is reached by dependency. It does not need an additional direct configuration membership link. The view must include active resources and a dependency."
+      ]
     },
     "P3": {
       "title": "Resource Interactions",
       "page": 153,
       "status": "structural application checks",
+      "formats": "Block, internal block, physical resource and class diagrams, and tables",
+      "renderers": "connected with manual ports, class, table",
       "limitations": [
-        "Protocol extends Standard, so a governing protocol also satisfies Standard membership. Matching the exact interaction protocol to both endpoint implementations requires review."
+        "Protocol extends Standard, so a governing protocol also satisfies Standard membership. Matching the interaction protocol to the implementations requires review."
       ]
     },
     "P4": {
       "title": "Resource Functions",
       "page": 156,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Connected shapes, activity, process, collaboration and decomposition diagrams",
+      "renderers": "connected, activity, tree",
+      "limitations": [
+        "The p.158 view decomposes functions and shows the passive resource on an objectified ResourceFlow. It does not require both flow types or a direct allocation at every function."
+      ]
     },
     "L4-P4": {
       "title": "Activity to Function",
       "page": 159,
       "status": "structural application checks",
+      "formats": "Tables, matrices and diagrams",
+      "renderers": "table, matrix, connected",
       "limitations": []
     },
     "P5": {
       "title": "Resource States",
       "page": 161,
       "status": "structural application checks",
+      "formats": "Finite state and transition diagrams",
+      "renderers": "state, connected",
       "limitations": [
-        "State-machine execution, same-owner transitions and guard completeness require review."
+        "Execution, cross-owner transitions and guard completeness require review."
       ]
     },
     "P6": {
       "title": "Resource Sequence",
       "page": 163,
       "status": "structural application checks",
+      "formats": "Connected shapes and sequence diagrams",
+      "renderers": "sequence, connected",
       "limitations": [
-        "Interaction fragments, concurrency and sequence ordering consistency require review."
+        "Interaction fragments and concurrency require review."
       ]
     },
     "P7": {
       "title": "Data Model",
       "page": 165,
       "status": "structural application checks",
+      "formats": "Formal text, connected shapes, class and entity–relationship diagrams",
+      "renderers": "table for structured properties, connected, class",
+      "representationNote": "Crow’s-foot multiplicity notation remains open.",
       "limitations": []
     },
     "P8": {
       "title": "Resource Constraints",
       "page": 168,
       "status": "structural application checks",
+      "formats": "Structured text, tables and parametric diagrams",
+      "renderers": "table for structured rules, connected",
+      "representationNote": "Formula execution and parametric notation remain open.",
       "limitations": []
     },
     "Pr": {
       "title": "Resource Roadmap",
       "page": 170,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Timeline, herringbone and Gantt charts",
+      "renderers": "timeline, connected for the model graph",
+      "representationNote": "Herringbone notation remains open.",
+      "limitations": [
+        "ResourceReadinessDeliversConfiguration follows p.170. DeliversResourceReadiness remains available in the inverse direction."
+      ]
     },
     "A1": {
       "title": "Metadata Definitions",
       "page": 172,
       "status": "structural application checks",
+      "formats": "Tables and structured text",
+      "renderers": "table for glossary and metadata, connected for trace links",
       "limitations": [
-        "Glossary relevance and metadata completeness require review. Architecture descriptions and their native viewpoint references are optional here."
+        "Glossary relevance and metadata completeness require review."
       ]
     },
     "A2": {
       "title": "Architecture Products",
       "page": 174,
       "status": "structural application checks",
-      "limitations": [
-        "The native View.viewpoint reference and the drawn ConformsToViewpoint link must be kept consistent by the author."
-      ]
+      "formats": "NAF grid or another representation",
+      "renderers": "nafgrid, connected, table",
+      "representationNote": "The grid groups explicitly tagged Viewpoint nodes and their modeled views.",
+      "limitations": []
     },
     "A3": {
       "title": "Architecture Correspondence",
       "page": 176,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected",
       "limitations": [
-        "The governing method is recorded as text; its domain-specific rule is not executed."
+        "ArchitectureDescriptionElement models a generic endpoint. Concrete UAF elements and complete architecture descriptions can also be endpoints.",
+        "The governing method records a rule as text. Its domain-specific interpretation requires review."
       ]
     },
     "A4": {
       "title": "Architecture Methodology",
       "page": 178,
       "status": "structural application checks",
+      "formats": "Tables and structured text",
+      "renderers": "table for structured properties, connected for method links",
       "limitations": [
-        "A non-tailored methodology can record an explicit no-extension decision and rationale. Process adherence requires review."
+        "Process adherence requires review."
       ]
     },
     "A5": {
       "title": "Architecture Status",
       "page": 180,
       "status": "structural application checks",
-      "limitations": []
+      "formats": "Tables and structured text",
+      "renderers": "table for structured properties, connected for status links",
+      "limitations": [
+        "Work products can show status directly, on a more specific architecture description, or on a view contained by either."
+      ]
     },
     "A6": {
       "title": "Architecture Versions",
       "page": 182,
       "status": "structural application checks",
+      "formats": "Tables and structured text",
+      "renderers": "table for version fields, connected for succession",
       "limitations": [
-        "Succession is acyclic; version-label uniqueness, same-product succession and date ordering require review."
+        "An architecture description can serve as the work product. A version can be linked through a baseline that specializes it, as on p.183.",
+        "Newer-to-earlier ArchitectureVersionSupersedes follows p.182. ArchitectureVersionSuccession preserves the older inverse. Version-label uniqueness and date order need review."
       ]
     },
     "A7": {
       "title": "Architecture Metadata",
       "page": 184,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected",
       "limitations": [
-        "Whether measures are sufficient for an assessment and whether desired/achieved metrics are comparable require review."
+        "Whether measures suffice for an assessment and whether desired and achieved metrics are comparable require review."
       ]
     },
     "A8": {
       "title": "Architecture Standards",
       "page": 186,
       "status": "structural application checks",
+      "formats": "Tables and diagrams",
+      "renderers": "table, connected, tree",
       "limitations": [
-        "Applicability, compliance with standard contents and organizational ratification require review."
+        "Applicability, compliance with standard contents and ratification require review."
       ]
     },
     "Ar": {
       "title": "Architecture Roadmap",
       "page": 189,
       "status": "structural application checks",
+      "formats": "Timeline and Gantt-style charts",
+      "renderers": "timeline, connected",
       "limitations": []
     }
   },

@@ -6,24 +6,18 @@
   const html = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const configuredViews = '@configured';
   const metaView = '@meta';
-  let metaResult;
+  let metaResult, helpSession, helpSessionSerial=0;
   const sourceIsJSON = () => /^[\s\uFEFF]*[\[{]/.test(source.value);
   let viewOverride = false;
+  let configuredDashboardShown = false;
   let currentExample, model, viewId, theme, profileOverride, zoom = 1, bounds, debounce, toastTimeout, lastSvg;
   const drafts = new Map();
+  const highlightMarkup = (text, format) => arch.sourceTokens(text, format).map(token =>
+    token.kind === 'plain' ? html(token.text) : `<span class="token-${token.kind}">${html(token.text)}</span>`).join('');
   function highlight() {
     $('source-extension').textContent = sourceIsJSON() ? '.json' : '.arch';
     $('source-format').textContent = sourceIsJSON() ? 'json' : 'arch';
-    // Tokenize before escaping so quotes/entities cannot break markup.
-    const token = /"(?:\\.|[^"\\])*"|#[^\n]*|\/\/[^\n]*|@help\b|\b(?:architecture|model|view|diagram|participants|messages|returns|asyncMessages|lanes|laneAttribute|initial|finals|decisions|forks|joins|rows|columns|valueAttribute|parentAttribute|startAttribute|endAttribute|ownerAttribute|signatureAttribute|methods|functions|interfaces|ports|parameters|config|views|all|profile|styleGroup|backgroundColor|opacity|extends|attribute|attributes|required|enum|abstract|container|contains|defaultRelation|requireViewpoint|viewpoint|nodes|relations|requiredNodes|requiredRelations|incoming|outgoing|allowSelf|min|max|minLength|maxLength|description|technology|icon|stereotype|tags|person|system|application|service|component|database|queue|interface|capability|process|artifact|node|package|relation|type|direction|spacing|theme|include|exclude|place|at|size|style|accent|template|route|from|to|via|curve|path|label)\b|-?\b\d+(?:\.\d+)?\b/g;
-    let result = '', previous = 0;
-    for (const match of source.value.matchAll(token)) {
-      result += html(source.value.slice(previous, match.index));
-      const text = match[0];
-      const kind = text[0] === '"' ? 'string' : /^(#|\/\/)/.test(text) ? 'comment' : /^-?\d/.test(text) ? 'number' : 'keyword';
-      result += `<span class="token-${kind}">${html(text)}</span>`; previous = match.index + text.length;
-    }
-    $('highlight').innerHTML = result + html(source.value.slice(previous)) + '\n';
+    $('highlight').innerHTML = highlightMarkup(source.value, sourceIsJSON() ? 'json' : 'dsl') + '\n';
     $('line-numbers').textContent = Array.from({length: source.value.split('\n').length}, (_, i) => i + 1).join('\n');
     syncScroll(); updateCursor();
   }
@@ -68,14 +62,20 @@
     $('meta-title').textContent = `${metaResult.sourceFormat.toUpperCase()} → ${metaResult.targetFormat.toUpperCase()}`;
     if(metaResult.title)$('model-title').textContent=metaResult.title;
     $('profile-info').textContent=metaResult.profile?`${metaResult.profile.id} · ${metaResult.profile.version}`:'Source inspection';
-    $('meta-output').textContent = metaResult.output ?? 'Translation is available once the syntax is corrected.';
+    if (metaResult.output === null) $('meta-output').textContent = 'Correct the syntax to see the translation.';
+    else $('meta-output').innerHTML = highlightMarkup(metaResult.output, metaResult.targetFormat);
     $('meta-copy').disabled = $('meta-download').disabled = metaResult.output === null;
     $('meta-download').textContent = `Download ${metaResult.targetFormat.toUpperCase()}`;
     $('meta-diagnostics').replaceChildren();
+    const helpOptions = {format:metaResult.sourceFormat, theme, helpBaseURL:location.href};
+    arch.attachDiagnosticHelp($('meta-diagnostics'), metaResult, helpOptions);
     const sourceLines = source.value.split('\n');
     for (const diagnostic of metaResult.diagnostics.slice(0, 12)) {
       const card = document.createElement('article'); card.className = 'meta-diagnostic';
       const message = document.createElement('strong'); message.textContent = diagnostic.message; card.append(message);
+      const help = arch.createDiagnosticHelpLink(document, diagnostic, helpOptions);
+      help.classList.add('diagnostic-help');
+      card.append(help);
       if (diagnostic.path) {const path = document.createElement('code'); path.className = 'meta-path'; path.textContent = diagnostic.path; card.append(path);}
       if (diagnostic.line) {
         const jump = document.createElement('button'); jump.textContent = `Line ${diagnostic.line}, column ${diagnostic.column ?? 1}`;
@@ -87,19 +87,33 @@
         });card.append(jump);
         const excerpt = document.createElement('pre'); excerpt.className = 'meta-excerpt';
         for(let i=Math.max(0,diagnostic.line-2);i<Math.min(sourceLines.length,diagnostic.line+1);i++) {
-          const row = document.createElement('span');row.textContent = `${i+1}  ${sourceLines[i]}\n`;
-          if(i+1===diagnostic.line)row.className='meta-error-line';excerpt.append(row);
+          const row = document.createElement('span'), number = document.createElement('span');
+          number.className = 'meta-line-number'; number.textContent = i + 1; number.setAttribute('aria-hidden','true');
+          row.className = 'meta-excerpt-line'; row.append(number);
+          const content = sourceLines[i];
+          if (i + 1 === diagnostic.line) {
+            row.classList.add('meta-error-line');
+            const column = Math.min(content.length, Math.max(0, (diagnostic.column ?? 1) - 1));
+            const mark = document.createElement('mark');
+            mark.textContent = content[column] ?? ' ';
+            row.append(content.slice(0,column), mark, content.slice(column+1));
+          } else row.append(content);
+          excerpt.append(row);
         }
         card.append(excerpt);
       }
       const list = document.createElement('ul');list.className='meta-candidates';
       for (const candidate of diagnostic.candidates) {
         const item = document.createElement('li'), label = document.createElement('span'), example = document.createElement('code');
-        label.textContent = candidate.label; example.textContent = candidate.example; item.append(label,example);
+        label.textContent = candidate.label; example.innerHTML = highlightMarkup(candidate.example, metaResult.sourceFormat); item.append(label,example);
         if(candidate.detail){const detail=document.createElement('small');detail.textContent=candidate.detail;item.append(detail);}
         list.append(item);
       }
-      card.append(list);$('meta-diagnostics').append(card);
+      if (list.childElementCount) {
+        const heading = document.createElement('h3'); heading.textContent = 'Correction candidates';
+        card.append(heading,list);
+      }
+      $('meta-diagnostics').append(card);
     }
     if(metaResult.diagnostics.length>12){const more=document.createElement('p');more.textContent=`${metaResult.diagnostics.length-12} additional diagnostics. Correct the displayed issues and render again.`;$('meta-diagnostics').append(more);}
     $('render-status').textContent = metaResult.valid ? 'Source translation ready' : `${metaResult.diagnostics.length} source issue${metaResult.diagnostics.length===1?'':'s'} · review correction candidates`;
@@ -109,6 +123,36 @@
     if(metaResult.valid)source.removeAttribute('aria-invalid');else source.setAttribute('aria-invalid','true');
     updateViews();
   }
+  const helpLocation = page => {
+    const url=new URL(location.href);
+    url.searchParams.set('help',page.query);
+    return url;
+  };
+  const helpHistoryState = (page,position) => ({
+    studioHelp:helpSession.id, topic:page.topic, parameters:page.parameters, position
+  });
+  function syncHelpHistory(page, previous, action) {
+    if (action !== 'follow') {
+      if (history.state?.studioHelp===helpSession.id) history.go(action==='back'?-1:1);
+      return;
+    }
+    if (history.state?.studioHelp===helpSession.id) {
+      helpSession.trail.length=history.state.position+1;
+    } else {
+      helpSession.trail=[previous.query];
+      history.replaceState(helpHistoryState(previous,0),'',helpLocation(previous));
+    }
+    const position=helpSession.trail.length;
+    helpSession.trail.push(page.query);
+    history.pushState(helpHistoryState(page,position),'',helpLocation(page));
+  }
+  window.addEventListener('popstate', ({state}) => {
+    if (!helpSession || state?.studioHelp!==helpSession.id || source.value!==helpSession.source) return;
+    const {trail}=helpSession, position=state.position;
+    helpSession.graph={...state,history:{back:trail.slice(0,position),forward:trail.slice(position+1).reverse()}};
+    render(true);
+    canvas.scrollTo({top:0,left:0});
+  });
   function render(resetFit = false) {
     clearTimeout(debounce);
     if(viewId===metaView){renderMeta();return;}
@@ -117,30 +161,70 @@
     $('toggle-theme').disabled = $('zoom-in').disabled = $('zoom-out').disabled = $('fit').disabled = false;
     const started = performance.now();
     try {
-      const next = arch.parse(source.value, profileOverride ? { profile: profileOverride } : {});
+      const next = arch.parsePreview(source.value, profileOverride ? { profile: profileOverride } : {});
+      if (next.kind!=='help' || helpSession?.source!==source.value || helpSession?.profile!==profileOverride) helpSession=undefined;
+      const active = helpSession ? {...next,help:{topic:helpSession.graph.topic,parameters:helpSession.graph.parameters}} : next;
       const explicit = viewOverride && next.views.some(view => view.id === viewId);
       const selected = explicit ? viewId : next.kind !== 'help' && next.config?.views !== undefined ? configuredViews : next.views[0].id;
-      const options = selected === configuredViews ? {theme} : {view: selected, theme};
-      const graph = arch.layout(next, options);
-      const svg = arch.renderToString(next, options);
+      const options = {theme, helpBaseURL:location.href};
+      if (selected !== configuredViews) options.view = selected;
+      if (active.kind==='help') {
+        options.helpHistory=helpSession?.graph.history;
+      }
+      const { graph, svg } = arch.renderDiagram(active, options);
+      const sourceErrors = graph.syntaxDiagnostics?.length ?? 0;
       // Only commit UI state after the complete render succeeds.
       model = next; viewId = selected; viewOverride = explicit; bounds = graph.bounds; lastSvg = svg;
       $('profile-info').innerHTML = '<span class="live-dot"></span>';
       $('profile-info').append(document.createTextNode(`${model.profile.id} · ${model.profile.version}`));
-      diagram.innerHTML = svg; updateViews();
+      diagram.innerHTML = svg;
+      if (graph.kind==='help') {
+        helpSession ??= {id:++helpSessionSerial,source:source.value,profile:profileOverride};
+        helpSession.graph=graph;
+        arch.attachHelpNavigation(diagram.firstElementChild,graph,options,({graph:page,previous,markup,action})=>{
+          helpSession.graph=page;
+          bounds=page.bounds; lastSvg=markup;
+          $('view-title').textContent=page.title;
+          fit();
+          canvas.scrollTo({top:0,left:0});
+          syncHelpHistory(page,previous,action);
+        });
+      } else {
+        arch.attachDiagnosticHelp(diagram, graph, options);
+        arch.attachDraftDetails(diagram.firstElementChild, graph, options);
+      }
+      updateViews();
       const view = graph.view, activeTheme = theme ?? view.theme;
       canvas.classList.toggle('dark', activeTheme === 'dark');
       $('toggle-theme').textContent = activeTheme === 'dark' ? '☀' : '☾';
       $('model-title').textContent = model.title; $('model-description').textContent = model.description || 'A readable model, rendered directly in your browser.';
-      $('view-title').textContent = graph.kind === 'views' ? `${graph.layouts.length} configured views` : view.title;
+      $('view-title').textContent = graph.kind==='help' ? graph.title : graph.kind === 'views' ? `${graph.layouts.length} configured views` : view.title;
       $('element-count').textContent = model.kind === 'help' ? 'Built-in language reference' : `${graph.nodes.length} elements · ${graph.edges.length} connections`;
-      $('render-status').innerHTML = `<span class="live-dot"></span> Rendered in ${Math.max(1, Math.round(performance.now() - started))} ms`;
-      $('error').hidden = true; source.removeAttribute('aria-invalid');
-      $('export-svg').disabled = false;
+      if (sourceErrors) {
+        $('render-status').textContent = `Partial preview · ${sourceErrors} source ${sourceErrors === 1 ? 'error' : 'errors'}`;
+        source.setAttribute('aria-invalid', 'true');
+      } else {
+        $('render-status').innerHTML = `<span class="live-dot"></span> Rendered in ${Math.max(1, Math.round(performance.now() - started))} ms`;
+        source.removeAttribute('aria-invalid');
+      }
+      $('error').hidden = true;
+      $('export-svg').disabled = Boolean(sourceErrors);
       if (resetFit) fit(); else setZoom(zoom);
+      const wantsDashboard = next.kind !== 'help' && next.config?.presentation === 'dashboard';
+      if (wantsDashboard && !configuredDashboardShown) openDashboard();
+      configuredDashboardShown = wantsDashboard;
     } catch (error) {
-      $('error').textContent = error.diagnostics ? error.diagnostics.slice(0, 8).map(d => `${d.message}${d.line ? ` (Ln ${d.line}, Col ${d.column})` : ''}`).join('\n') : error.message;
-      $('error').hidden = false;
+      const panel = $('error');
+      const helpOptions = {format:sourceIsJSON() ? 'json' : 'dsl', theme, helpBaseURL:location.href};
+      panel.replaceChildren();
+      for (const diagnostic of error.diagnostics?.slice(0, 8) ?? [error]) {
+        const row = document.createElement('div');
+        const loc = error.diagnostics && diagnostic.line ? ` (Ln ${diagnostic.line}, Col ${diagnostic.column})` : '';
+        row.append(diagnostic.message + loc, ' ', arch.createDiagnosticHelpLink(document, diagnostic, helpOptions));
+        panel.append(row);
+      }
+      arch.attachDiagnosticHelp(panel, error, helpOptions);
+      panel.hidden = false;
       updateViews();
       $('render-status').textContent = 'Check your source · last valid preview retained';
       source.setAttribute('aria-invalid', 'true'); $('export-svg').disabled = true;
@@ -148,7 +232,8 @@
   }
   function selectExample(example) {
     if (currentExample) drafts.set(currentExample.id, source.value);
-    currentExample = example; viewId = undefined; viewOverride = false; theme = undefined; profileOverride = undefined; $('profile-select').value = '';
+    currentExample = example; helpSession=undefined; viewId = undefined; viewOverride = false; theme = undefined; profileOverride = undefined; $('profile-select').value = '';
+    configuredDashboardShown = false;
     source.value = drafts.get(example.id) ?? example.source; source.scrollTop = source.scrollLeft = 0;
     source.setSelectionRange(0, 0); $('example-select').value = example.id;
     for (const button of $('examples').children) {
@@ -231,12 +316,47 @@
   $('zoom-in').addEventListener('click', () => setZoom(zoom * 1.25));
   $('zoom-out').addEventListener('click', () => setZoom(zoom / 1.25)); $('fit').addEventListener('click', fit);
   $('export-svg').addEventListener('click', () => { if (lastSvg) { download(lastSvg, 'image/svg+xml;charset=utf-8', 'svg'); toast('Your SVG is ready.'); } });
+  function openDashboard() {
+    const modal = $('architecture-dashboard');
+    const input = source.value;
+    const settings = {view:viewOverride ? viewId : undefined, profile:profileOverride, theme};
+    try {
+      arch.renderDashboard($('dashboard-content'),input,{
+        ...settings,
+        onClose:() => modal.close(),
+        onExport:view => download(arch.renderDashboardToHTML(input,{...settings,view}),'text/html;charset=utf-8','html'),
+        onSource:({line,column}) => {
+          const start = input.split('\n').slice(0,line-1).reduce((length,row) => length+row.length+1,0);
+          modal.close();
+          source.focus();
+          source.setSelectionRange(start+Math.max(0,(column ?? 1)-1),start+Math.max(1,column ?? 1));
+          source.scrollTop = (line-1)*parseFloat(getComputedStyle(source).lineHeight)-source.clientHeight/3;
+          syncScroll();
+          updateCursor();
+        }
+      });
+      if (!modal.open) modal.showModal();
+    } catch (error) {
+      toast(error.message);
+    }
+  }
+  $('open-dashboard').addEventListener('click', openDashboard);
   $('download-source').addEventListener('click', () => {
     const json = sourceIsJSON();
     download(source.value, json ? 'application/json;charset=utf-8' : 'text/plain;charset=utf-8', json ? 'json' : 'arch');
     toast('Your architecture source is ready.');
   });
   $('open-guide').addEventListener('click', () => $('guide').showModal()); $('close-guide').addEventListener('click', () => $('guide').close());
+  $('show-grid-example').addEventListener('click', () => {
+    $('guide').close();
+    selectExample(ARCH_EXAMPLES.find(example => example.id === 'viewpoint-grid'));
+  });
   new ResizeObserver(() => { if (bounds) fit(); }).observe(canvas);
-  selectExample(ARCH_EXAMPLES[0]);
+  const helpQuery=new URL(location.href).searchParams.get('help');
+  const landing=helpQuery===null ? ARCH_EXAMPLES[0] : ARCH_EXAMPLES.find(example=>example.id==='help');
+  selectExample(landing);
+  if(helpQuery!==null) {
+    source.value=`@help ${helpQuery}`;
+    highlight(); render(true);
+  }
 })();

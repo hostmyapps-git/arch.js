@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import vm from 'node:vm';
 import * as arch from '../src/arch.js';
-import { inspectPath } from '../src/geometry.js';
+import { inspectPath } from '../src/svg-path.js';
 
 const source = (body, views = '') => `architecture "Test" { model { ${body} } ${views} }`;
 const pair = 'service a "A" service b "B" relation e a -> b "Calls"';
@@ -84,6 +85,27 @@ test('cycles, self edges, and disconnected components produce finite layouts', (
   for (const n of graph.nodes) assert.ok(Number.isFinite(n.x) && Number.isFinite(n.y));
   assert.ok(graph.edges.find(e => e.id === 'self').points.length >= 4);
   assert.notEqual(graph.edges[0].d, graph.edges[1].d);
+});
+
+test('low spacing keeps automatic card stacking finite with and without fixed collisions', () => {
+  const file = new URL('../src/arch.js', import.meta.url).href;
+  // A subprocess timeout catches a synchronous placement loop without
+  // hanging the test worker if the regression ever returns.
+  const output = execFileSync(process.execPath, ['--input-type=module', '-e', `
+    import { layout } from ${JSON.stringify(file)};
+    const positions = [];
+    for (const direction of ['right', 'down']) for (const fixed of ['', ' place a at (0,0)']) {
+      const source = 'architecture "A" { model { service a "A" service b "B" service c "C" }'
+        + ' view v "V" { spacing 24 direction ' + direction + fixed + ' } }';
+      const axis = direction === 'right' ? 'y' : 'x';
+      positions.push(layout(source).nodes.map(node => [node[axis], node[axis] + node[axis === 'y' ? 'height' : 'width']]));
+    }
+    console.log(JSON.stringify(positions));
+  `], { encoding:'utf8', timeout:5000 });
+  for (const ranks of JSON.parse(output)) {
+    assert.equal(ranks[0][0], 0);
+    for (let i = 1; i < ranks.length; i++) assert.ok(ranks[i][0] >= ranks[i-1][1]+24);
+  }
 });
 
 test('manual ports, waypoints, labels, and Bezier control points are exact', () => {
@@ -171,7 +193,12 @@ test('both distributable bundles expose identical public API and render identica
   for (const file of ['arch.js', 'arch.min.js']) {
     const context = vm.createContext({}); vm.runInContext(await readFile(file, 'utf8'), context);
     assert.deepEqual(Object.keys(context.arch).sort(), Object.keys(arch).sort());
-    renderings.push(context.arch.renderToString(source(pair), { idPrefix: 'same' }));
+    const options = { idPrefix:'same' };
+    const { graph, svg } = context.arch.renderDiagram(source(pair), options);
+    assert.equal(graph.nodes.length, 2);
+    assert.equal(svg, context.arch.renderToString(source(pair), options));
+    assert.ok(svg.includes(`viewBox="${Object.values(graph.bounds).join(' ')}"`));
+    renderings.push(svg);
   }
   assert.equal(renderings[0], renderings[1]);
 });

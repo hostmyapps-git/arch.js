@@ -41,6 +41,82 @@ test('tree handles source-parent links, explicit target-parent links, horizontal
   assert.match(arch.renderToString(doc('package p "Package" {service a "A"}')),/class="arch-node"[^>]*data-node="p"/);
 });
 
+test('tree padding sets SVG margins in CSS order and preserves the card and edge layout',()=>{
+  for (const direction of ['down','up','left','right']) {
+    const tight = arch.layout(doc(three,`direction ${direction} padding 0`));
+    const custom = doc(three,`direction ${direction} padding [24, 56, 32, 16]`);
+    const padded = arch.layout(custom);
+    const {x,y,width,height} = tight.bounds;
+    assert.deepEqual(padded.bounds,{x:x-16,y:y-24,width:width+72,height:height+56},direction);
+    assert.deepEqual(padded.nodes,tight.nodes);
+    assert.deepEqual(padded.edges,tight.edges);
+    validBounds(padded);
+    const options={idPrefix:'padding'};
+    const svg=arch.renderToString(custom,options);
+    assert.ok(svg.includes(`viewBox="${x-16} ${y-24} ${width+72} ${height+56}"`));
+    assert.equal(arch.renderToString(arch.translate(custom),options),svg);
+    assert.equal(arch.renderToString(custom.replace('[24, 56, 32, 16]', '24, 56, 32, 16'),options),svg);
+  }
+  assert.deepEqual(arch.layout(doc(three,'padding 48')).bounds,arch.layout(doc(three)).bounds);
+  assert.deepEqual(arch.layout(doc('','padding 0')).bounds,{x:0,y:0,width:160,height:96});
+  for (const value of ['-1','10000001','1, 2, 3','[1, 2, 3]','[1, 2, 3, "4"]','[1, -2, 3, 4]'])
+    assert.match(arch.validate(doc(three,`padding ${value}`)).diagnostics[0].message,/padding must be a number or/);
+});
+
+test('named tree padding contributes to the group box used by relative placement',()=>{
+  const padding = [24,56,32,16];
+  const tree = arch.layout(doc(three,'direction up padding [24, 56, 32, 16]'));
+  const source = `architecture "Tree group" {
+    model {${three} service other "Other"}
+    view v "V" {
+      tree g {nodes [root, a, b] direction up padding [24, 56, 32, 16]}
+      place g at (300,200)
+      place other right of g gap 24 align top
+    }
+  }`;
+  const graph = arch.layout(source);
+  const group=graph.treeGroups[0], other=graph.nodes.find(node=>node.id==='other');
+  assert.deepEqual(group.bounds,{...tree.bounds,x:300,y:200});
+  assert.equal(other.x,group.bounds.x+group.bounds.width+24);
+  assert.equal(other.y,group.bounds.y);
+  const groupNodes = graph.nodes.filter(node=>node.treeGroup==='g');
+  assert.equal(Math.min(...groupNodes.map(node=>node.x))-group.bounds.x,padding[3]);
+  assert.equal(Math.min(...groupNodes.map(node=>node.y))-group.bounds.y,padding[0]);
+  const json=arch.translate(source);
+  assert.deepEqual(JSON.parse(json).architecture.views.v.tree.g.padding,padding);
+  const options={idPrefix:'group-padding'};
+  assert.equal(arch.renderToString(json,options),arch.renderToString(source,options));
+  assert.equal(arch.renderToString(source.replace('[24, 56, 32, 16]', '24, 56, 32, 16'),options),arch.renderToString(source,options));
+});
+
+test('relative placement can measure the gap from a padded tree and align to a member',()=>{
+  const source = `architecture "Member alignment" {
+    model {${three} service detail "Detail"}
+    view v "V" {
+      tree g {nodes [root, a, b] padding 24, 56, 32, 16 direction down}
+      place g at (300,200)
+      place detail right of g gap 40 align to a.centerY size (200,140)
+    }
+  }`;
+  const yAnchors={y:0,centerY:0.5,bottom:1};
+  for (const [field,offset] of Object.entries(yAnchors)) {
+    const graph=arch.layout(source.replace('a.centerY',`a.${field}`));
+    const {bounds}=graph.treeGroups[0], detail=graph.nodes.find(node=>node.id==='detail'), child=graph.nodes.find(node=>node.id==='a');
+    assert.equal(detail.x,bounds.x+bounds.width+40);
+    assert.equal(detail.y+detail.height*offset,child.y+child.height*offset);
+  }
+  const vertical=arch.layout(source.replace('right of g gap 40 align to a.centerY','bottom of g gap 40 align to b.right'));
+  const {bounds}=vertical.treeGroups[0], detail=vertical.nodes.find(node=>node.id==='detail'), child=vertical.nodes.find(node=>node.id==='b');
+  assert.equal(detail.y,bounds.y+bounds.height+40);
+  assert.equal(detail.x+detail.width,child.x+child.width);
+
+  const json=arch.translate(source), options={idPrefix:'align-member'};
+  assert.deepEqual(JSON.parse(json).architecture.views.v.place.detail.relative.align,{to:'a.centerY'});
+  assert.equal(arch.renderToString(json,options),arch.renderToString(source,options));
+  assert.match(arch.translate(json),/right of g gap 40 align to a\.centerY/);
+  assert.match(arch.validate(source.replace('a.centerY','a.centerX')).diagnostics[0].message,/align to requires ID\.y, ID\.centerY, ID\.bottom/);
+});
+
 test('relation filters include inherited types without changing the model; hides can select a proper tree',()=>{
   const profile={nodeTypes:{service:{template:'service'}},relationTypes:{hierarchy:{style:'generalization'},sub:{extends:'hierarchy'},other:{style:'flow'}}};
   const body='service root "Root" service a "A" service b "B" relation x a -> root "Child" {type sub} relation y b -> root "Child" {type hierarchy} relation cross a -> b "Cross-link" {type other}';
@@ -65,7 +141,7 @@ test('true-tree validation rejects ambiguous parents, parallel links, cycles, se
     [doc(three,'levelGap 801'),/levelGap must/],
     [doc(three,'showLabels "false"'),/showLabels must/],
     [doc(three,'relations [missing]'),/unknown or invisible reference/],
-    [doc(three,'','place root at (0,0)'),/place\/route/],
+    [doc(three,'','place root at (0,0)'),/place requires a connected, class or state view/],
     [doc(three,'','route x {from top}'),/place\/route/],
   ])assert.match(arch.validate(text,{validation:'draft'}).diagnostics[0].message,pattern,text);
 });

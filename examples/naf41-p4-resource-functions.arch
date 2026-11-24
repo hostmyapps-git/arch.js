@@ -1,0 +1,83 @@
+architecture "P4 · Resource Functions" {
+  # NAFv4.1 (2026.03), section 35.2, printed page 158.
+  config { profile naf41-uaf views p4 }
+
+  model {
+    OperationalActivity situation "Respond to Situation"
+    ResourceFunction resourceFunction_executeHoverManoeuvre "Execute Hover Manoeuvre"
+    ResourceFunction response "Conduct Tactical Response"
+    ResourceFunction returnToBase "Return to Base"
+    ResourceFunction deploy "Deploy Rescue Winch"
+    ResourceFunction confirm "Confirm Extraction Complete"
+    ResourceFunction transmit "Transmit SitRep"
+    ResourceFunction receive "Receive SitRep"
+    PostType operator "Winch Operator" { isStandardConfiguration false }
+    PostType pilot "NH90 Pilot" { isStandardConfiguration false }
+    EquipmentType commandPost "Command Post" { isStandardConfiguration true }
+    ResourceFlow sitrepFlow "SitRep Flow"
+    DataProductType report "Situational Report"
+
+    relation trace response -> situation "realizes" { type Implements }
+    relation enter resourceFunction_executeHoverManoeuvre -> response "" { type FunctionalFlow }
+    relation leave response -> returnToBase "" { type FunctionalFlow }
+    relation extraction deploy -> confirm "" { type FunctionalFlow }
+    relation reporting confirm -> transmit "" { type FunctionalFlow }
+
+    relation partDeploy response -> deploy "aggregates" { type ResourceFunctionAggregation }
+    relation partConfirm response -> confirm "aggregates" { type ResourceFunctionAggregation }
+    relation partTransmit response -> transmit "aggregates" { type ResourceFunctionAggregation }
+    relation partReceive response -> receive "aggregates" { type ResourceFunctionAggregation }
+
+    relation operatorDeploy operator -> deploy "performs" { type IsCapableToPerform }
+    relation operatorConfirm operator -> confirm "performs" { type IsCapableToPerform }
+    relation pilotHover pilot -> resourceFunction_executeHoverManoeuvre "performs" { type IsCapableToPerform }
+    relation pilotTransmit pilot -> transmit "performs" { type IsCapableToPerform }
+    relation postReceive commandPost -> receive "performs" { type IsCapableToPerform }
+
+    relation transfer transmit -> receive "" { type ResourceFlow flow sitrepFlow }
+    relation payload sitrepFlow -> report "conveys" { type ConveysPhysicalResource }
+  }
+
+  view p4 "P4 · Resource Functions" {
+    viewpoint P4
+    diagram connected
+    routes { sharePath stereotypes }
+
+    place resourceFunction_executeHoverManoeuvre at (0, 0)
+    place response at (resourceFunction_executeHoverManoeuvre.right + 190,
+                       resourceFunction_executeHoverManoeuvre.centerY - response.height/2)
+    place situation at (response.centerX - situation.width/2, response.y - situation.height - 115)
+    place returnToBase at (response.right + 175, response.centerY - returnToBase.height/2)
+
+    place deploy at (resourceFunction_executeHoverManoeuvre.x - 70,
+                     resourceFunction_executeHoverManoeuvre.bottom + 155)
+    place confirm at (deploy.right + 120, deploy.centerY - confirm.height/2)
+    place transmit at (confirm.right + 135, confirm.centerY - transmit.height/2)
+    place receive at (transmit.right + 165, transmit.centerY - receive.height/2)
+
+    place operator at ((deploy.centerX + confirm.centerX - operator.width)/2, deploy.bottom + 125)
+    place sitrepFlow at ((transmit.right + receive.x - sitrepFlow.width)/2, transmit.bottom + 90)
+    place report at (sitrepFlow.centerX - report.width/2, sitrepFlow.bottom + 60)
+    place pilot at (operator.x, operator.bottom + 140)
+    place commandPost at (receive.centerX - commandPost.width/2, pilot.centerY - commandPost.height/2)
+
+    route enter, leave, extraction, reporting, transfer { from right to left curve straight }
+    route partDeploy, partConfirm, partTransmit, partReceive { from bottom to top }
+    route operatorDeploy {
+      from left to bottom
+      via (deploy.centerX, operator.centerY)
+    }
+    route operatorConfirm {
+      from right to bottom
+      via (confirm.centerX, operator.centerY)
+    }
+    route postReceive { from top to bottom curve straight }
+    route pilotHover {
+      from left to left
+      via [(deploy.x - 65, pilot.centerY), (deploy.x - 65, resourceFunction_executeHoverManoeuvre.centerY)]
+    }
+    route pilotTransmit { from right to bottom via (transmit.centerX, pilot.centerY) }
+    route sitrepFlow -> transfer { from top to 1/2 curve straight }
+    route payload { from bottom to top curve straight }
+  }
+}

@@ -1,0 +1,50 @@
+architecture "NAFv4.1 · Logical interaction and sequence" {
+  config { profile naf41-uaf views all }
+  model {
+    Node coordination "Coordination"
+    Node monitoring "Monitoring"
+    LogicalActor coordinator "Coordinator"
+    LogicalEquipment console "Monitoring console"
+    LogicalActor operator "Rescue operator"
+    InformationProduct report "Situation Report"
+    Needline situationNeed "Situation information need"
+    LogicalInteraction situation "Share situation report"
+    relation groupCoordinator coordination -> coordinator "aggregates" { type GroupsLogicalResource }
+    relation groupConsole monitoring -> console "aggregates" { type GroupsLogicalResource }
+    relation requirement coordination -> monitoring "needs situation information" { type Needline needline situationNeed }
+    relation exchange console -> coordinator "Situation report" { type LogicalInteraction interaction situation volume 2 }
+    relation forwards coordinator -> operator "Forward summary" { type LogicalInteraction conveyed [report] volume 1.5 }
+    relation alert console -> operator "Status alert" { type LogicalInteraction conveyed [report] volume 0.5 }
+    relation fulfils situation -> situationNeed "realizes" { type RealizesNeedline }
+    relation detail situation -> report "conveys" { type ConveysLogicalResource }
+    relation ask situationNeed -> report "requires exchange of" { type ConveysLogicalResource }
+
+    LogicalLifeline monitoringLine "Monitoring timeline"
+    LogicalLifeline coordinationLine "Coordination timeline"
+    LogicalInteraction notice "Report delivery"
+    LogicalEvent available "Report available"
+    LogicalFunction notify "Notify coordinator"
+    OperationalActivity assess "Assess situation"
+    relation representsConsole monitoringLine -> console "represents a timeline of" { type RepresentsLogicalResource }
+    relation representsCoordinator coordinationLine -> coordinator "represents a timeline of" { type RepresentsLogicalResource }
+    relation delivery monitoringLine -> coordinationLine "Deliver report" { type LogicalSequenceInteraction order 1 interaction notice }
+    relation event available -> notice "triggers" { type TriggersLogicalInteraction }
+    relation logicalBehavior notice -> notify "relates to" { type LogicalInteractionRelatesBehavior }
+    relation activity notice -> assess "relates to" { type LogicalInteractionRelatesBehavior }
+  }
+  view l3 "L3 · Objectified interaction" {
+    viewpoint L3
+    include [coordination, monitoring, coordinator, console, report, situationNeed, situation]
+  }
+  view sankey "L3 · Information flow" {
+    viewpoint L3
+    include [coordinator, console, operator, report, situation]
+    diagram sankey { relations [LogicalInteraction] weightAttribute volume }
+  }
+  view l6 "L6 · Objectified sequence" {
+    viewpoint L6
+    include [monitoringLine, coordinationLine, console, coordinator, notice, available, notify, assess]
+    exclude exchange
+    diagram sequence { orderAttribute order showContext true }
+  }
+}

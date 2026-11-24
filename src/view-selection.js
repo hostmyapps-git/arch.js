@@ -1,6 +1,12 @@
 import { ArchError } from './errors.js';
 
-const fail = (message, loc) => { throw new ArchError(message, loc, 'ARCH_VALIDATION'); };
+const fail = (message, loc) => { throw new ArchError(message, {...loc, help:'@help views'}, 'ARCH_VALIDATION'); };
+
+export function checkPresentationMode(mode, loc) {
+  if (mode !== undefined && mode !== 'diagram' && mode !== 'dashboard')
+    throw new ArchError('presentation must be diagram or dashboard', {...loc, help:'@help config'}, 'ARCH_VALIDATION');
+}
+
 export function viewIds(selection, views, loc) {
   if (!Array.isArray(views) || !views.length) fail('Invalid model; use parse(source)', loc);
   if (selection === undefined) return [views[0].id];

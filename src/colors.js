@@ -1,5 +1,7 @@
 import { CSS3_COLORS } from './css3-colors.js';
 
+export const DEFAULT_BACKGROUND_OPACITY = 0.2;
+
 // Fixed, DOM-independent resolution shared by validation and rendering.
 export function normalizeColor(value) {
   if (typeof value !== 'string') return undefined;

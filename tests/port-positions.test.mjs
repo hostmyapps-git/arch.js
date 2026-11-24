@@ -49,6 +49,34 @@ test('relative endpoints follow final sizes and placements, and local endpoints 
  assert.deepEqual(absolute.edges[0].points.at(-1),{x:500,y:50});
 });
 
+test('side calculations use final dimensions and positions and retain expressions through DSL and JSON',()=>{
+ for(const side of ['top','right','bottom','left']) {
+  const dim=['top','bottom'].includes(side)?'width':'height';
+  const graph=layout(`route e {from ${side} 10 / a.${dim} to ${side} (b.${dim} - 20) / b.${dim} curve straight}`);
+  const a=graph.nodes.find(node=>node.id==='a'),b=graph.nodes.find(node=>node.id==='b');
+  assert.deepEqual(graph.edges[0].points[0],expected(a,side,10/a[dim]));
+  assert.deepEqual(graph.edges[0].points.at(-1),expected(b,side,(b[dim]-20)/b[dim]));
+ }
+ const text=source('routes {from right (b.centerY - a.y) / a.height} route e {to left curve straight}').replace('place b at (600,360)','place b at (600,80)');
+ const model=parse(text),original=JSON.stringify(model),json=arch.translate(text,{format:'json'});
+ assert.deepEqual(JSON.parse(json).architecture.views.v.routes.from,{side:'right',position:'(b.centerY - a.y) / a.height'});
+ for(const input of [model,parse(json),parse(arch.translate(json,{format:'dsl'}))]) {
+  const [edge]=arch.layout(input).edges;
+  assert.deepEqual(edge.points,[{x:330,y:150},{x:600,y:150}]);
+ }
+ assert.equal(JSON.stringify(model),original);
+ const reference=layout('route data -> e {from right 10 / data.height to 1/2 curve straight}').referenceNodes[0];
+ assert.deepEqual(reference.points[0],{x:reference.node.x+reference.node.width,y:reference.node.y+10});
+});
+
+test('side calculations validate effective anchors and disallow results outside the card side',()=>{
+ assert.throws(()=>layout('route e {from left a.height / 10}'),/Port position for from left must be between 0 and 1/);
+ assert.throws(()=>layout('route e {to right 1 / (a.width - 300)}'),/Division by zero/);
+ assert.throws(()=>layout('route e {from left missing.x}'),/Unknown from reference: missing/);
+ const ignored=layout('routes {from right 10 / data.height} route e {path "M 0 0 L 20 20"} exclude data');
+ assert.equal(ignored.edges[0].d,'M 0 0 L 20 20');
+});
+
 test('reference connectors support every positioned source side and fractional path targets, including defaults',()=>{
  for(const side of ['top','right','bottom','left'])for(const fraction of ['0','1/4','1 / 2','3/4','1']) {
   const graph=layout(`route data -> e {from ${side} ${fraction} to ${fraction} curve rounded}`),r=graph.referenceNodes[0];
@@ -61,6 +89,9 @@ test('reference connectors support every positioned source side and fractional p
  assert.equal(graph.edges[0].points.at(-1).x,600,'reference path target default is not a node-side target');
  const local=layout('routes {from bottom 1/4 to left 1/4} route data -> e {from right to 1/2}').referenceNodes[0];
  assert.deepEqual(local.points[0],expected(local.node,'right',.5));assert.equal(local.route.to,.5);
+ const calculated=layout('route data -> e {from (data.right, data.y + 10) to 1/2 curve straight}').referenceNodes[0];
+ assert.deepEqual(calculated.points[0],{x:calculated.node.x+calculated.node.width,y:calculated.node.y+10});
+ assert.equal(calculated.route.to,.5);
 });
 
 test('positioned endpoints round-trip through JSON, DSL, meta and both bundles without mutating models',async()=>{
@@ -105,9 +136,9 @@ test('positioned ports work on packages and internal tree edges and remain indep
 test('invalid sides, positions and fractions report actionable diagnostics in DSL, JSON and model input',()=>{
  for(const [route,message]of [
   ['from bottom -0.1',/between 0 and 1/],['to right 1.1',/between 0 and 1/],
-  ['from left 2/1',/between 0 and 1/],['to top 1/0',/divide by zero/],
+  ['from left 2/1',/between 0 and 1/],['to top 1/0',/Division by zero/],
   ['from auto 1/2',/side must/],['from nowhere 0.5',/side must/],
-  ['from bottom 1/',/denominator/],['from bottom 1/2/3',/Expected/],
+  ['from bottom 1/',/operand/],
  ]) {
   const result=arch.validate(source(`route e {${route}}`),{profile});assert.equal(result.valid,false,route);
   assert.match(result.diagnostics[0].message,message);assert.ok(result.diagnostics[0].line>0);

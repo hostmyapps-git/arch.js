@@ -1,6 +1,6 @@
 # NAFv4.1 structural application profile
 
-`naf41-uaf` · version `4.1.0-arch.16` · English type/help/diagnostic text.
+`naf41-uaf` · version `4.1.0-arch.43` · English type/help/diagnostic text.
 
 This is an executable architecture-modeling profile with all **47 current
 NAFv4.1 viewpoint IDs**, typed relationships, required content, per-element
@@ -48,6 +48,72 @@ compatibility. Optional date-time start/end properties remain supported; optiona
 `milestones` references may point outside the view. See [Cr mapping and migration](CR-MAPPING.md)
 for exact semantics, validation limits and UAF/ADMBw differences.
 
+## Chapter 3 review
+
+[Coverage](COVERAGE.md) lists the checked contents and representation options
+for every viewpoint. [Remaining gaps](GAPS.md) records differences in semantics
+and notation. The local reference is the March 2026 NAFv4.1 specification,
+printed pp. 79–82 and 88–190. Use the viewpoint help to see the requirements,
+typed links and applicable renderers together.
+
+- [Physical resources](../../examples/naf41-resource-viewpoints.arch) exercises P2 through Pr and L4–P4. It includes a protocol-conforming radio link, objectified resource flows and transitions, a data model and dated milestones.
+- [Architecture foundation](../../examples/naf41-foundation-viewpoints.arch) exercises A1–Ar with an A2 viewpoint grid, explicit correspondence, work-product versioning and a review roadmap.
+- [Objectified logical interactions](../../examples/naf41-interactions-cutout.arch) illustrates L3 with a modeled payload, an optional weighted Sankey and the L6 event and behavior context in a sequence diagram.
+
+In A2 (NAF pp. 174–175), `Stakeholder` is the category shown in the cut-out.
+UAF 1.0 declares it abstract. The example interprets Operational Planner and
+SAR SIC Project Lead as job titles, modelled as `Post` with `stereotype "Stakeholder"`
+for the card caption. Use `ActualPost` for a specific appointment or `ActualPerson`
+for an individual. These types all work as the source of `StakeholderHasConcern`.
+
+In A3 (NAF pp. 176–177), use `ArchitectureDescriptionElement` when the
+concrete type of a correspondence endpoint is unspecified. The type is a
+concrete arch.js application adapter for `UAFElement`. A more specific
+type such as `View` or `ArchitectureDescription` can serve as the endpoint
+directly. The two targets in the printed example appear swapped relative to
+their correspondence captions. The model links **includes Combat SAR** to
+**Combat SAR** and **implements SAR Reference Architecture** to **SAR Reference
+Architecture**. Both correspondences also link to the common description.
+
+In A4 (NAF pp. 178–179), `Methodology` is an alias for
+`ArchitectureMethodology`. Use `ExtendsMethodology` from Mission Threads to
+NAFv4 and `MethodologyExtendsStandard` from NAFv4 to the TOGAF standard.
+`MethodologyAppliesStandard` models the link to the NAFv4 Information Model.
+
+In A5 (NAF pp. 180–181), `ArchitectureStatusDescribesProduct` links an
+`ArchitectureStatus` to an `ArchitectureWorkProduct`, `ArchitectureDescription`
+or `View`. The p.181 example reports development status, completeness and
+maturity against the two P2 views. A selected work product can satisfy its
+status requirement through a selected `WorkProductContainsView` link, or
+through a selected `ArchitectureDescriptionGeneralization` and `ContainsView`.
+
+In A6 (NAF pp. 182–183), either an `ArchitectureWorkProduct` or an
+`ArchitectureDescription` can own a version. `ProductHasVersion` points
+from the description or product to a version or baseline. The inverse
+`VersionOfProduct` is also accepted. A version can satisfy its work-product
+requirement through a selected baseline that specializes it via
+`ArchitectureVersionGeneralization`. `ArchitectureVersionSupersedes`
+points from the newer version to the earlier version.
+
+In A8 (NAF pp. 186–188), `Profile` is an alias for `StandardProfile`.
+The FMN guidebook uses `ReferencesStandard` to point to Spiral 6 and
+`IncludesArchitecturalConstraint` to point to each included constraint.
+The example declares `ruleKind Constraint` for the two
+`ArchitecturalConstraint` nodes, as required by the inherited UAF rule type.
+
+For weighted L3 views, set `volume` on each selected `LogicalInteraction` and
+choose `diagram sankey { relations [LogicalInteraction] weightAttribute volume }`.
+All values should use the same unit. Without a weight attribute each selected
+link contributes one unit. Use `diagram connected` for feedback cycles.
+
+### P2 — Voice Data (pp. 151–152)
+
+The cut-out prints *Physical Passive Resource* in italics, identifying an
+abstract category. The example labels **Voice Data** with that category.
+Declare it as `DataProductType`, a concrete subtype in this profile. Use
+`stereotype "Physical Passive Resource"` to reproduce the label in the diagram.
+The dependency from **DSC Radio** to **Voice Data** uses `PhysicalDependency`.
+
 ## S1 — Service Taxonomy vocabulary
 
 `Service` is the p.104–105 NAF vocabulary alias of native UAF 1.0
@@ -58,7 +124,7 @@ not complete UAF 1.2 compatibility or an import of the ADMBw MDG.
 See [aliases, metamodel mappings and migration](ALIASES.md),
 `@help aliases naf41-uaf` and `@help mappings naf41-uaf`.
 The profile pins `uaf@1.0.0-arch.1`; select this revision explicitly with
-`config { profile "naf41-uaf@4.1.0-arch.16" }` when needed.
+`config { profile "naf41-uaf@4.1.0-arch.43" }` when needed.
 
 | Source relationship | arch.js type | Direction |
 |---|---|---|
@@ -102,7 +168,24 @@ reload the preview so its scripts actually execute again.
 
 For JSON registration, register `profiles/uaf.json` first and then
 `profiles/naf41-uaf.json` with `arch.registerProfile(profile.id, profile)`.
-The runtime JSON has no executable application code.
+Both browser loading variants register the frozen revisions
+[`4.1.0-arch.33`](revisions/4.1.0-arch.33.json),
+[`4.1.0-arch.34`](revisions/4.1.0-arch.34.json),
+[`4.1.0-arch.35`](revisions/4.1.0-arch.35.json),
+[`4.1.0-arch.36`](revisions/4.1.0-arch.36.json),
+[`4.1.0-arch.37`](revisions/4.1.0-arch.37.json),
+[`4.1.0-arch.38`](revisions/4.1.0-arch.38.json),
+[`4.1.0-arch.39`](revisions/4.1.0-arch.39.json),
+[`4.1.0-arch.40`](revisions/4.1.0-arch.40.json),
+[`4.1.0-arch.41`](revisions/4.1.0-arch.41.json) and
+[`4.1.0-arch.42`](revisions/4.1.0-arch.42.json) before the current
+`4.1.0-arch.43`. The unqualified ID selects the current revision. Use the
+same registration order when manually loading multiple JSON revisions.
+
+The profile defines the A2 grid through `viewpointGrid`. Revision
+`4.1.0-arch.43` shares the style-group colors with node cards and presents
+`L2-L3` as a narrow tile with a vertical label.
+[Grid syntax and navigation](../../DIAGRAMS.md#naf-viewpoints-mit-nafgrid).
 
 ```arch
 architecture "Measurable rescue capability" {
@@ -167,19 +250,23 @@ primitive. The alias also works in existing L1/L2 projections through the
 same inherited logical-node rules. It does not equate all OperationalArchitecture
 subtypes with Node.
 
-`PhysicalActiveResource` is a **concrete application subtype** of the abstract
-UAF ResourcePerformer. It deliberately is not an alias: an alias would retain
-ResourcePerformer's abstract flag. Native UAF and ADMBw do not gain either new
-name. The required native `isStandardConfiguration` boolean remains explicit:
+`PhysicalActiveResource` is an **abstract alias** of UAF `ResourcePerformer`
+as of revision `4.1.0-arch.34`. Pages 107–108 show the abstract category in
+the cut-out and use its name as a card label in the example. The executable
+type in the S2 model is `System`. The inherited `isStandardConfiguration`
+boolean remains explicit.
 
 ```arch
-PhysicalActiveResource airTraffic "Air Traffic Control System" {
+System airTraffic "Air Traffic Control System" {
   isStandardConfiguration false
+  stereotype "Physical Active Resource"
 }
 ```
 
-The example chooses false; change it if the resource represents a standard
-configuration. Native concrete types such as System remain usable.
+The stereotype controls the card caption. The ID and `RealizesService` link
+stay the same. Existing declarations of the formerly concrete type can use
+`config { profile "naf41-uaf@4.1.0-arch.33" }`. In custom rules the new alias
+matches the entire `ResourcePerformer` hierarchy.
 
 | Source link | Relationship type | Direction |
 |---|---|---|
@@ -208,10 +295,10 @@ It is also available as **NAFv4.1 · Service Structure** in the demo.
 Service dependencies and structural connections (ServiceAggregation,
 ServiceComposition or ServiceDependency) remain mandatory; optional
 consumption/enabling/realization traces cannot satisfy those requirements.
-ServiceProvider and ServiceConsumer now exist for S4 (see below). Their admission
-and the complete relies-on/provides/delivers context of the wider p.107 S2
-cut-out remain outside the S2 mapping.
-This change covers the complete p.108 example, not every optional S2 construct.
+S2 also accepts the explicit provider and consumer roles. They provide or
+consume a service and may rely on a logical Node through
+`ServiceRoleReliesOnNode`. `DeliversService` links the Node to the service it
+delivers. These links express the optional context in the p.107 cut-out.
 
 Help: `@help types naf41-uaf Node`,
 `@help types naf41-uaf PhysicalActiveResource`,
@@ -262,11 +349,11 @@ Legacy scalar `owner` and `resource` attributes remain accepted on
 ServiceOperationParameter, with their previous reference target types. Their
 requiredness is now contextual: S3 requires an operation association, supplied
 by a visible has link or a selected owner reference. S3 resource tracing is
-optional; S7 requires both the operation and resource associations. Explicit
-reference values must still be correctly typed and selected in the view.
+optional; S7 requires operation ownership and visibility of known resource associations, while unmodeled resources produce review notices. Explicit
+reference values must still be correctly typed. Owners must be selected; resource visibility follows the may/shall policy.
 A reference and a matching edge do not count the same counterpart twice.
 Outside S3/S7, the optional attributes alone do not impose an ownership check.
-ServiceFunctionParameter keeps its previous required owner/resource attributes.
+ServiceFunctionParameter owner/resource attributes are globally optional; S7 checks ownership, visibility of known mappings and review of unmodeled payloads.
 
 A Data Model is reached **through** the passive data product, following the
 p.110 note: optionally add `DataModel model "Reports" {kind Physical}` and
@@ -284,27 +371,237 @@ Help: `@help types naf41-uaf ServiceOperation`,
 `@help types naf41-uaf DataProductType`, `@help viewpoints naf41-uaf S3`.
 Use one help query per document.
 
+## L4 logical activities and roles
+
+The [p.135 example](../../examples/naf41-logical-activities.arch) follows the
+allocation and control-flow directions from the cut-out on p.134.
+`Role` is an alias of UAF 1.0 `OperationalRole` and keeps its written stereotype
+in the diagram. `HoldsRole` links a `Node` to the role it holds. Both can be the
+source of `PerformsOperationalActivity`. Use `OperationalControlFlow` or
+`LogicalControlFlow` between `OperationalActivity` definitions.
+
+Both control-flow types carry `activityFlow: true` for activity diagrams.
+Swimlanes therefore follow their directed control flows by default. Use
+`diagram activity { ... layout model }` to use declaration order.
+
+L4 requires a visible allocation and a control flow for each selected activity.
+A role-focused view may omit the holding node. Existing `IsCapableToPerform` links from
+`OperationalAgent` still fulfill the allocation rule, with their native endpoint
+constraints. The example uses `diagram connected` to place and route the nodes
+explicitly.
+
+Help is available through `@help connections naf41-uaf Role` and
+`@help viewpoints naf41-uaf L4`.
+
+### Operational flows and the L4 cut-out
+
+The [p.134 cut-out example](../../examples/naf41-logical-activities-cutout.arch)
+models an `OperationalFlow` edge between two `OperationalActivity` elements.
+An optional `OperationalFlow` object identifies that edge and can carry separate
+`ConveysLogicalResource` links to logical passive resources such as an
+`InformationProduct`. The connected renderer draws the `is equal to` attachment
+from the object to the flow. The binding can be routed with the regular
+reference-route syntax.
+
+```arch
+OperationalFlow handover "Incident Handover"
+InformationProduct report "Incident Report"
+relation transfer handle -> record "Operational Flow" {type OperationalFlow flow handover}
+relation conveysReport handover -> report "conveys" {type ConveysLogicalResource}
+```
+
+The flow object and payload can be omitted from the view. If selected, the object
+binds to one selected flow edge. `LogicalObjectFlow` still accepts a typed
+`conveyed` list on the edge. `OperationalControlFlow` and `LogicalControlFlow`
+fulfill the separate required control-flow rule.
+
+| Source | Relationship | Target |
+|---|---|---|
+| `OperationalActivity` | `OperationalActivityAggregation` | `OperationalActivity` |
+| `OperationalActivity` | `MapsToCapability` | `Capability` |
+| `OperationalActivity` | `ActsUponLogicalResource` | `OperationalExchangeItem` subtype |
+| `OperationalActivity` | `TriggersLogicalEvent` | `LogicalEvent` |
+| `LogicalEvent` | `TriggersOperationalActivity` | `OperationalActivity` |
+| `Service` | `RelatesServiceToOperationalActivity` | `OperationalActivity` |
+| `ResourcePerformer` (for example `EquipmentType`) | `EnablesOperationalActivity` | `OperationalActivity` |
+
+## L5 logical states (pp.136–138)
+
+The [p.138 example](../../examples/naf41-logical-states.arch) uses
+`HasLogicalState` from a `Node` or `LogicalActor` to a `LogicalState`. A state
+can also use its compact `owner` reference. L5 checks for exactly one visible
+owner and counts matching references and edges once.
+
+An `event` on a `LogicalStateTransition` draws a `triggers` arrow from the event
+card to the transition edge in `diagram connected`. An event can trigger several
+edges. The [p.137 cut-out](../../examples/naf41-logical-states-cutout.arch)
+uses the objectified form. Set `transition` on the state-to-state edge to bind a
+`LogicalTransition` node, then relate the event to that node with
+`TriggersLogicalTransition`. Each selected transition object binds one edge.
+
+| Source | Relationship | Target |
+|---|---|---|
+| `LogicalState` | `StateEnablesOperationalActivity` | `OperationalActivity` |
+| `LogicalState` | `StateEnablesLogicalFunction` | `LogicalFunction` |
+| `OperationalActivity` or `LogicalFunction` | `HasLogicalMode` | `LogicalMode` |
+| `LogicalStateGroup` | `GroupsLogicalState` | `LogicalState` |
+| `LogicalStateGroup` | `AggregatesLogicalStateGroup` | `LogicalStateGroup` |
+
+The compact `LogicalMode.activity` remains a valid assignment. A state can
+belong to several groups. Nested state groups must be acyclic. `diagram connected`
+supports the graphical attachments used in both examples.
+
+## L6 — Logical Sequence
+
+Use `RepresentsLogicalResource` from a `LogicalLifeline` to the
+`OperationalAgent` it represents. The p.140 example uses two `Node` elements
+and one `LogicalEquipment`. Each selected lifeline requires one selected
+resource. The compact `represents` attribute also satisfies that requirement.
+An explicit edge and an attribute to the same resource count once.
+
+In a sequence view, `showContext true` draws the resource cards and explicit
+timeline links. The relationship's `sequenceContext: "above"` profile setting
+aligns an individually represented resource above its lifeline. A shared
+resource appears once in the side context. `LogicalSequenceInteraction` edges
+are the ordered messages.
+Use `orderAttribute order` to sort the messages and require unique positive
+order values. See the [p.140 example](../../examples/naf41-logical-sequence.arch).
+
+The p.139 cut-out also shows a `Logical Interaction` object bound to a
+message. The current L6 model supports compact `event` and `activity`
+references on the message. Object binding and direct association edges to
+the interaction object, including the logical-function association, are
+tracked in [GAPS.md](GAPS.md).
+
+## L7 — Information Model
+
+`InformationEntity` is the L7 vocabulary for an entity specified by an
+information model. It specializes UAF `InformationElement`. Existing
+`InformationElement` declarations also satisfy the L7 entity requirement.
+
+| Source | Relationship | Target |
+|---|---|---|
+| `InformationModel` | `SpecifiesInformation` | `InformationEntity` |
+| `InformationModel` | `RepresentsInformationProduct` | `InformationProduct` |
+| `InformationEntity` | `AggregatesInformationAttribute` | `InformationAttribute` |
+| `InformationAttribute` | `HasInformationAttributeType` | `InformationAttributeType` |
+
+The L7 scope and cut-out on p.141 agree on the direction from the information
+model to the information product. The `represents` arrow printed on p.142
+points the other way. The profile treats that reversal as a likely editorial
+error. The [arch.js example](../../examples/naf41-information-model.arch)
+uses the elements from p.142 and the relationship direction from p.141.
+
+For models using the former `RepresentsInformationModel` adapter from
+`4.1.0-arch.28`, reverse the endpoints and use `RepresentsInformationProduct`.
+
+An attribute selected in L7 requires one selected owner. Its type may be
+omitted from the view. The compact `owner` and `attributeType` references
+remain valid alongside the explicit link syntax.
+
+## L8 — Logical Constraints
+
+`LogicalConstraint` specializes `OperationalConstraint` for the L8
+vocabulary. Its declared type implies `ruleKind Constraint`. An explicit
+`ruleKind` on `LogicalConstraint` accepts the same value.
+
+| Source | Relationship | Target |
+|---|---|---|
+| `LogicalConstraint` or `LogicalRequirement` | `ConstrainsLogical` (*applies to*) | active resource, behavior or passive resource |
+| `LogicalRequirement` | `LogicalRequirementConstraint` (*relates to*) | `LogicalConstraint` |
+| `LogicalSpecification` | `GroupsLogicalConstraint` (*aggregates*) | `LogicalRequirement` or `LogicalConstraint` |
+| `LogicalConstraint` | `OriginatesFromLogicalRationale` | `LogicalRationale` |
+| `LogicalRationale` | `OriginatesFromStrategicConstraint` | `StrategicConstraint` |
+
+Active resources use `OperationalAgent` subtypes such as `Node`. Behavior
+can be an `OperationalActivity` or `LogicalFunction`. Passive resources
+use `OperationalExchangeItem` subtypes such as `InformationProduct`.
+
+The p.143 cut-out shows the requirement-to-constraint link. The p.144
+[example](../../examples/naf41-logical-constraints.arch) applies its
+requirement directly to `Search`. The profile accepts either form as the
+required connection for a requirement. A link between a requirement and a
+constraint is explicit. A common subject alone provides no evidence of it.
+
+## Lr — Logical Roadmap
+
+| Source | Relationship | Target |
+|---|---|---|
+| `LogicalMilestone` | `DefinesLogicalReadiness` (*defines*) | `LogicalReadinessLevel` |
+| `LogicalReadinessLevel` | `LogicalReadinessFulfilsResource` (*fulfils*) | `OperationalAgent`, such as a `Node` |
+| `LogicalReadinessLevel` | `TracesCapabilityIncrement` (*relates to*) | `CapabilityIncrement` |
+| `LogicalProject` | `SchedulesLogical` (*schedules*) | `LogicalMilestone` |
+| `LogicalProject` | `DefinesLogicalEvolution` (*defines evolution of*) | `OperationalAgent` |
+
+Both the cut-out on p.145 and the example on p.146 point from the readiness
+level to the resource. Existing models can express the inverse direction
+with `FulfilsLogicalReadiness`. Either form satisfies the Lr association
+check. Each selected readiness level needs a defining milestone and an
+associated resource. Deciding which milestones mark actual readiness is a
+modeling decision. The profile does not derive readiness from their dates.
+`LogicalProject` inherits the required boolean `isStandardConfiguration` from
+`Project`.
+
+The [p.146 example](../../examples/naf41-logical-roadmap.arch) assigns the
+maintenance and personnel milestones to both levels, and the software
+milestone to WBR High. It uses illustrative ISO dates for the required
+`LogicalMilestone.date` values. The printed example leaves those dates open.
+
+## P1 — Resource Taxonomy
+
+The [p.149 example](../../examples/naf41-resource-taxonomy.arch) uses
+`EquipmentType` for DSC Radio and its three specializations. This is a concrete
+subtype of UAF `ResourceArtifact`. It inherits the required boolean
+`isStandardConfiguration`. The example supplies values because the PDF omits
+them. `ResourceFunction` is a vocabulary alias of UAF `Function`.
+
+| Label in the cut-out | Source → target | Arch.js relationship |
+|---|---|---|
+| is a kind of | Specialized active resource → general active resource | `ResourceGeneralization` |
+| aggregates | Configuration → active resource | `GroupsPhysicalResource` |
+| aggregates | Active resource → active resource | `ResourceAggregation` |
+| aggregates | Resource function → resource function | `ResourceFunctionAggregation` |
+| performs | Active resource → resource function | `IsCapableToPerform` |
+| uses | Active resource → resource function | `UsesResourceFunction` |
+| depends on | Active resource → passive resource | `PhysicalDependency` |
+| realizes | Configuration → capability | `Exhibits` |
+| realizes | Active resource → logical active resource | `Implements` |
+| realizes | Resource function → service function or operational activity | `Implements` |
+| realizes | Resource function → logical function | `RealizesLogicalFunction` |
+
+P1 checks that the view includes active resources and resource functions. The
+links are optional under the p.149 notes. Completeness against the intended scope
+and validity of classification decisions need modeling review.
+
+The example uses a named `tree` with `relations [ResourceGeneralization]` and
+`sharePath stereotypes`. Its children are below the root and their arrows point
+to the parent. The surrounding connected view places the configuration, logical
+equipment and function independently. `diagram matrix` can also show the typed
+mappings. Class views produce compartments with automatic routing.
+
 ## Modeling choices
 
 | Concept | Representation in this profile |
 |---|---|
-| Logical node | `OperationalArchitecture` or `LogicalNode` |
-| Logical active resource | `OperationalPerformer` and applicable UAF subtypes |
-| Activity / service / physical function | `OperationalActivity` / `ServiceFunction` / `Function` |
-| Physical active resource | Concrete `ResourcePerformer` subtype, e.g. `Software`, `System`; native `isStandardConfiguration` is required |
+| Logical node | `Node` (alias of `LogicalNode`) or `OperationalArchitecture` |
+| Logical active resource | `LogicalActor`, `LogicalEquipment`, or existing `OperationalPerformer` types |
+| Activity / service / physical function | `OperationalActivity` / `ServiceFunction` / `ResourceFunction` (alias of `Function`) |
+| Physical active resource | Concrete `ResourcePerformer` subtype, e.g. `EquipmentType`, `Software` or `System`. Native `isStandardConfiguration` is required. |
 | Passive physical resource | `DataEntity` (also a UAF `DataElement`) or `PhysicalMaterial` |
 | Capability performance | `AssessmentCriterion` with `expression`, `Measure` with `unit`; criterion → capability and measure → criterion |
-| Logical needline | `Needline` node with required `source` and `target` references to logical nodes |
+| Logical needline | `Needline` edge between Nodes; optional bound `Needline` object, or a legacy object with paired `source`/`target` references |
 | Logical interaction | `LogicalInteraction` edge between active resources, required `conveyed` list; optional `needline` reference |
 | Physical interaction | `ResourceInteraction` node with typed endpoints, linked to standards/protocols |
 | State | `ServiceState` with HasServiceState or owner in S5; LogicalState/ResourceState retain required owner; distinct from a UAF state-machine description |
-| Sequence | Domain lifelines with represents (S6 also accepts RepresentsService); interactions have a positive order |
+| Sequence | Domain lifelines with `represents`; S6 also accepts `RepresentsService` and L6 accepts `RepresentsLogicalResource`. Interactions have a positive order. |
 | Parameters | Operation parameters: explicit has/involves links or legacy `owner`/`resource`; S3 payload optional, S7 required. Function parameters retain required references. |
 | Roadmaps | Domain milestones with a valid ISO date, readiness/increment nodes and defining/fulfilment/delivery links; Cr additionally permits implicit milestone properties as in p.103 |
 | Foundation | Explicit glossary, correspondence, methodology, work-product, status, version and library adapters |
 
 `Needline` and `ResourceInteraction` have identities because they can themselves
-be referenced. References do not automatically draw edges.
+be referenced. References do not automatically draw semantic edges. L2 now
+supports a typed edge-to-object binding and an is equal to presentation connector;
+ResourceInteraction retains its earlier endpoint-reference projection.
 Connected views show the `conveyed` elements of `LogicalInteraction` as cards
 attached to the carrying edge, following the example on NAFv4.1 p.132 with the
 original arch.js templates/colors. By default, a shared information element
@@ -324,10 +621,10 @@ values; use a connected view for explicit relationships. Drawing
 containment is not a substitute for `GroupsLogicalResource` or
 `GroupsPhysicalResource` links.
 
-Application flow edges connect activity/function definitions. The inherited
-UAF `OperationalControlFlow` and `FunctionControlFlow` still connect UML-style
-action representations. These are different projections with different
-endpoint requirements, explained in relationship help.
+Application flow edges connect activity/function definitions. In the UAF base
+profile, `OperationalControlFlow` connects UML-style `OperationalActivityAction`
+endpoints. The NAF profile adds the `OperationalActivity` pair and retains the
+action pair. Each edge uses a single representation at both endpoints.
 
 Every formal view needs `viewpoint ID`. Its `include`/`exclude` selection is
 validated; all relationships with visible endpoints are part of that view.
@@ -415,7 +712,7 @@ Provider/consumer/activity context is optional; none of the optional cut-out
 links is required universally. Grouping does not establish UML exclusive
 ownership, call behavior, workflow order or executable notification semantics.
 No completeness check can discover functions omitted from the model. Existing
-S2 provider-specific relies-on/delivers projections remain outside this S4 work.
+S2 also accepts provider and consumer roles, with `ServiceRoleReliesOnNode` for the role-to-node trace and `DeliversService` for the node-to-service link.
 
 Examples: [p.112](../../examples/naf41-service-functions.arch) and
 [full cut-out](../../examples/naf41-service-functions-cutout.arch).
@@ -516,3 +813,145 @@ Connected inspection view. Help: @help viewpoints naf41-uaf S6,
 
 Further confirmed PDF vocabulary/objectification gaps are tracked in [GAPS.md](GAPS.md).
 Supporting every viewpoint ID is not a claim of complete cut-out or example coverage.
+
+## S7 — Service function parameters and logical payloads
+
+Revision `4.1.0-arch.17` adds the function-parameter branch of pp.119–120:
+
+```arch
+ServiceFunction receiving "Data Receiving"
+ServiceFunctionParameter incoming "Incoming data"
+InformationProduct report "Situational Report"
+relation parameter receiving -> incoming "has" {type HasServiceFunctionParameter}
+relation product incoming -> report "involves" {type InvolvesLogicalResource}
+```
+
+`InvolvesLogicalResource` is an application relationship from a function
+parameter to native UAF `OperationalExchangeItem` or a subtype, including
+InformationProduct and InformationElement. It does not accept physical data
+products or active performers. `InvolvesPhysicalResource` remains the separate
+operation-parameter relationship; neither its direction nor its targets change.
+
+S7 requires function ownership and checks visibility of every known payload
+association. Missing payload mappings produce non-blocking review notices,
+not mandatory per-parameter cardinality errors. Drawn links and typed
+`owner`/`resource` references remain supported. Those attributes are globally optional so explicit links suffice;
+when provided, their types are checked globally. Legacy physical `resource`
+references on function parameters remain accepted for backwards compatibility.
+This exception does not broaden the endpoints of InvolvesLogicalResource.
+Simultaneous references and links are not checked for equality.
+
+[Service parameters example](../../examples/naf41-service-parameters.arch)
+shows both branches and extends/embeds the S3 view. It supplies a physical
+resource reference for the Resource operation parameter as an explicit modeling
+choice. The compliant figures on pp.110 and 120 show `Resource` without an
+`involves` edge. The unmodeled association produces a non-blocking mapping
+review in arch.js. Keep it unmodeled when reproducing those figures. Add an
+`InvolvesPhysicalResource` link if the architecture identifies a specific
+involved passive resource. `EnablesService`
+is also admitted in S7 for the optional service context. No complete UML
+parameter ownership, signature, ordering or data compatibility semantics is
+asserted.
+
+## S8 service constraints
+
+S8 accepts `SatisfiesServicePolicy` from Service to ServicePolicy, as drawn in
+the cut-out and example on pp.121–122. `ServicePolicySatisfiedBy` remains
+available in the inverse direction. Services and their satisfaction links are
+optional context; policy-to-constraint grouping remains required through
+`GroupsServiceConstraint` (the visible caption may be `"aggregates"`).
+
+## L1 logical taxonomy (pp.126–127)
+
+[naf41-logical-taxonomy.arch](../../examples/naf41-logical-taxonomy.arch)
+reproduces all 12 elements and 11 relationships of the p.127 SAR example,
+including the Crew, three logical equipment elements and Information Product.
+
+`LogicalActor` and `LogicalEquipment` are separate concrete application
+subtypes of `OperationalPerformer`. They retain their written stereotypes and
+inherited relationships. They are not aliases, physical instances or imported
+native UAF stereotypes. Existing `OperationalPerformer` models remain valid.
+
+| Source caption | Application relationship | Direction |
+|---|---|---|
+| supports | `Exhibits` | Node → Capability |
+| aggregates | `GroupsLogicalResource` | Node → Node, active/passive resource or activity |
+| is a kind of | `OperationalGeneralization` | Specialized node/active resource → general node/active resource |
+
+L1 requires a logical node, but no artificial activity or performer at each
+grouping/specialization node. A singleton node taxonomy is valid. Every selected
+active resource must be grouped by a selected logical node, directly or through
+selected generalization ancestors. Selected activities and optional passive
+resources require direct incoming grouping. An omitted ancestor cannot provide
+view-local grouping evidence. Native generalization cycle/type checks remain.
+
+The p.126 requirement to include all *relevant* resources and behavior cannot be
+proved from the model alone. Their relevance and completeness remain review
+obligations; the absence of activities alone does not invalidate the p.127
+example. Capability context and passive resources remain optional. This change
+does not add new projections for behavior/passive-resource specialization or
+a distinct needs-capability relation.
+
+Help: `@help types naf41-uaf LogicalActor`,
+`@help connections naf41-uaf LogicalEquipment`,
+`@help viewpoints naf41-uaf L1`.
+
+## L2 needlines (pp.128–129)
+
+[naf41-needlines.arch](../../examples/naf41-needlines.arch) reproduces all four
+Nodes and six directed Needlines of p.129. Cycles across distinct nodes and
+parallel needlines are supported; a plain LogicalDependency does not satisfy
+the requirement for at least one Needline representation.
+
+```arch
+Node search "Search"
+Node assetControl "Asset Control"
+relation control search -> assetControl "control" {type Needline}
+```
+
+Needline has a node and relationship type in separate namespaces. Object cards
+are optional. Bind an object with the edge's typed scalar `needline` attribute:
+
+```arch
+Needline taskingNeed "Rescue tasking"
+InformationProduct order "Tasking Order"
+relation tasking assetControl -> search "tasking" {
+    type Needline
+    needline taskingNeed
+}
+relation payload taskingNeed -> order "conveys" {type ConveysLogicalResource}
+```
+
+The binding draws an is equal to connector using the existing graphical
+reference mechanism. `route taskingNeed -> tasking {from top 1/2 to 1/2}`
+controls its ports, path fraction and via points. It is a presentation connector,
+not an additional semantic relationship. Normal place, route, label and style
+options remain available in connected views. A bound object may be excluded or
+hidden while its compact edge is shown. Explicit payload links use normal routes.
+
+Each selected Needline object needs one selected bound Needline edge, or a
+complete legacy `source`/`target` reference pair whose endpoints are selected.
+The node attributes are individually optional to permit bound objects, but
+partial pairs are rejected in L2. More than one model edge bound to the same
+object is rejected, even if the object card is omitted in the view. If legacy
+references accompany a binding they must agree with its endpoints. Typed Node
+endpoints are retained; logical actors/equipment and physical resources do not
+replace Nodes at the ends of a Needline. Legacy reference pairs do not create
+auto-generated edges: use explicit Needline edges for the p.129 visualization.
+
+L2's may-show payload rule permits omission of known logical passive resources,
+ConveysLogicalResource links and legacy `conveyed` targets. Optionality does not
+relax model reference typing. Existing `conveyed` attributes on Needline objects
+remain data and can be displayed with propertyFields; the explicit conveys
+relationship supplies the cut-out's drawn semantic link. Completeness of exchange
+needs, physical transport and full UML association-class semantics require review.
+
+The [cut-out example](../../examples/naf41-needlines-cutout.arch) includes
+objectified, compact and known-payload-omitted views of the same model.
+L3 can show the same Needline edges, their Node endpoints, object cards and
+requested resources as optional context (p.131). Context Nodes need no direct
+LogicalInteraction. The interaction and its conveyed resources still belong
+in the L3 view.
+
+Help: `@help relations naf41-uaf Needline`, `@help types naf41-uaf Needline`,
+`@help connections naf41-uaf Needline`, `@help viewpoints naf41-uaf L2`.

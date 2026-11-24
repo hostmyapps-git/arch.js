@@ -1,13 +1,18 @@
-import { ArchError } from './parser.js';
-import { num } from './geometry.js';
+import {validationMarkersSVG} from './validation-mode.js';
+import { ArchError } from './errors.js';
+import { cardShadowFilter, escape, num } from './svg-values.js';
+import { singleLine } from './text-layout.js';
 import { defaultIcon, getIcon } from './icons.js';
-import { contrast, foreground, composite } from './colors.js';
+import { contrast, foreground, composite, DEFAULT_BACKGROUND_OPACITY } from './colors.js';
 import { toDiagramSVG } from './diagrams.js';
 import { iconifyMarkup } from './iconify.js';
 import { metaSVG } from './meta.js';
 import {effectiveDasharray} from './route-styles.js';
+import { backgroundImageMarkup, nodeBackgroundMarkup } from './background-images.js';
+import { crossingBridges } from './route-crossings.js';
+import { dashedOverlaps } from './dashed-overlaps.js';
+import { traceLinearPath } from './svg-path.js';
 
-export const escape = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
 let serial = 0;
 let iconSerial = 0;
 const accents = { person: '#64748b', system: '#4f46e5', application: '#6366f1', service: '#0d9488',
@@ -33,12 +38,14 @@ function linesMarkup(lines, x, y, size, color, weight = 400, lineHeight = 17, an
 
 function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = prefix) {
   const { width: w, height: h } = node;
+  const cardRect = `x="0.75" y="0.75" width="${num(w-1.5)}" height="${num(h-1.5)}"`;
+  const background = shape => nodeBackgroundMarkup(node, `${iconScope}-background-${node.id}`, num(w), num(h), shape);
   let accent = node.accent ?? accents[node.template] ?? accents.node;
   if (palette.dark) {
     const hex = accent.slice(1), full = hex.length === 3 ? [...hex].map(c => c + c).join('') : hex;
     accent = '#' + full.match(/../g).map(c => Math.round(parseInt(c, 16) * .62 + 255 * .38).toString(16).padStart(2, '0')).join('');
   }
-  const opacity = node.opacity ?? (node.backgroundColor ? 0.2 : 1);
+  const opacity = node.opacity ?? (node.backgroundColor ? DEFAULT_BACKGROUND_OPACITY : 1);
   if (node.backgroundColor || node.opacity !== undefined) {
     const visibleColor = composite(node.backgroundColor ?? (node.container ? palette.package : palette.card), backdrop, opacity);
     const text = foreground(visibleColor);
@@ -46,8 +53,8 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
     if (contrast(accent, visibleColor) < 4.5 || contrast(accent, composite(accent, visibleColor, 0.1)) < 4.5) accent = text;
   }
   const fillOpacity = node.backgroundColor || node.opacity !== undefined ? ` fill-opacity="${num(opacity)}"` : '';
-  const title = `<title>${escape(node.title)} — ${escape(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape(node.stereotype)}]` : ''}${node.description ? `: ${escape(node.description)}` : ''}</title>`;
-  const attrs = `data-node="${escape(node.id)}" data-type="${escape(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition??(node.display==='logo'?'center':'left')}" transform="translate(${num(node.x)} ${num(node.y)})"`;
+  const title = `<title>${escape(node.title)} — ${escape(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape(node.stereotype)}]` : ''}${node.modelId ? ` [ID: ${escape(node.modelId)}]` : ''}${node.description ? `: ${escape(node.description)}` : ''}</title>`;
+  const attrs = `data-node="${escape(node.id)}"${node.modelId ? ` data-model-id="${escape(node.modelId)}"` : ''} data-type="${escape(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition??(node.display==='logo'?'center':'left')}" transform="translate(${num(node.x)} ${num(node.y)})"`;
   const iconName = node.icon ?? defaultIcon(node.template);
   if (node.display === 'logo') {
     let logo='';
@@ -59,7 +66,7 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
       logo=`<g color="${accent}">${iconMarkup(iconName,x,y,Math.max(width,height),node.loc,`${iconScope}-${node.id}-logo`)}</g>`;
     }
     return `<g class="arch-node" ${attrs} data-display="logo" tabindex="0" role="group" aria-label="${escape(`${node.title}, ${node.type}`)}">${title}
-      <g filter="url(#${prefix}-shadow)"><rect x="0.75" y="0.75" width="${num(w-1.5)}" height="${num(h-1.5)}" rx="13" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/></g>${logo}</g>`;
+      <g filter="url(#${prefix}-shadow)"><rect ${cardRect} rx="13" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/></g>${background(`<rect ${cardRect} rx="13"/>`)}${logo}</g>`;
   }
   const iconBox=node.iconBox;
   let nodeIcon='';
@@ -69,8 +76,9 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
   }
   const propertyMarkup=()=>node.propertyRows?.length?`<g data-node-properties="true"><path d="M20 ${num(node.textStyle.propertyDividerY)} H${num(w-20)}" stroke="${palette.border}"/>${node.propertyRows.map(row=>`<g data-property="${escape(row.key)}"><title>${escape(row.full)}</title>${linesMarkup(row.lines,20,row.y,node.textStyle.description,palette.text,400,node.textStyle.descriptionLeading)}</g>`).join('')}</g>`:'';
   if (node.container) {
+    const packageRect = `width="${num(w)}" height="${num(h)}" rx="18"`;
     return `<g class="arch-package" ${attrs}>${title}
-      <rect width="${num(w)}" height="${num(h)}" rx="18" fill="${palette.package}"${fillOpacity} stroke="${palette.border}" stroke-dasharray="5 4"/>
+      <rect ${packageRect} fill="${palette.package}"${fillOpacity} stroke="${palette.border}" stroke-dasharray="5 4"/>${background(`<rect ${packageRect}/>`)}
       <path d="M 0 ${num(node.headerHeight)} H ${num(w)}" stroke="${palette.border}"/>
       <g color="${accent}">${nodeIcon}</g>
       ${node.titleLines.length?linesMarkup(node.titleLines, node.packageTitleX, node.packageTitleY, node.packageTitleSize, palette.text, 650, node.textStyle.titleLeading):''}
@@ -78,20 +86,23 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
       ${propertyMarkup()}
     </g>`;
   }
-  let shape;
-  const standard = `<rect x="0.75" y="0.75" width="${num(w - 1.5)}" height="${num(h - 1.5)}" rx="13" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/>`;
+  let shapeTag = 'rect', shapeAttrs = `${cardRect} rx="${{interface:36,capability:24}[node.template] ?? 13}"`, fold = '';
+  const shape = attrs => `<${shapeTag} ${shapeAttrs}${attrs}/>`;
   switch (node.template) {
     case 'database':
-      shape = `<path d="M1 15 C1 -3 ${num(w - 1)} -3 ${num(w - 1)} 15 V${num(h - 15)} C${num(w - 1)} ${num(h + 3)} 1 ${num(h + 3)} 1 ${num(h - 15)}Z" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/>
-        <path d="M1 15 C1 33 ${num(w - 1)} 33 ${num(w - 1)} 15" fill="none" stroke="${palette.border}"/>`;
+      shapeTag = 'path';
+      shapeAttrs = `d="M1 15 C1 -3 ${num(w - 1)} -3 ${num(w - 1)} 15 V${num(h - 15)} C${num(w - 1)} ${num(h + 3)} 1 ${num(h + 3)} 1 ${num(h - 15)}Z"`;
+      fold = `<path d="M1 15 C1 33 ${num(w - 1)} 33 ${num(w - 1)} 15" fill="none" stroke="${palette.border}"/>`;
       break;
     case 'process':
-      shape = `<path d="M1 1 H${num(w - 20)} L${num(w - 1)} ${num(h / 2)} L${num(w - 20)} ${num(h - 1)} H1 L13 ${num(h / 2)}Z" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/>`; break;
+      shapeTag = 'path';
+      shapeAttrs = `d="M1 1 H${num(w - 20)} L${num(w - 1)} ${num(h / 2)} L${num(w - 20)} ${num(h - 1)} H1 L13 ${num(h / 2)}Z"`;
+      break;
     case 'artifact':
-      shape = `<path d="M1 1 H${num(w - 23)} L${num(w - 1)} 23 V${num(h - 1)} H1Z" fill="${palette.card}"${fillOpacity} stroke="${palette.border}"/><path d="M${num(w - 23)} 1 V23 H${num(w - 1)}" fill="none" stroke="${palette.border}"/>`; break;
-    case 'interface': shape = standard.replace('rx="13"', 'rx="36"'); break;
-    case 'capability': shape = standard.replace('rx="13"', 'rx="24"'); break;
-    default: shape = standard;
+      shapeTag = 'path';
+      shapeAttrs = `d="M1 1 H${num(w - 23)} L${num(w - 1)} 23 V${num(h - 1)} H1Z"`;
+      fold = `<path d="M${num(w - 23)} 1 V23 H${num(w - 1)}" fill="none" stroke="${palette.border}"/>`;
+      break;
   }
   const extras = {
     system: `<rect x="5" y="5" width="${num(w - 10)}" height="${num(h - 10)}" rx="9" fill="none" stroke="${palette.border}" opacity=".65"/>`,
@@ -100,9 +111,10 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
     node: `<circle cx="${num(w - 18)}" cy="22" r="3" fill="${accent}"/>`,
   }[node.template] ?? '';
   const fonts=node.textStyle;
+  const image=background(shape(''));
   const badge=node.badgeLines.length?`<text data-node-badge="true" x="${num(fonts.badgeX)}" y="${num(fonts.badgeY)}" fill="${accent}" font-size="${num(fonts.badge)}" font-weight="650"><title>${escape(node.badgeText)}</title>${node.badgeLines.map(line=>`<tspan x="${num(fonts.badgeX)}" dy="0">${escape(line)}</tspan>`).join('')}</text>`:'';
   return `<g class="arch-node" ${attrs} tabindex="0" role="group" aria-label="${escape(`${node.title}, ${node.type}`)}">${title}
-    <g filter="url(#${prefix}-shadow)">${shape}</g>${extras}
+    <g filter="url(#${prefix}-shadow)">${shape(` fill="${palette.card}"${fillOpacity} stroke="${palette.border}"`)}${image?'':fold}</g>${image}${image?fold:''}${extras}
     ${node.showIcon!==false?`<rect x="${num(iconBox.x)}" y="${num(iconBox.y)}" width="27" height="27" rx="7" fill="${accent}" opacity=".1"/>`: ""}
     <g color="${accent}">${nodeIcon}</g>
     ${badge}
@@ -113,7 +125,8 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
   </g>`;
 }
 
-export function toSVG(graph, options = {}) {
+export function toSVG(graph,options={}) {return validationMarkersSVG(renderSVG(graph,options),graph);}
+function renderSVG(graph, options = {}) {
   const theme = options.theme ?? graph.view.theme;
   if (!['light', 'dark'].includes(theme)) throw new ArchError('theme must be light or dark');
   const prefix = options.idPrefix ?? `arch-${++serial}`;
@@ -128,11 +141,11 @@ export function toSVG(graph, options = {}) {
   const backdropFor = node => {
     if (backdrops.has(node.id)) return backdrops.get(node.id);
     const parent = nodeById.get(node.parent);
-    const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? 0.2 : 1)) : palette.bg;
+    const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? DEFAULT_BACKGROUND_OPACITY : 1)) : palette.bg;
     backdrops.set(node.id, color); return color;
   };
   const definitions = `<defs>
-    <filter id="${prefix}-shadow" x="-15%" y="-15%" width="130%" height="145%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity=".045"/></filter>
+    ${cardShadowFilter(`${prefix}-shadow`)}
     <marker id="${prefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${palette.edge}" stroke-width="1.5"/></marker>
     <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
     <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
@@ -153,13 +166,39 @@ export function toSVG(graph, options = {}) {
     const pattern=effectiveDasharray(edge,reference);
     return pattern.length?` stroke-dasharray="${pattern.join(' ')}"`:edge.dasharray!==undefined?' stroke-dasharray="none"':'';
   };
+  const traced=new Map();
+  const trace=d=>{
+    if (!traced.has(d)) traced.set(d,traceLinearPath(d));
+    return traced.get(d);
+  };
+  const bridges=crossingBridges(graph,trace);
+  const pathFor=edge=>bridges.get(edge)?.d??edge.drawD??edge.d;
+  const stroke=edge=>edge.color??palette.edge;
+  const overlaps=dashedOverlaps([...(graph.sharedPaths??[]),...graph.edges],stroke,pathFor,trace,bridges);
+  const maskDefinitions=[];
   const edgePath = edge => {
     const start = edge.direction==='both' ? ` marker-start="url(#${marker('arrow',edge.color)})"` : edge.style === 'composition' ? ` marker-start="url(#${marker('diamond',edge.color)})"` : '';
     const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${marker(['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow',edge.color)})"`;
-    return `<path d="${escape(edge.drawD??edge.d)}" fill="none" stroke="${edge.color??palette.edge}" stroke-width="${num(edge.width??1.5)}" stroke-linejoin="round"${dashAttribute(edge)}${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}/>`;
+    const markers=`${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}`;
+    const d=pathFor(edge), path=`<path d="${escape(d)}" fill="none"`, width=edge.width??1.5;
+    const line=`${path} stroke="${stroke(edge)}" stroke-width="${num(width)}" stroke-linejoin="round"${dashAttribute(edge)}`;
+    const covered=overlaps.get(edge);
+    if (!covered) return `${line}${markers}/>`;
+    const id=`${prefix}-route-mask-${maskDefinitions.length+1}`;
+    // Restrict the luminance mask to the route's extent, including the arc
+    // clearance. Keep arrowheads on an unmasked copy of the path.
+    const points=edge.points??trace(d).spans.flatMap(({a,b})=>[a,b]);
+    const padding=Math.max(48,width*12);
+    let left=Infinity, top=Infinity, right=-Infinity, bottom=-Infinity;
+    for (const {x,y} of points) {
+      left=Math.min(left,x); top=Math.min(top,y); right=Math.max(right,x); bottom=Math.max(bottom,y);
+    }
+    const region=`x="${num(left-padding)}" y="${num(top-padding)}" width="${num(right-left+2*padding)}" height="${num(bottom-top+2*padding)}"`;
+    maskDefinitions.push(`<mask id="${id}" maskUnits="userSpaceOnUse" mask-type="luminance" ${region}><rect ${region} fill="white"/><path d="${covered.join(' ')}" fill="none" stroke="black" stroke-width="${num(width+1)}" stroke-linecap="butt"/></mask>`);
+    return `${line} mask="url(#${id})"/>${markers?`${path} stroke="none" stroke-width="${num(width)}"${markers}/>`:''}`;
   };
   const sharedPaths=(graph.sharedPaths??[]).map(edge=>`<g class="arch-shared-path" data-shared-path="${escape(edge.id)}" data-shared-part="${edge.part}" data-shared-for="${escape(edge.edgeIds.join(' '))}" data-types="${escape(edge.types.join(' '))}"><title>${escape(edge.edgeIds.join(', '))}</title>${edgePath(edge)}</g>`).join('');
-  const edgePaths = sharedPaths+graph.edges.map(edge => `<g class="arch-edge" data-edge="${escape(edge.id)}" data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join('');
+  const edgePaths = sharedPaths+graph.edges.map(edge => `<g class="arch-edge" data-edge="${escape(edge.id)}"${edge.modelId ? ` data-model-id="${escape(edge.modelId)}"` : ''} data-type="${escape(edge.type)}" data-style="${edge.style}"><title>${escape(edge.labelText || edge.title || edge.type)}</title>${edgePath(edge)}</g>`).join('');
   const edgeLabels = graph.edges.filter(e => e.labelLines.length || e.labelIcon).map(edge => {
     const {x, y} = edge.label, offset = edge.labelTextOffset ?? {x: 0, y: 0};
     let icon = '';
@@ -190,9 +229,11 @@ export function toSVG(graph, options = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree?' data-diagram="tree"':''} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
     <title id="${prefix}-title">${escape(graph.title)} — ${escape(graph.view.title)}</title>
     <desc id="${prefix}-desc">${escape(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
-    ${definitions.replace('</defs>',[...coloredMarkers.values()].map(m=>m.markup).join('')+'</defs>')}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
+    ${definitions.replace('</defs>',[...coloredMarkers.values()].map(m=>m.markup).join('')+maskDefinitions.join('')+'</defs>')}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
     <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${palette.bg}"/>
+    ${backgroundImageMarkup(graph.view.backgroundImage, b, 'view')}
+    ${(graph.embeddingGroups??[]).slice().reverse().map(g => backgroundImageMarkup(g.backgroundImage, g.bounds, 'embed')).join('')}
     ${graph.nodes.filter(n => n.container).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}
-    ${edgePaths}${referenceConnectors}${graph.nodes.filter(n => !n.container && !n.referenceOnly).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}${referenceCards}${edgeLabels}
+    ${(graph.embeddingGroups??[]).filter(g=>g.frame).map(g=>`<g data-embed="${escape(g.id)}"><rect x="${num(g.bounds.x)}" y="${num(g.bounds.y)}" width="${num(g.bounds.width)}" height="${num(g.bounds.height)}" rx="8" fill="none" stroke="${palette.edge}"/><text x="${num(g.bounds.x+12)}" y="${num(g.bounds.y+22)}" fill="${palette.muted}" font-size="13">${escape(singleLine(g.title,Math.max(20,g.bounds.width-24),13))}</text><title>${escape(g.title)}</title></g>`).join('')}${edgePaths}${referenceConnectors}${graph.nodes.filter(n => !n.container && !n.referenceOnly).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}${referenceCards}${edgeLabels}
   </svg>`;
 }
