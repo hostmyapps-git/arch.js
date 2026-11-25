@@ -563,6 +563,28 @@ Anker, und die folgenden Karten übernehmen den angegebenen Abstand. Mit
 orthogonale oder gerundete Routen und weicht bei automatischen Labels auf freie
 Positionen aus, sofern eine passende Position verfügbar ist.
 
+## Agent Skill für Architektur aus Freitext
+
+[`archjs-modeler`](skills/archjs-modeler/SKILL.md) führt von einer
+Architekturbeschreibung zur editierbaren `.arch`-Datei. Der Agent modelliert
+Elemente und Beziehungen einmal, wählt passende Views und prüft sie mit der
+installierten arch.js-Version. Das Skill-Verzeichnis enthält Anleitungen für
+Profilwahl und Layout sowie einen Node-Helfer für Hilfe, Validierung, SVG
+und Dashboard.
+
+Kopiere das gesamte Verzeichnis `skills/archjs-modeler` an einen vom Agenten
+unterstützten Ort. Projektlokale Beispiele sind `.claude/skills/` für
+Claude Code, `.opencode/skills/` für OpenCode und `.gemini/skills/` für
+Gemini CLI. ChatGPT kann den Skill in Umgebungen mit Skill-Upload verwenden.
+Für die technische Prüfung braucht der Helfer Zugriff auf die lokale
+arch.js-Distribution. Ohne Runtime kann der Agent die DSL erstellen und
+den Prüfstatus offen angeben.
+[Agent Skills](https://agentskills.io/specification) ·
+[Claude Code](https://code.claude.com/docs/en/skills) ·
+[OpenCode](https://opencode.ai/docs/skills/) ·
+[Gemini CLI](https://geminicli.com/docs/cli/skills/) ·
+[ChatGPT](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
+
 ## JSON-Icons
 
 Bootstrap, Lucide und Tabler sind vollständig heruntergeladen und integriert:
