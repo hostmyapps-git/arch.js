@@ -33,7 +33,7 @@ gesonderten Renderer und keinen zusätzlichen Loader.
 Die Beispieloberfläche enthält **JSON architecture**, mit Package und Matrix.
 Dateien: [json-architecture.json](examples/json-architecture.json),
 [json-naf41.json](examples/json-naf41.json). Das NAF-Beispiel benötigt die
-registrierten Profile `uaf` und `naf41-uaf`; in `index.html` sind sie geladen.
+registrierten Profile `uaf` und `naf41-uaf`; in `studio.html` sind sie geladen.
 Eingebaute englische Referenz: `@help json`.
 
 ## Eingabe über die vorhandenen APIs

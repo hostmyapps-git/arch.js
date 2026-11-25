@@ -1,6 +1,6 @@
 # Diagramme und Visualisierungen
 
-`index.html` öffnen und **Seven diagram renderers** auswählen. Das editierbare
+`studio.html` öffnen und **Seven diagram renderers** auswählen. Das editierbare
 [Beispiel](examples/diagrams.arch) enthält sieben Ansichten desselben Modells.
 **Capability taxonomy** ergänzt zwei automatisch angeordnete C1-Baumansichten
 aus [taxonomy.arch](examples/taxonomy.arch).

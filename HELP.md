@@ -55,7 +55,7 @@ Kataloge sind nach Namen lexikographisch sortiert.
 öffnet die Einstiegsseite, **Up** den übergeordneten Katalog. Im Studio
 funktionieren auch die Zurück- und Vorwärtsbefehle des Browsers. Die Eingabe
 im Editor bleibt erhalten. Eine Hilfeseite lässt sich über
-`index.html?help=viewpoints+naf41-uaf+P6` direkt öffnen.
+`studio.html?help=viewpoints+naf41-uaf+P6` direkt öffnen.
 
 `arch.render()` und `arch.renderAll()` aktivieren die Navigation automatisch
 für jeden Hilfeblock. Anwendungen, die das Ergebnis von `arch.renderDiagram()`

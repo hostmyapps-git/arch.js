@@ -3,74 +3,519 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A readable language for architecture. Explore, edit, and export diagrams, directly in your browser.">
-  <title>arch.js — Architecture, made clear.</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='m8 22 8-14 8 14M12 17h8' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="demo/style.css">
+  <meta name="description" content="Model systems in plain text with arch.js. Try the live playground and learn how to render, validate, and share architecture views.">
+  <title>arch.js — Architecture you can read</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a3da0'/%3E%3Cpath d='m8 22 8-14 8 14M12 17h8' stroke='white' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18243c; --muted: #4e5d76; --line: #d7deeb; --paper: #f5f7fc;
+      --navy: #111a30; --navy-deep: #0d1528; --blue: #3449be;
+      --lavender: #b6c2ff; --mint: #90ead2;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: #fff; font: 1rem/1.6 var(--sans); }
+    h1, h2, h3, p { margin: 0; }
+    a { color: var(--blue); text-underline-offset: .2em; }
+    button, select, textarea { font: inherit; }
+    button, select { cursor: pointer; }
+    button:disabled, select:disabled { cursor: default; opacity: .56; }
+    :focus-visible { outline: 3px solid #5576f4; outline-offset: 4px; }
+    [hidden] { display: none !important; }
+    .wrap { width: min(100% - 5rem, 74rem); margin-inline: auto; }
+    .skip { position: absolute; z-index: 2; top: .75rem; left: .75rem; transform: translateY(-180%); background: white; padding: .6rem 1rem; border-radius: .4rem; }
+    .skip:focus { transform: none; }
+    .masthead { background: var(--navy-deep); color: #f4f6ff; border-bottom: 1px solid #273451; }
+    .masthead-inner { min-height: 4.6rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .brand { display: inline-flex; align-items: center; gap: .65rem; flex-shrink: 0; color: inherit; font-size: 1.28rem; font-weight: 740; letter-spacing: -.045em; text-decoration: none; }
+    .brand-mark { position: relative; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .5rem; background: #7789f2; color: #151e37; font: 800 .87rem/1 var(--mono); letter-spacing: -.14em; padding-right: .11rem; }
+    .brand-mark::before { content: "{·}"; }
+    .masthead nav { display: flex; align-items: center; gap: clamp(.85rem, 3vw, 2.1rem); font-size: .94rem; }
+    .masthead nav a { color: #dce4fc; text-decoration: none; white-space: nowrap; }
+    .masthead nav a:hover { color: white; text-decoration: underline; }
+    .masthead nav .studio-link { border: 1px solid #51638c; padding: .38rem .85rem; border-radius: .5rem; color: white; }
+    .hero {
+      background: radial-gradient(ellipse at 76% 46%, #25365a 0%, transparent 54%), var(--navy);
+      color: #f5f7ff;
+    }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.23fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; padding-block: clamp(3.5rem, 7vw, 6rem); }
+    .hero h1 { font-size: clamp(3.1rem, 5.5vw, 5.5rem); line-height: 1.02; letter-spacing: -.05em; font-weight: 740; }
+    .hero h1 span { color: var(--lavender); display: block; }
+    .hero p { max-width: 34rem; margin-top: 1.35rem; font-size: clamp(1rem, 1.6vw, 1.22rem); color: #d9e1f8; }
+    .actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.8rem; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 2.72rem; padding: .5rem .95rem; border: 1px solid var(--line);
+      border-radius: .48rem; background: white; color: var(--ink);
+      font-size: .91rem; font-weight: 650; text-decoration: none; white-space: nowrap;
+    }
+    .button:hover:not(:disabled) { background: #eef2ff; border-color: #abb9e7; }
+    .button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .button.primary:hover:not(:disabled) { background: #253998; border-color: #253998; }
+    .hero .button.primary { background: var(--lavender); color: #142036; border-color: var(--lavender); }
+    .hero .button.primary:hover { background: #d1d9ff; border-color: #d1d9ff; }
+    .hero .button.secondary { background: #19243d; border-color: #586c95; color: #eff2ff; }
+    .hero .button.secondary:hover { background: #2b3b60; }
+    .hero-figure {
+      min-width: 0; margin: 0; border: 1px solid #5a6e98; border-radius: .95rem; overflow: hidden;
+      background: #151f36; box-shadow: 0 1.2rem 3.5rem #090e1c88;
+    }
+    .figure-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: #1c2946; padding: .86rem 1rem; border-bottom: 1px solid #3c4e76; }
+    .filename { display: flex; align-items: center; gap: .58rem; font: 500 .85rem/1.4 var(--mono); color: #e7edff; }
+    .file-icon { color: var(--mint); white-space: nowrap; }
+    .figure-type { color: #c3d0f2; font-size: .82rem; }
+    .hero-canvas {
+      display: grid; place-items: center; padding: clamp(.85rem, 2vw, 1.3rem); min-height: 14rem;
+      background: radial-gradient(#496083 1px, transparent 1px) 0 0 / 17px 17px, #151f36;
+    }
+    .hero-canvas svg { display: block; width: 100%; height: auto; border-radius: .48rem; }
+    .hero-canvas p { margin: 0; color: #d9e1f8; font-size: .95rem; }
+    .section { padding-block: clamp(3.5rem, 7vw, 5.6rem); }
+    .section h2 { font-size: clamp(2.15rem, 4vw, 3.4rem); font-weight: 730; line-height: 1.1; letter-spacing: -.035em; }
+    .section-intro { max-width: 44rem; margin-top: .7rem; color: var(--muted); }
+    .section-start { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1.65rem; }
+    .workbench { border-radius: .9rem; overflow: hidden; border: 1px solid #c2ccdf; box-shadow: 0 .85rem 2rem #1c304712; }
+    .tools { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: .8rem; padding: .9rem 1.05rem; background: #f2f5fc; border-bottom: 1px solid var(--line); }
+    .selects, .tool-actions { display: flex; flex-wrap: wrap; align-items: end; gap: .65rem; }
+    .field { display: grid; gap: .17rem; color: var(--muted); font-size: .88rem; font-weight: 640; min-width: 0; }
+    .field select {
+      min-height: 2.72rem; max-width: 15rem; color: var(--ink); appearance: none;
+      border: 1px solid #c4cee2; border-radius: .48rem; padding: .38rem 2rem .38rem .65rem;
+      background: linear-gradient(45deg, transparent 50%, #4e5d76 50%) right 15px center / 6px 6px no-repeat,
+                  linear-gradient(135deg, #4e5d76 50%, transparent 50%) right 9px center / 6px 6px no-repeat, #fff;
+      font-size: .94rem; font-weight: 520;
+    }
+    .panes { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+    .pane { min-width: 0; }
+    .pane-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .56rem 1rem; min-height: 2.55rem; border-bottom: 1px solid var(--line); font-size: .92rem; font-weight: 650; }
+    .pane-heading small { font-size: .81rem; color: var(--muted); font-weight: 480; }
+    .editor { background: #121d34; color: #f1f4fe; }
+    .editor .pane-heading { border-color: #33445f; background: #17243d; }
+    .editor .pane-heading small { color: #d1dcf7; }
+    #play-source {
+      display: block; width: 100%; height: 23rem; border: 0; resize: none; padding: 1rem 1.05rem;
+      border-radius: 0; background: #121d34; color: #e7edf9; caret-color: #a5f3dc;
+      font: .88rem/1.65 var(--mono); tab-size: 2;
+    }
+    #play-source:focus-visible { position: relative; outline-offset: -3px; }
+    .preview-pane { display: flex; flex-direction: column; }
+    .preview-pane .pane-heading { background: #fff; }
+    .preview-canvas {
+      flex: 1; min-height: 23rem; display: grid; place-items: center; overflow: auto; padding: 1rem;
+      background: radial-gradient(#9aa9c6 1px, transparent 1px) 0 0 / 17px 17px, #e8eef8;
+    }
+    .preview-canvas svg { display: block; width: auto; max-width: 100%; max-height: 26rem; height: auto; border-radius: .4rem; }
+    .preview-canvas p { background: #f6f8fc; border: 1px solid var(--line); border-radius: .45rem; padding: .65rem .85rem; color: var(--muted); }
+    .bench-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem; padding: .7rem 1rem; border-top: 1px solid var(--line); background: white; color: var(--muted); font-size: .89rem; }
+    .bench-footer a { font-weight: 610; }
+    #play-error { margin: 0; padding: .7rem 1rem; border-top: 1px solid #edb4c1; background: #fff0f3; color: #872640; overflow-wrap: anywhere; }
+    .explain { background: var(--paper); border-block: 1px solid var(--line); }
+    .concepts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.15rem; margin-top: 1.75rem; }
+    .concept { min-width: 0; background: #fff; border: 1px solid var(--line); border-top: 4px solid #6478dc; border-radius: .65rem; padding: 1.45rem; }
+    .concept:nth-child(2) { border-top-color: #268a75; }
+    .concept h3, .docs h3 { font-size: 1.24rem; letter-spacing: -.023em; }
+    .concept p, .docs p { margin-top: .38rem; color: var(--muted); }
+    .concept pre { margin: 1rem 0 0; background: #f0f3fa; color: #25375e; }
+    pre { padding: .95rem 1rem; border-radius: .45rem; overflow: auto; font: .875rem/1.65 var(--mono); tab-size: 2; }
+    code { font-family: var(--mono); }
+    p code, dd code, summary code { padding: .05em .27em; background: #e8edfa; border-radius: .2em; }
+    .language-keyword { color: #4536a1; font-weight: 680; }
+    .language-string { color: #11634f; }
+    .docs-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); gap: clamp(1.5rem, 5vw, 4rem); margin-top: 1.9rem; }
+    .docs pre { background: var(--navy); color: #ecf2ff; margin: 1.04rem 0 .8rem; }
+    .docs details { padding: .8rem 0; border-top: 1px solid var(--line); }
+    .docs details:last-of-type { border-bottom: 1px solid var(--line); }
+    .docs summary { font-weight: 680; cursor: pointer; }
+    .docs details p { margin-bottom: .18rem; }
+    .docs-links { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin-top: .95rem; }
+    .footer { padding-block: 1.35rem; background: var(--navy-deep); color: #d9e1f8; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .9rem; }
+    .footer a:not(.brand) { color: var(--lavender); }
+    @media (max-width: 52rem) {
+      .wrap { width: min(100% - 3rem, 74rem); }
+      .hero-grid { grid-template-columns: minmax(0, 1fr); }
+      .hero-figure { max-width: 40rem; }
+      .hero h1 { font-size: clamp(3rem, 8.5vw, 4.5rem); }
+      .docs-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 38rem) {
+      .wrap { width: calc(100% - 2rem); }
+      .masthead-inner { min-height: 4rem; gap: .6rem; }
+      .masthead nav { gap: .8rem; font-size: .88rem; }
+      .masthead nav .wide-link { display: none; }
+      .masthead nav .studio-link { padding-inline: .55rem; }
+      .hero-grid { padding-block: 2.65rem; gap: 2rem; }
+      .section-start { align-items: start; flex-direction: column; }
+      .panes, .concepts { grid-template-columns: minmax(0, 1fr); }
+      .tool-actions { width: 100%; }
+      .field select { max-width: 12rem; }
+      #play-source { height: 16rem; }
+      .preview-canvas { min-height: 16rem; }
+      .preview-pane .pane-heading { border-top: 1px solid var(--line); }
+      .concept { padding: 1.1rem; }
+    }
+  </style>
+  <script>
+    // Earlier versions shared Studio help pages under the homepage URL.
+    if (new URLSearchParams(location.search).has('help')) {
+      location.replace('studio.html' + location.search + location.hash);
+    }
+  </script>
 </head>
 <body>
-  <aside class="sidebar">
-    <a class="brand" href="index.html" aria-label="arch.js home"><span class="brand-symbol">a<span>•</span></span>arch<span class="brand-dot">.js</span><span class="version">0.1</span></a>
-    <div class="space-label">YOUR WORKSPACE</div>
-    <div class="workspace-link"><span class="workspace-icon">▧</span> Architecture studio <span class="live-dot"></span></div>
-    <div class="space-label examples-label">EXAMPLE MODELS <span id="example-count">11</span></div>
-    <nav id="examples" aria-label="Example models"></nav>
-    <div class="sidebar-note"><span class="note-icon">↗</span><strong>From text to clarity.</strong><p>Describe the system.<br>Let the architecture speak.</p><button class="text-button" id="open-guide">Explore the language <span>→</span></button></div>
-    <div class="sidebar-footer"><span class="live-dot"></span> Runs entirely in your browser <a href="README.md" title="Read the documentation" aria-label="Read the documentation">↗</a></div>
-  </aside>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="wrap masthead-inner">
+      <a class="brand" href="./index.html" aria-label="arch.js home"><span class="brand-mark" aria-hidden="true"></span>arch.js</a>
+      <nav aria-label="Main navigation">
+        <a href="#playground">Playground</a>
+        <a href="#how-it-works" class="wide-link">How it works</a>
+        <a href="#documentation" class="wide-link">Documentation</a>
+        <a class="studio-link" href="studio.html">Studio</a>
+      </nav>
+    </div>
+  </header>
 
-  <main>
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Architecture studio</strong></div><select id="example-select" aria-label="Example model"></select><a class="docs-link" href="SPEC.md">Documentation <span>↗</span></a></header>
-    <section class="page-heading"><div><div class="eyebrow"><span></span> THE BIG PICTURE, IN PLAIN TEXT</div><h1>Architecture, made clear.</h1><p>A small language for the systems that connect everything.</p></div><div class="page-actions"><button class="primary-button" id="open-dashboard">Architecture dashboard</button><button class="primary-button" id="export-svg"><span>↓</span> Export SVG</button></div></section>
-
-    <section class="studio" aria-label="Architecture editor">
-      <div class="studio-topline"><div class="file-title"><span class="file-icon">◈</span><strong id="model-title">Customer platform</strong><span class="file-extension" id="source-extension">.arch</span><span class="unsaved" id="unsaved" hidden>edited</span></div><div class="studio-top-actions"><label class="profile-picker"><span>PROFILE</span><select id="profile-select" aria-label="Validation profile"></select></label><span class="local-badge" id="profile-info"><span class="live-dot"></span> default</span><button class="icon-button" id="download-source" title="Download source" aria-label="Download source">↓</button></div></div>
-      <div class="studio-body">
-        <section class="source-panel" aria-label="Source editor">
-          <div class="panel-toolbar"><div><span class="small-square"></span> SOURCE</div><button class="run-button" id="render-button" title="Render (Ctrl/Cmd+Enter)">Run <kbd>⌘ ↵</kbd></button></div>
-          <div class="editor-wrap"><div class="line-numbers" id="line-numbers" aria-hidden="true"></div><div class="code-wrap"><pre id="highlight" aria-hidden="true"></pre><textarea id="source" aria-label="Architecture source" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div>
-          <div class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span><span id="source-format">arch</span> <span class="separator-dot">·</span> UTF-8</span></div>
-        </section>
-        <section class="preview-panel" aria-label="Diagram preview">
-          <div class="panel-toolbar preview-toolbar"><div class="view-picker"><span>VIEW</span><select id="view-select" aria-label="Diagram view"></select></div><div class="preview-actions"><button class="icon-button" id="toggle-theme" title="Toggle diagram theme" aria-label="Toggle diagram theme">☾</button><span class="toolbar-divider"></span><button class="icon-button" id="zoom-out" aria-label="Zoom out">−</button><button class="zoom-value" id="fit" title="Fit diagram to canvas">100%</button><button class="icon-button" id="zoom-in" aria-label="Zoom in">+</button></div></div>
-          <div id="canvas" class="canvas"><div id="diagram"></div></div>
-          <section id="source-meta" class="source-meta" aria-label="Source translation" hidden>
-            <div class="meta-toolbar"><strong id="meta-title">Source translation</strong><div><button id="meta-copy" type="button">Copy</button><button id="meta-download" type="button">Download</button></div></div>
-            <div id="meta-diagnostics" aria-live="polite"></div>
-            <pre id="meta-output" tabindex="0" aria-label="Translated source"></pre>
-          </section>
-          <div class="preview-footer"><span id="render-status" role="status"><span class="live-dot"></span> Ready to render</span><span><span id="preview-kind">INLINE SVG</span> <span class="separator-dot">·</span> <span id="element-count">0 elements</span></span></div>
-          <div id="error" role="alert" hidden></div>
-        </section>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div>
+          <h1 id="hero-title">Architecture <span>you can read.</span></h1>
+          <p>Describe systems, services, and processes in plain text. Turn the same model into diagrams you can edit, review, and share.</p>
+          <div class="actions">
+            <a class="button primary" href="#playground">Try the playground</a>
+            <a class="button secondary" href="#documentation">Read the docs</a>
+          </div>
+        </div>
+        <figure class="hero-figure">
+          <figcaption class="figure-bar">
+            <span class="filename"><span class="file-icon" aria-hidden="true">{ }</span> parcel-tracking.arch</span>
+            <span class="figure-type">System context</span>
+          </figcaption>
+          <div class="hero-canvas" id="hero-diagram"><p>The system context diagram loads with arch.js.</p></div>
+        </figure>
       </div>
     </section>
 
-    <section class="below-studio"><div class="model-caption"><span class="caption-icon">◈</span><div><strong id="view-title">Platform landscape</strong><p id="model-description"></p></div></div><div class="legend"><span><i class="legend-dot application"></i> Application</span><span><i class="legend-dot service"></i> Service</span><span><i class="legend-dot database"></i> Data</span><span><i class="legend-boundary"></i> Boundary</span></div></section>
-    <section class="icon-gallery" aria-label="Integrated iconpacks"><div class="icon-gallery-heading"><div><div class="eyebrow">THREE LIBRARIES, ONE LANGUAGE</div><h2>Give your architecture a familiar face.</h2><p id="iconpack-summary"></p></div><button class="text-button" id="show-icon-example">Open the icon example →</button></div><div class="iconpack-cards" id="iconpack-cards"></div></section>
-    <section class="principles"><div><span class="principle-number">01</span><strong>Write like you think.</strong><p>Readable models. No visual clutter.</p></div><div><span class="principle-number">02</span><strong>One model. Many views.</strong><p>Separate meaning from presentation.</p></div><div><span class="principle-number">03</span><strong>Every detail, yours.</strong><p>Automatic layouts. Precise control.</p></div><a href="test.md" class="markdown-link"><span>⌘</span> Made for Markdown <span>↗</span></a></section>
-    <footer class="page-footer"><span>arch.js <span> / </span> An open canvas for connected thinking.</span><span>Dependency-free. Browser-native.</span></footer>
+    <section id="playground" class="wrap section" aria-labelledby="playground-title">
+      <div class="section-start">
+        <div>
+          <h2 id="playground-title">Playground</h2>
+          <p class="section-intro">Choose an example, edit its source, and switch between views. Rendering happens locally in your browser.</p>
+        </div>
+        <a class="button" href="studio.html">Open full Studio</a>
+      </div>
+      <div class="workbench">
+        <div class="tools">
+          <div class="selects">
+            <div class="field">
+              <label for="play-example">Example</label>
+              <select id="play-example" disabled>
+                <option value="tracking">Parcel tracking</option>
+                <option value="handoff">Reservation handoff</option>
+                <option value="lifecycle">Request lifecycle</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="play-view">View</label>
+              <select id="play-view" disabled><option>System context</option></select>
+            </div>
+          </div>
+          <div class="tool-actions">
+            <button id="play-reset" class="button" type="button" disabled>Reset</button>
+            <button id="play-run" class="button primary" type="button" disabled>Render</button>
+            <button id="play-export" class="button" type="button" disabled>Download SVG</button>
+          </div>
+        </div>
+        <div class="panes">
+          <section class="pane editor" aria-labelledby="editor-title">
+            <div class="pane-heading"><label id="editor-title" for="play-source">Architecture source</label><small>Ctrl or ⌘ + Enter</small></div>
+            <textarea id="play-source" aria-errormessage="play-error" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">architecture "Parcel tracking" {
+  model {
+    person customer "Customer"
+    application portal "Tracking portal"
+    service tracking "Tracking API"
+    database shipments "Shipment store"
+
+    relation checks customer -> portal "Checks status"
+    relation looksUp portal -> tracking "Requests status"
+    relation reads tracking -> shipments "Reads shipment" { type access }
+  }
+
+  view overview "System context" {
+    include customer, portal, tracking, shipments
+    style customer { backgroundColor Lavender }
+    style portal { backgroundColor LightSteelBlue }
+    style tracking { backgroundColor PaleTurquoise }
+    style shipments { backgroundColor PaleGreen }
+
+    row customer, portal { gap 142 }
+    place tracking bottom of portal gap 76
+    place shipments left of tracking gap 142
+  }
+
+  view data "Data access" {
+    include portal, tracking, shipments
+    place tracking bottom of portal
+    place shipments bottom of tracking
+  }
+}</textarea>
+          </section>
+          <section class="pane preview-pane" aria-labelledby="preview-title">
+            <div class="pane-heading"><span id="preview-title">Diagram preview</span><small>SVG</small></div>
+            <div class="preview-canvas" id="play-preview" tabindex="0" aria-label="Scrollable diagram preview"><p>Waiting for the renderer.</p></div>
+          </section>
+        </div>
+        <div class="bench-footer">
+          <span id="play-status" role="status">Loading arch.js</span>
+          <a href="studio.html?help=syntax">Language reference</a>
+        </div>
+        <p id="play-error" role="alert" hidden></p>
+      </div>
+      <noscript><p class="section-intro">Enable JavaScript to render the examples. The source and documentation are available above and below.</p></noscript>
+    </section>
+
+    <section id="how-it-works" class="section explain" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 id="how-title">One model, many views.</h2>
+        <p class="section-intro">Give each element a stable ID and reuse it wherever it matters. A context diagram can show who uses the system, while a focused view shows how the service reaches its data.</p>
+        <div class="concepts">
+          <article class="concept">
+            <h3>Model the relationships</h3>
+            <p>Use <code>model</code> to declare the things in your architecture and the connections between them.</p>
+            <pre><code><span class="language-keyword">service</span> tracking <span class="language-string">"Tracking API"</span>
+<span class="language-keyword">database</span> shipments <span class="language-string">"Shipment store"</span>
+<span class="language-keyword">relation</span> reads tracking -&gt; shipments <span class="language-string">"Reads"</span></code></pre>
+          </article>
+          <article class="concept">
+            <h3>Choose what a view shows</h3>
+            <p>Use <code>include</code> to focus a view. Start with automatic layout and position elements where it helps tell the story.</p>
+            <pre><code><span class="language-keyword">view</span> data <span class="language-string">"Data access"</span> {
+  <span class="language-keyword">include</span> tracking, shipments
+  <span class="language-keyword">place</span> shipments bottom of tracking
+}</code></pre>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="documentation" class="wrap section docs" aria-labelledby="docs-title">
+      <h2 id="docs-title">Documentation</h2>
+      <div class="docs-grid">
+        <article>
+          <h3>Embed a diagram</h3>
+          <p>Put the browser bundle next to your HTML and pass a complete architecture document to <code>arch.render()</code>. The result is inline SVG.</p>
+          <pre><code>&lt;div id="diagram"&gt;&lt;/div&gt;
+&lt;script src="arch.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  arch.render('#diagram', &#96;architecture "Example" {
+    model {
+      service api "API"
+      database data "Store"
+      relation reads api -&gt; data "Reads" { type access }
+    }
+    view overview "Overview" {}
+  }&#96;);
+&lt;/script&gt;</code></pre>
+          <div class="docs-links">
+            <a href="arch.min.js" download>Download arch.js</a>
+            <a href="SPEC.md">Language and API specification</a>
+          </div>
+        </article>
+        <article>
+          <h3>Common tasks</h3>
+          <details open>
+            <summary>Choose a diagram type</summary>
+            <p>Use <code>diagram tree</code> for a hierarchy, <code>diagram sequence</code> for ordered messages, or <code>diagram timeline</code> for dated events. Connected views are the default.</p>
+          </details>
+          <details>
+            <summary>Validate against a profile</summary>
+            <p>A profile defines allowed element types, relationship endpoints, and viewpoint rules. Studio loads the included NAFv4.1, ADMBw, and ArchiMate profiles. Select a registered profile with <code>config { profile PROFILE }</code>.</p>
+          </details>
+          <details>
+            <summary>Share source or a dashboard</summary>
+            <p>Keep the editable <code>.arch</code> or JSON source with your project. Export SVG for a single view or use Studio to download a standalone HTML dashboard that includes the diagrams and their source.</p>
+          </details>
+          <div class="docs-links">
+            <a href="studio.html?help">Built-in help</a>
+            <a href="DIAGRAMS.md">Diagram reference</a>
+            <a href="JSON.md">JSON format</a>
+            <a href="profiles/README.md">Profile definitions</a>
+          </div>
+        </article>
+      </div>
+    </section>
   </main>
 
-  <dialog id="guide"><div class="dialog-heading"><div><span class="eyebrow">A QUICK START</span><h2>A model in a few lines.</h2></div><button class="icon-button" id="close-guide" aria-label="Close language guide">×</button></div><p>Declare elements and relationships in <code>model</code>. Add a <code>view</code> when you want to control the composition.</p><pre>architecture "My system" {
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="#main"><span class="brand-mark" aria-hidden="true"></span>arch.js</a>
+      <a href="README.md">Project README</a>
+      <a href="studio.html">Architecture Studio</a>
+    </div>
+  </footer>
+
+  <script type="text/plain" id="example-handoff">
+architecture "Reservation handoff" {
   model {
-    person user "User"
-    service api "API"
-    relation calls user -> api "Calls"
+    application portal "Booking portal"
+    service inventory "Inventory service"
+    service notices "Notice service"
+
+    relation holds portal -> inventory "Reserve item"
+    relation confirms inventory -> portal "Confirm hold"
+    relation notifies portal -> notices "Send confirmation"
   }
-  view overview "Overview" {
-    place user at (0, 0)
-    place api at (340, 0)
-    route calls { curve rounded }
+
+  view handoff "Reservation sequence" {
+    include portal, inventory, notices
+    diagram sequence {
+      participants [portal, inventory, notices]
+      messages [holds, confirms, notifies]
+      returns [confirms]
+    }
   }
-}</pre><div class="guide-grid"><p><strong>Types</strong><br>person, system, application, service, component, database, queue, interface, capability, process, artifact, node, package</p><p><strong>Make it yours</strong><br>Use description, technology and icon attributes. Add style overrides, ports, waypoints and SVG paths in a view.</p></div><p>For the built-in reference, open <strong>Language reference</strong> or write <code>@help</code> in the editor. Try <code>@help profiles</code> or <code>@help iconpacks lucide cloud</code>.</p>
-  <p><button class="text-button" id="show-grid-example" type="button">Explore how viewpoint grids work →</button></p>
-  <a class="primary-button" href="SPEC.md">Read the full specification ↗</a></dialog>
-  <div id="toast" role="status" hidden></div>
-  <dialog id="architecture-dashboard" aria-label="Architecture dashboard"><div id="dashboard-content"></div></dialog>
+}
+  </script>
+  <script type="text/plain" id="example-lifecycle">
+architecture "Request lifecycle" {
+  model {
+    node received "Received"
+    node review "In review"
+    node approved "Approved"
+    node declined "Declined"
+
+    relation opens received -> review "Begin review"
+    relation accepts review -> approved "Accept"
+    relation rejects review -> declined "Decline"
+  }
+
+  view lifecycle "Request states" {
+    include received, review, approved, declined
+    diagram state {
+      initial received
+      final [approved, declined]
+    }
+  }
+}
+  </script>
   <script src="arch.min.js"></script>
-  <script src="icons/iconpacks.js"></script>
-  <script src="profiles/profiles.js"></script>
-  <script src="demo/examples.js"></script>
-  <script src="demo/app.js"></script>
+  <script>
+    (() => {
+      const get = id => document.getElementById(id);
+      const source = get('play-source');
+      const example = get('play-example');
+      const view = get('play-view');
+      const preview = get('play-preview');
+      const status = get('play-status');
+      const error = get('play-error');
+      const run = get('play-run');
+      const reset = get('play-reset');
+      const download = get('play-export');
+      const hero = get('hero-diagram');
+      const runtime = window.arch;
+
+      if (!runtime) {
+        hero.textContent = 'The demo needs the arch.js browser bundle.';
+        status.textContent = 'Renderer unavailable';
+        error.textContent = 'Place arch.min.js beside this page to enable the playground.';
+        error.hidden = false;
+        return;
+      }
+
+      const examples = new Map([
+        ['tracking', source.defaultValue],
+        ['handoff', get('example-handoff').textContent.trim()],
+        ['lifecycle', get('example-lifecycle').textContent.trim()]
+      ]);
+      const drafts = new Map();
+      let currentExample = example.value;
+      let selectedView;
+      let timer;
+      let lastSvg;
+
+      function render() {
+        clearTimeout(timer);
+        try {
+          const model = runtime.parse(source.value);
+          if (model.kind === 'help') throw new Error('Open the language reference to browse help.');
+          const choice = model.views.find(item => item.id === selectedView)
+            ?? model.views.find(item => item.id === [model.config?.views].flat()[0])
+            ?? model.views[0];
+          const svg = runtime.renderToString(model, { view: choice.id, idPrefix: 'landing-play' });
+          const options = model.views.map(item => new Option(item.title, item.id));
+          view.replaceChildren(...options);
+          view.value = selectedView = choice.id;
+          view.disabled = options.length < 2;
+          // The renderer escapes user-authored text before emitting SVG.
+          preview.innerHTML = svg;
+          lastSvg = svg;
+          error.hidden = true;
+          source.removeAttribute('aria-invalid');
+          download.disabled = false;
+          status.textContent = 'Rendered · ' + choice.title;
+        } catch (issue) {
+          const detail = issue.diagnostics?.[0]?.message ?? issue.message;
+          error.textContent = detail;
+          error.hidden = false;
+          source.setAttribute('aria-invalid', 'true');
+          download.disabled = true;
+          status.textContent = lastSvg ? 'Showing the last valid diagram' : 'Preview unavailable';
+        }
+      }
+
+      try {
+        hero.innerHTML = runtime.renderToString(examples.get('tracking'), {
+          view: 'overview', theme: 'dark', idPrefix: 'landing-hero'
+        });
+      } catch {
+        hero.textContent = 'Open the playground to render the example.';
+      }
+
+      example.disabled = run.disabled = reset.disabled = false;
+      example.addEventListener('change', () => {
+        drafts.set(currentExample, { text: source.value, view: selectedView });
+        currentExample = example.value;
+        const draft = drafts.get(currentExample);
+        source.value = draft?.text ?? examples.get(currentExample);
+        selectedView = draft?.view;
+        source.scrollTop = source.scrollLeft = 0;
+        render();
+      });
+      view.addEventListener('change', () => {
+        selectedView = view.value;
+        render();
+      });
+      source.addEventListener('input', () => {
+        clearTimeout(timer);
+        download.disabled = true;
+        timer = setTimeout(render, 240);
+      });
+      source.addEventListener('keydown', event => {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+          event.preventDefault();
+          render();
+        }
+      });
+      run.addEventListener('click', render);
+      reset.addEventListener('click', () => {
+        source.value = examples.get(currentExample);
+        selectedView = undefined;
+        source.scrollTop = source.scrollLeft = 0;
+        render();
+      });
+      download.addEventListener('click', () => {
+        const url = URL.createObjectURL(new Blob([lastSvg], { type: 'image/svg+xml;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = selectedView + '.svg';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+      render();
+    })();
+  </script>
 </body>
 </html>

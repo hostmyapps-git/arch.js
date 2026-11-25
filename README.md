@@ -20,12 +20,11 @@ Dokumentation: [Sprach-/API-Spezifikation](SPEC.md), [JSON-Format](JSON.md), [Me
 
 ## Sofort ausprobieren
 
-`index.html` im Browser öffnen. Die gebauten Dateien sind bereits enthalten;
-Installation und Server sind dafür nicht erforderlich. Die Beispieloberfläche
-bietet dreizehn editierbare Modelle mit 48 Ansichten, die eingebaute Hilfereferenz, Live-Vorschau, Zoom,
-helle/dunkle Darstellung sowie SVG- und Quelltextexport. Ctrl/Cmd+Enter rendert
-und passt das Diagramm ein. Geänderte Beispiele bleiben beim Wechsel in der
-laufenden Sitzung erhalten.
+`index.html` im Browser öffnen. Die Startseite enthält ein Playground mit
+editierbaren Beispielen, wechselbaren Ansichten, SVG-Export und einer
+Kurzanleitung. Für die vollständige Oberfläche mit Profilen, Hilfereferenz,
+Dashboard, Zoom und Quelltextexport `studio.html` öffnen. Beide Seiten
+funktionieren mit den mitgelieferten Browserdateien auch direkt vom Dateisystem.
 
 Alternativ lokal starten:
 
@@ -300,7 +299,7 @@ Die API-Auswahl hat Vorrang vor Dokumentregeln. Alternativ wählt
 Für `file://` lädt die Beispielseite `profiles/profiles.js`, das der Build aus
 den lokalen JSON-Dateien erzeugt. Die Library enthält nur das Standardprofil.
 
-In `index.html` zeigen **Your own framework** und **Reusable JSON profile**
+In `studio.html` zeigen **Your own framework** und **Reusable JSON profile**
 beide Varianten. Der PROFILE-Selektor demonstriert den API-Parameter und dessen
 Validierung. Vollständige Syntax, Schema, Prioritäten und Grenzen:
 [profiles/README.md](profiles/README.md). Die Engine validiert die deklarierten
@@ -595,7 +594,7 @@ Bootstrap, Lucide und Tabler sind vollständig heruntergeladen und integriert:
 | Lucide | 2.377 | [lucide.json](icons/lucide.json) |
 | Tabler Icons | 6.788 | [tabler.json](icons/tabler.json) |
 
-In `index.html` zeigt die Icongalerie die drei Zeichenstile. Das Beispiel
+In `studio.html` zeigt die Icongalerie die drei Zeichenstile. Das Beispiel
 **Three icon libraries** verwendet alle drei Packs im Architekturmodell.
 Die Galerie verlinkt die direkt registrierbaren JSON-Dateien zum Download.
 
@@ -751,7 +750,7 @@ Diagrammkoordinaten, auch innerhalb von Packages. JSON bewahrt die Ausdrücke
 als Strings. Auch Endpunkttupel wie `from (vision.right, maritime.centerY)`
 und Labelpunkte können mit den endgültigen Positionen und Größen rechnen.
 
-In `index.html` zeigt **Seven diagram renderers** alle sieben Ansichten.
+In `studio.html` zeigt **Seven diagram renderers** alle sieben Ansichten.
 Eine View wählt beispielsweise `diagram sequence { messages [request, response] }`.
 Syntax, Konfiguration und genaue Grenzen: [DIAGRAMS.md](DIAGRAMS.md).
 

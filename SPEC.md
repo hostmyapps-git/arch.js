@@ -8,7 +8,7 @@ Eine menschenlesbare Sprache beschreibt Architekturmodelle und deren Ansichten.
 Die Bibliothek erzeugt eigenständig Inline-SVG im Browser und SVG-Strings in Node.
 Die Sprache aller eingebauten Hilfe-, Status- und Diagnosetexte ist Englisch.
 Modelltitel, Beschreibungen und andere nutzerdefinierte Texte sind sprachunabhängig.
-Lieferumfang: `arch.js`, `arch.min.js`, `index.html`, `test.md`, editierbare
+Lieferumfang: `arch.js`, `arch.min.js`, `index.html`, `studio.html`, `test.md`, editierbare
 Beispiele und Quellcode. Browserbundles ohne externe Laufzeitscripts, ohne
 erforderlichen Renderingserver, CDN oder Netzwerkanfrage zum Rendern.
 Direkte Node-Quellimporte benötigen die gepinnten npm-Laufzeitabhängigkeiten;
@@ -1095,8 +1095,10 @@ Schreiben geprüft. Normale Builds benötigen keine Netzwerkverbindung.
 
 ## Beispieloberfläche
 
-`index.html` ist auch über `file://` verwendbar. Klassische lokale Script-Tags,
-keine Fetch-Abhängigkeit zum Start. Beispiele werden beim Build aus `examples/`
+`index.html` ist die Startseite mit Playground und Dokumentation. Sie verwendet
+ein eingebettetes Stylesheet und lädt das Browserbundle `arch.min.js`.
+`studio.html` enthält die vollständige Beispieloberfläche. Beide Seiten
+funktionieren über `file://` mit lokalen Script-Tags. Studio-Beispiele werden beim Build aus `examples/`
 in `demo/examples.js` eingebettet. Layout: Navigation, Quelleneditor, SVG-Canvas,
 Informationsleiste. Funktionen: Live-Rendering mit Debounce, Beispiele,
 Ansichten, hell/dunkel, Zoom/Fit, SVG- und Quelltextdownload, Tastaturkürzel

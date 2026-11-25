@@ -20,11 +20,64 @@ try {
     });
   });
   browser = await chromium.launch({ headless: true });
+  const landing = await browser.newPage({ viewport: { width: 1440, height: 970 } });
+  const landingErrors = [], landingRequests = [];
+  landing.on('pageerror', error => landingErrors.push(error.message));
+  landing.on('request', request => landingRequests.push(request.url()));
+  await landing.goto(address);
+  await landing.getByRole('heading',{name:'Architecture you can read.'}).waitFor();
+  await landing.locator('#hero-diagram svg[data-arch-svg="dark"]').waitFor();
+  await landing.locator('#play-preview svg').waitFor();
+  assert.deepEqual(landingRequests.map(url=>new URL(url).pathname),['/','/arch.min.js']);
+  await landing.screenshot({path:'test-results/landing.png',fullPage:true});
+  const playView=landing.getByLabel('View',{exact:true});
+  const playExample=landing.getByLabel('Example',{exact:true});
+  const playSource=landing.getByRole('textbox',{name:'Architecture source',exact:true});
+  await landing.getByRole('link',{name:'Try the playground'}).click();
+  assert.equal(new URL(landing.url()).hash,'#playground');
+  await playView.selectOption('data');
+  assert.equal(await landing.locator('#play-preview [data-node]').count(),3);
+  const originalLandingSource=await playSource.inputValue();
+  await playSource.fill(originalLandingSource.replace('Tracking API','Parcel API'));
+  await landing.locator('#play-preview').getByText('Parcel API',{exact:true}).waitFor();
+  await playSource.fill('architecture "Unfinished" {');
+  await landing.getByRole('alert').waitFor();
+  assert.equal(await landing.getByRole('button',{name:'Download SVG'}).isDisabled(),true);
+  assert.match(await landing.locator('#play-preview').textContent(),/Parcel API/);
+  await playSource.fill(originalLandingSource.replace('Tracking API','Parcel API'));
+  await playSource.press('Control+Enter');
+  assert.equal(await landing.getByRole('alert').isVisible(),false);
+  await playExample.selectOption('handoff');
+  await landing.locator('#play-preview svg[data-diagram="sequence"]').waitFor();
+  await playExample.selectOption('lifecycle');
+  await landing.locator('#play-preview svg[data-diagram="state"]').waitFor();
+  await playExample.selectOption('tracking');
+  assert.equal(await playView.inputValue(),'data');
+  assert.match(await playSource.inputValue(),/Parcel API/);
+  await landing.getByRole('button',{name:'Reset',exact:true}).click();
+  assert.equal(await playSource.inputValue(),originalLandingSource);
+  const [landingDownload]=await Promise.all([
+    landing.waitForEvent('download'),
+    landing.getByRole('button',{name:'Download SVG'}).click()
+  ]);
+  assert.equal(landingDownload.suggestedFilename(),'overview.svg');
+  assert.match(await readFile(await landingDownload.path(),'utf8'),/^<svg/);
+  await landing.setViewportSize({width:360,height:820});
+  await landing.reload();
+  await landing.locator('#play-preview svg').waitFor();
+  assert.ok(await landing.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await landing.screenshot({path:'test-results/landing-mobile.png',fullPage:true});
+  await landing.goto(pathToFileURL(path.resolve('index.html')).href);
+  await landing.locator('#play-preview svg').waitFor();
+  assert.deepEqual(landingErrors,[]);
+  await landing.close();
+  console.log('✓ Landing page, live editor, view presets, SVG export, mobile layout, and offline launch');
+
   const page = await browser.newPage({ viewport: { width: 1536, height: 1050 }, deviceScaleFactor: 1 });
   const errors = [], requests = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => requests.push(request.url()));
-  await page.goto(address); await page.waitForSelector('#diagram svg');
+  await page.goto(new URL('studio.html',address).href); await page.waitForSelector('#diagram svg');
   assert.equal(await page.locator('#error').isVisible(), false);
   assert.equal(await page.locator('#diagram [data-node]').count(), 8);
   const namedColors=JSON.parse(await readFile('src/css3-colors.js','utf8').then(s=>s.slice(s.indexOf('{'),s.lastIndexOf('}')+1)));
@@ -2531,7 +2584,7 @@ try {
   await page.screenshot({path:'test-results/meta-mobile.png',fullPage:true});
 
   const direct = await browser.newPage();
-  await direct.goto(pathToFileURL(path.resolve('index.html')).href);
+  await direct.goto(pathToFileURL(path.resolve('studio.html')).href);
   await direct.waitForSelector('#diagram svg');
   assert.equal(await direct.locator('#error').isVisible(), false);
   assert.equal(await direct.evaluate(()=>{
