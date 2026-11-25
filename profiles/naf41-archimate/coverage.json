@@ -1,0 +1,2691 @@
+{
+  "id": "naf41-archimate",
+  "version": "4.1.0-arch.1",
+  "sources": {
+    "standard": "https://publications.opengroup.org/c226",
+    "guide": {
+      "file": "ReferenceDocs/nafv4/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf",
+      "url": "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf",
+      "version": "2026.06",
+      "sha256": "33a387e7893e4f2059e965fc3ce24423e4f4bd57dd3b1f0d041941004971a075"
+    },
+    "mappings": {
+      "file": "profiles/naf41-archimate/guide-mappings.json",
+      "sha256": "db60d09a733c06886c9a448f3c76f8f76c7b9b736b8770bb86bcfd5e86908824"
+    },
+    "matrix": {
+      "file": "profiles/naf41-archimate/matrix.json",
+      "url": "https://github.com/archimatetool/archi/blob/ee6508693dc36889f954741b60e99411e70931d2/com.archimatetool.model/model/relationships.xml",
+      "version": "Archi 5.8.0",
+      "upstreamSha256": "65ad5b5c8044fc62c61836a702d0bd2e0427a87216d7f5e397666c74508d57c5",
+      "sha256": "382720d0b59b487b9655f6ee31675fee13256fa62b98cf8922aa9a31d9632af6"
+    }
+  },
+  "viewpoints": {
+    "C1": {
+      "guidePage": 18,
+      "guideSection": 5,
+      "mappingRows": 3,
+      "title": "Capability Taxonomy",
+      "nodes": [
+        "Capability",
+        "CapabilityGroup",
+        "EffectivenessCriteria",
+        "Junction"
+      ],
+      "relations": [
+        "Composition",
+        "Aggregation",
+        "Specialization",
+        "Serving",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Composition",
+            "Specialization"
+          ],
+          "from": [
+            "Capability"
+          ],
+          "to": [
+            "Capability"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=18",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 88 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C2": {
+      "guidePage": 21,
+      "guideSection": 6,
+      "mappingRows": 8,
+      "title": "Enterprise Vision",
+      "nodes": [
+        "Capability",
+        "Outcome",
+        "EnterprisePhase",
+        "Driver",
+        "Goal",
+        "Junction"
+      ],
+      "relations": [
+        "Influence",
+        "Aggregation",
+        "Realization",
+        "Specialization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "EnterprisePhase"
+        ],
+        [
+          "Goal",
+          "Driver",
+          "Outcome"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Influence",
+          "Aggregation",
+          "Realization",
+          "Specialization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=21",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 90 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C3": {
+      "guidePage": 23,
+      "guideSection": 7,
+      "mappingRows": 2,
+      "title": "Capability Dependencies",
+      "nodes": [
+        "Capability",
+        "CapabilityGroup",
+        "Junction"
+      ],
+      "relations": [
+        "Serving",
+        "Aggregation",
+        "Specialization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Serving"
+          ],
+          "from": [
+            "Capability"
+          ],
+          "to": [
+            "Capability"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=23",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 92 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C4": {
+      "guidePage": 26,
+      "guideSection": 8,
+      "mappingRows": 4,
+      "title": "Standard Processes",
+      "nodes": [
+        "Capability",
+        "OperationalActivity",
+        "ValueStream",
+        "Junction"
+      ],
+      "relations": [
+        "Realization",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ],
+        [
+          "OperationalActivity",
+          "ValueStream"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization",
+          "Serving"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=26",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 94 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C5": {
+      "guidePage": 28,
+      "guideSection": 9,
+      "mappingRows": 4,
+      "title": "Effects",
+      "nodes": [
+        "Capability",
+        "Outcome",
+        "EffectivenessCriteria",
+        "Measure",
+        "Junction"
+      ],
+      "relations": [
+        "Realization",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ],
+        [
+          "Outcome"
+        ],
+        [
+          "EffectivenessCriteria"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=28",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 96 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C7": {
+      "guidePage": 30,
+      "guideSection": 10,
+      "mappingRows": 4,
+      "title": "Performance Criteria",
+      "nodes": [
+        "AssessmentCriteria",
+        "Capability",
+        "EffectivenessCriteria",
+        "Measure",
+        "Junction"
+      ],
+      "relations": [
+        "Realization",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "AssessmentCriteria"
+        ],
+        [
+          "Capability"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=30",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 98 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C8": {
+      "guidePage": 33,
+      "guideSection": 11,
+      "mappingRows": 8,
+      "title": "Planning Constraints",
+      "nodes": [
+        "Capability",
+        "Outcome",
+        "Driver",
+        "Goal",
+        "NafConstraint",
+        "Rationale",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Influence",
+        "Specialization",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ],
+        [
+          "NafConstraint"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=33",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 100 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "Cr": {
+      "guidePage": 36,
+      "guideSection": 12,
+      "mappingRows": 6,
+      "title": "Capability Roadmap",
+      "nodes": [
+        "Capability",
+        "CapabilityConfiguration",
+        "Milestone",
+        "WorkPackage",
+        "EnterprisePhase",
+        "Junction"
+      ],
+      "relations": [
+        "Composition",
+        "Aggregation",
+        "Triggering",
+        "Realization",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Composition"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=36",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 102 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S1": {
+      "guidePage": 39,
+      "guideSection": 13,
+      "mappingRows": 5,
+      "title": "Service Taxonomy",
+      "nodes": [
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "ServiceGroup",
+        "ServicePolicy",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Realization",
+        "Aggregation"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Specialization"
+          ],
+          "from": [
+            "ApplicationService",
+            "BusinessService",
+            "TechnologyService"
+          ],
+          "to": [
+            "ApplicationService",
+            "BusinessService",
+            "TechnologyService"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=39",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 104 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S2": {
+      "guidePage": 42,
+      "guideSection": 14,
+      "mappingRows": 25,
+      "title": "Service Structure",
+      "nodes": [
+        "NafNode",
+        "Role",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "ApplicationInterface",
+        "BusinessInterface",
+        "TechnologyInterface",
+        "Junction"
+      ],
+      "relations": [
+        "Composition",
+        "Serving",
+        "Assignment",
+        "Association",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Serving"
+          ],
+          "from": [
+            "ApplicationService",
+            "BusinessService",
+            "TechnologyService"
+          ],
+          "to": [
+            "ApplicationService",
+            "BusinessService",
+            "TechnologyService"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=42",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 106 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 107–108 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S3": {
+      "guidePage": 45,
+      "guideSection": 15,
+      "mappingRows": 15,
+      "title": "Service Interfaces",
+      "nodes": [
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "ApplicationInterface",
+        "BusinessInterface",
+        "TechnologyInterface",
+        "ApplicationOperation",
+        "BusinessOperation",
+        "TechnologyOperation",
+        "ServiceOperationParameter",
+        "Junction"
+      ],
+      "relations": [
+        "Assignment",
+        "Serving",
+        "Access",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ],
+        [
+          "ApplicationInterface",
+          "BusinessInterface",
+          "TechnologyInterface"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Assignment"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=45",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 109 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 110 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ApplicationService"
+          ],
+          "relations": [
+            "Assignment"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "ApplicationInterface"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "BusinessService"
+          ],
+          "relations": [
+            "Assignment"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "BusinessInterface"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "TechnologyService"
+          ],
+          "relations": [
+            "Assignment"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "TechnologyInterface"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "S4": {
+      "guidePage": 48,
+      "guideSection": 16,
+      "mappingRows": 19,
+      "title": "Service Functions",
+      "nodes": [
+        "OperationalActivity",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "NafNode",
+        "Role",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Junction"
+      ],
+      "relations": [
+        "Serving",
+        "Aggregation",
+        "Realization",
+        "Assignment",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ],
+        [
+          "ApplicationFunction",
+          "BusinessFunction",
+          "TechnologyFunction"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Serving"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=48",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 111 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ApplicationService"
+          ],
+          "relations": [
+            "Serving"
+          ],
+          "direction": "incoming",
+          "counterparts": [
+            "ApplicationFunction"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "BusinessService"
+          ],
+          "relations": [
+            "Serving"
+          ],
+          "direction": "incoming",
+          "counterparts": [
+            "BusinessFunction"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "TechnologyService"
+          ],
+          "relations": [
+            "Serving"
+          ],
+          "direction": "incoming",
+          "counterparts": [
+            "TechnologyFunction"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "S5": {
+      "guidePage": 51,
+      "guideSection": 17,
+      "mappingRows": 15,
+      "title": "Service States",
+      "nodes": [
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "LogicalEvent",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Mode",
+        "ApplicationState",
+        "BusinessState",
+        "TechnologyState",
+        "StateTransition",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Triggering",
+        "Aggregation",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ],
+        [
+          "ApplicationState",
+          "BusinessState",
+          "TechnologyState"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "ApplicationState",
+            "BusinessState",
+            "TechnologyState"
+          ],
+          "to": [
+            "ApplicationState",
+            "BusinessState",
+            "TechnologyState"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=51",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 113 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S6": {
+      "guidePage": 54,
+      "guideSection": 18,
+      "mappingRows": 15,
+      "title": "Service Sequence",
+      "nodes": [
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "LogicalEvent",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Interaction",
+        "ApplicationInterface",
+        "BusinessInterface",
+        "TechnologyInterface",
+        "LogicalLifeline",
+        "ApplicationOperation",
+        "BusinessOperation",
+        "TechnologyOperation",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Triggering",
+        "Serving",
+        "Assignment"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ],
+        [
+          "LogicalLifeline"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "LogicalLifeline"
+          ],
+          "to": [
+            "LogicalLifeline"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=54",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 116 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S7": {
+      "guidePage": 57,
+      "guideSection": 19,
+      "mappingRows": 16,
+      "title": "Service Interface Parameters",
+      "nodes": [
+        "InformationObject",
+        "DataObject",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "ServiceFunctionParameter",
+        "ApplicationInterface",
+        "BusinessInterface",
+        "TechnologyInterface",
+        "ApplicationOperation",
+        "BusinessOperation",
+        "TechnologyOperation",
+        "ServiceOperationParameter",
+        "Junction"
+      ],
+      "relations": [
+        "Access",
+        "Association",
+        "Serving",
+        "Assignment"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationOperation",
+          "BusinessOperation",
+          "TechnologyOperation",
+          "ApplicationFunction",
+          "BusinessFunction",
+          "TechnologyFunction"
+        ],
+        [
+          "ServiceOperationParameter",
+          "ServiceFunctionParameter"
+        ],
+        [
+          "InformationObject",
+          "DataObject"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Access"
+        ],
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=57",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 119 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "S8": {
+      "guidePage": 60,
+      "guideSection": 20,
+      "mappingRows": 6,
+      "title": "Service Constraints",
+      "nodes": [
+        "Measure",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "NafConstraint",
+        "ServicePolicy",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Realization",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ServicePolicy"
+        ],
+        [
+          "NafConstraint"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=60",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 121 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "Sr": {
+      "guidePage": 63,
+      "guideSection": 21,
+      "mappingRows": 6,
+      "title": "Service Roadmap",
+      "nodes": [
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "Milestone",
+        "WorkPackage",
+        "ReadinessLevel",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Association",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ],
+        [
+          "ReadinessLevel"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=63",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 123 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "C1-S1": {
+      "guidePage": 66,
+      "guideSection": 22,
+      "mappingRows": 4,
+      "title": "Service to Capability",
+      "nodes": [
+        "Capability",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "Junction"
+      ],
+      "relations": [
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Capability"
+        ],
+        [
+          "ApplicationService",
+          "BusinessService",
+          "TechnologyService"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=66",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 125 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ApplicationService",
+            "BusinessService",
+            "TechnologyService"
+          ],
+          "relations": [
+            "Realization"
+          ],
+          "direction": "outgoing",
+          "counterparts": [
+            "Capability"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "L1": {
+      "guidePage": 68,
+      "guideSection": 23,
+      "mappingRows": 18,
+      "title": "Logical Taxonomy",
+      "nodes": [
+        "Capability",
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "NafNode",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "OperationalActivity",
+        "TechnologyFunction",
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Specialization",
+        "Realization",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode"
+        ],
+        [
+          "ApplicationFunction",
+          "BusinessFunction",
+          "TechnologyFunction",
+          "OperationalActivity"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation",
+          "Specialization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=68",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 126 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 127 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "L2": {
+      "guidePage": 71,
+      "guideSection": 24,
+      "mappingRows": 5,
+      "title": "Logical Structure",
+      "nodes": [
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Needline",
+        "NafNode",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Flow",
+        "Access",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Flow"
+          ],
+          "from": [
+            "NafNode"
+          ],
+          "to": [
+            "NafNode"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=71",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 128 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 129 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "L2-L3": {
+      "guidePage": 73,
+      "guideSection": 25,
+      "mappingRows": 1,
+      "title": "Logical Concept",
+      "nodes": [
+        "NafNode",
+        "Junction"
+      ],
+      "relations": [
+        "Flow"
+      ],
+      "requiredNodeGroups": [],
+      "requiredRelationGroups": [],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=73",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 130 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "L3": {
+      "guidePage": 75,
+      "guideSection": 26,
+      "mappingRows": 15,
+      "title": "Logical Interactions",
+      "nodes": [
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "NafNode",
+        "Interaction",
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Needline",
+        "Junction"
+      ],
+      "relations": [
+        "Flow",
+        "Association",
+        "Aggregation",
+        "Access"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology"
+        ],
+        [
+          "InformationObject",
+          "LogicalEnergy",
+          "LogicalMaterial"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Flow"
+        ],
+        [
+          "Access",
+          "ConveyingFlow"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=75",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 131 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 132 (NAFv4.1, 2026.03)"
+      ],
+      "references": [
+        {
+          "relations": [
+            "ConveyingFlow"
+          ],
+          "attributes": [
+            "conveyed"
+          ]
+        }
+      ]
+    },
+    "L4": {
+      "guidePage": 78,
+      "guideSection": 27,
+      "mappingRows": 25,
+      "title": "Logical Activities",
+      "nodes": [
+        "Capability",
+        "LogicalEvent",
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "NafNode",
+        "Role",
+        "OperationalActivity",
+        "OperationalFlow",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "Equipment",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "ApplicationService",
+        "BusinessService",
+        "TechnologyService",
+        "Junction"
+      ],
+      "relations": [
+        "Assignment",
+        "Association",
+        "Triggering",
+        "Flow",
+        "Access",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology",
+          "Role"
+        ],
+        [
+          "OperationalActivity"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "OperationalActivity"
+          ],
+          "to": [
+            "OperationalActivity"
+          ]
+        },
+        {
+          "types": [
+            "Assignment",
+            "Association"
+          ],
+          "from": [
+            "NafNode",
+            "Actor",
+            "LogicalApplication",
+            "LogicalEquipment",
+            "LogicalTechnology",
+            "Role"
+          ],
+          "to": [
+            "OperationalActivity"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=78",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 133 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 134–135 (NAFv4.1, 2026.03)"
+      ],
+      "references": [
+        {
+          "relations": [
+            "ConveyingFlow"
+          ],
+          "attributes": [
+            "conveyed"
+          ]
+        }
+      ]
+    },
+    "L5": {
+      "guidePage": 82,
+      "guideSection": 28,
+      "mappingRows": 17,
+      "title": "Logical States",
+      "nodes": [
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "LogicalEvent",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Mode",
+        "ApplicationState",
+        "BusinessState",
+        "TechnologyState",
+        "StateTransition",
+        "OperationalActivity",
+        "NafNode",
+        "Junction"
+      ],
+      "relations": [
+        "Assignment",
+        "Association",
+        "Triggering",
+        "Aggregation",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology"
+        ],
+        [
+          "ApplicationState",
+          "BusinessState",
+          "TechnologyState"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "ApplicationState",
+            "BusinessState",
+            "TechnologyState"
+          ],
+          "to": [
+            "ApplicationState",
+            "BusinessState",
+            "TechnologyState"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=82",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 136 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 137–138 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "L6": {
+      "guidePage": 85,
+      "guideSection": 29,
+      "mappingRows": 11,
+      "title": "Logical Sequence",
+      "nodes": [
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "LogicalEvent",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Interaction",
+        "LogicalLifeline",
+        "OperationalActivity",
+        "NafNode",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Triggering",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology"
+        ],
+        [
+          "LogicalLifeline"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "LogicalLifeline"
+          ],
+          "to": [
+            "LogicalLifeline"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=85",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 139 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 140 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "LogicalLifeline"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "NafNode",
+            "Actor",
+            "LogicalApplication",
+            "LogicalEquipment",
+            "LogicalTechnology"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "L7": {
+      "guidePage": 87,
+      "guideSection": 30,
+      "mappingRows": 5,
+      "title": "Information Model",
+      "nodes": [
+        "InformationObject",
+        "InformationEntity",
+        "InformationModel",
+        "InformationProduct",
+        "InformationAttribute",
+        "InformationAttributeType",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Aggregation"
+      ],
+      "requiredNodeGroups": [
+        [
+          "InformationEntity"
+        ]
+      ],
+      "requiredRelationGroups": [],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=87",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 141 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 142 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "L8": {
+      "guidePage": 90,
+      "guideSection": 31,
+      "mappingRows": 17,
+      "title": "Logical Constraints",
+      "nodes": [
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "OperationalActivity",
+        "TechnologyFunction",
+        "NafConstraint",
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Rationale",
+        "Requirement",
+        "LogicalSpecification",
+        "NafNode",
+        "Junction"
+      ],
+      "relations": [
+        "Realization",
+        "Influence",
+        "Aggregation",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafConstraint"
+        ],
+        [
+          "Requirement"
+        ],
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology",
+          "InformationObject",
+          "LogicalEnergy",
+          "LogicalMaterial",
+          "ApplicationFunction",
+          "BusinessFunction",
+          "TechnologyFunction",
+          "OperationalActivity"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=90",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 143 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 144 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "Lr": {
+      "guidePage": 93,
+      "guideSection": 32,
+      "mappingRows": 9,
+      "title": "Logical Roadmap",
+      "nodes": [
+        "Capability",
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "NafNode",
+        "Milestone",
+        "WorkPackage",
+        "ReadinessLevel",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Aggregation",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ReadinessLevel"
+        ],
+        [
+          "NafNode",
+          "Actor",
+          "LogicalApplication",
+          "LogicalEquipment",
+          "LogicalTechnology"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=93",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 145 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 146 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "P1": {
+      "guidePage": 97,
+      "guideSection": 33,
+      "mappingRows": 31,
+      "title": "Resource Taxonomy",
+      "nodes": [
+        "Capability",
+        "CapabilityConfiguration",
+        "Actor",
+        "LogicalApplication",
+        "LogicalEquipment",
+        "LogicalTechnology",
+        "Role",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "OperationalActivity",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Composition",
+        "Assignment",
+        "Serving",
+        "Aggregation",
+        "Realization",
+        "Access",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "DistributionNetwork",
+          "Equipment",
+          "Facility",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "ApplicationProcess",
+          "BusinessProcess",
+          "TechnologyProcess"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Assignment",
+          "Serving"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=97",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 147 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 148–149 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "P2": {
+      "guidePage": 101,
+      "guideSection": 34,
+      "mappingRows": 20,
+      "title": "Resource Structure",
+      "nodes": [
+        "CapabilityConfiguration",
+        "Interaction",
+        "InformationObject",
+        "LogicalEnergy",
+        "LogicalMaterial",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "ResourceInteraction",
+        "ResourceInteractionCollaboration",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Composition",
+        "Serving",
+        "Access",
+        "Aggregation",
+        "Flow",
+        "Association",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "CapabilityConfiguration"
+        ],
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "DistributionNetwork",
+          "Equipment",
+          "Facility",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "Artifact",
+          "DataObject",
+          "Energy",
+          "Material"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ],
+        [
+          "Access",
+          "Serving"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=101",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 150 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 151–152 (NAFv4.1, 2026.03)"
+      ],
+      "references": [
+        {
+          "relations": [
+            "ConveyingFlow"
+          ],
+          "attributes": [
+            "conveyed"
+          ]
+        }
+      ]
+    },
+    "P3": {
+      "guidePage": 104,
+      "guideSection": 35,
+      "mappingRows": 18,
+      "title": "Resource Interactions",
+      "nodes": [
+        "Interaction",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "Protocol",
+        "ResourceInteraction",
+        "Standard",
+        "ResourceInteractionCollaboration",
+        "Junction"
+      ],
+      "relations": [
+        "Flow",
+        "Association",
+        "Realization",
+        "Access"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "DistributionNetwork",
+          "Equipment",
+          "Facility",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "Protocol"
+        ],
+        [
+          "Standard"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Flow",
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=104",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 153 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 154–155 (NAFv4.1, 2026.03)"
+      ],
+      "references": [
+        {
+          "relations": [
+            "ConveyingFlow"
+          ],
+          "attributes": [
+            "conveyed"
+          ]
+        }
+      ]
+    },
+    "P4": {
+      "guidePage": 107,
+      "guideSection": 36,
+      "mappingRows": 23,
+      "title": "Resource Functions",
+      "nodes": [
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "OperationalActivity",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "Equipment",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "ResourceInteraction",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "Junction"
+      ],
+      "relations": [
+        "Assignment",
+        "Serving",
+        "Aggregation",
+        "Flow",
+        "Association",
+        "Triggering",
+        "Access"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "Equipment",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "ApplicationProcess",
+          "BusinessProcess",
+          "TechnologyProcess"
+        ],
+        [
+          "Artifact",
+          "DataObject",
+          "Energy",
+          "Material"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Assignment",
+            "Serving"
+          ],
+          "from": [
+            "Application",
+            "CommunicationNetwork",
+            "Device",
+            "DistributionNetwork",
+            "Equipment",
+            "Facility",
+            "Organization",
+            "Person",
+            "Post",
+            "SystemSoftware",
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ],
+          "to": [
+            "Application",
+            "CommunicationNetwork",
+            "Device",
+            "DistributionNetwork",
+            "Equipment",
+            "Facility",
+            "Organization",
+            "Person",
+            "Post",
+            "SystemSoftware",
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ]
+        },
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ],
+          "to": [
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ]
+        },
+        {
+          "types": [
+            "Flow"
+          ],
+          "from": [
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ],
+          "to": [
+            "ApplicationProcess",
+            "BusinessProcess",
+            "TechnologyProcess"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=107",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 156 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 157–158 (NAFv4.1, 2026.03)"
+      ],
+      "references": [
+        {
+          "relations": [
+            "ConveyingFlow"
+          ],
+          "attributes": [
+            "conveyed"
+          ]
+        }
+      ]
+    },
+    "L4-P4": {
+      "guidePage": 111,
+      "guideSection": 37,
+      "mappingRows": 16,
+      "title": "Activity to Function",
+      "nodes": [
+        "OperationalActivity",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "SystemSoftware",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "ApplicationFunction",
+        "BusinessFunction",
+        "TechnologyFunction",
+        "Junction"
+      ],
+      "relations": [
+        "Serving",
+        "Assignment",
+        "Aggregation"
+      ],
+      "requiredNodeGroups": [
+        [
+          "OperationalActivity"
+        ],
+        [
+          "ApplicationProcess",
+          "BusinessProcess",
+          "TechnologyProcess"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Serving"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=111",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 159 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 159–160 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "P5": {
+      "guidePage": 114,
+      "guideSection": 38,
+      "mappingRows": 23,
+      "title": "Resource States",
+      "nodes": [
+        "ApplicationState",
+        "BusinessState",
+        "TechnologyState",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "Equipment",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "ResourceEvent",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "ResourceMode",
+        "ApplicationResourceState",
+        "BusinessResourceState",
+        "TechnologyResourceState",
+        "ResourceStateTransition",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Triggering",
+        "Aggregation",
+        "Serving",
+        "Specialization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "Equipment",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "ApplicationResourceState",
+          "BusinessResourceState",
+          "TechnologyResourceState"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "ApplicationResourceState",
+            "BusinessResourceState",
+            "TechnologyResourceState"
+          ],
+          "to": [
+            "ApplicationResourceState",
+            "BusinessResourceState",
+            "TechnologyResourceState"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=114",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 161 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 161–162 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "P6": {
+      "guidePage": 117,
+      "guideSection": 39,
+      "mappingRows": 16,
+      "title": "Resource Sequence",
+      "nodes": [
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "ResourceEvent",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "ResourceInteraction",
+        "ResourceLifeline",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Triggering",
+        "Serving"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "DistributionNetwork",
+          "Equipment",
+          "Facility",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware"
+        ],
+        [
+          "ResourceLifeline"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "ResourceLifeline"
+          ],
+          "to": [
+            "ResourceLifeline"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=117",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 163 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 163–164 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ResourceLifeline"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "Application",
+            "CommunicationNetwork",
+            "Device",
+            "DistributionNetwork",
+            "Equipment",
+            "Facility",
+            "Organization",
+            "Person",
+            "Post",
+            "SystemSoftware"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "P7": {
+      "guidePage": 120,
+      "guideSection": 40,
+      "mappingRows": 7,
+      "title": "Data Model",
+      "nodes": [
+        "DataObject",
+        "InformationObject",
+        "DataEntity",
+        "DataModel",
+        "DataProduct",
+        "DataAttribute",
+        "DataAttributeType",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Aggregation",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "DataEntity"
+        ]
+      ],
+      "requiredRelationGroups": [],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=120",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 165 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 166–167 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "P8": {
+      "guidePage": 123,
+      "guideSection": 41,
+      "mappingRows": 22,
+      "title": "Resource Constraints",
+      "nodes": [
+        "NafConstraint",
+        "Application",
+        "CommunicationNetwork",
+        "Device",
+        "DistributionNetwork",
+        "Equipment",
+        "Facility",
+        "Organization",
+        "Person",
+        "Post",
+        "SystemSoftware",
+        "ApplicationProcess",
+        "BusinessProcess",
+        "TechnologyProcess",
+        "Artifact",
+        "DataObject",
+        "Energy",
+        "Material",
+        "Rationale",
+        "Requirement",
+        "ResourceSpecification",
+        "Junction"
+      ],
+      "relations": [
+        "Realization",
+        "Influence",
+        "Aggregation"
+      ],
+      "requiredNodeGroups": [
+        [
+          "NafConstraint"
+        ],
+        [
+          "Requirement"
+        ],
+        [
+          "Application",
+          "CommunicationNetwork",
+          "Device",
+          "DistributionNetwork",
+          "Equipment",
+          "Facility",
+          "Organization",
+          "Person",
+          "Post",
+          "SystemSoftware",
+          "Artifact",
+          "DataObject",
+          "Energy",
+          "Material",
+          "ApplicationProcess",
+          "BusinessProcess",
+          "TechnologyProcess"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Realization"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=123",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 168 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 168–169 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "Pr": {
+      "guidePage": 126,
+      "guideSection": 42,
+      "mappingRows": 6,
+      "title": "Resource Roadmap",
+      "nodes": [
+        "CapabilityConfiguration",
+        "Milestone",
+        "ReadinessLevel",
+        "WorkPackage",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Aggregation",
+        "Realization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ReadinessLevel"
+        ],
+        [
+          "CapabilityConfiguration"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=126",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 170 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 170–171 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A1": {
+      "guidePage": 129,
+      "guideSection": 43,
+      "mappingRows": 5,
+      "title": "Metadata Definitions",
+      "nodes": [
+        "ArchitectureDescription",
+        "ContextualData",
+        "GlossaryTerm",
+        "Metadata",
+        "Standard",
+        "Junction"
+      ],
+      "relations": [
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureDescription"
+        ],
+        [
+          "GlossaryTerm"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=129",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 172 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 172–173 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A2": {
+      "guidePage": 132,
+      "guideSection": 44,
+      "mappingRows": 5,
+      "title": "Architecture Products",
+      "nodes": [
+        "ArchitectureDescription",
+        "Concern",
+        "Stakeholder",
+        "View",
+        "Viewpoint",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Realization",
+        "Influence",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureDescription"
+        ],
+        [
+          "View"
+        ],
+        [
+          "Viewpoint"
+        ],
+        [
+          "Stakeholder"
+        ],
+        [
+          "Concern"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Aggregation"
+        ],
+        [
+          "Realization"
+        ],
+        [
+          "Influence"
+        ],
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=132",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 174 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 174–175 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "View"
+          ],
+          "relations": [
+            "Aggregation"
+          ],
+          "direction": "incoming",
+          "counterparts": [
+            "ArchitectureDescription"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "View"
+          ],
+          "relations": [
+            "Realization"
+          ],
+          "direction": "outgoing",
+          "counterparts": [
+            "Viewpoint"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "Stakeholder"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "Concern"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "Concern"
+          ],
+          "relations": [
+            "Influence"
+          ],
+          "direction": "incoming",
+          "counterparts": [
+            "Viewpoint"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "A3": {
+      "guidePage": 135,
+      "guideSection": 45,
+      "mappingRows": 4,
+      "title": "Architecture Correspondence",
+      "nodes": [
+        "ArchitectureDescription",
+        "ArchitectureDescriptionElement",
+        "CorrespondenceMethod",
+        "ElementCorrespondence",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Aggregation",
+        "Access"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureDescription"
+        ],
+        [
+          "ArchitectureDescriptionElement"
+        ],
+        [
+          "ElementCorrespondence"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=135",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 176 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 176–177 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ElementCorrespondence"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "ArchitectureDescriptionElement"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "ElementCorrespondence"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "ArchitectureDescription"
+          ],
+          "min": 1
+        }
+      ]
+    },
+    "A4": {
+      "guidePage": 138,
+      "guideSection": 46,
+      "mappingRows": 4,
+      "title": "Architecture Methodology",
+      "nodes": [
+        "ArchitectureDescription",
+        "ArchitectureProject",
+        "ArchitectureMethodology",
+        "Standard",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Specialization",
+        "Access"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureProject"
+        ],
+        [
+          "ArchitectureMethodology"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=138",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 178 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 178–179 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A5": {
+      "guidePage": 140,
+      "guideSection": 47,
+      "mappingRows": 4,
+      "title": "Architecture Status",
+      "nodes": [
+        "ArchitectureDescription",
+        "ArchitectureStatus",
+        "ArchitectureWorkProduct",
+        "View",
+        "Junction"
+      ],
+      "relations": [
+        "Specialization",
+        "Association",
+        "Aggregation"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureWorkProduct"
+        ],
+        [
+          "ArchitectureStatus"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=140",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 180 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 180–181 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A6": {
+      "guidePage": 142,
+      "guideSection": 48,
+      "mappingRows": 3,
+      "title": "Architecture Versions",
+      "nodes": [
+        "Baseline",
+        "Version",
+        "ArchitectureWorkProduct",
+        "ArchitectureDescription",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Triggering",
+        "Specialization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureWorkProduct"
+        ],
+        [
+          "Version"
+        ]
+      ],
+      "requiredRelationGroups": [
+        {
+          "types": [
+            "Aggregation"
+          ],
+          "from": [
+            "Version",
+            "Baseline"
+          ],
+          "to": [
+            "ArchitectureWorkProduct",
+            "ArchitectureDescription"
+          ]
+        },
+        {
+          "types": [
+            "Triggering"
+          ],
+          "from": [
+            "Version"
+          ],
+          "to": [
+            "Version"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=142",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 182 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 182–183 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A7": {
+      "guidePage": 145,
+      "guideSection": 49,
+      "mappingRows": 7,
+      "title": "Architecture Metadata",
+      "nodes": [
+        "AchievedMetric",
+        "ArchitectureDescription",
+        "DesiredMetric",
+        "Library",
+        "Measure",
+        "Standard",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Measure"
+        ]
+      ],
+      "requiredRelationGroups": [],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=145",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 184 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 184–185 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "A8": {
+      "guidePage": 148,
+      "guideSection": 50,
+      "mappingRows": 5,
+      "title": "Architecture Standards",
+      "nodes": [
+        "ArchitecturalConstraint",
+        "Library",
+        "Profile",
+        "Standard",
+        "Junction"
+      ],
+      "relations": [
+        "Aggregation",
+        "Specialization",
+        "Association"
+      ],
+      "requiredNodeGroups": [
+        [
+          "Standard"
+        ]
+      ],
+      "requiredRelationGroups": [],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=148",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 186 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 187–188 (NAFv4.1, 2026.03)"
+      ]
+    },
+    "Ar": {
+      "guidePage": 151,
+      "guideSection": 51,
+      "mappingRows": 8,
+      "title": "Architecture Roadmap",
+      "nodes": [
+        "ArchitectureMilestone",
+        "ArchitectureProject",
+        "ArchitectureStatus",
+        "Version",
+        "ArchitectureWorkProduct",
+        "EnterprisePhase",
+        "Milestone",
+        "Junction"
+      ],
+      "relations": [
+        "Association",
+        "Aggregation",
+        "Realization",
+        "Specialization"
+      ],
+      "requiredNodeGroups": [
+        [
+          "ArchitectureWorkProduct"
+        ],
+        [
+          "ArchitectureStatus"
+        ],
+        [
+          "ArchitectureMilestone"
+        ]
+      ],
+      "requiredRelationGroups": [
+        [
+          "Association"
+        ]
+      ],
+      "sources": [
+        "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf#page=151",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 189 (NAFv4.1, 2026.03)",
+        "ReferenceDocs/nafv4/NATO-Architecture-Framework-v4-1-en.pdf — printed page 190 (NAFv4.1, 2026.03)"
+      ],
+      "connections": [
+        {
+          "nodes": [
+            "ArchitectureStatus"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "ArchitectureWorkProduct"
+          ],
+          "min": 1
+        },
+        {
+          "nodes": [
+            "ArchitectureMilestone"
+          ],
+          "relations": [
+            "Association"
+          ],
+          "direction": "either",
+          "counterparts": [
+            "ArchitectureStatus"
+          ],
+          "min": 1
+        }
+      ]
+    }
+  }
+}

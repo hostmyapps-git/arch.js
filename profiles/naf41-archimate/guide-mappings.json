@@ -1,0 +1,2859 @@
+{
+  "C1": {
+    "section": 5,
+    "page": 18,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Capability Group",
+        "# Capability Group",
+        "Grouping"
+      ],
+      [
+        "Effectiveness Criteria",
+        "# Effectiveness Criteria",
+        "Requirement"
+      ]
+    ]
+  },
+  "C2": {
+    "section": 6,
+    "page": 21,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Effect",
+        "# Outcome",
+        "Outcome"
+      ],
+      [
+        "Enduring Task",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Enterprise Phase",
+        "# Enterprise Phase",
+        "Plateau"
+      ],
+      [
+        "Enterprise Vision",
+        "# Driver",
+        "Driver"
+      ],
+      [
+        "Enterprise Vision",
+        "# Goal",
+        "Goal"
+      ],
+      [
+        "Goal",
+        "# Goal",
+        "Goal"
+      ],
+      [
+        "Goal",
+        "# Outcome",
+        "Outcome"
+      ]
+    ]
+  },
+  "C3": {
+    "section": 7,
+    "page": 23,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Capability Group",
+        "# Capability Group",
+        "Grouping"
+      ]
+    ]
+  },
+  "C4": {
+    "section": 8,
+    "page": 26,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Operational Activity",
+        "# Value Stream",
+        "Value stream"
+      ],
+      [
+        "Standard Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ]
+    ]
+  },
+  "C5": {
+    "section": 9,
+    "page": 28,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Effect",
+        "# Outcome",
+        "Outcome"
+      ],
+      [
+        "Effectiveness Criteria",
+        "# Effectiveness Criteria",
+        "Requirement"
+      ],
+      [
+        "Measure",
+        "# Measure",
+        "Business object"
+      ]
+    ]
+  },
+  "C7": {
+    "section": 10,
+    "page": 30,
+    "elements": [
+      [
+        "Assessment Criteria",
+        "# Assessment Criteria",
+        "Requirement"
+      ],
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Effectiveness Criteria",
+        "# Effectiveness Criteria",
+        "Requirement"
+      ],
+      [
+        "Measure",
+        "# Measure",
+        "Business object"
+      ]
+    ]
+  },
+  "C8": {
+    "section": 11,
+    "page": 33,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Effect",
+        "# Outcome",
+        "Outcome"
+      ],
+      [
+        "Enterprise Vision",
+        "# Driver",
+        "Driver"
+      ],
+      [
+        "Enterprise Vision",
+        "# Goal",
+        "Goal"
+      ],
+      [
+        "Goal",
+        "# Goal",
+        "Goal"
+      ],
+      [
+        "Goal",
+        "# Outcome",
+        "Outcome"
+      ],
+      [
+        "Strategic Constraint",
+        "# Constraint",
+        "Requirement"
+      ],
+      [
+        "Strategic Rationale",
+        "# Rationale",
+        "Driver"
+      ]
+    ]
+  },
+  "Cr": {
+    "section": 12,
+    "page": 36,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Capability Configuration",
+        "# Capability Configuration",
+        "Grouping"
+      ],
+      [
+        "Capability Increment",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Capability Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Capability Project",
+        "# Work Package",
+        "Work package"
+      ],
+      [
+        "Enterprise Phase",
+        "# Enterprise Phase",
+        "Plateau"
+      ]
+    ]
+  },
+  "S1": {
+    "section": 13,
+    "page": 39,
+    "elements": [
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Group",
+        "# Service Group",
+        "Product"
+      ],
+      [
+        "Service Policy",
+        "# Service Policy",
+        "Requirement"
+      ]
+    ]
+  },
+  "S2": {
+    "section": 14,
+    "page": 42,
+    "elements": [
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Node",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Consumer",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Service Consumer",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Service Interface",
+        "# Application Interface",
+        "Application interface"
+      ],
+      [
+        "Service Interface",
+        "# Business Interface",
+        "Business interface"
+      ],
+      [
+        "Service Interface",
+        "# Technology Interface",
+        "Technology interface"
+      ],
+      [
+        "Service Provider",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Service Provider",
+        "# Role",
+        "Business role"
+      ]
+    ]
+  },
+  "S3": {
+    "section": 15,
+    "page": 45,
+    "elements": [
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Interface",
+        "# Application Interface",
+        "Application interface"
+      ],
+      [
+        "Service Interface",
+        "# Business Interface",
+        "Business interface"
+      ],
+      [
+        "Service Interface",
+        "# Technology Interface",
+        "Technology interface"
+      ],
+      [
+        "Service Operation",
+        "# Application Operation",
+        "Application function"
+      ],
+      [
+        "Service Operation",
+        "# Business Operation",
+        "Business function"
+      ],
+      [
+        "Service Operation",
+        "# Technology Operation",
+        "Technology function"
+      ],
+      [
+        "Service Operation Parameter",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Service Operation Parameter",
+        "# Service Operation Parameter",
+        "Business object"
+      ]
+    ]
+  },
+  "S4": {
+    "section": 16,
+    "page": 48,
+    "elements": [
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Consumer",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Service Consumer",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Service Consumer",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Service Consumer",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Service Consumer",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Service Consumer",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Service Provider",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Service Provider",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Service Provider",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Service Provider",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Service Provider",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Service Provider",
+        "# Role",
+        "Business role"
+      ]
+    ]
+  },
+  "S5": {
+    "section": 17,
+    "page": 51,
+    "elements": [
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Event",
+        "# Logical Event",
+        "Business event"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Service Mode",
+        "# Mode",
+        "Business event"
+      ],
+      [
+        "Service State",
+        "# Application State",
+        "Application event"
+      ],
+      [
+        "Service State",
+        "# Business State",
+        "Business event"
+      ],
+      [
+        "Service State",
+        "# Technology State",
+        "Technology event"
+      ],
+      [
+        "Service State Group",
+        "# Application State",
+        "Application event"
+      ],
+      [
+        "Service State Group",
+        "# Business State",
+        "Business event"
+      ],
+      [
+        "Service State Group",
+        "# Technology State",
+        "Technology event"
+      ],
+      [
+        "Service State Transition",
+        "# State Transition",
+        "Business interaction"
+      ]
+    ]
+  },
+  "S6": {
+    "section": 18,
+    "page": 54,
+    "elements": [
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Event",
+        "# Logical Event",
+        "Business event"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Service Interaction",
+        "# Interaction",
+        "Business interaction"
+      ],
+      [
+        "Service Interface",
+        "# Application Interface",
+        "Application interface"
+      ],
+      [
+        "Service Interface",
+        "# Business Interface",
+        "Business interface"
+      ],
+      [
+        "Service Interface",
+        "# Technology Interface",
+        "Technology interface"
+      ],
+      [
+        "Service Lifeline",
+        "# Logical Lifeline",
+        "Business process"
+      ],
+      [
+        "Service Operation",
+        "# Application Operation",
+        "Application function"
+      ],
+      [
+        "Service Operation",
+        "# Business Operation",
+        "Business function"
+      ],
+      [
+        "Service Operation",
+        "# Technology Operation",
+        "Technology function"
+      ]
+    ]
+  },
+  "S7": {
+    "section": 19,
+    "page": 57,
+    "elements": [
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Service Function Parameter",
+        "# Service Function Parameter",
+        "Business object"
+      ],
+      [
+        "Service Interface",
+        "# Application Interface",
+        "Application interface"
+      ],
+      [
+        "Service Interface",
+        "# Business Interface",
+        "Business interface"
+      ],
+      [
+        "Service Interface",
+        "# Technology Interface",
+        "Technology interface"
+      ],
+      [
+        "Service Operation",
+        "# Application Operation",
+        "Application function"
+      ],
+      [
+        "Service Operation",
+        "# Business Operation",
+        "Business function"
+      ],
+      [
+        "Service Operation",
+        "# Technology Operation",
+        "Technology function"
+      ],
+      [
+        "Service Operation Parameter",
+        "# Service Operation Parameter",
+        "Business object"
+      ]
+    ]
+  },
+  "S8": {
+    "section": 20,
+    "page": 60,
+    "elements": [
+      [
+        "Measure",
+        "# Measure",
+        "Business object"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Constraint",
+        "# Constraint",
+        "Requirement"
+      ],
+      [
+        "Service Policy",
+        "# Service Policy",
+        "Requirement"
+      ]
+    ]
+  },
+  "Sr": {
+    "section": 21,
+    "page": 63,
+    "elements": [
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ],
+      [
+        "Service Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Service Project",
+        "# Work Package",
+        "Work package"
+      ],
+      [
+        "Service Readiness Level",
+        "# Readiness Level",
+        "Plateau"
+      ]
+    ]
+  },
+  "C1-S1": {
+    "section": 22,
+    "page": 66,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ]
+    ]
+  },
+  "L1": {
+    "section": 23,
+    "page": 68,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Active Resource",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Logical Behaviour",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Behaviour",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Behaviour",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Logical Behaviour",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Node",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Node",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Node",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Node",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ]
+    ]
+  },
+  "L2": {
+    "section": 24,
+    "page": 71,
+    "elements": [
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Needline",
+        "# Needline",
+        "Business collaboration"
+      ],
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ]
+    ]
+  },
+  "L2-L3": {
+    "section": 25,
+    "page": 73,
+    "elements": [
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ]
+    ]
+  },
+  "L3": {
+    "section": 26,
+    "page": 75,
+    "elements": [
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Active Resource",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Logical Interaction",
+        "# Interaction",
+        "Business interaction"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Needline",
+        "# Needline",
+        "Business collaboration"
+      ],
+      [
+        "Node",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Node",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Node",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Node",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ]
+    ]
+  },
+  "L4": {
+    "section": 27,
+    "page": 78,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Logical Event",
+        "# Logical Event",
+        "Business event"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Node",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Node",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Node",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Node",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Node",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Node",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Operational Flow",
+        "# Operational Flow",
+        "Business collaboration"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Role",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Service",
+        "# Application Service",
+        "Application service"
+      ],
+      [
+        "Service",
+        "# Business Service",
+        "Business service"
+      ],
+      [
+        "Service",
+        "# Technology Service",
+        "Technology service"
+      ]
+    ]
+  },
+  "L5": {
+    "section": 28,
+    "page": 82,
+    "elements": [
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Event",
+        "# Logical Event",
+        "Business event"
+      ],
+      [
+        "Logical Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Logical Mode",
+        "# Mode",
+        "Business event"
+      ],
+      [
+        "Logical State",
+        "# Application State",
+        "Application event"
+      ],
+      [
+        "Logical State",
+        "# Business State",
+        "Business event"
+      ],
+      [
+        "Logical State",
+        "# Technology State",
+        "Technology event"
+      ],
+      [
+        "Logical State Group",
+        "# Application State",
+        "Application event"
+      ],
+      [
+        "Logical State Group",
+        "# Business State",
+        "Business event"
+      ],
+      [
+        "Logical State Group",
+        "# Technology State",
+        "Technology event"
+      ],
+      [
+        "Logical Transition",
+        "# State Transition",
+        "Business interaction"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ]
+    ]
+  },
+  "L6": {
+    "section": 29,
+    "page": 85,
+    "elements": [
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Event",
+        "# Logical Event",
+        "Business event"
+      ],
+      [
+        "Logical Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Logical Interaction",
+        "# Interaction",
+        "Business interaction"
+      ],
+      [
+        "Logical Lifeline",
+        "# Logical Lifeline",
+        "Business process"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ]
+    ]
+  },
+  "L7": {
+    "section": 30,
+    "page": 87,
+    "elements": [
+      [
+        "Information Attribute",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Information Attribute Type",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Information Entity",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Information Model",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Information Product",
+        "# Information Object",
+        "Business object"
+      ]
+    ]
+  },
+  "L8": {
+    "section": 31,
+    "page": 90,
+    "elements": [
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Behaviour",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Behaviour",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Behaviour",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Logical Behaviour",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Logical Constraint",
+        "# Constraint",
+        "Requirement"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Logical Rationale",
+        "# Rationale",
+        "Driver"
+      ],
+      [
+        "Logical Requirement",
+        "# Requirement",
+        "Requirement"
+      ],
+      [
+        "Logical Specification",
+        "# Logical Specification",
+        "Grouping"
+      ],
+      [
+        "Logical Specification",
+        "# Requirement",
+        "Requirement"
+      ],
+      [
+        "Strategic Constraint",
+        "# Constraint",
+        "Requirement"
+      ]
+    ]
+  },
+  "Lr": {
+    "section": 32,
+    "page": 93,
+    "elements": [
+      [
+        "Capability Increment",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Active Resource",
+        "# Node",
+        "Grouping"
+      ],
+      [
+        "Logical Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Logical Project",
+        "# Work Package",
+        "Work package"
+      ],
+      [
+        "Logical Readiness Level",
+        "# Readiness Level",
+        "Plateau"
+      ]
+    ]
+  },
+  "P1": {
+    "section": 33,
+    "page": 97,
+    "elements": [
+      [
+        "Capability",
+        "# Capability",
+        "Capability"
+      ],
+      [
+        "Capability Configuration",
+        "# Capability Configuration",
+        "Grouping"
+      ],
+      [
+        "Logical Active Resource",
+        "# Actor",
+        "Business actor"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Application",
+        "Application component"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Equipment",
+        "Equipment"
+      ],
+      [
+        "Logical Active Resource",
+        "# Logical Technology",
+        "Node"
+      ],
+      [
+        "Logical Active Resource",
+        "# Role",
+        "Business role"
+      ],
+      [
+        "Logical Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Resource Function",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Resource Function",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Resource Function",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ]
+    ]
+  },
+  "P2": {
+    "section": 34,
+    "page": 101,
+    "elements": [
+      [
+        "Capability Configuration",
+        "# Capability Configuration",
+        "Grouping"
+      ],
+      [
+        "Logical Interaction",
+        "# Interaction",
+        "Business interaction"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Energy",
+        "Material"
+      ],
+      [
+        "Logical Passive Resource",
+        "# Logical Material",
+        "Material"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Resource Interaction",
+        "# Resource Interaction",
+        "Technology interaction"
+      ]
+    ]
+  },
+  "P3": {
+    "section": 35,
+    "page": 104,
+    "elements": [
+      [
+        "Logical Interaction",
+        "# Interaction",
+        "Business interaction"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Protocol",
+        "# Protocol",
+        "Artifact"
+      ],
+      [
+        "Resource Interaction",
+        "# Resource Interaction",
+        "Technology interaction"
+      ],
+      [
+        "Standard",
+        "# Standard",
+        "Contract"
+      ]
+    ]
+  },
+  "P4": {
+    "section": 36,
+    "page": 107,
+    "elements": [
+      [
+        "Logical Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Logical Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Logical Function",
+        "# Technology Function",
+        "Technology function"
+      ],
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Resource Flow",
+        "# Resource Interaction",
+        "Technology interaction"
+      ],
+      [
+        "Resource Function",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Resource Function",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Resource Function",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ]
+    ]
+  },
+  "L4-P4": {
+    "section": 37,
+    "page": 111,
+    "elements": [
+      [
+        "Operational Activity",
+        "# Operational Activity",
+        "Business process"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Resource Function",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Resource Function",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Resource Function",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Service Function",
+        "# Application Function",
+        "Application function"
+      ],
+      [
+        "Service Function",
+        "# Business Function",
+        "Business function"
+      ],
+      [
+        "Service Function",
+        "# Technology Function",
+        "Technology function"
+      ]
+    ]
+  },
+  "P5": {
+    "section": 38,
+    "page": 114,
+    "elements": [
+      [
+        "Logical State",
+        "# Application State",
+        "Application event"
+      ],
+      [
+        "Logical State",
+        "# Business State",
+        "Business event"
+      ],
+      [
+        "Logical State",
+        "# Technology State",
+        "Technology event"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Resource Event",
+        "# Resource Event",
+        "Business event"
+      ],
+      [
+        "Resource Function",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Resource Function",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Resource Function",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Resource Mode",
+        "# Resource Mode",
+        "Business process"
+      ],
+      [
+        "Resource State",
+        "# Application Resource State",
+        "Application event"
+      ],
+      [
+        "Resource State",
+        "# Business Resource State",
+        "Business event"
+      ],
+      [
+        "Resource State",
+        "# Technology Resource State",
+        "Technology event"
+      ],
+      [
+        "Resource State Group",
+        "# Application Resource State",
+        "Application event"
+      ],
+      [
+        "Resource State Group",
+        "# Business Resource State",
+        "Business event"
+      ],
+      [
+        "Resource State Group",
+        "# Technology Resource State",
+        "Technology event"
+      ],
+      [
+        "Resource Transition",
+        "# Resource State Transition",
+        "Business collaboration"
+      ]
+    ]
+  },
+  "P6": {
+    "section": 39,
+    "page": 117,
+    "elements": [
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Resource Event",
+        "# Resource Event",
+        "Business event"
+      ],
+      [
+        "Resource Function",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Resource Function",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Resource Function",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Resource Interaction",
+        "# Resource Interaction",
+        "Technology interaction"
+      ],
+      [
+        "Resource Lifeline",
+        "# Resource Lifeline",
+        "Technology process"
+      ]
+    ]
+  },
+  "P7": {
+    "section": 40,
+    "page": 120,
+    "elements": [
+      [
+        "Actual Data Product",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Data Attribute",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Data Attribute Type",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Data Entity",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Data Model",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Information Model",
+        "# Information Object",
+        "Business object"
+      ],
+      [
+        "Physical Characteristic",
+        "# Data Object",
+        "Data object"
+      ]
+    ]
+  },
+  "P8": {
+    "section": 41,
+    "page": 123,
+    "elements": [
+      [
+        "Logical Constraint",
+        "# Constraint",
+        "Requirement"
+      ],
+      [
+        "Physical Active Resource",
+        "# Application",
+        "Application component"
+      ],
+      [
+        "Physical Active Resource",
+        "# Communication Network",
+        "Communication network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Device",
+        "Device"
+      ],
+      [
+        "Physical Active Resource",
+        "# Distribution Network",
+        "Distribution network"
+      ],
+      [
+        "Physical Active Resource",
+        "# Equipment",
+        "Equipment"
+      ],
+      [
+        "Physical Active Resource",
+        "# Facility",
+        "Facility"
+      ],
+      [
+        "Physical Active Resource",
+        "# Organization",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Person",
+        "Business actor"
+      ],
+      [
+        "Physical Active Resource",
+        "# Post",
+        "Business role"
+      ],
+      [
+        "Physical Active Resource",
+        "# System Software",
+        "System software"
+      ],
+      [
+        "Physical Behaviour",
+        "# Application Process",
+        "Application process"
+      ],
+      [
+        "Physical Behaviour",
+        "# Business Process",
+        "Business process"
+      ],
+      [
+        "Physical Behaviour",
+        "# Technology Process",
+        "Technology process"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Artifact",
+        "Artifact"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Data Object",
+        "Data object"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Energy",
+        "Material"
+      ],
+      [
+        "Physical Passive Resource",
+        "# Material",
+        "Material"
+      ],
+      [
+        "Resource Constraint",
+        "# Constraint",
+        "Requirement"
+      ],
+      [
+        "Resource Rationale",
+        "# Rationale",
+        "Driver"
+      ],
+      [
+        "Resource Requirement",
+        "# Requirement",
+        "Requirement"
+      ],
+      [
+        "Resource Specification",
+        "# Requirement",
+        "Requirement"
+      ]
+    ]
+  },
+  "Pr": {
+    "section": 42,
+    "page": 126,
+    "elements": [
+      [
+        "Capability Configuration",
+        "# Capability Configuration",
+        "Grouping"
+      ],
+      [
+        "Logical Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Logical Readiness Level",
+        "# Readiness Level",
+        "Plateau"
+      ],
+      [
+        "Resource Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Resource Project",
+        "# Work Package",
+        "Work package"
+      ],
+      [
+        "Resource Readiness Level",
+        "# Readiness Level",
+        "Plateau"
+      ]
+    ]
+  },
+  "A1": {
+    "section": 43,
+    "page": 129,
+    "elements": [
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Contextual Data",
+        "# Contextual Data",
+        "Business object"
+      ],
+      [
+        "Glossary Term",
+        "# Glossary Term",
+        "Meaning"
+      ],
+      [
+        "Meta Data",
+        "# Metadata",
+        "Business object"
+      ],
+      [
+        "Standard",
+        "# Standard",
+        "Contract"
+      ]
+    ]
+  },
+  "A2": {
+    "section": 44,
+    "page": 132,
+    "elements": [
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Concern",
+        "# Concern",
+        "Driver"
+      ],
+      [
+        "Stakeholder",
+        "# Stakeholder",
+        "Stakeholder"
+      ],
+      [
+        "View",
+        "# View",
+        "Representation"
+      ],
+      [
+        "Viewpoint",
+        "# Viewpoint",
+        "Business object"
+      ]
+    ]
+  },
+  "A3": {
+    "section": 45,
+    "page": 135,
+    "elements": [
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Architecture Description Element",
+        "# Architecture Description Element",
+        "Business object"
+      ],
+      [
+        "Correspondence Method",
+        "# Correspondence Method",
+        "Business process"
+      ],
+      [
+        "Element Correspondence",
+        "# Element Correspondence",
+        "Representation"
+      ]
+    ]
+  },
+  "A4": {
+    "section": 46,
+    "page": 138,
+    "elements": [
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Architecture Project",
+        "# Architecture Project",
+        "Work package"
+      ],
+      [
+        "Methodology",
+        "# Architecture Methodology",
+        "Business process"
+      ],
+      [
+        "Standard",
+        "# Standard",
+        "Contract"
+      ]
+    ]
+  },
+  "A5": {
+    "section": 47,
+    "page": 140,
+    "elements": [
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Architecture Status",
+        "# Architecture Status",
+        "Business object"
+      ],
+      [
+        "Architecture Work Product",
+        "# Architecture Work Product",
+        "Product"
+      ],
+      [
+        "View",
+        "# View",
+        "Representation"
+      ]
+    ]
+  },
+  "A6": {
+    "section": 48,
+    "page": 142,
+    "elements": [
+      [
+        "Architecture Baseline",
+        "# Baseline",
+        "Plateau"
+      ],
+      [
+        "Architecture Version",
+        "# Version",
+        "Plateau"
+      ],
+      [
+        "Architecture Work Product",
+        "# Architecture Work Product",
+        "Product"
+      ]
+    ]
+  },
+  "A7": {
+    "section": 49,
+    "page": 145,
+    "elements": [
+      [
+        "Achieved Metric",
+        "# Achieved Metric",
+        "Business object"
+      ],
+      [
+        "Architecture Description",
+        "# Architecture Description",
+        "Product"
+      ],
+      [
+        "Desired Metric",
+        "# Desired Metric",
+        "Business object"
+      ],
+      [
+        "Library",
+        "# Library",
+        "Grouping"
+      ],
+      [
+        "Measure",
+        "# Measure",
+        "Business object"
+      ],
+      [
+        "Measure Group",
+        "# Measure",
+        "Business object"
+      ],
+      [
+        "Standard",
+        "# Standard",
+        "Contract"
+      ]
+    ]
+  },
+  "A8": {
+    "section": 50,
+    "page": 148,
+    "elements": [
+      [
+        "Architectural Constraint",
+        "# Architectural Constraint",
+        "Requirement"
+      ],
+      [
+        "Library",
+        "# Library",
+        "Grouping"
+      ],
+      [
+        "Profile",
+        "# Profile",
+        "Contract"
+      ],
+      [
+        "Standard",
+        "# Standard",
+        "Contract"
+      ],
+      [
+        "Standard Group",
+        "# Standard",
+        "Contract"
+      ]
+    ]
+  },
+  "Ar": {
+    "section": 51,
+    "page": 151,
+    "elements": [
+      [
+        "Architecture Milestone",
+        "# Architecture Milestone",
+        "Implementation event"
+      ],
+      [
+        "Architecture Project",
+        "# Architecture Project",
+        "Work package"
+      ],
+      [
+        "Architecture Status",
+        "# Architecture Status",
+        "Business object"
+      ],
+      [
+        "Architecture Version",
+        "# Version",
+        "Plateau"
+      ],
+      [
+        "Architecture Work Product",
+        "# Architecture Work Product",
+        "Product"
+      ],
+      [
+        "Enterprise Phase",
+        "# Enterprise Phase",
+        "Plateau"
+      ],
+      [
+        "Logical Milestone",
+        "# Milestone",
+        "Implementation event"
+      ],
+      [
+        "Resource Milestone",
+        "# Milestone",
+        "Implementation event"
+      ]
+    ]
+  }
+}

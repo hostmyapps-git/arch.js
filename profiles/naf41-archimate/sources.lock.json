@@ -1,0 +1,20 @@
+{
+  "standard": "https://publications.opengroup.org/c226",
+  "guide": {
+    "file": "ReferenceDocs/nafv4/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf",
+    "url": "https://www.nato.int/content/dam/nato/webready/documents/publications-and-reports/NATO-Architecture-Framework-ArchiMate-v4-1-en.pdf",
+    "version": "2026.06",
+    "sha256": "33a387e7893e4f2059e965fc3ce24423e4f4bd57dd3b1f0d041941004971a075"
+  },
+  "mappings": {
+    "file": "profiles/naf41-archimate/guide-mappings.json",
+    "sha256": "db60d09a733c06886c9a448f3c76f8f76c7b9b736b8770bb86bcfd5e86908824"
+  },
+  "matrix": {
+    "file": "profiles/naf41-archimate/matrix.json",
+    "url": "https://github.com/archimatetool/archi/blob/ee6508693dc36889f954741b60e99411e70931d2/com.archimatetool.model/model/relationships.xml",
+    "version": "Archi 5.8.0",
+    "upstreamSha256": "65ad5b5c8044fc62c61836a702d0bd2e0427a87216d7f5e397666c74508d57c5",
+    "sha256": "382720d0b59b487b9655f6ee31675fee13256fa62b98cf8922aa9a31d9632af6"
+  }
+}

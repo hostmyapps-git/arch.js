@@ -40,6 +40,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+## Archi 5.8.0 ArchiMate 3.2 relationship matrix
+
+The generated optional ArchiMate profile and the combined profile browser
+script use the relationship data from the Archi model module.
+The copyright and MIT permission notice are in
+[profiles/naf41-archimate/ARCHI-LICENSE.txt](profiles/naf41-archimate/ARCHI-LICENSE.txt).
+The upstream source and revision are in
+[profiles/naf41-archimate/sources.lock.json](profiles/naf41-archimate/sources.lock.json).
+
 
 
 */
@@ -7972,9 +7981,24 @@ var arch = (() => {
     "process",
     "artifact",
     "node",
-    "package"
+    "package",
+    "junction"
   ]);
-  var EDGE_STYLES = Object.freeze(["flow", "dependency", "association", "access", "composition", "realization", "generalization"]);
+  var EDGE_STYLES = Object.freeze([
+    "flow",
+    "dependency",
+    "association",
+    "access",
+    "composition",
+    "realization",
+    "generalization",
+    "aggregation",
+    "assignment",
+    "triggering",
+    "transfer",
+    "archimate-access"
+  ]);
+  var forwardStyles = ["composition", "generalization", "realization", "aggregation", "assignment", "triggering", "transfer", "archimate-access"];
   var NODE_PROPERTIES = Object.freeze(["description", "technology", "icon", "stereotype", "tags", "backgroundImage"]);
   var EDGE_PROPERTIES = Object.freeze(["description", "technology", "tags", "direction"]);
   var registry = /* @__PURE__ */ new Map();
@@ -8308,7 +8332,7 @@ var arch = (() => {
       if (raw.extends !== void 0) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
       result.directions = names(raw.directions ?? parent?.directions, `${name}.directions`, ["forward"]);
       if (result.directions.some((d) => !["forward", "both"].includes(d))) fail2(`${name}.directions must contain only forward or both`);
-      if (result.directions.includes("both") && ["composition", "generalization", "realization"].includes(result.style)) fail2(`${name}: ${result.style} does not support bidirectional relationships`);
+      if (result.directions.includes("both") && forwardStyles.includes(result.style)) fail2(`${name}: ${result.style} does not support bidirectional relationships`);
       const referenceLabels = raw.referenceLabels ?? parent?.referenceLabels;
       if (raw.sequenceMessage !== void 0 || parent?.sequenceMessage !== void 0) {
         result.sequenceMessage = raw.sequenceMessage ?? parent.sequenceMessage;
@@ -8385,7 +8409,7 @@ var arch = (() => {
     };
     for (const [name, raw] of Object.entries(rawViews)) {
       identifier(name, "Viewpoint");
-      keys(raw, ["nodes", "relations", "requiredNodes", "requiredRelations", "connections", "references", "objectifications", "representations", ...documentationKeys], `Viewpoint ${name}`);
+      keys(raw, ["nodes", "relations", "requiredNodes", "requiredRelations", "requiredNodeGroups", "requiredRelationGroups", "connections", "references", "objectifications", "representations", ...documentationKeys], `Viewpoint ${name}`);
       const result = {
         ...documentation(raw, name),
         nodes: names(raw.nodes, `${name}.nodes`, ["*"], true),
@@ -8402,6 +8426,23 @@ var arch = (() => {
       knownEdges(result.relations, name);
       knownEdges(result.requiredRelations, name);
       if (result.requiredNodes.includes("*") || result.requiredRelations.includes("*")) fail2(`${name}: Required type lists cannot contain a wildcard`);
+      for (const [key3, known] of [["requiredNodeGroups", knownNodes], ["requiredRelationGroups", knownEdges]]) {
+        if (raw[key3] === void 0) continue;
+        if (!Array.isArray(raw[key3]) || raw[key3].length > 128) fail2(`${name}.${key3}: expected a list of alternative type groups`);
+        result[key3] = raw[key3].map((group) => {
+          const label = `${name}.${key3}`;
+          const endpoints = key3 === "requiredRelationGroups" && record(group);
+          if (endpoints) keys(group, ["types", "from", "to"], label);
+          const alternatives = names(endpoints ? group.types : group, label, []);
+          if (alternatives.includes("*")) fail2(`${name}.${key3}: required groups cannot contain a wildcard`);
+          known(alternatives, name);
+          if (!endpoints) return alternatives;
+          const from = names(group.from, label), to = names(group.to, label);
+          knownNodes(from, label);
+          knownNodes(to, label);
+          return { types: alternatives, from, to };
+        });
+      }
       if (raw.objectifications !== void 0) {
         if (!Array.isArray(raw.objectifications) || raw.objectifications.length > 128) fail2(`${name}: invalid objectifications`);
         result.objectifications = raw.objectifications.map((check) => {
@@ -8657,7 +8698,7 @@ var arch = (() => {
     title: "arch.js standard",
     version: "1",
     nodeTypes: Object.fromEntries(TEMPLATES.map((template) => [template, { template }])),
-    relationTypes: Object.fromEntries(EDGE_STYLES.map((style) => [style, { style, directions: ["composition", "generalization", "realization"].includes(style) ? ["forward"] : ["forward", "both"] }])),
+    relationTypes: Object.fromEntries(EDGE_STYLES.map((style) => [style, { style, directions: forwardStyles.includes(style) ? ["forward"] : ["forward", "both"] }])),
     defaultRelation: "flow"
   });
 
@@ -9719,8 +9760,9 @@ var arch = (() => {
     if (route?.dasharray !== void 0) result.dasharray = dashArray(route.dasharray);
     return result;
   }
-  var effectiveDasharray = (edge, reference2 = false) => edge.dasharray ?? (!reference2 && ["dependency", "realization"].includes(edge.style) ? [6, 5] : []);
-  var routeStyleKey = (edge) => [edge.color ?? null, edge.width ?? 1.5, effectiveDasharray(edge)];
+  var effectiveDasharray = (edge, reference2 = false) => edge.dasharray ?? (!reference2 && ["dependency", "realization", "transfer", "archimate-access"].includes(edge.style) ? [6, 5] : []);
+  var markerOptions = (edge) => edge.style === "archimate-access" ? { accessType: edge.attributes?.accessType } : edge.style === "association" && edge.attributes?.directed === true ? { directed: true } : void 0;
+  var routeStyleKey = (edge) => [edge.color ?? null, edge.width ?? 1.5, effectiveDasharray(edge), markerOptions(edge)];
 
   // src/routing-options.js
   var DEFAULT_CURVE = "rounded";
@@ -9891,6 +9933,7 @@ var arch = (() => {
           direction,
           color: color2,
           width,
+          attributes: markerOptions(first.edge),
           drawStart: !incoming,
           drawEnd: incoming
         });
@@ -9952,7 +9995,14 @@ var arch = (() => {
         }
         if (plans.length !== group.length) continue;
         const id = `shared-${shared.length / 2 + 1}`, prototype = group[0].edge;
-        const metadata = { id, edgeIds: group.map((c) => c.edge.id), types: [...new Set(group.map((c) => c.edge.type))], style: prototype.style, direction: prototype.direction };
+        const metadata = {
+          id,
+          edgeIds: group.map((c) => c.edge.id),
+          types: [...new Set(group.map((c) => c.edge.type))],
+          style: prototype.style,
+          direction: prototype.direction,
+          attributes: markerOptions(prototype)
+        };
         for (const key3 of ["color", "width", "dasharray"]) if (prototype[key3] !== void 0) metadata[key3] = prototype[key3];
         const rounded = (routes.get(prototype.id).curve ?? DEFAULT_CURVE) === "rounded";
         const bends = rounded ? spineBends(crossValues) : null;
@@ -13963,6 +14013,7 @@ var arch = (() => {
     return issues;
   }
   function checkModelRules(model, profile, nodes, add) {
+    const junctions = /* @__PURE__ */ new Map();
     const abstractType = (type, kind, definitions, item) => {
       const candidates = concreteSubtypes(type, definitions), topic = kind === "node" ? "types" : "relations";
       const help2 = profileHelp(profile, topic, type);
@@ -14027,6 +14078,7 @@ var arch = (() => {
         continue;
       }
       if (rule.abstract) abstractType(node.type, "node", profile.nodeTypes, node);
+      if (rule.template === "junction") junctions.set(node.id, { types: /* @__PURE__ */ new Set(), outgoing: [] });
       if (node.parent) {
         const parent = nodes.get(node.parent), parentRule = profile.nodeTypes[parent?.type];
         if (parentRule && !parentRule.container) add(`${node.parent} is not a container`, node, { elementId: node.id });
@@ -14050,6 +14102,36 @@ var arch = (() => {
       checkAttributes({ ...edge, type }, rule, EDGE_PROPERTIES);
     }
     checkRelationshipConstraints(model, profile, add);
+    if (junctions.size) checkJunctions(model, profile, nodes, junctions, add);
+  }
+  function checkJunctions(model, profile, nodes, junctions, add) {
+    const arrivals = [];
+    for (const edge of model.edges) {
+      const type = canonicalType(edge.type ?? profile.defaultRelation, profile.relationTypes);
+      if (!profile.relationTypes[type]) continue;
+      const source = junctions.get(edge.source), target = junctions.get(edge.target);
+      source?.types.add(type);
+      target?.types.add(type);
+      if (source) source.outgoing.push({ type, node: edge.target });
+      else if (target) arrivals.push({ type, edge });
+    }
+    for (const [id, junction] of junctions) if (junction.types.size > 1)
+      add(`${id}: A junction may only connect relationships of one type`, nodes.get(id), { elementId: id });
+    for (const { type, edge } of arrivals) {
+      const seen = /* @__PURE__ */ new Set([edge.target]);
+      for (const id of seen) {
+        if (junctions.get(id)?.types.size !== 1) continue;
+        for (const branch of junctions.get(id).outgoing) {
+          if (branch.type !== type) continue;
+          if (junctions.has(branch.node)) seen.add(branch.node);
+          else {
+            const source = nodes.get(edge.source)?.type, target = nodes.get(branch.node)?.type;
+            const issues = relationshipEndpointIssues(edge.id, type, profile.relationTypes[type], source, target, profile.nodeTypes);
+            if (issues) add(`${edge.id}: Junction path to ${branch.node} is not allowed for ${type} (${source} → ${target})`, edge, { elementId: edge.id });
+          }
+        }
+      }
+    }
   }
   function profileDiagnostics(model, profile, graph, sharedChecks) {
     const result = sharedChecks?.modelDiagnostics?.slice() ?? [];
@@ -14107,6 +14189,18 @@ var arch = (() => {
       }
       for (const type of rule.requiredNodes) if (!selectedNodes.some((node) => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id, incomplete: true });
       for (const type of rule.requiredRelations) if (!selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id, incomplete: true });
+      for (const types of rule.requiredNodeGroups ?? []) {
+        if (!selectedNodes.some((node) => matches(node.type, types, profile.nodeTypes)))
+          add(`${view.id}: Missing required node group (${types.join(" or ")})`, view, { viewId: view.id, incomplete: true });
+      }
+      for (const group of rule.requiredRelationGroups ?? []) {
+        const { types, from, to } = Array.isArray(group) ? { types: group } : group;
+        const found = selectedEdges.some((edge) => matches(edge.type ?? profile.defaultRelation, types, profile.relationTypes) && (!from || matchesPair(nodes.get(edge.source)?.type, nodes.get(edge.target)?.type, { from, to }, profile.nodeTypes)));
+        if (!found) {
+          const endpoints = from ? `, ${from.join(" or ")} → ${to.join(" or ")}` : "";
+          add(`${view.id}: Missing required relationship group (${types.join(" or ")}${endpoints})`, view, { viewId: view.id, incomplete: true });
+        }
+      }
       checkConnections(rule.connections, profile, view, graph, selection, add);
       for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
         for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter((v) => typeof v === "string")) if (!visible.has(id))
@@ -16568,6 +16662,20 @@ var arch = (() => {
       }
       const definition = profile.nodeTypes[n.type];
       const template = style.template ?? definition.template;
+      if (template === "junction") return {
+        ...n,
+        template,
+        width: 16,
+        height: 16,
+        container: false,
+        x: 0,
+        y: 0,
+        titleLines: [],
+        badgeLines: [],
+        descLines: [],
+        technologyLines: [],
+        propertyRows: []
+      };
       const width = style.width ?? view.places[n.id]?.size?.x ?? 220;
       const fontSize = style.fontSize ?? 15, scale = fontSize / 15;
       const textStyle = { title: fontSize, badge: 9 * scale, description: 12 * scale, technology: 10 * scale, titleLeading: 20 * scale, descriptionLeading: 17 * scale, technologyLeading: 13 * scale };
@@ -17678,6 +17786,10 @@ var arch = (() => {
     const fillOpacity = node.backgroundColor || node.opacity !== void 0 ? ` fill-opacity="${num(opacity)}"` : "";
     const title = `<title>${escape(node.title)} — ${escape(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape(node.stereotype)}]` : ""}${node.modelId ? ` [ID: ${escape(node.modelId)}]` : ""}${node.description ? `: ${escape(node.description)}` : ""}</title>`;
     const attrs = `data-node="${escape(node.id)}"${node.modelId ? ` data-model-id="${escape(node.modelId)}"` : ""} data-type="${escape(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition ?? (node.display === "logo" ? "center" : "left")}" transform="translate(${num(node.x)} ${num(node.y)})"`;
+    if (node.template === "junction") {
+      const fill = node.attributes?.kind === "or" ? palette2.bg : palette2.text;
+      return `<g class="arch-node" ${attrs}>${title}<circle cx="${num(w / 2)}" cy="${num(h / 2)}" r="${num(Math.min(w, h) / 2 - 1)}" fill="${fill}" stroke="${palette2.text}" stroke-width="2"/></g>`;
+    }
     const iconName = node.icon ?? defaultIcon(node.template);
     if (node.display === "logo") {
       let logo = "";
@@ -17767,21 +17879,23 @@ var arch = (() => {
       backdrops.set(node.id, color2);
       return color2;
     };
+    const markersFor = (id, color2) => `
+    <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color2}" stroke-width="1.5"/></marker>
+    <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette2.bg}" stroke="${color2}"/></marker>
+    <marker id="${id}-filled-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${color2}"/></marker>
+    <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color2}"/></marker>
+    <marker id="${id}-open-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette2.bg}" stroke="${color2}"/></marker>
+    <marker id="${id}-dot" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="7" markerHeight="7" orient="auto"><circle cx="5" cy="5" r="3.5" fill="${color2}"/></marker>`;
     const definitions = `<defs>
     ${cardShadowFilter(`${prefix}-shadow`)}
-    <marker id="${prefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${palette2.edge}" stroke-width="1.5"/></marker>
-    <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette2.bg}" stroke="${palette2.edge}"/></marker>
-    <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette2.edge}"/></marker>
+    ${markersFor(prefix, palette2.edge)}
   </defs>`;
     const coloredMarkers = /* @__PURE__ */ new Map();
     const marker = (kind, color2) => {
       if (!color2 || color2 === palette2.edge) return `${prefix}-${kind}`;
       if (!coloredMarkers.has(color2)) {
         const id = `${prefix}-route-color-${coloredMarkers.size + 1}`;
-        coloredMarkers.set(color2, { id, markup: `
-        <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color2}" stroke-width="1.5"/></marker>
-        <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette2.bg}" stroke="${color2}"/></marker>
-        <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color2}"/></marker>` });
+        coloredMarkers.set(color2, { id, markup: markersFor(id, color2) });
       }
       return `${coloredMarkers.get(color2).id}-${kind}`;
     };
@@ -17799,9 +17913,24 @@ var arch = (() => {
     const stroke = (edge) => edge.color ?? palette2.edge;
     const overlaps = dashedOverlaps([...graph.sharedPaths ?? [], ...graph.edges], stroke, pathFor, trace, bridges);
     const maskDefinitions = [];
+    const startMarkers = { composition: "diamond", aggregation: "open-diamond", assignment: "dot" };
+    const endMarkers = {
+      association: null,
+      composition: null,
+      aggregation: null,
+      "archimate-access": null,
+      realization: "triangle",
+      generalization: "triangle",
+      assignment: "filled-arrow",
+      triggering: "filled-arrow",
+      transfer: "filled-arrow"
+    };
     const edgePath = (edge) => {
-      const start = edge.direction === "both" ? ` marker-start="url(#${marker("arrow", edge.color)})"` : edge.style === "composition" ? ` marker-start="url(#${marker("diamond", edge.color)})"` : "";
-      const end = edge.direction !== "both" && ["association", "composition"].includes(edge.style) ? "" : ` marker-end="url(#${marker(["realization", "generalization"].includes(edge.style) ? "triangle" : "arrow", edge.color)})"`;
+      const access = edge.style === "archimate-access" ? edge.attributes?.accessType : void 0;
+      const startKind = edge.direction === "both" || access === "read" || access === "readWrite" ? "arrow" : startMarkers[edge.style];
+      const endKind = edge.direction === "both" || edge.style === "association" && edge.attributes?.directed === true || access === "write" || access === "readWrite" || !Object.hasOwn(endMarkers, edge.style) ? "arrow" : endMarkers[edge.style];
+      const start = startKind ? ` marker-start="url(#${marker(startKind, edge.color)})"` : "";
+      const end = endKind ? ` marker-end="url(#${marker(endKind, edge.color)})"` : "";
       const markers = `${edge.drawStart === false ? "" : start}${edge.drawEnd === false ? "" : end}`;
       const d = pathFor(edge), path = `<path d="${escape(d)}" fill="none"`, width = edge.width ?? 1.5;
       const line = `${path} stroke="${stroke(edge)}" stroke-width="${num(width)}" stroke-linejoin="round"${dashAttribute(edge)}`;
@@ -17985,7 +18114,16 @@ var arch = (() => {
             namedList("Element types: ", nodes, (name) => queryFor("types", target, name)),
             namedList("Relationship types: ", relations, (name) => queryFor("relations", target, name))
           ];
-          linked("Required model contents", content(rule.requiredNodes, rule.requiredRelations));
+          linked("Required model contents", [
+            ...content(rule.requiredNodes, rule.requiredRelations),
+            ...(rule.requiredNodeGroups ?? []).map((types) => namedList("At least one element: ", types, (name) => queryFor("types", target, name))),
+            ...(rule.requiredRelationGroups ?? []).map((group) => {
+              const types = Array.isArray(group) ? group : group.types;
+              const line = namedList("At least one relationship: ", types, (name) => queryFor("relations", target, name));
+              if (!Array.isArray(group)) line.text += ` · ${group.from.join(" or ")} → ${group.to.join(" or ")}`;
+              return line;
+            })
+          ]);
           linked("Allowed model contents", content(rule.nodes, rule.relations));
           if (rule.connections?.length) section("Connection rules", rule.connections.map((check) => {
             const limit2 = check.visibility ? `${check.visibility} show` : `${check.min}–${check.max ?? "∞"} ${check.direction}`;

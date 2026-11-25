@@ -4,7 +4,7 @@ import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
 import * as arch from '../src/arch.js';
 
-for(const name of ['enterprise','uaf','naf4-uaf','naf41-uaf']) {
+for(const name of ['enterprise','uaf','naf4-uaf','naf41-uaf','naf41-admbw','archimate-3.2','naf41-archimate']) {
   const profile=JSON.parse(await readFile(`profiles/${name}.json`,'utf8'));arch.registerProfile(profile.id,profile);
 }
 for(const name of ['bootstrap','lucide','tabler'])arch.registerIconPack(name,JSON.parse(await readFile(`icons/${name}.json`,'utf8')));

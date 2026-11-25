@@ -5,8 +5,10 @@ import { DIAGRAMS, GRID_MODES, GRID_VISIBILITY, GRID_VISIBILITY_ERROR } from './
 
 // These are drawing primitives, not framework/metamodel types.
 export const TEMPLATES = Object.freeze(['person', 'system', 'application', 'service', 'component', 'database',
-  'queue', 'interface', 'capability', 'process', 'artifact', 'node', 'package']);
-export const EDGE_STYLES = Object.freeze(['flow', 'dependency', 'association', 'access', 'composition', 'realization', 'generalization']);
+  'queue', 'interface', 'capability', 'process', 'artifact', 'node', 'package', 'junction']);
+export const EDGE_STYLES = Object.freeze(['flow', 'dependency', 'association', 'access', 'composition', 'realization', 'generalization',
+  'aggregation', 'assignment', 'triggering', 'transfer', 'archimate-access']);
+const forwardStyles = ['composition', 'generalization', 'realization', 'aggregation', 'assignment', 'triggering', 'transfer', 'archimate-access'];
 export const NODE_PROPERTIES = Object.freeze(['description', 'technology', 'icon', 'stereotype', 'tags', 'backgroundImage']);
 export const EDGE_PROPERTIES = Object.freeze(['description', 'technology', 'tags', 'direction']);
 const registry = new Map();
@@ -316,7 +318,7 @@ export function compileProfile(definition, fallbackId) {
     if (raw.extends !== undefined) result.extends = Array.isArray(raw.extends) ? baseNames : raw.extends;
     result.directions=names(raw.directions ?? parent?.directions, `${name}.directions`, ['forward']);
     if(result.directions.some(d=>!['forward','both'].includes(d)))fail(`${name}.directions must contain only forward or both`);
-    if(result.directions.includes('both')&&['composition','generalization','realization'].includes(result.style))fail(`${name}: ${result.style} does not support bidirectional relationships`);
+    if(result.directions.includes('both')&&forwardStyles.includes(result.style))fail(`${name}: ${result.style} does not support bidirectional relationships`);
     const referenceLabels = raw.referenceLabels ?? parent?.referenceLabels;
     if (raw.sequenceMessage !== undefined || parent?.sequenceMessage !== undefined) {
       result.sequenceMessage = raw.sequenceMessage ?? parent.sequenceMessage;
@@ -388,7 +390,7 @@ export function compileProfile(definition, fallbackId) {
   const knownEdges = (list, label) => { for (const name of list) if (name !== '*' && !own(relationTypes, name)) fail(`${label}: unknown relation type ${name}`); };
   for (const [name, raw] of Object.entries(rawViews)) {
     identifier(name, 'Viewpoint');
-    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'connections', 'references', 'objectifications', 'representations', ...documentationKeys], `Viewpoint ${name}`);
+    keys(raw, ['nodes', 'relations', 'requiredNodes', 'requiredRelations', 'requiredNodeGroups', 'requiredRelationGroups', 'connections', 'references', 'objectifications', 'representations', ...documentationKeys], `Viewpoint ${name}`);
     const result = { ...documentation(raw, name), nodes: names(raw.nodes, `${name}.nodes`, ['*'], true), relations: names(raw.relations, `${name}.relations`, ['*'], true),
       requiredNodes: raw.requiredNodes === undefined ? [] : names(raw.requiredNodes, `${name}.requiredNodes`, [], true),
       requiredRelations: raw.requiredRelations === undefined ? [] : names(raw.requiredRelations, `${name}.requiredRelations`, [], true) };
@@ -398,6 +400,22 @@ export function compileProfile(definition, fallbackId) {
     }
     knownNodes(result.nodes, name); knownNodes(result.requiredNodes, name); knownEdges(result.relations, name); knownEdges(result.requiredRelations, name);
     if (result.requiredNodes.includes('*') || result.requiredRelations.includes('*')) fail(`${name}: Required type lists cannot contain a wildcard`);
+    for (const [key, known] of [['requiredNodeGroups',knownNodes], ['requiredRelationGroups',knownEdges]]) {
+      if (raw[key] === undefined) continue;
+      if (!Array.isArray(raw[key]) || raw[key].length > 128) fail(`${name}.${key}: expected a list of alternative type groups`);
+      result[key] = raw[key].map(group => {
+        const label=`${name}.${key}`;
+        const endpoints=key==='requiredRelationGroups' && record(group);
+        if (endpoints) keys(group,['types','from','to'],label);
+        const alternatives = names(endpoints ? group.types : group,label,[]);
+        if (alternatives.includes('*')) fail(`${name}.${key}: required groups cannot contain a wildcard`);
+        known(alternatives,name);
+        if (!endpoints) return alternatives;
+        const from=names(group.from,label),to=names(group.to,label);
+        knownNodes(from,label); knownNodes(to,label);
+        return {types:alternatives,from,to};
+      });
+    }
     if(raw.objectifications!==undefined) {
       if(!Array.isArray(raw.objectifications)||raw.objectifications.length>128)fail(`${name}: invalid objectifications`);
       result.objectifications=raw.objectifications.map(check=>{
@@ -644,6 +662,6 @@ export function typeConnections(type, profile) {
 registerProfile('default', {
   title: 'arch.js standard', version: '1',
   nodeTypes: Object.fromEntries(TEMPLATES.map(template => [template, { template }])),
-  relationTypes: Object.fromEntries(EDGE_STYLES.map(style => [style, { style, directions:['composition','generalization','realization'].includes(style)?['forward']:['forward','both'] }])),
+  relationTypes: Object.fromEntries(EDGE_STYLES.map(style => [style, { style, directions:forwardStyles.includes(style)?['forward']:['forward','both'] }])),
   defaultRelation: 'flow',
 });

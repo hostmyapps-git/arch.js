@@ -39,4 +39,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+## Archi 5.8.0 ArchiMate 3.2 relationship matrix
+
+The generated optional ArchiMate profile and the combined profile browser
+script use the relationship data from the Archi model module.
+The copyright and MIT permission notice are in
+[profiles/naf41-archimate/ARCHI-LICENSE.txt](profiles/naf41-archimate/ARCHI-LICENSE.txt).
+The upstream source and revision are in
+[profiles/naf41-archimate/sources.lock.json](profiles/naf41-archimate/sources.lock.json).
+
 

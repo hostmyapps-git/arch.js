@@ -1,0 +1,3439 @@
+{
+  "id": "naf41-admbw",
+  "version": "2026.05-arch.1",
+  "base": "naf41-uaf@4.1.0-arch.43",
+  "counts": {
+    "inherited": 113,
+    "inherited with optional MDG tags": 32,
+    "imported": 133,
+    "imported as a distinct ADMBw relation": 31,
+    "alias": 4,
+    "abstract UML message projection": 1,
+    "projected UML message": 3,
+    "projected from constrained MDG subtypes": 1
+  },
+  "viewpoints": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C7",
+    "C8",
+    "Cr",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "Sr",
+    "C1-S1",
+    "L1",
+    "L2",
+    "L2-L3",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "L7",
+    "L8",
+    "Lr",
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "L4-P4",
+    "P5",
+    "P6",
+    "P7",
+    "P8",
+    "Pr",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "Ar",
+    "BusinessProcess",
+    "CM",
+    "R2",
+    "R3",
+    "R7",
+    "R8",
+    "Rr"
+  ],
+  "externalTargets": {
+    "AdmbwUmlActivityInitial": "ActivityInitial",
+    "AdmbwUmlDecisionNode": "DecisionNode",
+    "AdmbwUmlForkNode": "ForkNode",
+    "AdmbwUmlJoinNode": "JoinNode",
+    "AdmbwUmlMergeNode": "MergeNode",
+    "AdmbwUmlActivityFinal": "ActivityFinal",
+    "AdmbwUmlFlowFinal": "FlowFinal",
+    "AdmbwBpmnLane": "BPMN2.0::Lane",
+    "AdmbwBpmnPool": "BPMN2.0::Pool",
+    "AdmbwBpmnGateway": "BPMN2.0::Gateway",
+    "AdmbwBpmnIntermediateEvent": "BPMN2.0::IntermediateEvent",
+    "AdmbwBpmnStartEvent": "BPMN2.0::StartEvent",
+    "AdmbwBpmnEndEvent": "BPMN2.0::EndEvent"
+  },
+  "stereotypes": {
+    "Achiever": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualCondition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Condition"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualEnduringTask": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::EnduringTask"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualEnterprisePhase": {
+      "omittedTags": [
+        {
+          "tag": "endDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "startDate",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::EnterprisePhase"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualEnvironment": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Environment"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ActualLocation": {
+      "omittedTags": [
+        {
+          "tag": "address",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "customKind",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "locationNamedByAddress",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "locationKind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Location"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ActualMeasurement": {
+      "omittedTags": [
+        {
+          "tag": "intention",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::Measurement"
+          ]
+        },
+        {
+          "role": "owningInstance",
+          "targets": [
+            "NAFv4-ADMBw::ActualPropertySet"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualMeasurementSet": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualOrganization": {
+      "omittedTags": [
+        {
+          "tag": "shortName",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "serviceType",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Organization"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualOrganizationalResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualOrganizationRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::PostRole",
+            "NAFv4-ADMBw::SubOrganization"
+          ]
+        },
+        {
+          "role": "owningInstance",
+          "targets": [
+            "NAFv4-ADMBw::ActualOrganization"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualPerson": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Person"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualPost": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Post"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualProject": {
+      "omittedTags": [
+        {
+          "tag": "endDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "startDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "projectKind",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "project-ID",
+          "reason": "Unmapped tag type or reserved name (untyped)"
+        },
+        {
+          "tag": "projectShortTitle",
+          "reason": "Unmapped tag type or reserved name (untyped)"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::Project"
+          ]
+        },
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::ProjectRole"
+          ]
+        }
+      ],
+      "additionalMetamodelRules": 1,
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualProjectMilestone": {
+      "omittedTags": [
+        {
+          "tag": "endDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "startDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "projectStatus",
+          "reason": "Unmapped tag type or reserved name (StatusIndicators)"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::ProjectMilestone"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualProjectMilestoneRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::ProjectMilestoneRole"
+          ]
+        },
+        {
+          "role": "owningInstance",
+          "targets": [
+            "NAFv4-ADMBw::ActualProject"
+          ]
+        },
+        {
+          "role": "value.instance",
+          "targets": [
+            "NAFv4-ADMBw::ActualProjectMilestone"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualPropertySet": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::PropertySet"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualResourceRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::ResourceRole"
+          ]
+        },
+        {
+          "role": "owningInstance",
+          "targets": [
+            "NAFv4-ADMBw::ActualResource"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualResponsibleResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualService": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecification"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ActualServiceSpecificationRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecificationRole"
+          ]
+        },
+        {
+          "role": "owningInstance",
+          "targets": [
+            "NAFv4-ADMBw::ActualService"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ActualState": {
+      "omittedTags": [
+        {
+          "tag": "endDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "startDate",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Alias": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ArchitecturalDescription": {
+      "omittedTags": [
+        {
+          "tag": "approvalAuthority",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "architect",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "assumptionAndConstraint",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "creatingOrganization",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "dateCompleted",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "purpose",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "recommendations",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "summaryOfFindings",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "toolsUsed",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "toBe",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "Architecture": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ArchitectureMetadata": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "annotatedElement",
+          "targets": [
+            "NAFv4-ADMBw::ArchitecturalDescription"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Asset": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "AssetRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "unresolvedBases": [
+        "BPMN2.0::ResourceRole"
+      ],
+      "status": "inherited"
+    },
+    "BusinessProcess": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "BWRequirement": {
+      "omittedTags": [
+        {
+          "tag": "Gewicht (absolut)",
+          "reason": "Unmapped tag type or reserved name (float)"
+        },
+        {
+          "tag": "Kritikalität",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Object und Ergänzungen",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Operative Bewertung",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Priorität Vergabe",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Anforderung manuell",
+          "reason": "Unmapped tag type or reserved name (boolean)"
+        },
+        {
+          "tag": "Aktivität",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Qualität",
+          "reason": "Unmapped tag type or reserved name (String)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Capability": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "CapabilityConfiguration": {
+      "omittedTags": [
+        {
+          "tag": "Avoiding redundancy in IT-SysBw",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Avoids provider monopoly",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Client separation",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Environmentally friendly and sustainable",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Fulfilled C5 requirements catalogue of the BSI",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Geodata and geoservices",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "IT-Planning board involved",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "NdB usage",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "RDF usage",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Reference architectures",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Reusability of existing solutions",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "String.Latin character set",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Usability and accessibility",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "UTF-8 character set",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "CapabilityRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Capability"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Capability"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "CapableElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Classification": {
+      "omittedTags": [
+        {
+          "tag": "Responsibility",
+          "reason": "Unmapped tag type or reserved name (STANAG 1059 NATO-Country Codes)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Competence": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ConceptItem": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ConceptRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::HighLevelOperationalConcept"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ConceptItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Concern": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Condition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "DataElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::DataModel"
+          ]
+        }
+      ],
+      "additionalMetamodelRules": 4,
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "DataModel": {
+      "omittedTags": [
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "DataRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ResourceAsset"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::DataElement"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Definition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Desirer": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "DocumentReference": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ElementCatalogue": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "EnduringTask": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Energy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "EnterpriseGoal": {
+      "omittedTags": [
+        {
+          "tag": "benefits",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "EnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "EnterpriseVision": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "Environment": {
+      "omittedTags": [
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "EnvironmentProperty": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Environment"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Condition"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "Exchange": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "unresolvedBases": [
+        "BPMN2.0::MessageFlow"
+      ],
+      "status": "inherited"
+    },
+    "ExchangeItem": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "FieldedCapability": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "classifier",
+          "targets": [
+            "NAFv4-ADMBw::CapabilityConfiguration"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "Finding": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "FitCriterion": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "FulfilmentCriterion": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Function": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "FunctionAction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "activity",
+          "targets": [
+            "NAFv4-ADMBw::Function"
+          ]
+        },
+        {
+          "role": "behavior",
+          "targets": [
+            "NAFv4-ADMBw::Function"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "FunctionalRequirement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "FunctionEdge": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::Function"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "GeoPoliticalExtentType": {
+      "omittedTags": [
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "customKind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "HighLevelOperationalConcept": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Information": {
+      "omittedTags": [
+        {
+          "tag": "informationKind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "annotatedElement",
+          "targets": [
+            "NAFv4-ADMBw::UAFElement"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "InformationElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::DataModel"
+          ]
+        }
+      ],
+      "additionalMetamodelRules": 4,
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "InformationRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::OperationalAsset"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::InformationElement"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "InteractionRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "KnownResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Location": {
+      "omittedTags": [
+        {
+          "tag": "customKind",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "LocationHolder": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "MeasurableElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Measurement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::PropertySet"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::MeasurementType"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "MeasurementType": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Metadata": {
+      "omittedTags": [
+        {
+          "tag": "dublinCoreElement",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "metaDataScheme",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "name",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "category",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "annotatedElement",
+          "targets": [
+            "NAFv4-ADMBw::UAFElement"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "NaturalResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "NonfunctionalRequirement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "OperationalActivity": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::OperationalParameter"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "OperationalActivityAction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "activity",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        },
+        {
+          "role": "behavior",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalActivityEdge": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalAgent": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedOperation",
+          "targets": [
+            "NAFv4-ADMBw::OperationalMethod"
+          ]
+        },
+        {
+          "role": "ownedPort",
+          "targets": [
+            "NAFv4-ADMBw::OperationalPort"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalArchitecture": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalAsset": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "OperationalConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "OperationalExchangeItem": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalInterface": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalMethod": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "method",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        },
+        {
+          "role": "ownedOperation",
+          "targets": [
+            "NAFv4-ADMBw::OperationalInterface"
+          ]
+        },
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::OperationalParameter"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalParameter": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::OperationalExchangeItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalPerformer": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "OperationalPort": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::OperationalAgent"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::OperationalInterface"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::OperationalAgent",
+            "NAFv4-ADMBw::OperationalArchitecture",
+            "NAFv4-ADMBw::OperationalPerformer"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::KnownResource",
+            "NAFv4-ADMBw::OperationalAgent",
+            "NAFv4-ADMBw::OperationalArchitecture",
+            "NAFv4-ADMBw::OperationalPerformer"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "OperationalSignal": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalSignalProperty": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::OperationalSignal"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::OperationalExchangeItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OperationalStateDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::OperationalAgent"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Organization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "OrganizationalResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "additionalMetamodelRules": 1,
+      "kind": "element",
+      "status": "inherited"
+    },
+    "PaperForm": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Person": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "PhysicalResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Post": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "PostRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Organization",
+            "NAFv4-ADMBw::Post"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Post"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ProblemDomain": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::OperationalArchitecture"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::OperationalPerformer"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProcessEdge": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "unresolvedBases": [
+        "BPMN2.0::SequenceFlow"
+      ],
+      "status": "imported"
+    },
+    "ProcessMessageFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "unresolvedBases": [
+        "BPMN2.0::MessageFlow"
+      ],
+      "status": "imported"
+    },
+    "ProcessOperation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ProcessParameter": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ProcessUsage": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "unresolvedBases": [
+        "BPMN2.0::Activity"
+      ],
+      "status": "imported"
+    },
+    "Project": {
+      "omittedTags": [
+        {
+          "tag": "Architectural guidelines of the Federal Government",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Catalogue usage",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Criteria of architecture quality fulfilled",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Implemented SASPF specification",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Implementing Change Management",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Modeling according to PlgABw",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Modeling according to SysArch IT-SysBw",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "OpArch (FFF) existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "SDP existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Service docum. according to IT-Service Designer Bw",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "SIR existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "SSO existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Systemsteckbrief (GeNu) existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Systemsteckbrief (LV) existing",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Used templates and specifications for SIR",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Used templates and specifications for SSO",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Used templates for FFF",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Used templates for GeNu",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Used templates for LV",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Used templates for SDP",
+          "reason": "Unmapped tag type or reserved name (String)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "additionalMetamodelRules": 1,
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProjectMilestone": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProjectMilestoneRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Project"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ProjectMilestone"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProjectRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Project"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Project"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProjectStatus": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "definingFeature",
+          "targets": [
+            "NAFv4-ADMBw::ProjectTheme"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProjectTheme": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "PropertySet": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Protocol": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProtocolImplementation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ProtocolLayer": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Protocolstack"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Protocol"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Protocolstack": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ProvidedServiceLevel": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Recommendation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Reference": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "RequiredServiceLevel": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "RequirementCatalogue": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "RequirementCategory": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Resource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceArchitecture": {
+      "omittedTags": [
+        {
+          "tag": "materialPlanningNumber",
+          "reason": "Unmapped tag type or reserved name (untyped)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceArtifact": {
+      "omittedTags": [
+        {
+          "tag": "Scaling method",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Type of scalability",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "materialPlanningNumber",
+          "reason": "Unmapped tag type or reserved name (untyped)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ResourceAsset": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "ResourceConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceExchangeItem": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceInterface": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceMethod": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "method",
+          "targets": [
+            "NAFv4-ADMBw::Function"
+          ]
+        },
+        {
+          "role": "ownedOperation",
+          "targets": [
+            "NAFv4-ADMBw::ResourceInterface",
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        },
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::ResourceParameter"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceMitigation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceParameter": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::Function"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ResourceExchangeItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourcePerformer": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedPort",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePort"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ResourcePort": {
+      "omittedTags": [
+        {
+          "tag": "Richardson Maturity Model",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ResourceInterface"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceRole": {
+      "omittedTags": [
+        {
+          "tag": "Virtualization level",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Virtualization location",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "IT security accreditation",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Programming language",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "x86 processor architecture",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ResourceSignal": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceSignalProperty": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ResourceSignal"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ResourceExchangeItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ResourceStateDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::ResourcePerformer"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Responsibility": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Rule": {
+      "omittedTags": [
+        {
+          "tag": "ruleKind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SecurityConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "constrainedElement",
+          "targets": [
+            "NAFv4-ADMBw::SubjectOfSecurityConstraint"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SecurityEnclave": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SecurityProcess": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceFunction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::ServiceParameter"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ServiceFunctionAction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "activity",
+          "targets": [
+            "NAFv4-ADMBw::ServiceFunction"
+          ]
+        },
+        {
+          "role": "behavior",
+          "targets": [
+            "NAFv4-ADMBw::ServiceFunction"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceInterface": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedOperation",
+          "targets": [
+            "NAFv4-ADMBw::ServiceMethod"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceMethod": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "method",
+          "targets": [
+            "NAFv4-ADMBw::ServiceFunction"
+          ]
+        },
+        {
+          "role": "ownedParameter",
+          "targets": [
+            "NAFv4-ADMBw::ServiceParameter"
+          ]
+        },
+        {
+          "role": "receiveEvent.event.operation",
+          "targets": [
+            "NAFv4-ADMBw::ServiceMessage"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceParameter": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::OperationalExchangeItem"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServicePolicy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServicePort": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecification"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ServiceInterface"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceSpecification": {
+      "omittedTags": [
+        {
+          "tag": "Approved service tailoring",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Critical service",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Kind of robustness",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Measure for robustness",
+          "reason": "Unmapped tag type or reserved name (String)"
+        },
+        {
+          "tag": "Minimization of dependencies",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Service with mission reference",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        }
+      ],
+      "unresolvedConstraints": [
+        {
+          "role": "ownedOperation",
+          "targets": [
+            "NAFv4-ADMBw::ServiceMethod"
+          ]
+        },
+        {
+          "role": "ownedPort",
+          "targets": [
+            "NAFv4-ADMBw::ServicePort"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "ServiceSpecificationRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecification"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecification"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "ServiceStateDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "owner",
+          "targets": [
+            "NAFv4-ADMBw::ServiceSpecification"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SMEReference": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "Software": {
+      "omittedTags": [
+        {
+          "tag": "Role model in IAM",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Scalable (on infrastructure)",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        },
+        {
+          "tag": "Scaling method",
+          "reason": "Unmapped tag type or reserved name (enumeration)"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Stakeholder": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Standard": {
+      "omittedTags": [
+        {
+          "tag": "mandatedDate",
+          "reason": "Existing NAF/UAF field retained"
+        },
+        {
+          "tag": "retiredDate",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "StandardOperationalActivity": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "StateDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "imported"
+    },
+    "StrategicConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SubjectOfForecast": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SubjectOfOperationalConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SubjectOfResourceConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SubjectOfSecurityConstraint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "SubOrganization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::Organization"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::Organization"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "imported"
+    },
+    "System": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "Technology": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "TemporalPart": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::EnterprisePhase"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::EnterprisePhase"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "UAFElement": {
+      "omittedTags": [
+        {
+          "tag": "URI",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "VersionedElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "VersionOfConfiguration": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "class",
+          "targets": [
+            "NAFv4-ADMBw::WholeLifeConfiguration"
+          ]
+        },
+        {
+          "role": "type",
+          "targets": [
+            "NAFv4-ADMBw::VersionedElement"
+          ]
+        }
+      ],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "View": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "Viewpoint": {
+      "omittedTags": [
+        {
+          "tag": "purpose",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited with optional MDG tags"
+    },
+    "WholeLifeConfiguration": {
+      "omittedTags": [
+        {
+          "tag": "kind",
+          "reason": "Existing NAF/UAF field retained"
+        }
+      ],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "WholeLifeEnterprise": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "element",
+      "status": "inherited"
+    },
+    "AchievedEffect": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwAchievedEffect"
+    },
+    "ActivityPerformableUnderCondition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActivityPerformableUnderCondition"
+    },
+    "ActivitySupportsService": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActivitySupportsService"
+    },
+    "ActsUpon": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActsUpon"
+    },
+    "ActualConditionToActualResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualConditionToActualResource"
+    },
+    "ActualMeasurementSetAppliesFor": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualMeasurementSetAppliesFor"
+    },
+    "ActualProjectConsults": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualProjectConsults"
+    },
+    "ActualProjectDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualProjectDependency"
+    },
+    "ActualProjectInforms": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualProjectInforms"
+    },
+    "ActualResourceNeededByActualProjectMilestone": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualResourceNeededByActualProjectMilestone"
+    },
+    "ActualResourceRelationship": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "realizes",
+          "targets": [
+            "NAFv4-ADMBw::ResourceExchange"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwActualResourceRelationship"
+    },
+    "ActualResourceToActualProjectMilestone": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ActualResourceToActualProjectMilestone"
+    },
+    "AffectedActivity": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "AffectedActivity"
+    },
+    "AffectedFunctions": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "AffectedFunctions"
+    },
+    "AffectedResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "AffectedResource"
+    },
+    "AlignsWithGoal": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "AlignsWithGoal"
+    },
+    "ArbitraryConnector": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwArbitraryConnector"
+    },
+    "ArchitecturalReference": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwArchitecturalReference"
+    },
+    "ArchitecturalSequence": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ArchitecturalSequence"
+    },
+    "ArchitectureForProject": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ArchitectureForProject"
+    },
+    "BoundaryCondition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "BoundaryCondition"
+    },
+    "CapabilityDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwCapabilityDependency"
+    },
+    "CapabilityForTask": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwCapabilityForTask"
+    },
+    "CapabilityGeneralization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwCapabilityGeneralization"
+    },
+    "CapabilityRoleDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "CapabilityRoleDependency"
+    },
+    "Checks": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Checks"
+    },
+    "Classified": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Classified"
+    },
+    "Command": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwCommand"
+    },
+    "CompetenceForRole": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwCompetenceForRole"
+    },
+    "CompliesViewpoint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "alias",
+      "type": "ConformsToViewpoint"
+    },
+    "ConcernForActualEnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ConcernForActualEnterprisePhase"
+    },
+    "ConcernForView": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ConcernForView"
+    },
+    "ConcernForViewpoint": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "alias",
+      "type": "FramesConcern"
+    },
+    "ConflictsWith": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ConflictsWith"
+    },
+    "ConformsTo": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ConformsTo"
+    },
+    "ConsumedBy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ConsumedBy"
+    },
+    "Consumes": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwConsumes"
+    },
+    "Control": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwControl"
+    },
+    "DataElementStoredIn": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "DataElementStoredIn"
+    },
+    "DerivedFrom": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "DerivedFrom"
+    },
+    "DescribedBy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "DescribedBy"
+    },
+    "DesiredEffect": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwDesiredEffect"
+    },
+    "EnvironmentalCondition": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "EnvironmentalCondition"
+    },
+    "EnvironmentalContext": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "EnvironmentalContext"
+    },
+    "Evaluates": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Evaluates"
+    },
+    "Exhibits": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwExhibits"
+    },
+    "Expresses": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Expresses"
+    },
+    "FillsPost": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwFillsPost"
+    },
+    "Forecast": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwForecast"
+    },
+    "ForecastPeriod": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ForecastPeriod"
+    },
+    "FormStoredIn": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "FormStoredIn"
+    },
+    "FunctionControlFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwFunctionControlFlow"
+    },
+    "FunctionObjectFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "FunctionObjectFlow"
+    },
+    "FunctionSubject": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "FunctionSubject"
+    },
+    "GoalForActualEnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "GoalForActualEnterprisePhase"
+    },
+    "HostedOn": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "HostedOn"
+    },
+    "Implements": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwImplements"
+    },
+    "ImplementsProtocol": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ImplementsProtocol"
+    },
+    "InteractionMessage": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "abstract UML message projection"
+    },
+    "IsAccountableFor": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "IsAccountableFor"
+    },
+    "IsCapableToPerform": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwIsCapableToPerform"
+    },
+    "IsDuplicateOf": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "IsDuplicateOf"
+    },
+    "IsEquivalentToStandardElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "IsEquivalentToStandardElement"
+    },
+    "IsResponsibleFor": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "IsResponsibleFor"
+    },
+    "JustifiedBy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "JustifiedBy"
+    },
+    "LocationType": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "LocationType"
+    },
+    "MapsToCapability": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwMapsToCapability"
+    },
+    "MilestoneDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwMilestoneDependency"
+    },
+    "NeedsModificationOf": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "NeedsModificationOf"
+    },
+    "NeedsResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "NeedsResource"
+    },
+    "NeedsService": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "NeedsService"
+    },
+    "OperationalArchitectureOfEnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OperationalArchitectureOfEnterprisePhase"
+    },
+    "OperationalConnector": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OperationalConnector"
+    },
+    "OperationalControlFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwOperationalControlFlow"
+    },
+    "OperationalExchange": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "client",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        },
+        {
+          "role": "realizingActivityEdge",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivityEdge"
+          ]
+        },
+        {
+          "role": "realizingConnector",
+          "targets": [
+            "NAFv4-ADMBw::OperationalConnector"
+          ]
+        },
+        {
+          "role": "realizingMessage",
+          "targets": [
+            "NAFv4-ADMBw::OperationalMessage"
+          ]
+        },
+        {
+          "role": "supplier",
+          "targets": [
+            "NAFv4-ADMBw::OperationalActivity"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwOperationalExchange"
+    },
+    "OperationalMessage": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "receiveEvent.event.operation",
+          "targets": [
+            "NAFv4-ADMBw::OperationalMethod"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "projected UML message"
+    },
+    "OperationalMessageFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OperationalMessageFlow"
+    },
+    "OperationalObjectFlow": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OperationalObjectFlow"
+    },
+    "OriginatesFrom": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OriginatesFrom"
+    },
+    "OwnedMilestone": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OwnedMilestone"
+    },
+    "OwnsActualMeasurementSet": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OwnsActualMeasurementSet"
+    },
+    "OwnsMeasurement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "OwnsMeasurement"
+    },
+    "OwnsProcess": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwOwnsProcess"
+    },
+    "PartOfCatalogue": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "PartOfCatalogue"
+    },
+    "PartOfCategory": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "PartOfCategory"
+    },
+    "PerformsInContext": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwPerformsInContext"
+    },
+    "PhysicalArchitectureOfEnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "PhysicalArchitectureOfEnterprisePhase"
+    },
+    "PhysicalLocation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "PhysicalLocation"
+    },
+    "ProcessGeneralization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ProcessGeneralization"
+    },
+    "ProjectMilestoneToProjectTheme": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ProjectMilestoneToProjectTheme"
+    },
+    "ProjectProvidesFunction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ProjectProvidesFunction"
+    },
+    "ProjectSequence": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwProjectSequence"
+    },
+    "ProjectSupportActivity": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ProjectSupportActivity"
+    },
+    "PropertySetGeneralization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "PropertySetGeneralization"
+    },
+    "Provides": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Provides"
+    },
+    "ProvidesCompetence": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwProvidesCompetence"
+    },
+    "ProvidesServiceFunction": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ProvidesServiceFunction"
+    },
+    "RatifiedStandards": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RatifiedStandards"
+    },
+    "RealiseRequirement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RealiseRequirement"
+    },
+    "RealizedDesiredEffect": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RealizedDesiredEffect"
+    },
+    "RealizesRecommendation": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RealizesRecommendation"
+    },
+    "RealizingAchievedEffect": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RealizingAchievedEffect"
+    },
+    "RefersTo": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RefersTo"
+    },
+    "Refines": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Refines"
+    },
+    "Replaces": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Replaces"
+    },
+    "ReplaceStandardElement": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ReplaceStandardElement"
+    },
+    "RequiredEnvironment": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RequiredEnvironment"
+    },
+    "RequiredResource": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "RequiredResource"
+    },
+    "Requires": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Requires"
+    },
+    "RequiresCompetence": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwRequiresCompetence"
+    },
+    "ResourceConnector": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ResourceConnector"
+    },
+    "ResourceDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ResourceDependency"
+    },
+    "ResourceExchange": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "realizingActivityEdge",
+          "targets": [
+            "NAFv4-ADMBw::FunctionEdge"
+          ]
+        },
+        {
+          "role": "realizingConnector",
+          "targets": [
+            "NAFv4-ADMBw::ResourceConnector"
+          ]
+        },
+        {
+          "role": "realizingMessage",
+          "targets": [
+            "NAFv4-ADMBw::ResourceMessage"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwResourceExchange"
+    },
+    "ResourceMessage": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "Connector",
+          "targets": [
+            "NAFv4-ADMBw::ResourceConnector"
+          ]
+        },
+        {
+          "role": "receiveEvent.event.operation",
+          "targets": [
+            "NAFv4-ADMBw::ResourceMethod"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "projected UML message"
+    },
+    "ResourceToServiceDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ResourceToServiceDependency"
+    },
+    "Responsible": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Responsible"
+    },
+    "ResultsFrom": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ResultsFrom"
+    },
+    "SameAs": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "SameAs"
+    },
+    "Satisfy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "Satisfy"
+    },
+    "ServiceConnector": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ServiceConnector"
+    },
+    "ServiceDependency": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwServiceDependency"
+    },
+    "ServiceExchange": {
+      "omittedTags": [],
+      "unresolvedConstraints": [
+        {
+          "role": "realizingConnector",
+          "targets": [
+            "NAFv4-ADMBw::ServiceConnector"
+          ]
+        },
+        {
+          "role": "realizingMessage",
+          "targets": [
+            "NAFv4-ADMBw::ServiceMessage"
+          ]
+        }
+      ],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ServiceExchange"
+    },
+    "ServiceGeneralization": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwServiceGeneralization"
+    },
+    "ServiceMessage": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "projected UML message"
+    },
+    "ServiceProvision": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ServiceProvision"
+    },
+    "StakeholderConcern": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "alias",
+      "type": "StakeholderHasConcern"
+    },
+    "StatementTask": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "StatementTask"
+    },
+    "StemsFrom": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "StemsFrom"
+    },
+    "StoredIn": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "projected from constrained MDG subtypes"
+    },
+    "SuccessorOf": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "SuccessorOf"
+    },
+    "ToBeRealizedBy": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ToBeRealizedBy"
+    },
+    "VersionReleased": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "VersionReleased"
+    },
+    "VersionSuccession": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported as a distinct ADMBw relation",
+      "type": "ADMBwVersionSuccession"
+    },
+    "VersionWithdrawn": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "VersionWithdrawn"
+    },
+    "ViewpointsInArchitecturalDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ViewpointsInArchitecturalDescription"
+    },
+    "ViewpointToStakeholder": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "ViewpointToStakeholder"
+    },
+    "ViewsInArchitecturalDescription": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "alias",
+      "type": "ContainsView"
+    },
+    "VisionForActualEnterprisePhase": {
+      "omittedTags": [],
+      "unresolvedConstraints": [],
+      "kind": "relationship",
+      "status": "imported",
+      "type": "VisionForActualEnterprisePhase"
+    }
+  }
+}

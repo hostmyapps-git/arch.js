@@ -90,7 +90,16 @@ export function helpContent(model, options = {}) {
           namedList('Element types: ',nodes,name=>queryFor('types',target,name)),
           namedList('Relationship types: ',relations,name=>queryFor('relations',target,name))
         ];
-        linked('Required model contents',content(rule.requiredNodes,rule.requiredRelations));
+        linked('Required model contents',[
+          ...content(rule.requiredNodes,rule.requiredRelations),
+          ...(rule.requiredNodeGroups ?? []).map(types => namedList('At least one element: ',types,name=>queryFor('types',target,name))),
+          ...(rule.requiredRelationGroups ?? []).map(group => {
+            const types=Array.isArray(group)?group:group.types;
+            const line=namedList('At least one relationship: ',types,name=>queryFor('relations',target,name));
+            if (!Array.isArray(group)) line.text+=` · ${group.from.join(' or ')} → ${group.to.join(' or ')}`;
+            return line;
+          })
+        ]);
         linked('Allowed model contents',content(rule.nodes,rule.relations));
         if (rule.connections?.length) section('Connection rules', rule.connections.map(check => {
           const limit = check.visibility ? `${check.visibility} show` : `${check.min}–${check.max ?? '∞'} ${check.direction}`;

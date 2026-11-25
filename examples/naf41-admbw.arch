@@ -1,0 +1,24 @@
+architecture "NAFv4.1 and ADMBw" {
+  config {
+    profile naf41-admbw
+    validation strict
+  }
+  model {
+    Capability sar "Search and rescue"
+    Capability maritime "Maritime rescue"
+    relation specializes maritime -> sar "is a kind of" { type CapabilityGeneralization }
+
+    FitCriterion target "Acceptance criterion" { text "Assess the distress signal within 20 minutes" }
+    FulfilmentCriterion measured "Evaluation criterion" { text "Observe elapsed time in a test exercise" }
+    relation evaluation measured -> target "evaluates" { type Evaluates }
+  }
+  view taxonomy "C1 · Capability taxonomy" {
+    viewpoint C1
+    include sar, maritime
+    diagram tree
+  }
+  view requirements "R8 · ADMBw evaluation" {
+    viewpoint R8
+    include target, measured
+  }
+}

@@ -102,6 +102,25 @@ Das separate `naf41-uaf` ergänzt alle 47 Viewpoint-IDs der NAFv4.1-Ausgabe
 [Anleitung](naf41/README.md), [Abdeckung und offene Prüfungen](naf41/COVERAGE.md).
 Diese Abdeckung ist keine vollständige normative Konformitätsprüfung.
 
+Zwei weitere Profile verwenden dieselben 47 NAFv4.1-Viewpoint-IDs.
+
+- `naf41-admbw` ergänzt das fest versionierte `naf41-uaf` um ADMBw 2026.05.
+  Die [ADMBw-Abdeckung](admbw/COMPLIANCE.md) dokumentiert die Übernahme aus
+  der MDG-Datei und die verbleibenden UML- und EA-spezifischen Regeln.
+- `naf41-archimate` verwendet den NATO-Leitfaden 2026.06 und baut auf
+  `archimate-3.2` auf. Die [ArchiMate-Abdeckung](naf41-archimate/COMPLIANCE.md)
+  erläutert die NATO-Spezialisierungen, Beziehungsregeln und offenen Prüfungen.
+
+Beide Profile sind über das mitgelieferte `profiles/profiles.js` und über
+`config { profile … validation strict }` verfügbar. Das Basisprofil
+`archimate-3.2` erlaubt auch Modelle ohne NAF-Viewpoint.
+
+In externen JSON-Profilen ergänzen `requiredNodeGroups` und
+`requiredRelationGroups` die Pflichtlisten. Pro Gruppe reicht ein Typ aus.
+Bedingungen für die Endpunkte einer Pflichtbeziehung lassen sich auch als
+`{ "types": ["Serving"], "from": ["Capability"], "to": ["Capability"] }`
+beschreiben.
+
 ## Variante 2: Eigenes Profil im config-Block
 
 ```arch

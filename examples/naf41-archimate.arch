@@ -1,0 +1,49 @@
+architecture "NAFv4.1 and ArchiMate 3.2" {
+  config {
+    profile naf41-archimate
+    validation strict
+    views grid
+  }
+  model {
+    Capability sar "Search and rescue"
+    Capability maritime "Maritime rescue"
+    relation specializes maritime -> sar "specializes" { type Specialization }
+
+    Actor controller "Controller"
+    Actor responder "Response team"
+    InformationObject report "Distress report"
+    relation distress controller -> responder "Transfer distress report" {
+      type ConveyingFlow
+      conveyed [report]
+    }
+
+    ArchitectureDescription architectureProduct "SAR architecture"
+    View logicalProduct "L3 · Distress report"
+    Viewpoint logicalViewpoint "Logical interactions" { nafViewpoint L3 }
+    Concern concern "Timely coordination"
+    Stakeholder planner "Duty planner"
+    relation contains architectureProduct -> logicalProduct "aggregates" { type Aggregation }
+    relation realizes logicalProduct -> logicalViewpoint "realizes" { type Realization }
+    relation frames logicalViewpoint -> concern "frames" { type Influence }
+    relation addresses planner -> concern "has" { type Association }
+  }
+  view taxonomy "C1 · Capability taxonomy" {
+    viewpoint C1
+    include sar, maritime
+    diagram tree
+  }
+  view exchange "L3 · Logical interactions" {
+    viewpoint L3
+    represents logicalProduct
+    include controller, responder, report
+  }
+  view products "A2 · Architecture products" {
+    viewpoint A2
+    include architectureProduct, logicalProduct, logicalViewpoint, concern, planner
+  }
+  view grid "NAFv4.1 viewpoints" {
+    viewpoint A2
+    include taxonomy, exchange, products, architectureProduct, logicalProduct, logicalViewpoint, concern, planner
+    diagram nafgrid { show modeled products list diagrams list }
+  }
+}

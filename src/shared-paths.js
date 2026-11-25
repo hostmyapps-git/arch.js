@@ -1,6 +1,6 @@
 // Presentation-only fan-in/fan-out networks. Every relationship keeps its full
 // path for reference attachments; only its private branch is painted separately.
-import {effectiveDasharray, routeStyleKey} from './route-styles.js';
+import {effectiveDasharray, markerOptions, routeStyleKey} from './route-styles.js';
 import {pathPoint, roundedCorner} from './svg-path.js';
 import {DEFAULT_CURVE} from './routing-options.js';
 const opposite = {left:'right',right:'left',top:'bottom',bottom:'top'};
@@ -115,7 +115,7 @@ function manualSharedPaths(edges,routes,shared) {
       }
       const {style,direction,color,width}=first.edge;
       shared.push({id,part:'stem',edgeIds:group.map(item=>item.edge.id),types:[...new Set(group.map(item=>item.edge.type))],
-        d:(incoming?reverse(trunk):trunk).join(' '),style,direction,color,width,drawStart:!incoming,drawEnd:incoming});
+        d:(incoming?reverse(trunk):trunk).join(' '),style,direction,color,width,attributes:markerOptions(first.edge),drawStart:!incoming,drawEnd:incoming});
     }
   }
 }
@@ -176,7 +176,8 @@ export function shareEdgePaths(edges,nodes,routes) {
       }
       if(plans.length!==group.length)continue;
       const id=`shared-${shared.length/2+1}`,prototype=group[0].edge;
-      const metadata={id,edgeIds:group.map(c=>c.edge.id),types:[...new Set(group.map(c=>c.edge.type))],style:prototype.style,direction:prototype.direction};
+      const metadata={id,edgeIds:group.map(c=>c.edge.id),types:[...new Set(group.map(c=>c.edge.type))],style:prototype.style,direction:prototype.direction,
+        attributes:markerOptions(prototype)};
       for(const key of ['color','width','dasharray'])if(prototype[key]!==undefined)metadata[key]=prototype[key];
       const rounded=(routes.get(prototype.id).curve??DEFAULT_CURVE)==='rounded';
       const bends=rounded?spineBends(crossValues):null;

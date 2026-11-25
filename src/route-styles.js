@@ -35,5 +35,7 @@ export function routeStyle(route={}) {
   return result;
 }
 
-export const effectiveDasharray=(edge,reference=false)=>edge.dasharray??(!reference&&['dependency','realization'].includes(edge.style)?[6,5]:[]);
-export const routeStyleKey=edge=>[edge.color??null,edge.width??1.5,effectiveDasharray(edge)];
+export const effectiveDasharray=(edge,reference=false)=>edge.dasharray??(!reference&&['dependency','realization','transfer','archimate-access'].includes(edge.style)?[6,5]:[]);
+export const markerOptions=edge=>edge.style==='archimate-access'?{accessType:edge.attributes?.accessType}:
+  edge.style==='association'&&edge.attributes?.directed===true?{directed:true}:undefined;
+export const routeStyleKey=edge=>[edge.color??null,edge.width??1.5,effectiveDasharray(edge),markerOptions(edge)];

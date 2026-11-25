@@ -1,4 +1,4 @@
-import { concreteSubtypes, matches, matchesPair, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
+import { canonicalType, concreteSubtypes, matches, matchesPair, NODE_PROPERTIES, EDGE_PROPERTIES } from './profiles.js';
 import { profileHelp } from './diagnostic-help.js';
 import { checkConnections } from './connection-rules.js';
 import { checkRelationshipConstraints } from './relationship-constraints.js';
@@ -40,6 +40,7 @@ export function relationshipEndpointIssues(id, type, rule, source, target, nodeT
 }
 
 function checkModelRules(model, profile, nodes, add) {
+  const junctions=new Map();
   const abstractType = (type, kind, definitions, item) => {
     const candidates = concreteSubtypes(type, definitions), topic = kind === 'node' ? 'types' : 'relations';
     const help = profileHelp(profile, topic, type);
@@ -92,6 +93,7 @@ function checkModelRules(model, profile, nodes, add) {
     const rule = profile.nodeTypes[node.type];
     if (!rule) { add(`Unknown element type in profile ${profile.id}: ${node.type}`, node, { elementId: node.id }); continue; }
     if (rule.abstract) abstractType(node.type, 'node', profile.nodeTypes, node);
+    if (rule.template==='junction') junctions.set(node.id,{types:new Set(),outgoing:[]});
     if (node.parent) {
       const parent = nodes.get(node.parent), parentRule = profile.nodeTypes[parent?.type];
       if (parentRule && !parentRule.container) add(`${node.parent} is not a container`, node, { elementId: node.id });
@@ -112,6 +114,39 @@ function checkModelRules(model, profile, nodes, add) {
     checkAttributes({ ...edge, type }, rule, EDGE_PROPERTIES);
   }
   checkRelationshipConstraints(model, profile, add);
+  if (junctions.size) checkJunctions(model,profile,nodes,junctions,add);
+}
+
+// A chain of junctions must connect only one kind of edge. Its terminal
+// source and target must also be legal on the same direct relationship.
+function checkJunctions(model,profile,nodes,junctions,add) {
+  const arrivals=[];
+  for (const edge of model.edges) {
+    const type=canonicalType(edge.type ?? profile.defaultRelation,profile.relationTypes);
+    if (!profile.relationTypes[type]) continue;
+    const source=junctions.get(edge.source),target=junctions.get(edge.target);
+    source?.types.add(type);
+    target?.types.add(type);
+    if (source) source.outgoing.push({type,node:edge.target});
+    else if (target) arrivals.push({type,edge});
+  }
+  for (const [id,junction] of junctions) if (junction.types.size>1)
+    add(`${id}: A junction may only connect relationships of one type`,nodes.get(id),{elementId:id});
+  for (const {type,edge} of arrivals) {
+    const seen=new Set([edge.target]);
+    for (const id of seen) {
+      if (junctions.get(id)?.types.size!==1) continue;
+      for (const branch of junctions.get(id).outgoing) {
+        if (branch.type!==type) continue;
+        if (junctions.has(branch.node)) seen.add(branch.node);
+        else {
+          const source=nodes.get(edge.source)?.type,target=nodes.get(branch.node)?.type;
+          const issues=relationshipEndpointIssues(edge.id,type,profile.relationTypes[type],source,target,profile.nodeTypes);
+          if (issues) add(`${edge.id}: Junction path to ${branch.node} is not allowed for ${type} (${source} → ${target})`,edge,{elementId:edge.id});
+        }
+      }
+    }
+  }
 }
 
 export function profileDiagnostics(model, profile, graph, sharedChecks) {
@@ -159,6 +194,19 @@ export function profileDiagnostics(model, profile, graph, sharedChecks) {
     }
     for (const type of rule.requiredNodes) if (!selectedNodes.some(node => matches(node.type, [type], profile.nodeTypes))) add(`${view.id}: Missing required node type ${type}`, view, { viewId: view.id,incomplete:true });
     for (const type of rule.requiredRelations) if (!selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, [type], profile.relationTypes))) add(`${view.id}: Missing required relationship type ${type}`, view, { viewId: view.id,incomplete:true });
+    for (const types of rule.requiredNodeGroups ?? []) {
+      if (!selectedNodes.some(node => matches(node.type, types, profile.nodeTypes)))
+        add(`${view.id}: Missing required node group (${types.join(' or ')})`, view, {viewId:view.id,incomplete:true});
+    }
+    for (const group of rule.requiredRelationGroups ?? []) {
+      const {types,from,to}=Array.isArray(group)?{types:group}:group;
+      const found=selectedEdges.some(edge => matches(edge.type ?? profile.defaultRelation, types, profile.relationTypes)
+        && (!from || matchesPair(nodes.get(edge.source)?.type,nodes.get(edge.target)?.type,{from,to},profile.nodeTypes)));
+      if (!found) {
+        const endpoints=from ? `, ${from.join(' or ')} → ${to.join(' or ')}` : '';
+        add(`${view.id}: Missing required relationship group (${types.join(' or ')}${endpoints})`, view, {viewId:view.id,incomplete:true});
+      }
+    }
     checkConnections(rule.connections, profile, view, graph, selection, add);
     for (const check of rule.references ?? []) for (const item of check.nodes ? selectedNodes : selectedEdges) if (matches(item.type, check.nodes ?? check.relations, check.nodes ? profile.nodeTypes : profile.relationTypes)) {
       for (const attr of check.attributes) for (const id of [item.attributes?.[attr]].flat().filter(v => typeof v === 'string')) if (!visible.has(id))

@@ -55,6 +55,10 @@ function nodeMarkup(node, palette, prefix, backdrop = palette.bg, iconScope = pr
   const fillOpacity = node.backgroundColor || node.opacity !== undefined ? ` fill-opacity="${num(opacity)}"` : '';
   const title = `<title>${escape(node.title)} — ${escape(node.type)}${node.stereotype && node.stereotype !== node.type ? ` [${escape(node.stereotype)}]` : ''}${node.modelId ? ` [ID: ${escape(node.modelId)}]` : ''}${node.description ? `: ${escape(node.description)}` : ''}</title>`;
   const attrs = `data-node="${escape(node.id)}"${node.modelId ? ` data-model-id="${escape(node.modelId)}"` : ''} data-type="${escape(node.type)}" data-template="${node.template}" data-icon-position="${node.iconPosition??(node.display==='logo'?'center':'left')}" transform="translate(${num(node.x)} ${num(node.y)})"`;
+  if (node.template==='junction') {
+    const fill=node.attributes?.kind==='or'?palette.bg:palette.text;
+    return `<g class="arch-node" ${attrs}>${title}<circle cx="${num(w/2)}" cy="${num(h/2)}" r="${num(Math.min(w,h)/2-1)}" fill="${fill}" stroke="${palette.text}" stroke-width="2"/></g>`;
+  }
   const iconName = node.icon ?? defaultIcon(node.template);
   if (node.display === 'logo') {
     let logo='';
@@ -144,21 +148,23 @@ function renderSVG(graph, options = {}) {
     const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? DEFAULT_BACKGROUND_OPACITY : 1)) : palette.bg;
     backdrops.set(node.id, color); return color;
   };
+  const markersFor = (id,color) => `
+    <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color}" stroke-width="1.5"/></marker>
+    <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${color}"/></marker>
+    <marker id="${id}-filled-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${color}"/></marker>
+    <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color}"/></marker>
+    <marker id="${id}-open-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.bg}" stroke="${color}"/></marker>
+    <marker id="${id}-dot" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="7" markerHeight="7" orient="auto"><circle cx="5" cy="5" r="3.5" fill="${color}"/></marker>`;
   const definitions = `<defs>
     ${cardShadowFilter(`${prefix}-shadow`)}
-    <marker id="${prefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${palette.edge}" stroke-width="1.5"/></marker>
-    <marker id="${prefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${palette.edge}"/></marker>
-    <marker id="${prefix}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${palette.edge}"/></marker>
+    ${markersFor(prefix,palette.edge)}
   </defs>`;
   const coloredMarkers=new Map();
   const marker=(kind,color)=>{
     if(!color||color===palette.edge)return `${prefix}-${kind}`;
     if(!coloredMarkers.has(color)) {
       const id=`${prefix}-route-color-${coloredMarkers.size+1}`;
-      coloredMarkers.set(color,{id,markup:`
-        <marker id="${id}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="m1 1 8 4-8 4" fill="none" stroke="${color}" stroke-width="1.5"/></marker>
-        <marker id="${id}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 11 6 1 11Z" fill="${palette.bg}" stroke="${color}"/></marker>
-        <marker id="${id}-diamond" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="10" markerHeight="8" orient="auto"><path d="m1 5 6-4 6 4-6 4Z" fill="${color}"/></marker>`});
+      coloredMarkers.set(color,{id,markup:markersFor(id,color)});
     }
     return `${coloredMarkers.get(color).id}-${kind}`;
   };
@@ -176,9 +182,16 @@ function renderSVG(graph, options = {}) {
   const stroke=edge=>edge.color??palette.edge;
   const overlaps=dashedOverlaps([...(graph.sharedPaths??[]),...graph.edges],stroke,pathFor,trace,bridges);
   const maskDefinitions=[];
+  const startMarkers={composition:'diamond',aggregation:'open-diamond',assignment:'dot'};
+  const endMarkers={association:null,composition:null,aggregation:null,'archimate-access':null,realization:'triangle',generalization:'triangle',
+    assignment:'filled-arrow',triggering:'filled-arrow',transfer:'filled-arrow'};
   const edgePath = edge => {
-    const start = edge.direction==='both' ? ` marker-start="url(#${marker('arrow',edge.color)})"` : edge.style === 'composition' ? ` marker-start="url(#${marker('diamond',edge.color)})"` : '';
-    const end = edge.direction!=='both'&&['association', 'composition'].includes(edge.style) ? '' : ` marker-end="url(#${marker(['realization', 'generalization'].includes(edge.style) ? 'triangle' : 'arrow',edge.color)})"`;
+    const access=edge.style==='archimate-access'?edge.attributes?.accessType:undefined;
+    const startKind=edge.direction==='both'||access==='read'||access==='readWrite'?'arrow':startMarkers[edge.style];
+    const endKind=edge.direction==='both'||(edge.style==='association'&&edge.attributes?.directed===true)
+      ||access==='write'||access==='readWrite'||!Object.hasOwn(endMarkers,edge.style)?'arrow':endMarkers[edge.style];
+    const start=startKind?` marker-start="url(#${marker(startKind,edge.color)})"`:'';
+    const end=endKind?` marker-end="url(#${marker(endKind,edge.color)})"`:'';
     const markers=`${edge.drawStart===false?'':start}${edge.drawEnd===false?'':end}`;
     const d=pathFor(edge), path=`<path d="${escape(d)}" fill="none"`, width=edge.width??1.5;
     const line=`${path} stroke="${stroke(edge)}" stroke-width="${num(width)}" stroke-linejoin="round"${dashAttribute(edge)}`;

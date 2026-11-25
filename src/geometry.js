@@ -234,6 +234,8 @@ export function layoutView(document, viewId) {
     }
     const definition = profile.nodeTypes[n.type];
     const template = style.template ?? definition.template;
+    if (template==='junction') return {...n,template,width:16,height:16,container:false,x:0,y:0,
+      titleLines:[],badgeLines:[],descLines:[],technologyLines:[],propertyRows:[]};
     const width = style.width ?? view.places[n.id]?.size?.x ?? 220;
     const fontSize=style.fontSize??15,scale=fontSize/15;
     const textStyle={title:fontSize,badge:9*scale,description:12*scale,technology:10*scale,titleLeading:20*scale,descriptionLeading:17*scale,technologyLeading:13*scale};
