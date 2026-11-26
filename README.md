@@ -26,6 +26,16 @@ Kurzanleitung. Für die vollständige Oberfläche mit Profilen, Hilfereferenz,
 Dashboard, Zoom und Quelltextexport `studio.html` öffnen. Beide Seiten
 funktionieren mit den mitgelieferten Browserdateien auch direkt vom Dateisystem.
 
+**Open file** lädt eine lokale `.arch`- oder Architektur-`.json`-Datei und
+rendert sie im Editor. Geöffnete Dateien und Entwürfe bleiben während der
+Sitzung im Modellmenü verfügbar. Das gilt auch in einer heruntergeladenen
+Studio-HTML-Datei unter **Edit source**.
+
+**Both**, **Editor** und **Preview** wählen die sichtbaren Bereiche. Im
+Modus **Both** kannst du die Trennleiste ziehen oder mit den Pfeiltasten
+verschieben. Auf schmalen Bildschirmen stehen die Bereiche untereinander.
+Ein Doppelklick auf die Trennleiste stellt ihre Standardposition wieder her.
+
 Alternativ lokal starten:
 
 ```sh

@@ -3,6 +3,9 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const source = $('source'), diagram = $('diagram'), canvas = $('canvas');
+  const studioBody = $('studio-body'), editorPanel = $('source-panel'), previewPanel = $('preview-panel');
+  const divider = $('studio-divider'), paneButtons = [...document.querySelectorAll('[data-studio-pane]')];
+  const stackedPanes = matchMedia('(max-width:620px)');
   const workspace = window.ARCH_STUDIO_WORKSPACE;
   const html = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const configuredViews = '@configured';
@@ -13,6 +16,8 @@
   let configuredDashboardShown = false;
   let currentExample, model, viewId, theme, profileOverride, zoom = 1, bounds, debounce, toastTimeout, lastSvg;
   const drafts = new Map();
+  const documents = new Map();
+  let openedFileCount = 0;
   const notesByExample = new Map(workspace?.notes ? [['workspace',workspace.notes]] : []);
   const highlightMarkup = (text, format) => arch.sourceTokens(text, format).map(token =>
     token.kind === 'plain' ? html(token.text) : `<span class="token-${token.kind}">${html(token.text)}</span>`).join('');
@@ -38,9 +43,75 @@
     $('fit').textContent = `${Math.round(zoom * 100)}%`;
   }
   function fit() {
-    if (bounds) setZoom(Math.min(1, (canvas.clientWidth - 40) / bounds.width,
+    if (bounds && canvas.clientWidth && canvas.clientHeight) setZoom(Math.min(1, (canvas.clientWidth - 40) / bounds.width,
       model?.kind === 'help' || diagram.querySelector('svg[data-arch-views],svg[data-arch-meta]') ? 1 : (canvas.clientHeight - 40) / bounds.height));
   }
+  function paneGeometry() {
+    const dimension = stackedPanes.matches ? 'height' : 'width';
+    const total = studioBody.getBoundingClientRect()[dimension];
+    const available = total - divider.getBoundingClientRect()[dimension];
+    const style = getComputedStyle(studioBody);
+    return {dimension,total,available,size:editorPanel.getBoundingClientRect()[dimension],
+      min:Number.parseFloat(style.getPropertyValue('--editor-min')),
+      max:available - Number.parseFloat(style.getPropertyValue('--preview-min'))};
+  }
+  function updateDivider() {
+    divider.setAttribute('aria-orientation',stackedPanes.matches ? 'horizontal' : 'vertical');
+    if (divider.hidden) return;
+    const {size,available,min,max} = paneGeometry();
+    if (available<=0) return;
+    const percent = pixels => Math.round(100 * pixels / available);
+    divider.setAttribute('aria-valuemin',percent(min));
+    divider.setAttribute('aria-valuemax',percent(max));
+    divider.setAttribute('aria-valuenow',percent(size));
+    divider.setAttribute('aria-valuetext',`Editor ${percent(size)}%, preview ${100 - percent(size)}%`);
+  }
+  function splitPanes(size, {dimension,total,min,max} = paneGeometry()) {
+    if (total<=0) return;
+    const percent = 100 * Math.max(min,Math.min(max,size)) / total;
+    studioBody.style.setProperty(`--editor-${dimension}`,`${percent}%`);
+    updateDivider();
+  }
+  function showPanes(mode) {
+    studioBody.dataset.pane = mode;
+    editorPanel.hidden = mode==='preview';
+    previewPanel.hidden = mode==='editor';
+    divider.hidden = mode!=='both';
+    for (const button of paneButtons) button.setAttribute('aria-pressed',String(button.dataset.studioPane===mode));
+    updateDivider();
+  }
+  for (const button of paneButtons) button.addEventListener('click',() => showPanes(button.dataset.studioPane));
+  let paneDrag;
+  const pointerPosition = event => stackedPanes.matches ? event.clientY : event.clientX;
+  divider.addEventListener('pointerdown',event => {
+    if (event.button!==0 || paneDrag) return;
+    paneDrag = {id:event.pointerId,start:pointerPosition(event),size:paneGeometry().size};
+    divider.setPointerCapture(event.pointerId);
+    divider.setAttribute('data-dragging','');
+    divider.focus({preventScroll:true});
+    event.preventDefault();
+  });
+  divider.addEventListener('pointermove',event => {
+    if (paneDrag?.id===event.pointerId) splitPanes(paneDrag.size + pointerPosition(event) - paneDrag.start);
+  });
+  divider.addEventListener('lostpointercapture',() => {
+    paneDrag = undefined;
+    divider.removeAttribute('data-dragging');
+  });
+  divider.addEventListener('keydown',event => {
+    const geometry = paneGeometry();
+    const [backward,forward] = stackedPanes.matches ? ['ArrowUp','ArrowDown'] : ['ArrowLeft','ArrowRight'];
+    const step = event.shiftKey ? 48 : 16;
+    const positions = {[backward]:geometry.size-step,[forward]:geometry.size+step,Home:geometry.min,End:geometry.max};
+    if (!Object.hasOwn(positions,event.key)) return;
+    event.preventDefault();
+    splitPanes(positions[event.key],geometry);
+  });
+  divider.addEventListener('dblclick',() => {
+    studioBody.style.removeProperty(stackedPanes.matches ? '--editor-height' : '--editor-width');
+    updateDivider();
+  });
+  new ResizeObserver(updateDivider).observe(studioBody);
   function updateViews() {
     const views = viewId===metaView && metaResult?.views ? metaResult.views : model?.views ?? [];
     const configured = viewId===metaView ? metaResult?.configuredViews : model?.config?.views;
@@ -245,10 +316,11 @@
     configuredDashboardShown = false;
     source.value = drafts.get(example.id) ?? example.source; source.scrollTop = source.scrollLeft = 0;
     source.setSelectionRange(0, 0); $('example-select').value = example.id;
-    for (const button of $('examples').children) {
+    for (const button of document.querySelectorAll('.sidebar button[data-example]')) {
       const active = button.dataset.example === example.id;
       button.classList.toggle('active', active); button.setAttribute('aria-current', String(active));
     }
+    if (example.notesKey) $('model-title').textContent = example.title.replace(/\.(arch|json)$/i,'');
     $('unsaved').hidden = source.value === example.source; highlight(); render(true);
     if (workspace && example.id==='workspace' && !$('architecture-dashboard').open) openDashboard();
   }
@@ -262,14 +334,46 @@
     link.download = `${(model?.title ?? 'architecture').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'architecture'}.${extension}`;
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  $('example-count').textContent = String(ARCH_EXAMPLES.length).padStart(2, '0');
-  for (const [index, example] of ARCH_EXAMPLES.entries()) {
+  function addDocument(example, symbol, menu, list) {
+    documents.set(example.id,example);
     const option = document.createElement('option'); option.value = example.id; option.textContent = example.title;
-    $('example-select').append(option);
+    menu.append(option);
     const button = document.createElement('button'); button.className = 'example-button'; button.dataset.example = example.id;
-    button.innerHTML = `<span class="example-symbol">${['◈','⇢','▥','✧','◇','▤','◎','⊙','▦','＋','?'][index] ?? '◇'}</span><span><strong>${html(example.title)}</strong><small>${html(example.subtitle)}</small></span>`;
-    button.addEventListener('click', () => selectExample(example)); $('examples').append(button);
+    button.innerHTML = `<span class="example-symbol" aria-hidden="true">${symbol}</span><span><strong>${html(example.title)}</strong><small>${html(example.subtitle)}</small></span>`;
+    button.addEventListener('click', () => selectExample(example)); list.append(button);
   }
+  const examplesMenu = $('example-select');
+  $('example-count').textContent = String(ARCH_EXAMPLES.length).padStart(2, '0');
+  for (const [index, example] of ARCH_EXAMPLES.entries())
+    addDocument(example,['◈','⇢','▥','✧','◇','▤','◎','⊙','▦','＋','?'][index] ?? '◇',examplesMenu,$('examples'));
+  const openedMenu = document.createElement('optgroup');
+  openedMenu.label = 'Opened files';
+  const openFile = $('open-file'), fileInput = $('source-file');
+  openFile.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    openFile.disabled = true;
+    let text;
+    try {
+      text = await file.text();
+    } catch {
+      toast(`Could not open ${file.name}.`);
+      return;
+    } finally {
+      openFile.disabled = false;
+    }
+    const opened = {
+      id:`@file-${++openedFileCount}`, title:file.name, subtitle:'Local file', source:text,
+      notesKey:['studio-file',file.name,file.size,file.lastModified]
+    };
+    if (!openedMenu.parentElement) examplesMenu.prepend(openedMenu);
+    addDocument(opened,'◇',openedMenu,$('opened-files'));
+    $('opened-file-list').hidden = false;
+    selectExample(opened);
+    if (!$('architecture-dashboard').open) source.focus();
+  });
   const automatic = document.createElement('option'); automatic.value = ''; automatic.textContent = 'From document'; $('profile-select').append(automatic);
   const profileChoices = new Set(arch.getProfiles());
   if (workspace?.profile) profileChoices.add(workspace.profile);
@@ -302,7 +406,7 @@
     selectExample(ARCH_EXAMPLES.find(example => example.id === 'iconpacks'));
     document.querySelector('.studio').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   });
-  $('example-select').addEventListener('change', () => selectExample(ARCH_EXAMPLES.find(example => example.id === $('example-select').value)));
+  examplesMenu.addEventListener('change', () => selectExample(documents.get(examplesMenu.value)));
   source.addEventListener('input', () => {
     highlight(); $('unsaved').hidden = source.value === currentExample.source;
     clearTimeout(debounce); debounce = setTimeout(() => render(false), 240);
@@ -342,12 +446,13 @@
     try {
       arch.renderDashboard($('dashboard-content'),input,{
         ...settings,
-        notesKey:workspace && id==='workspace' ? ['portable',workspace.notesKey ?? workspace.title,workspace.revision] : ['studio',id],
+        notesKey:currentExample.notesKey ?? (workspace && id==='workspace' ? ['portable',workspace.notesKey ?? workspace.title,workspace.revision] : ['studio',id]),
         notes:notesByExample.get(id),
         onNotes:notes => notesByExample.set(id,notes),
         onClose:() => modal.close(),
         onEditSource:view => {
           modal.close();
+          if (editorPanel.hidden) showPanes('both');
           viewId = view;
           viewOverride = true;
           render(true);
@@ -356,6 +461,7 @@
         onSource:({line,column}) => {
           const start = input.split('\n').slice(0,line-1).reduce((length,row) => length+row.length+1,0);
           modal.close();
+          if (editorPanel.hidden) showPanes('both');
           source.focus();
           source.setSelectionRange(start+Math.max(0,(column ?? 1)-1),start+Math.max(1,column ?? 1));
           source.scrollTop = (line-1)*parseFloat(getComputedStyle(source).lineHeight)-source.clientHeight/3;

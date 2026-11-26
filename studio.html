@@ -13,25 +13,35 @@
     <a class="brand" href="index.html" aria-label="arch.js home"><span class="brand-symbol">a<span>•</span></span>arch<span class="brand-dot">.js</span><span class="version">0.1</span></a>
     <div class="space-label">YOUR WORKSPACE</div>
     <div class="workspace-link"><span class="workspace-icon">▧</span> Architecture studio <span class="live-dot"></span></div>
-    <div class="space-label examples-label">EXAMPLE MODELS <span id="example-count">11</span></div>
-    <nav id="examples" aria-label="Example models"></nav>
+    <section id="opened-file-list" hidden>
+      <div class="space-label examples-label">OPENED FILES</div>
+      <nav id="opened-files" aria-label="Opened files"></nav>
+    </section>
+    <div class="space-label examples-label">MODELS <span id="example-count">11</span></div>
+    <nav id="examples" aria-label="Models"></nav>
     <div class="sidebar-note"><span class="note-icon">↗</span><strong>From text to clarity.</strong><p>Describe the system.<br>Let the architecture speak.</p><button class="text-button" id="open-guide">Explore the language <span>→</span></button></div>
     <div class="sidebar-footer"><span class="live-dot"></span> Runs entirely in your browser <a href="README.md" title="Read the documentation" aria-label="Read the documentation">↗</a></div>
   </aside>
 
   <main>
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Architecture studio</strong></div><select id="example-select" aria-label="Example model"></select><a class="docs-link" href="SPEC.md">Documentation <span>↗</span></a></header>
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Architecture studio</strong></div><select id="example-select" aria-label="Architecture model"></select><a class="docs-link" href="SPEC.md">Documentation <span>↗</span></a></header>
     <section class="page-heading"><div><div class="eyebrow"><span></span> THE BIG PICTURE, IN PLAIN TEXT</div><h1>Architecture, made clear.</h1><p>A small language for the systems that connect everything.</p></div><div class="page-actions"><button class="primary-button" id="open-dashboard">Architecture dashboard</button><button class="primary-button" id="export-svg"><span>↓</span> Export SVG</button></div></section>
 
     <section class="studio" aria-label="Architecture editor">
-      <div class="studio-topline"><div class="file-title"><span class="file-icon">◈</span><strong id="model-title">Customer platform</strong><span class="file-extension" id="source-extension">.arch</span><span class="unsaved" id="unsaved" hidden>edited</span></div><div class="studio-top-actions"><label class="profile-picker"><span>PROFILE</span><select id="profile-select" aria-label="Validation profile"></select></label><span class="local-badge" id="profile-info"><span class="live-dot"></span> default</span><button class="icon-button" id="download-source" title="Download source" aria-label="Download source">↓</button></div></div>
-      <div class="studio-body">
-        <section class="source-panel" aria-label="Source editor">
+      <div class="studio-topline"><div class="file-title"><span class="file-icon">◈</span><strong id="model-title">Customer platform</strong><span class="file-extension" id="source-extension">.arch</span><span class="unsaved" id="unsaved" hidden>edited</span></div><div class="studio-top-actions"><label class="profile-picker"><span>PROFILE</span><select id="profile-select" aria-label="Validation profile"></select></label><span class="local-badge" id="profile-info"><span class="live-dot"></span> default</span><button class="icon-button open-file-button" id="open-file" type="button">Open file</button><input id="source-file" type="file" accept=".arch,.json" hidden><button class="icon-button" id="download-source" title="Download source" aria-label="Download source">↓</button></div></div>
+      <div class="studio-layout" role="group" aria-label="Pane layout">
+        <button type="button" data-studio-pane="both" aria-pressed="true" aria-controls="source-panel preview-panel">Both</button>
+        <button type="button" data-studio-pane="editor" aria-pressed="false" aria-controls="source-panel">Editor</button>
+        <button type="button" data-studio-pane="preview" aria-pressed="false" aria-controls="preview-panel">Preview</button>
+      </div>
+      <div id="studio-body" class="studio-body" data-pane="both">
+        <section id="source-panel" class="source-panel" aria-label="Source editor">
           <div class="panel-toolbar"><div><span class="small-square"></span> SOURCE</div><button class="run-button" id="render-button" title="Render (Ctrl/Cmd+Enter)">Run <kbd>⌘ ↵</kbd></button></div>
           <div class="editor-wrap"><div class="line-numbers" id="line-numbers" aria-hidden="true"></div><div class="code-wrap"><pre id="highlight" aria-hidden="true"></pre><textarea id="source" aria-label="Architecture source" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea></div></div>
           <div class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span><span id="source-format">arch</span> <span class="separator-dot">·</span> UTF-8</span></div>
         </section>
-        <section class="preview-panel" aria-label="Diagram preview">
+        <div id="studio-divider" class="studio-divider" role="separator" tabindex="0" aria-label="Resize editor and preview" aria-controls="source-panel" aria-orientation="vertical"></div>
+        <section id="preview-panel" class="preview-panel" aria-label="Diagram preview">
           <div class="panel-toolbar preview-toolbar"><div class="view-picker"><span>VIEW</span><select id="view-select" aria-label="Diagram view"></select></div><div class="preview-actions"><button class="icon-button" id="toggle-theme" title="Toggle diagram theme" aria-label="Toggle diagram theme">☾</button><span class="toolbar-divider"></span><button class="icon-button" id="zoom-out" aria-label="Zoom out">−</button><button class="zoom-value" id="fit" title="Fit diagram to canvas">100%</button><button class="icon-button" id="zoom-in" aria-label="Zoom in">+</button></div></div>
           <div id="canvas" class="canvas"><div id="diagram"></div></div>
           <section id="source-meta" class="source-meta" aria-label="Source translation" hidden>
