@@ -23,6 +23,14 @@ export const dashboardStyle = `
 .ad-header .ad-button:hover:not(:disabled){background:#ffffff30}
 .ad-header .ad-primary{background:#fff;color:#1c3267;border-color:white}
 .ad-header .ad-primary:hover{background:#e9eefc}
+.ad-export-status{padding:8px 16px;background:var(--panel);color:var(--muted);border-bottom:1px solid var(--line)}
+.ad-notes{width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:20px;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:var(--panel)}
+.ad-notes::backdrop{background:#1322439e}
+.ad-notes-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ad-note-field{display:grid;gap:6px;margin:14px 0;font-weight:650}
+.ad-note-field textarea{width:100%;resize:vertical;min-height:75px;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-weight:400;color:var(--ink);background:var(--subtle)}
+.ad-notes-badge{display:inline-block;margin-inline-start:6px;min-width:19px;padding:0 4px;border-radius:10px;background:#fff;color:#253e80;text-align:center;font-size:11px;font-weight:750}
+.ad-note-links{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ad-body{display:grid;grid-template-columns:minmax(215px,280px) minmax(0,1fr) minmax(240px,310px);min-height:540px;min-height:min(75vh,800px)}
 .ad-catalog,.ad-inspector{background:var(--panel);min-width:0}
 .ad-catalog{border-right:1px solid var(--line);display:flex;flex-direction:column}
@@ -35,6 +43,9 @@ export const dashboardStyle = `
 .ad-entry{display:grid;gap:2px;width:100%;text-align:left;background:none;border:1px solid transparent;color:var(--ink);border-radius:8px;padding:9px 10px;overflow-wrap:anywhere}
 .ad-entry:hover,.ad-entry[aria-current=true]{background:var(--wash);border-color:#dce5ff}
 .ad-entry strong{font-weight:650}
+.ad-catalog-row{display:flex;align-items:center}
+.ad-catalog-row .ad-entry{flex:1;min-width:0}
+.ad-catalog-row .ad-note-jump{flex:none;margin-inline-end:6px;border:1px solid #c6d4f9;border-radius:6px;padding:2px 6px;background:var(--wash);color:#2443a1;font-size:11px}
 .ad-entry small,.ad-meta{font-size:12px;color:var(--muted)}
 .ad-main{min-width:0;display:flex;flex-direction:column}
 .ad-viewbar{min-height:70px;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}

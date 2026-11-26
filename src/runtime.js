@@ -101,7 +101,7 @@ export function createRuntime({
       if (!renderDashboard) throw studioRequired('Dashboard presentation', model.config?.loc);
       const [view] = selectedViewIds(model, options);
       const validation = options.validation ?? model.config?.validation;
-      renderDashboard(element, model, {...options, view, validation});
+      renderDashboard(element, model, {...options, view, validation, originalSource:fromSource ? sourceOrModel : undefined});
       return element.lastElementChild;
     }
     const graph = layoutPreview(model, options, fromSource);

@@ -3,6 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const source = $('source'), diagram = $('diagram'), canvas = $('canvas');
+  const workspace = window.ARCH_STUDIO_WORKSPACE;
   const html = text => text.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const configuredViews = '@configured';
   const metaView = '@meta';
@@ -12,6 +13,7 @@
   let configuredDashboardShown = false;
   let currentExample, model, viewId, theme, profileOverride, zoom = 1, bounds, debounce, toastTimeout, lastSvg;
   const drafts = new Map();
+  const notesByExample = new Map(workspace?.notes ? [['workspace',workspace.notes]] : []);
   const highlightMarkup = (text, format) => arch.sourceTokens(text, format).map(token =>
     token.kind === 'plain' ? html(token.text) : `<span class="token-${token.kind}">${html(token.text)}</span>`).join('');
   function highlight() {
@@ -233,6 +235,13 @@
   function selectExample(example) {
     if (currentExample) drafts.set(currentExample.id, source.value);
     currentExample = example; helpSession=undefined; viewId = undefined; viewOverride = false; theme = undefined; profileOverride = undefined; $('profile-select').value = '';
+    if (workspace && example.id==='workspace') {
+      viewId = workspace.view;
+      viewOverride = Boolean(viewId);
+      theme = workspace.theme;
+      profileOverride = workspace.profile;
+      $('profile-select').value = profileOverride ?? '';
+    }
     configuredDashboardShown = false;
     source.value = drafts.get(example.id) ?? example.source; source.scrollTop = source.scrollLeft = 0;
     source.setSelectionRange(0, 0); $('example-select').value = example.id;
@@ -241,6 +250,7 @@
       button.classList.toggle('active', active); button.setAttribute('aria-current', String(active));
     }
     $('unsaved').hidden = source.value === example.source; highlight(); render(true);
+    if (workspace && example.id==='workspace' && !$('architecture-dashboard').open) openDashboard();
   }
   function toast(message) {
     clearTimeout(toastTimeout); $('toast').textContent = message; $('toast').hidden = false;
@@ -261,8 +271,16 @@
     button.addEventListener('click', () => selectExample(example)); $('examples').append(button);
   }
   const automatic = document.createElement('option'); automatic.value = ''; automatic.textContent = 'From document'; $('profile-select').append(automatic);
-  for (const id of arch.getProfiles()) {
+  const profileChoices = new Set(arch.getProfiles());
+  if (workspace?.profile) profileChoices.add(workspace.profile);
+  for (const id of profileChoices) {
     const option = document.createElement('option'); option.value = id; option.textContent = id; $('profile-select').append(option);
+  }
+  if (workspace) {
+    document.querySelector('.icon-gallery').hidden = true;
+    $('show-grid-example').hidden = true;
+    for (const link of document.querySelectorAll('a[href$=".md"]')) link.hidden = true;
+    document.querySelector('.brand').href = '#source';
   }
   $('profile-select').addEventListener('change', () => { profileOverride = $('profile-select').value || undefined; render(true); });
   const samples = {
@@ -319,12 +337,22 @@
   function openDashboard() {
     const modal = $('architecture-dashboard');
     const input = source.value;
+    const id = currentExample.id;
     const settings = {view:viewOverride ? viewId : undefined, profile:profileOverride, theme};
     try {
       arch.renderDashboard($('dashboard-content'),input,{
         ...settings,
+        notesKey:workspace && id==='workspace' ? ['portable',workspace.notesKey ?? workspace.title,workspace.revision] : ['studio',id],
+        notes:notesByExample.get(id),
+        onNotes:notes => notesByExample.set(id,notes),
         onClose:() => modal.close(),
-        onExport:view => download(arch.renderDashboardToHTML(input,{...settings,view}),'text/html;charset=utf-8','html'),
+        onEditSource:view => {
+          modal.close();
+          viewId = view;
+          viewOverride = true;
+          render(true);
+          source.focus();
+        },
         onSource:({line,column}) => {
           const start = input.split('\n').slice(0,line-1).reduce((length,row) => length+row.length+1,0);
           modal.close();

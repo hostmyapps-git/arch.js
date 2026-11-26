@@ -10,6 +10,10 @@ import { dashboardUI } from './dashboard-ui.js';
 import { sourceTokenizerScript, sourceTokens } from './source-highlight.js';
 import { helpDocument, parseHelpCommand, queryFor, topics } from './help-syntax.js';
 import { DIAGRAMS } from './diagrams.js';
+import { isJSONDocument } from './json.js';
+import { registerProfile } from './profiles.js';
+import { registerIconPack } from './icons.js';
+import { canExportStudio, downloadHTML, exportRevision, htmlJSON, portableStudio, restoreStudioDependencies as restoreDependencies } from './studio-export.js';
 export * from './arch.js';
 export { help } from './help.js';
 export { inspectSource } from './source.js';
@@ -47,9 +51,21 @@ export function architectureReport(sourceOrModel, options = {}) {
 export function renderDashboard(target, sourceOrModel, options = {}) {
   const element = typeof target === 'string' ? globalThis.document?.querySelector(target) : target;
   if (!element?.ownerDocument || typeof element.replaceChildren !== 'function') throw new ArchError('A valid DOM target element is required');
-  const {report,layout,profile,viewSource} = prepareArchitecture(sourceOrModel,options);
+  const prepared = prepareArchitecture(sourceOrModel,options);
+  const {report,layout,profile,viewSource} = prepared;
+  const document = element.ownerDocument;
+  const scope = options.notesKey ?? element.closest('[data-arch-notes-key]')?.getAttribute('data-arch-notes-key') ?? dashboardScope(element);
+  const notesKey = `archjs:notes:v1:${JSON.stringify([document.location?.pathname,scope])}`;
   const page = element.ownerDocument.createElement('div');
-  dashboardUI(page,report,{...options, getHelp:query=>dashboardHelp(query,profile),
+  const exportOptions = (view, notes) => ({...options,view,notes,notesKey:scope});
+  dashboardUI(page,report,{...options, notesKey, getHelp:query=>dashboardHelp(query,profile),
+    onExport:options.onExport ?? ((view, notes) =>
+      downloadHTML(document,report.title,renderDashboardToHTML(prepared.model,exportOptions(view,notes)))),
+    onExportStudio:options.onExportStudio ?? (canExportStudio ? async (view, notes) => {
+      const original = options.originalSource ?? editableInput(sourceOrModel);
+      const html = await portableStudio(prepared,original,{baseURL:document.baseURI,...exportOptions(view,notes)});
+      downloadHTML(document,report.title,html,'-studio');
+    } : undefined),
     viewSource,sourceTokens,
     renderView:id=>renderGraph(layout(id),{theme:options.theme})});
   const css = element.ownerDocument.createElement('style');
@@ -58,13 +74,36 @@ export function renderDashboard(target, sourceOrModel, options = {}) {
   return report;
 }
 
+function dashboardScope(element) {
+  const path = [];
+  while (element) {
+    if (element.id) return [element.id,...path];
+    const parent = element.parentElement;
+    if (parent) path.unshift(Array.prototype.indexOf.call(parent.children,element));
+    element = parent;
+  }
+  return path;
+}
+
+function editableInput(sourceOrModel) {
+  return typeof sourceOrModel === 'string' || isJSONDocument(sourceOrModel) ? sourceOrModel : undefined;
+}
+
+export function renderStudioToHTML(sourceOrModel, options = {}) {
+  return portableStudio(prepareArchitecture(sourceOrModel,options),editableInput(sourceOrModel),options);
+}
+
+export function restoreStudioDependencies(workspace) {
+  restoreDependencies(workspace,registerProfile,registerIconPack);
+}
+
 export function renderDashboardToHTML(sourceOrModel, options = {}) {
   const prepared = prepareArchitecture(sourceOrModel,options);
   const report = dashboardPreviews(prepared,options,true);
   const helpPages = exportDashboardHelp(report,prepared.profile);
   const sources = exportDashboardSources(prepared);
-  const payload = JSON.stringify({report,view:options.view,helpPages,sources}).replace(/</g,'\\u003c');
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(report.title)}</title><style>body{margin:0}${dashboardStyle}</style><main id="architecture"></main><script type="application/json" id="model">${payload}</script><script>const data=JSON.parse(document.getElementById('model').textContent);(${dashboardUI.toString()})(document.getElementById('architecture'),data.report,{view:data.view,helpPages:data.helpPages,sources:data.sources,sourceTokens:${sourceTokenizerScript()}});</script></html>`;
+  const payload = htmlJSON({report,view:options.view,helpPages,sources,notes:options.notes,notesKey:options.notesKey,revision:exportRevision()});
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(report.title)}</title><style>body{margin:0}${dashboardStyle}</style><main id="architecture"></main><script type="application/json" id="model">${payload}</script><script>const data=JSON.parse(document.getElementById('model').textContent);const notesKey='archjs:snapshot-notes:v1:'+JSON.stringify([location.pathname,data.notesKey??data.report.title,data.revision]);(${dashboardUI.toString()})(document.getElementById('architecture'),data.report,{view:data.view,helpPages:data.helpPages,sources:data.sources,notes:data.notes,notesKey,sourceTokens:${sourceTokenizerScript()}});</script></html>`;
 }
 
 function exportDashboardSources({report,viewSource}) {

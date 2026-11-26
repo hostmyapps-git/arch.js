@@ -944,6 +944,8 @@ Diagnose-Links können mit `helpBaseURL` auf eine Studio-URL verweisen.
 | `attachDraftDetails(svg, graph)` (Studio) | aktiviert die anklickbaren Draft-Details für ein bereits eingefügtes SVG und das zugehörige Layout aus `renderDiagram()`; gibt SVG zurück |
 | `renderAll({ root, selector, …options })` | rendert `pre > code.language-arch` und `[data-arch]`; gibt SVG-Liste zurück |
 | `renderMarkdown(markdown, options)` | sicherer HTML-String für Absätze, Überschriften und Code-Fences, darin Inline-SVG |
+| `renderDashboardToHTML(sourceOrModel, options)` (Studio) | interaktives Standalone-Dashboard als HTML-String mit optionalen `notes` |
+| `renderStudioToHTML(sourceOrModel, options)` (Browserbundle) | Promise für eine eigenständige und editierbare Studio-HTML-Datei |
 | `registerIconPack(name, pack)` | prüft und registriert ein JSON-Iconpack atomar |
 | `getIconPacks()` | Namen registrierter Iconpacks |
 | `renderIconToString(name, { size, title })` | einzelnes Icon als zugängliches, eigenständiges SVG; Standardgröße 24, Bereich größer 0 bis 512 |

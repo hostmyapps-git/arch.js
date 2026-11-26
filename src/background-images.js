@@ -1,5 +1,17 @@
 import { ArchError } from './errors.js';
 
+const embeddedImages = new Map();
+export const embeddedBackgroundImage = source => embeddedImages.get(source);
+
+export function registerBackgroundImages(entries) {
+  for (const [source, data] of entries) {
+    validateBackgroundImage(source);
+    validateBackgroundImage(data);
+    if (!data?.startsWith('data:')) throw new ArchError('Embedded background images require raster data URLs');
+    embeddedImages.set(source, data);
+  }
+}
+
 export function validateBackgroundImage(source, loc) {
   if (source === undefined) return;
   if (typeof source === 'string' && source && source === source.trim() && !/[\u0000-\u001f\u007f\\]/.test(source)) {
@@ -18,7 +30,7 @@ export function validateBackgroundImage(source, loc) {
 
 export function backgroundImageMarkup(source, { x = 0, y = 0, width, height }, scope, clip) {
   if (!source) return '';
-  const href = source.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  const href = (embeddedImages.get(source) ?? source).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   const clipMarkup = clip ? `<defs><clipPath id="${clip.id}">${clip.shape}</clipPath></defs>` : '';
   return `${clipMarkup}<image data-background-image="${scope}" href="${href}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" overflow="hidden" opacity="${scope === 'node' ? 0.25 : 0.3}"${clip ? ` clip-path="url(#${clip.id})"` : ''} pointer-events="none" aria-hidden="true"/>`;
 }

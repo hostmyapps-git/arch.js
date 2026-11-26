@@ -138,7 +138,7 @@ export function prepareArchitecture(source, options = {}) {
   };
   let getSource;
   return {
-    report, profile,
+    report, profile, model,
     viewSource(id, format) {
       getSource ??= viewSourceProvider(model,report);
       return getSource(id,format);

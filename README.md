@@ -438,6 +438,12 @@ arch.renderAll(); // pre > code.language-arch und [data-arch]
 ```
 
 Fehler werden pro Block lesbar angezeigt. Weitere Blöcke werden weiter gerendert.
+Mit `arch.min.js` und `presentation dashboard` zeigt ein so eingebetteter
+Block auch **Notes**, **Download HTML** und **Download Studio**.
+Bei mehreren Einbettungen kannst du jedem Block eine dauerhafte Kennung geben,
+etwa `<pre data-arch-notes-key="system-review">`, oder bei `arch.render()`
+bzw. `arch.renderDashboard()` die Option `notesKey` setzen. Ohne Kennung wird
+die Position des Blocks im Dokument verwendet.
 
 ## Eingebaute Hilfe
 
@@ -510,9 +516,22 @@ View-Definitionen aus `extends` und `embed`. **DSL** und **JSON** bieten
 Syntaxhervorhebung und **Copy source** kopiert die gewählte Fassung. Die
 Ausgabe wird aus dem Modell erzeugt. Kommentare und Originalformatierung
 sind daher nicht enthalten. Die Quellansicht ist auch im HTML-Export verfügbar.
-Im
-Präsentationsmodus blättern die Pfeiltasten zwischen den Views. **Download HTML**
-exportiert die Darstellung und Navigation in eine eigenständige HTML-Datei.
+Im Präsentationsmodus blättern die Pfeiltasten zwischen den Views.
+**Notes** verwaltet Notizen zur Architektur und zur gerade angezeigten View.
+Der Browser speichert Änderungen lokal, sofern der Speicher verfügbar ist.
+Die Schaltfläche zeigt die Anzahl der Notizen. In der View-Liste öffnet
+**Note** direkt die Notiz zur jeweiligen View. Der Notizdialog verlinkt auch
+die übrigen vorhandenen Notizen. Beide Downloads enthalten den aktuellen Stand.
+
+- **Download HTML** speichert den interaktiven Dashboard-Stand.
+- **Download Studio** speichert eine einzelne HTML-Datei mit editierbarem
+  Quelltext, Profilen, verwendeten Icons und den für das Modell eingebetteten
+  Bildern. Die Datei öffnet dieselbe Dashboard-View. **Edit source** öffnet
+  den Editor, der auch offline rendert und erneut exportiert.
+
+Für externe Hintergrundbilder benötigt der Export Zugriff aus dem Browser.
+Rasterbilder als Data-URLs sind direkt in der Quelle enthalten.
+
 **Help** öffnet die integrierte Referenz mit Vor- und Zurücknavigation.
 Der HTML-Export enthält die Hauptthemen und die im Modell verwendeten
 Viewpoint-, Element- und Beziehungstypen.
@@ -537,6 +556,7 @@ Diagramm. Validierung und SVG-Export bleiben für dasselbe Dokument verfügbar.
 ```js
 arch.renderDashboard(container, source, { view: 'overview' });
 const html = arch.renderDashboardToHTML(source);
+const editableHTML = await arch.renderStudioToHTML(source); // Browserbundle arch.min.js
 const report = arch.architectureReport(source, {
   validation: 'strict', checkRendering: true
 });

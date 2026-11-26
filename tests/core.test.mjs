@@ -192,7 +192,8 @@ test('shipped Markdown fixture contains working arch fences', async () => {
 test('browser editions expose the intended APIs and share rendering and validation', async () => {
   const results = [];
   const studioApis = ['help', 'inspectSource', 'sourceTokens', 'attachDiagnosticHelp', 'attachHelpNavigation',
-    'attachDraftDetails', 'createDiagnosticHelpLink', 'architectureReport', 'renderDashboard', 'renderDashboardToHTML'];
+    'attachDraftDetails', 'createDiagnosticHelpLink', 'architectureReport', 'renderDashboard', 'renderDashboardToHTML',
+    'renderStudioToHTML', 'restoreStudioDependencies'];
   assert.deepEqual(Object.keys(studio).sort(), [...Object.keys(arch), ...studioApis].sort());
   for (const [file, api] of [['arch.core.min.js', arch], ['arch.min.js', studio]]) {
     const context = vm.createContext({}); vm.runInContext(await readFile(file, 'utf8'), context);

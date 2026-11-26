@@ -57,9 +57,20 @@ export function dashboardUI(root, report, options = {}) {
   present.setAttribute('aria-pressed','false');
   actions.append(present);
   actions.append(button('Help',() => openHelp('')));
-  if (options.onExport) actions.append(button('Download HTML',() => options.onExport(current().view)));
+  const notesButton = button('Notes',() => openNotes());
+  const notesBadge = create('span','ad-notes-badge');
+  notesBadge.setAttribute('aria-hidden','true');
+  notesButton.append(notesBadge);
+  actions.append(notesButton);
+  if (options.onExport) actions.append(exportButton('Download HTML',options.onExport));
+  if (options.onExportStudio) actions.append(exportButton('Download Studio',options.onExportStudio));
+  if (options.onEditSource) actions.append(button('Edit source',() => options.onEditSource(current().view)));
   if (options.onClose) actions.append(button('Close',options.onClose));
   header.append(heading,actions);
+  const exportStatus = create('p','ad-export-status');
+  exportStatus.setAttribute('role','status');
+  exportStatus.hidden = true;
+  const {notes, notesDialog, openNotes, refreshNotes} = setupNotes();
 
   const body = create('div','ad-body');
   const catalog = create('nav','ad-catalog');
@@ -83,6 +94,7 @@ export function dashboardUI(root, report, options = {}) {
   const results = create('div','ad-results');
   const searchFields = new WeakMap();
   let listedTab, listedQuery, listedRows, currentRow;
+  let listedNoteButtons = new Map();
   catalog.append(controls,results);
 
   const main = create('section','ad-main');
@@ -151,9 +163,9 @@ export function dashboardUI(root, report, options = {}) {
   const inspector = create('aside','ad-inspector');
   inspector.setAttribute('aria-label','Architecture details');
   body.append(catalog,main,inspector);
-  root.replaceChildren(header,body);
+  root.replaceChildren(header,exportStatus,body,notesDialog);
   root.addEventListener('keydown', event => {
-    if (helpDialog?.open) return;
+    if (helpDialog?.open || notesDialog.open) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !presenting) {
       event.preventDefault(); search.focus();
     }
@@ -161,7 +173,112 @@ export function dashboardUI(root, report, options = {}) {
     event.preventDefault();
     stepView(event.key === 'ArrowLeft' ? -1 : 1);
   });
+  refreshNotes();
   paint();
+
+  function exportButton(label, run) {
+    const control = button(label,async () => {
+      control.disabled = true;
+      exportStatus.hidden = false;
+      exportStatus.textContent = 'Preparing download…';
+      try {
+        await run(current().view,{architecture:notes.architecture,views:{...notes.views}});
+        exportStatus.textContent = 'Download ready';
+      } catch (error) {
+        exportStatus.textContent = error.message;
+      } finally {
+        control.disabled = false;
+      }
+    });
+    return control;
+  }
+
+  function setupNotes() {
+    const key = options.notesKey;
+    let storage, stored, storageFailed = false;
+    if (key) {
+      try {
+        storage = document.defaultView.localStorage;
+        stored = JSON.parse(storage.getItem(key));
+      } catch {
+        storageFailed = true;
+      }
+    }
+    const initial = stored?.version===1 ? stored : options.notes;
+    const notes = {architecture:typeof initial?.architecture==='string' ? initial.architecture : '',views:Object.create(null)};
+    for (const [id,text] of Object.entries(initial?.views ?? {}))
+      if (typeof text==='string') notes.views[id] = text;
+    const notesDialog = create('dialog','ad-notes');
+    notesDialog.setAttribute('aria-label','Architecture notes');
+    const bar = create('div','ad-notes-header');
+    bar.append(create('h2',null,'Notes'),button('Close notes',() => notesDialog.close()));
+    const noteLinks = create('nav','ad-note-links');
+    noteLinks.setAttribute('aria-label','Jump to saved note');
+    const status = create('p','ad-meta');
+    status.setAttribute('role','status');
+    const state = () => storageFailed ? 'Browser storage unavailable. Notes are included in downloads.' :
+      storage ? 'Saved in this browser' : 'Notes are included in downloads.';
+    const architectureLabel = create('label','ad-note-field','Architecture notes');
+    const viewLabel = create('label','ad-note-field');
+    const viewCaption = create('span');
+    const architecture = create('textarea'), view = create('textarea');
+    architecture.rows = view.rows = 5;
+    architectureLabel.append(architecture);
+    viewLabel.append(viewCaption,view);
+    notesDialog.append(bar,noteLinks,architectureLabel,viewLabel,status);
+    let viewId;
+    function refreshNotes() {
+      const annotated = Object.keys(notes.views).filter(id => notes.views[id].trim());
+      const hasArchitectureNote = Boolean(notes.architecture.trim());
+      const count = annotated.length + Number(hasArchitectureNote);
+      notesBadge.hidden = count===0;
+      notesBadge.textContent = String(count);
+      notesButton.setAttribute('aria-description',count===0 ? 'No notes yet' : `${count} saved note${count===1 ? '' : 's'}`);
+      const links = hasArchitectureNote ? [button('Architecture',() => architecture.focus(),'ad-link')] : [];
+      for (const id of annotated) {
+        const name = byView.get(id)?.title || id;
+        links.push(button(name,() => jumpToViewNote(id),'ad-link'));
+      }
+      noteLinks.replaceChildren(...links);
+      noteLinks.hidden = !links.length;
+      for (const [id,control] of listedNoteButtons) control.hidden = !notes.views[id]?.trim();
+    }
+    function save() {
+      if (storage) {
+        try {
+          storage.setItem(key,JSON.stringify({version:1,...notes}));
+        } catch {
+          storageFailed = true;
+        }
+      }
+      options.onNotes?.({architecture:notes.architecture,views:{...notes.views}});
+      status.textContent = state();
+      refreshNotes();
+    }
+    architecture.addEventListener('input',() => { notes.architecture = architecture.value; save(); });
+    view.addEventListener('input',() => {
+      if (view.value) notes.views[viewId] = view.value;
+      else delete notes.views[viewId];
+      save();
+    });
+    function openNotes(id, focusView = false) {
+      viewId = id ?? current().view;
+      const selectedView = byView.get(viewId);
+      viewLabel.hidden = !viewId;
+      viewCaption.textContent = viewId ? `View notes · ${selectedView ? label(selectedView) : viewId}` : '';
+      architecture.value = notes.architecture;
+      view.value = notes.views[viewId] ?? '';
+      status.textContent = state();
+      if (!notesDialog.open) notesDialog.showModal();
+      if (focusView) view.focus();
+    }
+    return {notes,notesDialog,openNotes,refreshNotes};
+  }
+
+  function jumpToViewNote(id) {
+    openView(id);
+    openNotes(id,true);
+  }
 
   function drawSource(view) {
     if (lastSourceView===view.id && lastSourceFormat===sourceFormat) return;
@@ -330,6 +447,7 @@ export function dashboardUI(root, report, options = {}) {
       const query = input ? input.split(/\s+/) : [];
       const fragment = document.createDocumentFragment();
       listedRows = new Map();
+      listedNoteButtons = new Map();
       for (const item of buckets[kind]) {
         let fields = searchFields.get(item);
         if (!fields && query.length) {
@@ -339,7 +457,15 @@ export function dashboardUI(root, report, options = {}) {
         if (query.length && !query.every(word => fields.includes(word))) continue;
         const node = entry(label(item),detail(item,kind),() => kind==='views' ? openView(item.id) : openItem(kind,item.id));
         listedRows.set(item.id,node);
-        fragment.append(node);
+        if (kind==='views') {
+          const row = create('div','ad-catalog-row');
+          const noteLink = button('Note',() => jumpToViewNote(item.id),'ad-note-jump');
+          noteLink.setAttribute('aria-label',`Open notes for ${label(item)}`);
+          noteLink.hidden = !notes.views[item.id]?.trim();
+          listedNoteButtons.set(item.id,noteLink);
+          row.append(node,noteLink);
+          fragment.append(row);
+        } else fragment.append(node);
       }
       if (!fragment.childElementCount) fragment.append(create('p','ad-empty','No matching entries.'));
       results.replaceChildren(fragment);

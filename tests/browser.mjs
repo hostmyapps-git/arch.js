@@ -2756,6 +2756,113 @@ try {
   },dashboardSource);
   assert.deepEqual(domPresentation,{configured:true,override:true,help:true,fallback:'L4 · Logical Activities',converted:true});
   console.log('✓ Configured dashboard, cross-view reuse, live and offline help, keyboard presentation and standalone HTML');
+
+  const markdownPage = await browser.newPage({viewport:{width:1480,height:980}});
+  const imageURL = new URL('portable-test.gif',address).href;
+  await markdownPage.route(imageURL,route=>route.fulfill({contentType:'image/gif',
+    body:Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64')}));
+  const embeddedSource = `architecture "Portable review" {
+    # Keep this original comment
+    config {profile "portable-fixture@2" presentation dashboard views overview}
+    model {Tool app "Review service" {icon portable.sample}}
+    view overview "Overview" {}
+    view details "Details" {backgroundImage "portable-test.gif"}
+  }`;
+  async function embedDashboards() {
+    await markdownPage.goto(address);
+    await markdownPage.addScriptTag({url:new URL('arch.min.js',address).href});
+    await markdownPage.evaluate(source=>{
+      arch.registerProfile('portable-fixture',{version:'2',extends:'default',nodeTypes:{Tool:{template:'service'}}});
+      arch.registerIconPack('portable',{icons:{sample:{body:'<circle cx="8" cy="8" r="6" fill="#ff0000"/>'}}});
+      const root=document.createElement('article');
+      for (const key of ['review','other']) {
+        const block=document.createElement('pre'), code=document.createElement('code');
+        block.dataset.archNotesKey=key;
+        code.className='language-arch';
+        code.textContent=source;
+        block.append(code);
+        root.append(block);
+      }
+      document.body.replaceChildren(root);
+      arch.renderAll({root});
+    },embeddedSource);
+  }
+  const review = markdownPage.locator('[data-arch-notes-key="review"]');
+  const notesDialog = markdownPage.getByRole('dialog',{name:'Architecture notes'});
+  const architectureNote = 'Literal </script><script>window.portableInjected=true</script>';
+  await embedDashboards();
+  await review.getByRole('button',{name:'Notes',exact:true}).click();
+  await notesDialog.getByRole('textbox',{name:'Architecture notes',exact:true}).fill(architectureNote);
+  await notesDialog.getByRole('textbox',{name:'View notes · Overview',exact:true}).fill('Review the overview.');
+  await notesDialog.getByRole('button',{name:'Close notes'}).click();
+  await markdownPage.locator('[data-arch-notes-key="other"]').getByRole('button',{name:'Notes',exact:true}).click();
+  assert.equal(await notesDialog.getByRole('textbox',{name:'Architecture notes',exact:true}).inputValue(),'');
+  await notesDialog.getByRole('button',{name:'Close notes'}).click();
+  await embedDashboards();
+  await review.getByRole('button',{name:'Notes',exact:true}).click();
+  assert.equal(await notesDialog.getByRole('textbox',{name:'Architecture notes',exact:true}).inputValue(),architectureNote);
+  assert.equal(await notesDialog.getByRole('textbox',{name:'View notes · Overview',exact:true}).inputValue(),'Review the overview.');
+  await notesDialog.getByRole('button',{name:'Close notes'}).click();
+  await review.getByRole('button',{name:'Next view'}).click();
+  await review.getByRole('button',{name:'Notes',exact:true}).click();
+  await notesDialog.getByRole('textbox',{name:'View notes · Details',exact:true}).fill('Details follow-up.');
+  await notesDialog.getByRole('button',{name:'Close notes'}).click();
+  const exportedStudioEvent=markdownPage.waitForEvent('download');
+  await review.getByRole('button',{name:'Download Studio',exact:true}).click();
+  const exportedStudio=await exportedStudioEvent;
+  const studioFile='test-results/portable-review-studio.html';
+  await exportedStudio.saveAs(studioFile);
+  const snapshotEvent=markdownPage.waitForEvent('download');
+  await review.getByRole('button',{name:'Download HTML',exact:true}).click();
+  const snapshot=await snapshotEvent;
+  const snapshotMarkup=await readFile(await snapshot.path(),'utf8');
+  const snapshotData=JSON.parse(snapshotMarkup.match(/id="model">([^]*?)<\/script>/)[1]);
+  assert.equal(snapshotData.notes.architecture,architectureNote);
+  assert.deepEqual(snapshotData.notes.views,{overview:'Review the overview.',details:'Details follow-up.'});
+  await markdownPage.close();
+
+  const portable = await browser.newPage({viewport:{width:1480,height:980}});
+  const portableErrors = [], portableRequests = [];
+  portable.on('pageerror',error=>portableErrors.push(error.message));
+  portable.on('request',request=>portableRequests.push(request.url()));
+  await portable.addInitScript(()=>{
+    Object.defineProperty(window,'localStorage',{get(){throw new Error('Storage unavailable');}});
+  });
+  await portable.goto(pathToFileURL(path.resolve(studioFile)).href);
+  const portableDashboard = portable.getByRole('dialog',{name:'Architecture dashboard'});
+  await portableDashboard.locator('.ad-viewbar').getByRole('heading',{name:'Details',exact:true}).waitFor();
+  assert.equal(await portableDashboard.locator('.ad-diagram image').getAttribute('href').then(value=>value.startsWith('data:image/gif;')),true);
+  assert.equal(await portableDashboard.locator('.ad-diagram [data-icon="portable.sample"]').count(),1);
+  assert.equal(await portableDashboard.getByRole('button',{name:'Notes',exact:true}).getAttribute('aria-description'),'3 saved notes');
+  await portableDashboard.getByRole('button',{name:'Open notes for Overview',exact:true}).click();
+  const portableNotes=portable.getByRole('dialog',{name:'Architecture notes'});
+  assert.equal(await portableNotes.getByRole('textbox',{name:'View notes · Overview',exact:true}).inputValue(),'Review the overview.');
+  assert.ok(await portableNotes.getByRole('textbox',{name:'View notes · Overview',exact:true}).evaluate(node=>document.activeElement===node));
+  await portableNotes.getByRole('navigation',{name:'Jump to saved note'}).getByRole('button',{name:'Details',exact:true}).click();
+  assert.equal(await portableNotes.getByRole('textbox',{name:'Architecture notes',exact:true}).inputValue(),architectureNote);
+  assert.equal(await portableNotes.getByRole('textbox',{name:'View notes · Details',exact:true}).inputValue(),'Details follow-up.');
+  assert.match(await portableNotes.getByRole('status').textContent(),/storage unavailable/i);
+  await portableNotes.getByRole('textbox',{name:'View notes · Details',exact:true}).fill('Updated offline.');
+  await portableNotes.getByRole('button',{name:'Close notes'}).click();
+  await portableDashboard.getByRole('button',{name:'Edit source',exact:true}).click();
+  assert.equal(await portable.locator('#source').inputValue(),embeddedSource);
+  await portable.locator('#source').fill(embeddedSource.replace('Review service','Changed offline'));
+  await portable.locator('#render-button').click();
+  await portable.locator('#diagram').getByText('Changed offline',{exact:true}).waitFor();
+  await portable.locator('#open-dashboard').click();
+  const secondExport=portable.waitForEvent('download');
+  await portableDashboard.getByRole('button',{name:'Download Studio',exact:true}).click();
+  const again=await secondExport;
+  const againMarkup=await readFile(await again.path(),'utf8');
+  const workspaceData=JSON.parse(againMarkup.match(/id="studio-workspace">([^]*?)<\/script>/)[1]);
+  assert.equal(workspaceData.notes.views.details,'Updated offline.');
+  assert.match(workspaceData.source,/Changed offline/);
+  assert.equal(await portable.evaluate(()=>window.portableInjected),undefined);
+  assert.deepEqual(portableErrors,[]);
+  assert.ok(portableRequests.every(url=>url.startsWith('file:') || url.startsWith('data:')));
+  await portable.close();
+  console.log('✓ Markdown dashboards isolate and autosave notes, export both HTML formats, and reopen and re-export editable Studio offline');
+
   await direct.setViewportSize({width:1960,height:1200});
   await direct.locator('[data-example="taxonomy"]').click();
   await direct.locator('#open-dashboard').click();

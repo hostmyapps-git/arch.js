@@ -216,7 +216,7 @@ export function readIconify(pack) {
   }
   return result;
 }
-export function iconifyMarkup(icon,scope) {
+export function iconifyMarkup(icon,scope,{clip = true} = {}) {
   const ids=new Map();let next=0;
   const collect=node=>{if(own(node.attrs,'id')&&!ids.has(node.attrs.id))ids.set(node.attrs.id,`${scope}-${next++}`);for(const [key,v]of Object.entries(node.attrs)){const ref=/^url\(#/.test(v)?v.slice(5,-1):['href','xlink:href'].includes(key)&&v.startsWith('#')?v.slice(1):null;if(ref&&!ids.has(ref))ids.set(ref,`${scope}-${next++}`);}node.children.filter(c=>typeof c!=='string').forEach(collect);};collect(icon.tree);
   const write=node=>{
@@ -230,5 +230,5 @@ export function iconifyMarkup(icon,scope) {
     const tag=node===icon.tree?'g':node.tag;return `<${tag}${attrs}>${node.children.map(write).join('')}</${tag}>`;
   };
   // Establish an icon-local viewport, also when embedded in a larger diagram.
-  return `<svg width="${icon.width}" height="${icon.height}" viewBox="0 0 ${icon.width} ${icon.height}" overflow="hidden"><g fill="currentColor" stroke="none" transform="${esc(icon.transform)}">${write(icon.tree)}</g></svg>`;
+  return `<svg width="${icon.width}" height="${icon.height}" viewBox="0 0 ${icon.width} ${icon.height}"${clip ? ' overflow="hidden"' : ''}><g fill="currentColor" stroke="none" transform="${esc(icon.transform)}">${write(icon.tree)}</g></svg>`;
 }
