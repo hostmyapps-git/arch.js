@@ -1036,6 +1036,18 @@ test('the default grid and named profile layouts support compact, detailed and h
   assert.match(listed,/data-view-link="alpha" data-grid-entry-state="selected"/);
   assert.doesNotMatch(arch.renderToString(named.replace('diagram deliveryGrid','diagram deliveryGrid {diagrams none}'),{profile,view:'grid'}),/Diagrams · 1/);
   assert.match(arch.help('diagrams deliveryGrid',{profile}),/products, diagrams, show/);
+
+  const coverageProfile = {...profile,diagrams:{deliveryGrid:{renderer:'viewpointGrid',layout:{...layout,show:'coverage'}}}};
+  const partial = named.replace('"Beta diagram" {viewpoint X2}','"Beta diagram" {}');
+  for (const [input, options] of [
+    [partial,{profile:coverageProfile}],
+    [partial.replace('diagram deliveryGrid','diagram viewpointGrid {show coverage}'),{profile}]
+  ]) {
+    const coverage = arch.renderToString(input,{...options,view:'grid'});
+    assert.match(coverage,/data-naf-cell="X1"[^>]*data-grid-coverage="modeled"/);
+    assert.match(coverage,/data-naf-cell="X2"[^>]*data-grid-coverage="unmodeled"/);
+    assert.doesNotMatch(coverage,/unassigned:diagrams/);
+  }
 });
 
 test('grid include selects diagrams independently of render order and supports an empty NAF selection', () => {
@@ -1141,6 +1153,42 @@ test('modeled grids show declared diagrams at the required viewpoints', () => {
   assert.match(render(source.replace('[L2, L7]','[]')), /No modeled diagrams match the grid viewpoints/);
   assert.match(errors(source.replace('[L2, L7]','[L9]')), /L9 has no cell in this grid/);
   assert.match(errors(source.replace('[L2, L7]','[L2, l2]')), /unique viewpoint codes/);
+});
+
+test('coverage keeps NAF grid positions and colors every viewpoint with a declared diagram', async () => {
+  const example = await readFile('examples/viewpoint-grid.arch','utf8');
+  const source = example.replace('include []\n    diagram nafgrid { show coverage diagrams list }',
+    'include []\n    diagram nafgrid { show coverage products none diagrams none }');
+  const options = {view:'coverageTiles',idPrefix:'coverage-grid'};
+  const readTiles = svg => {
+    const doc = new DOMParser().parseFromString(svg,'image/svg+xml');
+    return new Map([...doc.getElementsByTagName('g')]
+      .filter(tile => tile.hasAttribute('data-naf-cell'))
+      .map(tile => [tile.getAttribute('data-naf-cell'), tile]));
+  };
+  const frame = tile => tile.getElementsByTagName('rect')[0];
+  const bounds = tile => ['x','y','width','height'].map(attr => frame(tile).getAttribute(attr));
+  for (const [theme, gray] of [['light','#e3e6ec'],['dark','#2b313c']]) {
+    const settings = {...options,theme};
+    const svg = arch.renderToString(source,settings);
+    assert.equal(arch.renderToString(arch.translate(source),settings),svg);
+    const tiles = readTiles(svg);
+    const full = readTiles(arch.renderToString(source.replace('show coverage','show all'),settings));
+    assert.equal(tiles.size,47);
+    assert.deepEqual([...tiles].map(([id, tile]) => [id,bounds(tile)]),[...full].map(([id, tile]) => [id,bounds(tile)]));
+    for (const [id,tile] of tiles) {
+      const modeled = ['L2','L2-L3','A1'].includes(id);
+      assert.equal(tile.getAttribute('data-grid-coverage'),modeled ? 'modeled' : 'unmodeled',id);
+      assert.equal(frame(tile).getAttribute('fill'),modeled ? frame(full.get(id)).getAttribute('fill') : gray,id);
+      assert.equal(frame(tile).getAttribute('fill-opacity'),modeled ? '0.2' : '1',id);
+      assert.equal(tile.getAttribute('data-grid-state'),modeled ? 'available' : 'empty',id);
+    }
+    assert.match(svg,/transform="rotate\(-90 [^"]+\)">L2-L3<\/text>/);
+    assert.doesNotMatch(svg,/arch-grid-tile-overlay|data-view-link=/);
+  }
+  const scoped = arch.renderToString(example.replace('show coverage diagrams list','show coverage viewpoints L2, L7 diagrams list'),options);
+  assert.deepEqual([...readTiles(scoped).keys()],['L2','L7']);
+  assert.match(scoped,/data-view-link="logicalDiagram"/);
 });
 
 test('NAF grid rows match their node cards and follow style-group overrides', () => {

@@ -1,5 +1,5 @@
 architecture "How viewpoint grids work" {
-  description "Explore the three layers, then use the View menu to compare the full NAF grid, modeled views, selected tiles, and an empty selection."
+  description "Explore the three layers, then use the View menu to compare the full NAF grid, viewpoint coverage, modeled views, selected tiles, and an empty selection."
   config { profile naf41-uaf views responsibilities }
   model {
     GlossaryTerm engine "arch.js core" {
@@ -53,6 +53,11 @@ architecture "How viewpoint grids work" {
     viewpoint A2
     include []
     diagram nafgrid { show modeled viewpoints [L2, L2-L3, L7] diagrams list }
+  }
+  view coverageTiles "Show viewpoint coverage" {
+    extends allTiles
+    include []
+    diagram nafgrid { show coverage diagrams list }
   }
   view selectedTiles "Show selected viewpoints" {
     extends allTiles

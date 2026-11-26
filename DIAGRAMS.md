@@ -863,8 +863,22 @@ view shortlist "Delivery shortlist" {
 beschränkt das Raster und die Kacheldetails im Dashboard auf die Auswahl.
 Mit `include []` und `show selected` erhältst du ein leeres Raster.
 `show modeled` zeigt nur Kacheln, für deren Viewpoint ein Diagramm im DSL
-deklariert ist. Mit `viewpoints` kannst du die Viewpoint-Codes in jedem
-Anzeigemodus einschränken. Beide Listenschreibweisen sind möglich.
+deklariert ist. `show coverage` behält das vollständige Profilraster bei.
+Kacheln mit mindestens einem deklarierten Diagramm behalten ihre Profilfarbe.
+Kacheln ohne Diagramm bleiben an ihrer Rasterposition und erscheinen grau.
+Für die Abdeckung zählen fachliche Diagrammviews. Raster- und `@meta`-Views
+bleiben bei der Zählung außen vor. Ein `View`-Modellelement allein zählt als
+Produkt. `include` steuert weiterhin die Auswahlmarkierung. Mit `viewpoints`
+kannst du die Viewpoint-Codes in jedem Anzeigemodus einschränken. Beide
+Listenschreibweisen sind möglich.
+
+```arch
+view coverageGrid "NAF-Abdeckung" {
+  viewpoint A2
+  include []
+  diagram nafgrid { show coverage diagrams list }
+}
+```
 
 ```arch
 view modeledGrid "Modeled NAF views" {
@@ -884,9 +898,11 @@ Produkte. In `show modeled` sind die Diagramme dann normal lesbar.
 
 Die NAF-Kacheln verwenden dieselben Stilgruppen und dieselbe
 Fülldeckkraft von 20 % wie farbige Knoten. Ein stärkerer Rahmen kennzeichnet
-ausgewählte Kacheln. Eine graue Fläche mit 90 % Deckkraft dämpft die
-Füllung und Beschriftung der übrigen Kacheln. Das gilt auch bei
-`products none diagrams none`.
+ausgewählte Kacheln. In `show all`, `show selected` und bei einer Auswahl in
+`show modeled` dämpft eine graue Fläche mit 90 % Deckkraft die Füllung und
+Beschriftung der übrigen Kacheln. In `show coverage` erhalten Viewpoints ohne
+Diagramm eine graue Füllung mit lesbarer Beschriftung. Die Farbgebung gilt
+auch bei `products none diagrams none`.
 Die Kachel `L2-L3` ist schmal und trägt einen um 90° gedrehten Viewpoint-Code.
 Ein Klick öffnet im Dashboard die zugehörigen Produkte und Diagramme.
 Die Auswahl bleibt beim Navigieren erhalten.

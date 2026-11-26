@@ -24,14 +24,14 @@ export function gridProjection(nodes, edges, profile, views, diagram, selectedVi
     return {...row,color,darkColor:color};
   });
   const show = diagram.show ?? layout.show ?? 'all';
-  const selectedOnly = show==='selected', modeledOnly = show==='modeled';
+  const selectedOnly = show==='selected', modeledOnly = show==='modeled', coverage = show==='coverage';
   const selected = new Set(selectedViews);
   const selectedProducts = new Set();
   const codes = new Map(layout.cells.map(({id}) => [id.toLowerCase(),id]));
   const cellCode = value => typeof value==='string' ? codes.get(value.toLowerCase()) : undefined;
   const requiredCodes = diagram.viewpoints && new Set(diagram.viewpoints.map(cellCode));
-  const filtered = show!=='all' || requiredCodes!==undefined;
-  const showExtras = !modeledOnly && requiredCodes===undefined;
+  const filtered = selectedOnly || modeledOnly || requiredCodes!==undefined;
+  const showExtras = !coverage && !modeledOnly && requiredCodes===undefined;
   const allowedCode = code => requiredCodes ? requiredCodes.has(code) : code!==undefined || showExtras;
   const viewpoints = new Map(), bindings = new Map(), groups = new Map();
   const custom = new Map(), unassigned = [], otherDiagrams = [], represented = new Map();
@@ -92,7 +92,8 @@ export function gridProjection(nodes, edges, profile, views, diagram, selectedVi
   const offsets = widths.map(size => { const x=width; width+=size; return x; });
   width=Math.max(width,380);
   const titles = wrap(title,width-28,17);
-  const legend = wrap('Products · modeled View elements     Diagrams · declared views     Outline · selected',width-28,12);
+  const legend = wrap(coverage ? 'Color · diagram declared     Gray · no diagram declared     Outline · selected' :
+    'Products · modeled View elements     Diagrams · declared views     Outline · selected',width-28,12);
   const columnLines = columns.map((column,i)=>widths[i] ? wrap(column,widths[i]-16,12) : []);
   const legendY = 29+titles.length*20, columnsY = legendY+legend.length*15+5;
   const planned = cells.map(cell => {
@@ -131,12 +132,12 @@ export function gridProjection(nodes, edges, profile, views, diagram, selectedVi
     y+=card.h+6;
     return card;
   });
-  const empty = filtered && !planned.length && !extraCards.length;
+  const empty = (filtered || coverage) && !planned.length && !extraCards.length;
   const emptyMessage = selectedOnly ? 'No products or diagrams selected.' :
     modeledOnly ? 'No modeled diagrams match the grid viewpoints.' : 'No viewpoints selected.';
-  const muteUnselected = !modeledOnly || planned.some(cell=>cell.state==='selected');
+  const muteUnselected = !coverage && (!modeledOnly || planned.some(cell=>cell.state==='selected'));
   return {titles,legend,legendY,columnLines,columnsY,rows,width,height:y+(empty?40:8),offsets,rowTops,cells:planned,
-    extras:extraCards,extraStart,emptyMessage:empty ? emptyMessage : undefined,muteUnselected};
+    extras:extraCards,extraStart,emptyMessage:empty ? emptyMessage : undefined,muteUnselected,coverage};
 
   function displayModes(cell) {
     return Object.fromEntries(['products','diagrams'].map(kind => [kind,diagram[kind] ?? cell?.[kind] ?? layout[kind] ?? 'count']));
@@ -195,6 +196,9 @@ export function drawNafGrid(plan, dark, prefix, diagramBackground) {
   // channel blends and contrast once per row, not once per SVG tile.
   const rowPaint = plan.rows.map(paint);
   const extraPaint = paint();
+  const grayInk = dark ? '#bac4d4' : '#505c70';
+  const unmodeledPaint = {background:overlayColor,opacity:1,color:grayInk,mutedText:grayInk,
+    frameStroke:line,selectedStroke:ink,filter:''};
   function paint(palette) {
     const background = palette ? dark ? palette.darkColor : palette.color : surface;
     const opacity = palette ? DEFAULT_BACKGROUND_OPACITY : 1;
@@ -209,11 +213,14 @@ export function drawNafGrid(plan, dark, prefix, diagramBackground) {
   function drawCard(card) {
     const {id,key,row,x,y,w,h,heading:caption,lines,sections,state,products,diagrams,currentViews,currentProducts,vertical,headerHeight} = card;
     const selected = state==='selected';
-    const {background,opacity,color,mutedText,frameStroke,selectedStroke,filter} = rowPaint[row] ?? extraPaint;
+    const unmodeled = plan.coverage && diagrams.length===0;
+    const {background,opacity,color,mutedText,frameStroke,selectedStroke,filter} =
+      unmodeled ? unmodeledPaint : rowPaint[row] ?? extraPaint;
     const code = id===undefined?'':` data-naf-cell="${escape(id)}"`;
     const metadata = `${code} data-product-count="${products.length}" data-diagram-count="${diagrams.length}" data-grid-tile="${escape(key)}" data-grid-state="${state}" data-grid-title="${escape(caption)}" data-grid-products="${escape(products.map(item=>item.id).join(' '))}" data-grid-views="${escape(diagrams.map(item=>item.id).join(' '))}"`;
     const tip = [id && id+' '+caption || caption,`${products.length} products · ${diagrams.length} diagrams`].join('\n');
     const selection = ` data-selected-views="${escape(currentViews.map(view=>view.id).join(' '))}" data-selected-products="${escape(currentProducts.map(product=>product.id).join(' '))}"`;
+    const coverage = plan.coverage ? ` data-grid-coverage="${unmodeled ? 'unmodeled' : 'modeled'}"` : '';
     const overlay = !selected && plan.muteUnselected ? `<g aria-hidden="true" pointer-events="none"><rect class="arch-grid-tile-overlay" x="${x+0.5}" y="${y+0.5}" width="${w-1}" height="${h-1}" rx="6.5" fill="${overlayColor}" fill-opacity="${TILE_OVERLAY_OPACITY}"/></g>` : '';
     const outline = selected ? `<g aria-hidden="true" pointer-events="none"><rect x="${x+3}" y="${y+3}" width="${w-6}" height="${h-6}" rx="4" fill="none" stroke="${color}" stroke-width="2"/></g>` : '';
     const stroke = selected ? selectedStroke : frameStroke;
@@ -221,7 +228,7 @@ export function drawNafGrid(plan, dark, prefix, diagramBackground) {
     const codeLabel = vertical
       ? `<text x="${cx}" y="${cy}" fill="${color}" font-size="12" font-weight="750" text-anchor="middle" dominant-baseline="central" transform="rotate(-90 ${cx} ${cy})">${escape(id)}</text>`
       : id ? heading(id,x+8,y+19,w<100?9:12,color,750) : '';
-    return `<g${metadata}${selection} style="--grid-ink:${color};--grid-muted:${mutedText}"><title>${escape(tip)}</title><rect class="arch-grid-tile-frame" x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${background}" fill-opacity="${opacity}" stroke="${stroke}"${filter}/>`+
+    return `<g${metadata}${selection}${coverage} style="--grid-ink:${color};--grid-muted:${mutedText}"><title>${escape(tip)}</title><rect class="arch-grid-tile-frame" x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${background}" fill-opacity="${opacity}" stroke="${stroke}"${filter}/>`+
       outline+codeLabel+
       lines.map((text,index)=>heading(text,x+8,y+33+15*index,12,color,630)).join('')+
       sections.map(({kind,y:sectionY,count,entries}) => {

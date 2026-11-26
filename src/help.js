@@ -353,7 +353,9 @@ export function helpContent(model, options = {}) {
     if (selected.some(type => !available.includes(type))) fail(`Unknown diagram type. Valid types: ${list(available)}.`);
     const gridNotes = ['Select diagrams by ID in the grid view’s include list, for example include [l2, p2]. You can include model elements in the same list.',
       'show all (default) keeps empty and populated tiles visible. show selected displays only entries selected by include.',
-      'show modeled displays only tiles with declared diagrams assigned to their viewpoint. Use viewpoints [L2, P2] to limit the grid to those viewpoint codes. The list also accepts commas without brackets.',
+      'show modeled displays only tiles with declared diagrams assigned to their viewpoint.',
+      'show coverage keeps the full grid and colors every tile with a declared diagram. Tiles without a diagram are gray, including tiles with View products only. Include still controls the selection outline.',
+      'Use viewpoints [L2, P2] to limit any display mode to those viewpoint codes. The list also accepts commas without brackets.',
       'With show modeled, include [] creates a diagram-only grid without marked selections. With show selected, include [] produces an empty grid.',
       'The NAF grid uses the same style-group colors and fill opacity as node cards. Selected tiles get a stronger outline. A gray overlay dims the fill and labels of unselected tiles. L2-L3 has a vertical label.',
       'Tiles show product and diagram counts by default. Use products list, diagrams list, or none on either option.',
