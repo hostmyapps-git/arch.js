@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const example=await readFile('examples/meta.arch','utf8');
 const xml=s=>new DOMParser({onError:(level,message)=>{throw new Error(message);}}).parseFromString(s,'image/svg+xml');
@@ -88,7 +88,7 @@ test('Markdown and both bundles preserve architecture source views and translati
   const model=arch.parse(example),source=arch.translate(example),back=arch.translate(source);
   assert.match(arch.renderMarkdown('```arch\n'+example+'\n```'),/data-arch-meta="json"/);
   const options={idPrefix:'same'};assert.equal(arch.renderToString(back,options),arch.renderToString(model,options));
-  for(const name of ['arch.js','arch.min.js']) {
+  for(const name of ['arch.core.min.js', 'arch.min.js']) {
     const context={};vm.createContext(context);vm.runInContext(await readFile(name,'utf8'),context);
     assert.equal(context.arch.renderToString(example,options),arch.renderToString(model,options));
   }

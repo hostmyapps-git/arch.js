@@ -308,7 +308,7 @@
           <h3>Embed a diagram</h3>
           <p>Put the browser bundle next to your HTML and pass a complete architecture document to <code>arch.render()</code>. The result is inline SVG.</p>
           <pre><code>&lt;div id="diagram"&gt;&lt;/div&gt;
-&lt;script src="arch.min.js"&gt;&lt;/script&gt;
+&lt;script src="arch.core.min.js"&gt;&lt;/script&gt;
 &lt;script&gt;
   arch.render('#diagram', &#96;architecture "Example" {
     model {
@@ -320,7 +320,7 @@
   }&#96;);
 &lt;/script&gt;</code></pre>
           <div class="docs-links">
-            <a href="arch.min.js" download>Download arch.js</a>
+            <a href="arch.core.min.js" download>Download core bundle</a>
             <a href="SPEC.md">Language and API specification</a>
           </div>
         </article>
@@ -401,7 +401,7 @@ architecture "Request lifecycle" {
   }
 }
   </script>
-  <script src="arch.min.js"></script>
+  <script src="arch.core.min.js"></script>
   <script>
     (() => {
       const get = id => document.getElementById(id);
@@ -420,7 +420,7 @@ architecture "Request lifecycle" {
       if (!runtime) {
         hero.textContent = 'The demo needs the arch.js browser bundle.';
         status.textContent = 'Renderer unavailable';
-        error.textContent = 'Place arch.min.js beside this page to enable the playground.';
+        error.textContent = 'Place arch.core.min.js beside this page to enable the playground.';
         error.hidden = false;
         return;
       }

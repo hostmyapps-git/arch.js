@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const body='service a "A" service b "B" service c "C" relation ab a -> b "Calls"';
 const doc=(view,model=body)=>`architecture "Placement" {model {${model}}view v "V"{${view}}}`;
@@ -119,7 +119,7 @@ test('compact reference subtraction binds declared IDs and matches spaced DSL/JS
     const json=JSON.parse(arch.translate(source));json.architecture.views.v.place.doc.at=[`${id}.x+${id}.width`,`${id}.y-${id}.height`];
     assert.equal(arch.renderToString(json,{idPrefix:'compact'}),svg);
     assert.equal(arch.renderToString(arch.translate(json),{idPrefix:'compact'}),svg);
-    if(gap==='')for(const file of ['arch.js','arch.min.js']) {
+    if(gap==='')for(const file of ['arch.core.min.js', 'arch.min.js']) {
       const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
       assert.equal(context.arch.renderToString(source,{idPrefix:'compact'}),svg);
     }
@@ -196,7 +196,7 @@ test('DSL/JSON/meta preserve symbolic expressions and report JSON paths; sizes u
   assert.equal(arch.validate(doc('place a at (0,0) size (b.width,96)')).valid,false);
   assert.match(arch.help('routing'),/Coordinate references/);
   const arithmetic=source.replace('b.x + 20','b.x + 20 * 2').replace('c.y - 40','(c.y - 40) / 2');
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'same'}),expected);
     assert.equal(context.arch.renderToString(arithmetic,{idPrefix:'same'}),arch.renderToString(arithmetic,{idPrefix:'same'}));

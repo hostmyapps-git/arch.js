@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const body='service r "Root" service a "A" service b "B" service outside "Context" relation ra r -> a "A" relation rb r -> b "B" relation context outside -> r "Context"';
 const doc=(view='',model=body)=>`architecture "Groups" {model {${model}}view v "V"{tree hierarchy {nodes [r,a,b] direction up} ${view}}}`;
@@ -88,5 +88,5 @@ test('named trees round-trip through JSON/meta, ship in help and both browser bu
   assert.match(arch.renderToString(source.replace('model {','@meta json\nmodel {')),/direction/);
   assert.match(arch.help('views'),/Named tree layout groups/);assert.match(arch.help('diagrams tree'),/up, right or left/);
   const bad=arch.inspectSource(source.replace('direction up','direction invalid'));assert.ok(bad.diagnostics[0].candidates.some(c=>JSON.stringify(c).includes('up')));
-  for(const file of ['arch.js','arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{idPrefix:'same'}),expected);}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{idPrefix:'same'}),expected);}
 });

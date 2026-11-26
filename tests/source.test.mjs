@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 for(const name of ['enterprise','uaf','naf4-uaf','naf41-uaf','naf41-admbw','archimate-3.2','naf41-archimate']) {
   const profile=JSON.parse(await readFile(`profiles/${name}.json`,'utf8'));arch.registerProfile(profile.id,profile);
@@ -103,11 +103,12 @@ test('translation is deterministic, non-mutating, explicit about format and safe
   assert.ok(arch.translate(input,{format:'json'}).startsWith('{'));
 });
 
-test('both browser bundles expose conversion and diagnostics with the same output',async()=>{
+test('both browser bundles expose source conversion and Studio adds source inspection',async()=>{
   const source='architecture "T" {model {service a "A"}}';
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context={};vm.createContext(context);vm.runInContext(await readFile(file,'utf8'),context);
     assert.equal(context.arch.translate(source),arch.translate(source));
-    assert.equal(context.arch.inspectSource('architecture "T" {modle {}}').diagnostics[0].candidates[0].example,'model');
+    if (file === 'arch.min.js')
+      assert.equal(context.arch.inspectSource('architecture "T" {modle {}}').diagnostics[0].candidates[0].example,'model');
   }
 });

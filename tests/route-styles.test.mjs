@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {DOMParser} from '@xmldom/xmldom';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 const profile={nodeTypes:{actor:{template:'system'},item:{template:'artifact'}},relationTypes:{flow:{style:'dependency',directions:['forward','both'],from:['actor'],to:['actor'],attributes:{payload:{type:'reference',targets:['item'],many:true}},referenceDisplay:'nodes',referenceLabels:{payload:'Carries'}}}};
 const source=(rules='',extra='')=>`architecture "Route styles" {model {
  actor a "A" actor b "B" actor hub "Hub" item data "Dataset"
@@ -102,7 +102,7 @@ test('JSON/DSL/meta preserve route styles, unknown-field candidates include them
  assert.equal(arch.renderToString(arch.translate(json,{profile}),{profile,idPrefix:'same'}),arch.renderToString(s,{profile,idPrefix:'same'}));
  const inspection=arch.inspectSource(s.replace('color blue','colro blue'),{profile});assert.equal(inspection.valid,false);assert.match(JSON.stringify(inspection),/color/);
  assert.match(arch.help('routing'),/dasharray/);
- for(const file of ['arch.js','arch.min.js']) {
+ for(const file of ['arch.core.min.js', 'arch.min.js']) {
   const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
   assert.equal(context.arch.renderToString(s,{profile,idPrefix:'same'}),arch.renderToString(s,{profile,idPrefix:'same'}));
  }

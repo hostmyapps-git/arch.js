@@ -23,7 +23,7 @@ test('S4 p.112 reproduces all five elements and four links without synthetic ser
  for(const theme of ['light','dark']) {
   const options={theme,idPrefix:'s4'},svg=arch.renderToString(model,options);
   assert.equal(arch.renderToString(arch.translate(example),options),svg);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
    const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
    for(const id of ['uaf','naf41-uaf'])context.arch.registerProfile(id,JSON.parse(await readFile(`profiles/${id}.json`,'utf8')));
    assert.equal(context.arch.renderToString(example,options),svg);

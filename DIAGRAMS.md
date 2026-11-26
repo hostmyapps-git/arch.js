@@ -4,7 +4,7 @@
 [Beispiel](examples/diagrams.arch) enthält sieben Ansichten desselben Modells.
 **Capability taxonomy** ergänzt zwei automatisch angeordnete C1-Baumansichten
 aus [taxonomy.arch](examples/taxonomy.arch).
-Alle Renderer sind in `arch.js` / `arch.min.js` enthalten. Diese Browserbundles
+Alle Diagrammrenderer sind in `arch.core.min.js` und `arch.min.js` enthalten. Diese Browserbundles
 benötigen keine zusätzlichen Laufzeitscripts und funktionieren auch über
 `file://`. Direkte Node-Quellimporte verwenden die npm-Abhängigkeiten aus
 `package.json`.

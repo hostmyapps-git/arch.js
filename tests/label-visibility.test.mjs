@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOMParser } from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const source=rules=>`architecture "Labels" {model {system a "A" system b "B" relation send a -> b "Transfers data" relation reply b -> a "Acknowledges"} view v "V" {place b at (600,0) ${rules}} view clean "Clean" {}}`;
 const xml=svg=>new DOMParser({onError:(level,message)=>{throw new Error(message);}}).parseFromString(svg,'image/svg+xml');

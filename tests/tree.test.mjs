@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 for(const name of ['uaf','naf4-uaf','naf41-uaf'])arch.registerProfile(name,JSON.parse(await readFile(`profiles/${name}.json`,'utf8')));
 const taxonomy=await readFile('examples/taxonomy.arch','utf8');
@@ -184,7 +184,7 @@ test('empty and deep trees, JSON and API adapters, draft notices, stacking and b
   assert.match(arch.renderToString('@help diagrams tree'),/Automatic taxonomy/);
   assert.ok(arch.inspectSource(doc(three,'orientation invalid')).candidates?.length||arch.inspectSource(doc(three,'orientation invalid')).diagnostics[0].candidates.length);
   const expected=arch.renderToString(doc(three),{idPrefix:'same'});
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(doc(three),{idPrefix:'same'}),expected);
   }
 });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import {inspectPath} from '../src/svg-path.js';
 
 const profile={defaultRelation:'flow',nodeTypes:{item:{template:'node'}},relationTypes:{flow:{style:'dependency'},other:{style:'dependency'},solid:{style:'association'},kind:{style:'generalization'}}};
@@ -96,7 +96,7 @@ test('sharePath roundtrips through JSON and source, preserves immutable input an
     const json=arch.translate(s,{profile}),expected=arch.renderToString(s,{profile,idPrefix:'tree-shared'});
     assert.equal(arch.renderToString(json,{profile,idPrefix:'tree-shared'}),expected);
     assert.equal(arch.renderToString(arch.translate(json,{profile}),{profile,idPrefix:'tree-shared'}),expected);
-    for(const file of ['arch.js','arch.min.js']) {
+    for(const file of ['arch.core.min.js', 'arch.min.js']) {
       const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);
       assert.equal(c.arch.renderToString(s,{profile,idPrefix:'tree-shared'}),expected);
     }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 const source = body => `architecture "Rules" { model { ${body} } }`;
 
 test('multiple inheritance is generic, diamond-safe, supports both config and JSON, and detects ambiguous fields', () => {

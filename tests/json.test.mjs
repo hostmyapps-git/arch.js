@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const minimal = () => ({architecture:{name:'JSON',model:{elements:{a:{type:'service',name:'A'},b:{type:'database',name:'B'}},relations:{r:{from:'a',to:'b',name:'Reads',type:'access'}}}}});
 const clean = value => JSON.parse(JSON.stringify(value, (key, value) => ['loc','attributeLocs'].includes(key) ? undefined : value));
@@ -173,7 +173,7 @@ test('JSON documents work in Markdown arch fences and existing parsed models sti
 
 test('both browser bundles accept JSON documents and retain source parity',async()=>{
   const json=JSON.parse(await readFile('examples/json-architecture.json','utf8'));
-  for(const name of ['arch.js','arch.min.js']) {
+  for(const name of ['arch.core.min.js', 'arch.min.js']) {
     const sandbox={};vm.createContext(sandbox);vm.runInContext(await readFile(name,'utf8'),sandbox);
     assert.equal(sandbox.arch.renderToString(JSON.stringify(json),{idPrefix:'same'}),arch.renderToString(json,{idPrefix:'same'}));
     assert.equal(sandbox.arch.renderToString(json,{idPrefix:'same'}),arch.renderToString(json,{idPrefix:'same'}),'Objects from another JS realm are valid JSON input');

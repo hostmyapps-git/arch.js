@@ -32,6 +32,6 @@ node <skill>/scripts/archjs.mjs svg model.arch overview > overview.svg
 node <skill>/scripts/archjs.mjs dashboard model.arch > dashboard.html
 ```
 
-Set `ARCHJS_DIR` to the installed arch.js distribution when working elsewhere. It contains `arch.min.js` or `arch.js` and, for optional profiles, `profiles/profiles.js`. Node.js 22 or newer is required for this helper. It reports the semantic and rendered members of each view, which lets you trace a requirement or interaction through the output.
+Set `ARCHJS_DIR` to the installed arch.js distribution when working elsewhere. The helper uses `arch.core.min.js` for SVG and `arch.min.js` for help, reports, and dashboards. It loads optional profiles from `profiles/profiles.js`. Node.js 22 or newer is required for this helper. It reports the semantic and rendered members of each view, which lets you trace a requirement or interaction through the output.
 
 In Studio, use the equivalent `@help` commands, select every relevant view, and check its diagnostics. In an environment with no local runtime, use the syntax references and any supplied profile definitions, deliver the source, and mark parsing and rendering as unverified.

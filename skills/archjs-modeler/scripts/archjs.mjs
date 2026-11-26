@@ -27,14 +27,11 @@ async function optionalFile(path) {
   }
 }
 
-async function loadRuntime(includeIcons) {
+async function loadRuntime(bundle, includeIcons) {
   const root = resolve(process.env.ARCHJS_DIR ?? process.cwd());
-  const minified = join(root, 'arch.min.js');
-  const standard = join(root, 'arch.js');
-  const minifiedSource = await optionalFile(minified);
-  const filename = minifiedSource === undefined ? standard : minified;
-  const bundled = minifiedSource ?? await optionalFile(standard);
-  if (bundled === undefined) throw new Error(`arch.js bundles were not found in ${root}. Set ARCHJS_DIR to a trusted arch.js distribution.`);
+  const filename = join(root, bundle);
+  const bundled = await optionalFile(filename);
+  if (bundled === undefined) throw new Error(`${bundle} was not found in ${root}. Set ARCHJS_DIR to a trusted arch.js distribution.`);
 
   // The browser distribution is already bundled and runs without npm
   // dependencies. Only installed engine/profile code is evaluated here.
@@ -53,7 +50,8 @@ async function loadRuntime(includeIcons) {
 }
 
 async function run(command, args) {
-  const arch = await loadRuntime(command !== 'help' || args[0] === 'iconpacks');
+  const bundle = command === 'svg' ? 'arch.core.min.js' : 'arch.min.js';
+  const arch = await loadRuntime(bundle, command !== 'help' || args[0] === 'iconpacks');
   if (command === 'help') {
     console.log(arch.help(args.join(' ')));
     return;

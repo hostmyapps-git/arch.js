@@ -563,7 +563,8 @@ export function helpContent(model, options = {}) {
     section('Browser presentation', 'presentation accepts two values.',
       'diagram  —  Default. Shows the configured SVG views.',
       'dashboard  —  Opens the interactive catalog of all views, elements and relationships.',
-      'This setting applies in the Studio and in arch.render() and arch.renderAll().');
+      'Dashboard presentation is available in Studio and when calling arch.render() or arch.renderAll() from arch.min.js.',
+      'With arch.core.min.js, choose diagram for DOM rendering. Validation and SVG export also work with documents configured for dashboard presentation.');
     codeSection('Dashboard example', 'dsl', 'config {', '  presentation dashboard', '  views [overview, detail]', '}');
     section('View source in the dashboard', 'Source  —  Shows the active view definition, its model declarations and any required source views.',
       'DSL and JSON  —  Switch between syntax-highlighted formats. Copy source copies the current format.',
@@ -592,13 +593,16 @@ export function helpContent(model, options = {}) {
     section('Mapping review markers', 'config { validation draft showValidation true }', 'Connected/tree cards show ? for a mapping not modeled, and ! for a known required mapping hidden by filtering or display none. Tooltips and the notice footer explain each issue. Other renderers retain the footer without card markers.', 'A missing mapping is a non-blocking completeness review, not a proven cardinality violation. A hidden shall-show mapping blocks strict rendering and becomes a warning in draft. may-show mappings may be omitted.', 'config { showValidation false } or API {showValidation:false} hides markers and the footer together without changing validation or bypassing strict errors. validate() still returns diagnostics; reviewRequired:true signals open mapping reviews without claiming conformant:false for that review alone.');
     section('Validation mode', 'config { profile naf41-uaf validation draft }', 'validation strict is the default. Draft renders safely incomplete models and lists remaining requirements below the diagram. See @help model.');
   } else if (topic === 'api') {
+    section('Browser bundles', 'arch.core.min.js  —  DSL and JSON, profiles, validation, layout and SVG rendering.',
+      'arch.min.js  —  All core APIs plus help, dashboard, reports, source inspection and draft popovers.',
+      'Load one bundle per page. Both expose window.arch. Load profile and icon scripts afterwards.');
     section('Queries and rendering', 'arch.help("types default service", options) → help text', 'arch.parse(source, options) → architecture or help document', 'arch.validate(sourceOrModel, options) → { valid, profile, diagnostics }',
       'arch.layout(sourceOrModel, options) → layout with bounds', 'arch.renderToString(sourceOrModel, options) → SVG string', 'arch.renderDiagram(sourceOrModel, options) → { graph, svg } from one layout', 'arch.render(target, sourceOrModel, options) → SVG or dashboard DOM element', 'arch.renderAll({ root, selector, ...options }) → rendered DOM elements', 'arch.renderMarkdown(markdown, options) → HTML with inline SVG',
       'presentation: "diagram" | "dashboard" overrides config.presentation for render and renderAll.');
     section('Live preview', 'arch.renderDiagram(source, { syntaxRecovery: true })',
       'Render valid DSL declarations around localized syntax errors. Read graph.syntaxDiagnostics for line and column details. API syntaxRecovery overrides config.syntaxRecovery.',
       'arch.parsePreview(source, options) enables this by default. arch.parse(), arch.validate(), and arch.translate() use strict syntax.',
-      'Diagnostic links open the relevant help topic. arch.render() and arch.renderAll() connect links automatically.',
+      'In Studio, arch.render() and arch.renderAll() connect diagnostic links to the built-in help.',
       'For your own DOM insertion, call arch.attachDiagnosticHelp(container, graph, options). Pass helpBaseURL to link exported SVGs to a Studio URL.');
     section('Registration', 'arch.registerProfile(name, definition)', 'arch.getProfiles() → registered IDs', 'arch.getProfile(name) → independent profile copy; name may be PROFILE@VERSION', 'arch.getProfileVersions(name) → registered revision strings for an ID', 'arch.registerIconPack(name, data)  // Iconify or converted paths', 'arch.getIconPacks() → registered pack names', 'arch.renderIconToString("PACK.NAME", { size, title, idPrefix })');
     section('Mapping visibility rules', 'connections[].visibility: may | shall with min 0 and no max/through/referencedByAttributes. shall inspects known model relationships and referenceAttributes, requires their rendered counterparts/links to be visible, and reports absent model mappings for review. may permits omission. Cardinality rules without visibility keep their existing behavior.');

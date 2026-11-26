@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOMParser } from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const profile={nodeTypes:{actor:{template:'person'},document:{template:'artifact'}},relationTypes:{exchange:{from:['actor'],to:['actor'],attributes:{payload:{type:'reference',targets:['document'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
 const source=(view='',body='')=>`architecture "References" {model {actor a "Source" actor b "Target" document first "Report" document second "Report" document third "Other report" relation flow a -> b "Sends" {type exchange payload [first, second, third]} ${body}} view v "V" {${view}}}`;

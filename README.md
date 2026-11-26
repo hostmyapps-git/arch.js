@@ -37,9 +37,15 @@ für die vollständige Formatierung diese Dateien in einem Markdown-Viewer öffn
 
 ## Im Browser einbetten
 
+**`arch.core.min.js`** enthält DSL-/JSON-Verarbeitung, Profilregistrierung,
+Validierung, Layout und SVG-Rendering. **`arch.min.js`** ergänzt
+Hilfe, Dashboard, Quelltextinspektion und interaktive Draft-Details. Beide
+stellen `window.arch` bereit. Pro Seite ein Bundle laden und Profil- oder
+Icon-Scripts danach einbinden.
+
 ```html
 <div id="diagram"></div>
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script>
   const source = `architecture "My system" {
     model {
@@ -315,7 +321,7 @@ NAF-Viewpoint-Regelsätze. Das Beispiel **NAF · UAF architecture** zeigt neun
 Ansichten vom Fähigkeitsmodell bis zur Implementierung.
 
 ```html
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="profiles/uaf.js"></script>
 <script src="profiles/naf4-uaf.js"></script>
 ```
@@ -518,13 +524,15 @@ config {
 }
 ```
 
-`presentation dashboard` öffnet das Dashboard in der Studio-Vorschau und bei
-`arch.render()` und `arch.renderAll()`. Standard ist `presentation diagram`.
+`presentation dashboard` öffnet das Dashboard in der Studio-Vorschau und
+mit `arch.min.js` auch bei `arch.render()` und `arch.renderAll()`.
+Standard ist `presentation diagram`.
 Die erste ausgewählte View bestimmt den Einstieg. Bei `views all` oder ohne
 `views` öffnet die erste deklarierte View. Der Katalog enthält weiterhin alle
 Views. Die SVG-Ausgabe verwendet die konfigurierte Auswahl und Reihenfolge.
-Bei DOM-Renderaufrufen kann `{ presentation: 'diagram' }` die Konfiguration
-übersteuern.
+Mit `arch.core.min.js` meldet die DOM-Ausgabe für ein Dashboard
+`ARCH_STUDIO_REQUIRED`. `{ presentation: 'diagram' }` rendert das Modell als
+Diagramm. Validierung und SVG-Export bleiben für dasselbe Dokument verfügbar.
 
 ```js
 arch.renderDashboard(container, source, { view: 'overview' });
@@ -599,7 +607,7 @@ In `studio.html` zeigt die Icongalerie die drei Zeichenstile. Das Beispiel
 Die Galerie verlinkt die direkt registrierbaren JSON-Dateien zum Download.
 
 ```html
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="icons/iconpacks.js"></script>
 ```
 
@@ -643,6 +651,9 @@ Wenn eine Integration SVG und Layoutdaten gemeinsam benötigt, liefert
 `renderDiagram(sourceOrModel, options)` beides als `{ graph, svg }` aus einem
 Layoutdurchlauf. [Interne Architektur und Benchmarks](ARCHITECTURE.md)
 
+Für Hilfe, Dashboard oder Architekturberichte aus Node importiere
+`./src/arch.studio.js`.
+
 Voraussetzung Node.js >=22. Browserbundles sind eigenständig. Direkte Node-
 Importe verwenden die gepinnten XML-/SVG-Pakete aus `dependencies`;
 Build-/Browser-Testwerkzeuge bleiben Entwicklungsabhängigkeiten.
@@ -654,7 +665,7 @@ npm run check
 ```
 
 Einzelne Schritte: `npm run build`, `npm test`, `npm run test:browser`.
-Build erzeugt `arch.js`, `arch.min.js`, `demo/examples.js` sowie die drei
+Der Build erzeugt `arch.core.min.js`, `arch.min.js`, `demo/examples.js` sowie die drei
 konvertierten Iconpack-JSONs und `icons/iconpacks.js`. Quellen liegen
 unter `src/`, Beispielmodelle unter `examples/`, Profile unter `profiles/`.
 Der Build erzeugt auch die UAF-/NAF-JSON-Profile mit Abdeckungsnachweis sowie

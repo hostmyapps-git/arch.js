@@ -39,7 +39,7 @@ test('stacked and embedded views mark outer obligations on original cards withou
  const svg=a.renderToString(s,{profile,views:'all'});assert.equal((svg.match(/data-validation-node="p"/g)??[]).length,1);assert.match(svg,/data-arch-view="v"/);
  const json=a.translate(s,{profile});const translated=a.renderToString(json,{profile,views:'all',idPrefix:'mapping'});assert.equal((translated.match(/data-validation-node="p"/g)??[]).length,1);assert.deepEqual(a.layout(json,{profile,view:'v'}).content.nodes.map(n=>[n.id,n.x,n.y]),a.layout(s,{profile,view:'v'}).content.nodes.map(n=>[n.id,n.x,n.y]));
  const cleanSource=doc('','','showValidation false validation draft');const round=a.translate(cleanSource,{profile});assert.equal(JSON.parse(round).architecture.config.showValidation,false);
- for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(s,{profile,views:'all',idPrefix:'mapping'}),a.renderToString(s,{profile,views:'all',idPrefix:'mapping'}));}
+ for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(s,{profile,views:'all',idPrefix:'mapping'}),a.renderToString(s,{profile,views:'all',idPrefix:'mapping'}));}
 });
 test('generic visibility policies reject invalid declarations and preserve unrelated cardinality rules',()=>{
  for(const check of [{visibility:'sometimes'},{visibility:'shall',min:1},{visibility:'shall',max:2},{visibility:'shall',through:{relations:['maps'],direction:'incoming'}}]) {

@@ -156,7 +156,7 @@ and will omit non-hierarchy edges; multiple inheritance needs Connected layout.
 For the browser, load the engine and profiles before calling a renderer:
 
 ```html
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="profiles/uaf.js"></script>
 <script src="profiles/naf41-uaf.js"></script>
 ```

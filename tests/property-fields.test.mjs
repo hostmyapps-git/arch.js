@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const profile={defaultRelation:'link',nodeTypes:{item:{template:'node',attributes:{expression:{},value:{type:'number'},enabled:{type:'boolean'},links:{type:'reference',many:true,targets:['item']}}},box:{template:'package',container:true,attributes:{expression:{}}}},relationTypes:{link:{style:'dependency'}}};
 const body='item a "Criterion" {expression "Time until found" value 0 enabled false links [b]} item b "Measure" {value 25} relation e a -> b "Evaluates"';
@@ -64,7 +64,7 @@ test('JSON/meta/stacked views and both bundles preserve freely positioned proper
   const json=arch.translate(source,{profile}),expected=arch.renderToString(source,{profile,views:'all',idPrefix:'props'});
   assert.deepEqual(JSON.parse(json).architecture.views.v.propertyFields,['expression','value']);assert.equal(arch.renderToString(json,{profile,views:'all',idPrefix:'props'}),expected);
   assert.equal(arch.renderToString(arch.translate(json,{profile}),{profile,views:'all',idPrefix:'props'}),expected);
-  for(const file of ['arch.js','arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{profile,views:'all',idPrefix:'props'}),expected);}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{profile,views:'all',idPrefix:'props'}),expected);}
   assert.match(arch.help('styles'),/propertyFields/);
 });
 

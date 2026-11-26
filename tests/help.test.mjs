@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import { DIAGRAMS, DIAGRAM_OPTIONS } from '../src/diagrams.js';
 
 const topics = ['syntax', 'model', 'profiles', 'types', 'relations', 'connections', 'viewpoints', 'iconpacks', 'diagrams', 'views', 'routing', 'styles', 'colors', 'templates', 'config', 'api'];
@@ -157,14 +157,17 @@ test('UAF and NAF help derives available types, attributes and viewpoints from r
   assert.match(arch.help('viewpoints naf4-uaf C1'), /requiredNodes/);
 });
 
-test('both browser bundles include help and match source output without DOM globals', async () => {
-  for (const file of ['arch.js', 'arch.min.js']) {
-    const context = vm.createContext({}); vm.runInContext(await readFile(file, 'utf8'), context);
-    for (const query of ['', 'diagrams class', 'iconpacks core', 'colors blue', 'connections default service']) {
-      assert.equal(context.arch.help(query), arch.help(query));
-      assert.equal(context.arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }), arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }));
-    }
+test('Studio serves help without DOM globals and core reports its availability', async () => {
+  const studio = vm.createContext({});
+  vm.runInContext(await readFile('arch.min.js', 'utf8'), studio);
+  for (const query of ['', 'diagrams class', 'iconpacks core', 'colors blue', 'connections default service']) {
+    assert.equal(studio.arch.help(query), arch.help(query));
+    assert.equal(studio.arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }), arch.renderToString(`@help ${query}`, { idPrefix: 'help_test' }));
   }
+  const core = vm.createContext({});
+  vm.runInContext(await readFile('arch.core.min.js', 'utf8'), core);
+  assert.throws(() => core.arch.renderToString('@help views'), /requires arch\.min\.js/);
+  assert.equal(core.arch.validate('@help views').diagnostics[0].code, 'ARCH_STUDIO_REQUIRED');
 });
 
 test('help provides sorted catalog links and standalone links to a configured reference host',()=>{

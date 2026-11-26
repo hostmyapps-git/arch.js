@@ -106,7 +106,7 @@ test('source translation, meta and both browser bundles preserve list meanings',
   assert.equal(arch.renderToString(arch.translate(s),{idPrefix:'lists'}),expected);
   const meta=arch.renderToString(s.replace(/}$/, 'view meta "Source" { @meta json\n }}'),{view:'meta'});
   assert.match(meta,/include/);assert.match(meta,/propertyFields/);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     assert.equal(context.arch.renderToString(s,{idPrefix:'lists'}),expected);
     assert.deepEqual(JSON.parse(context.arch.translate(s)),JSON.parse(arch.translate(s)));

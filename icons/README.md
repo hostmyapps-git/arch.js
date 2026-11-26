@@ -138,7 +138,7 @@ identifiziert die feste Iconify-Revision den Stand.
 - `bootstrap.json`, `lucide.json`, `tabler.json`: automatisch daraus erzeugte,
   direkt mit `arch.registerIconPack()` verwendbare JSON-Dateien im arch.js-Format.
 - `iconpacks.js`: optionales lokales Browser-Script, das alle drei Packs nach
-  `arch.js` registriert. Funktioniert auch über `file://`.
+  `arch.core.min.js` oder `arch.min.js` registriert. Funktioniert auch über `file://`.
 - `sources.lock.json`: exakte URLs, Revision, Mengen und SHA-256-Prüfsummen für
   Originaldateien und Lizenztexte.
 - `licenses/*.txt`: vollständige Hinweise der ursprünglichen Urheber. Lucide
@@ -154,7 +154,7 @@ Bei Weitergabe der Iconpacks die zugehörigen Lizenztexte beilegen.
 Alle Packs, ohne Fetch und ohne Server:
 
 ```html
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="icons/iconpacks.js"></script>
 ```
 

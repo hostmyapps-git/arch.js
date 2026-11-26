@@ -55,7 +55,7 @@ registrieren die Daten zur Laufzeit; UAF ist nicht in `arch.js` festkodiert:
 
 ```html
 <div id="diagram"></div>
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="profiles/uaf.js"></script>
 <script src="profiles/naf4-uaf.js"></script>
 <script>

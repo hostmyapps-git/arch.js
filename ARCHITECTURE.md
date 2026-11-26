@@ -2,9 +2,13 @@
 
 Arch.js verarbeitet DSL und JSON zu einem Architekturmodell, prüft es gegen
 sein Profil, berechnet die Geometrie der gewählten Views und erzeugt SVG.
-`src/arch.js` ist der gemeinsame Einstiegspunkt für Node, die Browserbundles,
-Markdown und den Live-Editor. `npm run build` erzeugt `arch.js` und `arch.min.js`
-aus diesem Einstiegspunkt. Laufzeitänderungen gehören in `src/`.
+`src/arch.js` liefert den Kern für Node und `arch.core.min.js`. Der Einstiegspunkt
+`src/arch.studio.js` ergänzt ihn für Node und `arch.min.js` um Hilfe,
+Dashboard und Inspektion. Beide verwenden dieselben Render- und
+Validierungsfunktionen in `src/runtime.js`. Studio übergibt dort die Funktionen
+für Hilfeseiten, Dashboard-Präsentation und DOM-Interaktion. Profil- und
+Icon-Registrierung stammen in beiden Varianten aus denselben Modulen.
+Der Build erzeugt die Browserdateien mit `npm run build`.
 
 ## Verarbeitung eines Dokuments
 
@@ -164,7 +168,7 @@ Im Projektverzeichnis mit installierten Abhängigkeiten ausführen.
 ```sh
 node scripts/benchmark.mjs
 node scripts/benchmark.mjs /pfad/zum/vergleichsstand/src/arch.js
-node scripts/benchmark.mjs src/arch.js 'dashboard/'
+node scripts/benchmark.mjs src/arch.studio.js 'dashboard/'
 ```
 
 Der Benchmark lädt für beide Stände dieselben Beispiel- und Profildateien aus

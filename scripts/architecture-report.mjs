@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises';
-import { architectureReport, ArchError, registerIconPack, registerProfile, renderDashboardToHTML } from '../src/arch.js';
+import { architectureReport, ArchError, registerIconPack, registerProfile, renderDashboardToHTML } from '../src/arch.studio.js';
 import { orderProfiles } from './profile-order.mjs';
 
 const args = process.argv.slice(2);

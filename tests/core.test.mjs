@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import vm from 'node:vm';
 import * as arch from '../src/arch.js';
+import * as studio from '../src/arch.studio.js';
 import { inspectPath } from '../src/svg-path.js';
 
 const source = (body, views = '') => `architecture "Test" { model { ${body} } ${views} }`;
@@ -188,19 +189,25 @@ test('shipped Markdown fixture contains working arch fences', async () => {
   assert.match(markdown, /```arch/); assert.match(arch.renderMarkdown(markdown), /<svg/);
 });
 
-test('both distributable bundles expose identical public API and render identically', async () => {
-  const renderings = [];
-  for (const file of ['arch.js', 'arch.min.js']) {
+test('browser editions expose the intended APIs and share rendering and validation', async () => {
+  const results = [];
+  const studioApis = ['help', 'inspectSource', 'sourceTokens', 'attachDiagnosticHelp', 'attachHelpNavigation',
+    'attachDraftDetails', 'createDiagnosticHelpLink', 'architectureReport', 'renderDashboard', 'renderDashboardToHTML'];
+  assert.deepEqual(Object.keys(studio).sort(), [...Object.keys(arch), ...studioApis].sort());
+  for (const [file, api] of [['arch.core.min.js', arch], ['arch.min.js', studio]]) {
     const context = vm.createContext({}); vm.runInContext(await readFile(file, 'utf8'), context);
-    assert.deepEqual(Object.keys(context.arch).sort(), Object.keys(arch).sort());
+    assert.deepEqual(Object.keys(context.arch).sort(), Object.keys(api).sort());
     const options = { idPrefix:'same' };
     const { graph, svg } = context.arch.renderDiagram(source(pair), options);
     assert.equal(graph.nodes.length, 2);
     assert.equal(svg, context.arch.renderToString(source(pair), options));
     assert.ok(svg.includes(`viewBox="${Object.values(graph.bounds).join(' ')}"`));
-    renderings.push(svg);
+    const invalid = source('relation bad a -> missing "Missing" service a "A"');
+    const report = context.arch.validate(invalid);
+    assert.equal(report.valid, false);
+    results.push({ svg, diagnostics: JSON.stringify(report.diagnostics) });
   }
-  assert.equal(renderings[0], renderings[1]);
+  assert.deepEqual(results[0], results[1]);
 });
 
 test('empty models produce usable SVG and API errors are readable outside the browser', () => {

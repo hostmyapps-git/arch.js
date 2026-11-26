@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 const source=(styles='',extra='')=>`architecture "Styles" {model {service x "X" service y "Y" service z "Z" relation e x -> y "E"} view v "V" {${styles}} ${extra}}`;
 const get=(g,id)=>g.nodes.find(n=>n.id===id);
 const valid=s=>assert.deepEqual(arch.validate(s).diagnostics,[]);
@@ -85,7 +85,7 @@ test('JSON/DSL/meta preserve symbolic styles, reject injection and keep both dis
  const dsl=arch.translate(json,{format:'dsl'});assert.match(dsl,/height 2 \* x.height/);
  assert.equal(arch.renderToString(json,{idPrefix:'style'}),arch.renderToString(text,{idPrefix:'style'}));
  assert.equal(arch.renderToString(dsl,{idPrefix:'style'}),arch.renderToString(text,{idPrefix:'style'}));
- for(const file of ['arch.js','arch.min.js']) {const ctx=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),ctx);assert.equal(ctx.arch.renderToString(text,{idPrefix:'style'}),arch.renderToString(text,{idPrefix:'style'}));}
+ for(const file of ['arch.core.min.js', 'arch.min.js']) {const ctx=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),ctx);assert.equal(ctx.arch.renderToString(text,{idPrefix:'style'}),arch.renderToString(text,{idPrefix:'style'}));}
  json.architecture.views.v.style.y.height='x.height } model {';const invalid=arch.validate(json);assert.equal(invalid.valid,false);assert.match(invalid.diagnostics[0].path,/style\/y\/height/);
  const model=arch.parse(text);model.views[0].styles.y.height='2 * x.height';assert.ok(arch.validate(model).valid);
 });

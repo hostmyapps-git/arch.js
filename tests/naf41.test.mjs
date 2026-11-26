@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { DOMParser } from '@xmldom/xmldom';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import { cases, document } from './fixtures/naf41/cases.mjs';
 for (const file of ['uaf.json', ...Array.from({length:10},(_,i)=>`naf41/revisions/4.1.0-arch.${33+i}.json`), 'naf41-uaf.json']) {
   const definition = JSON.parse(await readFile(`profiles/${file}`, 'utf8'));
@@ -32,7 +32,7 @@ test('S3 reproduces p.110 with operation vocabulary, a shared parameter and opti
     ['InvolvesPhysicalResource','geographicLocation','positionReport'],['InvolvesPhysicalResource','track','targetTrackRecord']
   ]);
   const expected=arch.renderToString(source,{idPrefix:'s3'});assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s3'}),expected);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'s3'}),expected);
   }
@@ -86,7 +86,7 @@ test('S2 reproduces p.108 with a logical Node, five services, an interface, func
   ]);
   const expected=arch.renderToString(source,{idPrefix:'s2'});
   assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s2'}),expected);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'s2'}),expected);
   }
@@ -158,7 +158,7 @@ test('physical resource abstract aliases offer concrete candidates and preserve 
   assert.deepEqual(arch.validate(pinned).diagnostics,[]);
   for(const scripts of [['profiles/uaf.js','profiles/naf41-uaf.js'],['profiles/profiles.js']]) {
     const context=vm.createContext({});
-    for(const file of ['arch.min.js',...scripts]) vm.runInContext(await readFile(file,'utf8'),context);
+    for(const file of ['arch.core.min.js',...scripts]) vm.runInContext(await readFile(file,'utf8'),context);
     assert.deepEqual([...context.arch.getProfileVersions('naf41-uaf')],Array.from({length:11},(_,i)=>`4.1.0-arch.${33+i}`));
     assert.equal(context.arch.getProfile('naf41-uaf').version,'4.1.0-arch.43');
     assert.equal(context.arch.validate(pinned).valid,true);
@@ -213,7 +213,7 @@ test('S1 accepts p.105 Service vocabulary, specialization and the service-to-pol
   assert.match(errors(source.replace(' { ruleKind Constraint }','')),/Missing required attribute ruleKind/);
   const expected=arch.renderToString(source,{idPrefix:'s1'});
   assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'s1'}),expected);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'s1'}),expected);
   }
@@ -260,7 +260,7 @@ test('Cr reproduces all six elements and seven relationships of the p.103 exampl
   assert.deepEqual(graph.sharedPaths[0].edgeIds,['cr.3','cr.4','cr.5']);
   const expected=arch.renderToString(source,{idPrefix:'cr'});
   assert.equal(arch.renderToString(arch.translate(source),{idPrefix:'cr'}),expected);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'cr'}),expected);
@@ -319,7 +319,7 @@ test('Cr relates capability increments to planning EnterprisePhase without chang
   assert.match(errors(source.replace('EnterprisePhase phase','ActualEnterprisePhase phase')),/not allowed for RelatesToEnterprisePhase/);
   assert.match(arch.help('connections naf41-uaf CapabilityIncrement'),/RelatesToEnterprisePhase: CapabilityIncrement -> EnterprisePhase/);
   assert.match(arch.help('viewpoints naf41-uaf Cr'),/RelatesToEnterprisePhase/);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
     assert.equal(context.arch.validate(source).valid,true);
@@ -344,7 +344,7 @@ test('C8 accepts p.101 Constraint as a StrategicConstraint subtype and p.100 con
   assert.match(arch.help('types naf41-uaf Constraint'),/StrategicConstraint/);
   assert.match(arch.help('connections naf41-uaf Constraint'),/ConstrainsCapability|OriginatesFromRationale/);
   assert.equal(arch.validate(arch.translate(source)).valid,true);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
     assert.equal(context.arch.validate(source).valid,true);assert.equal(context.arch.layout(source).sharedPaths.length,2);
@@ -361,7 +361,7 @@ test('C3 permits specialization/grouping context without a dependency on every c
   assert.match(errors(source.replace(/relation c3\.[23] [^}]*}/g,'')),/CapabilityDependency/);
   assert.match(errors(source.replace('c_maritimeSAR -> c_SAR "is kind of"','capabilityGroup_c2 -> c_SAR "is kind of"')),/not allowed for CapabilityGeneralization/);
   assert.match(arch.help('viewpoints naf41-uaf C3'),/Not every displayed capability/);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
     assert.equal(context.arch.validate(source).valid,true);
@@ -643,7 +643,7 @@ test('C7 accepts optional effectiveness criteria as on p.99 without weakening ma
   assert.match(arch.help('viewpoints naf41-uaf C7'),/nodesExclude|EffectivenessCriterion/);
   const optional=source.replace('relation specifies', 'Measure searchTime "Search time" {unit "minutes" value 20} relation timeEvaluates searchTime -> timeToFind "evaluates" {type EvaluatesCriterion} relation timeCharacterizes timeToFind -> maritime "characterizes" {type CharacterizesCapability} relation specifies');
   assert.equal(arch.validate(optional).valid,true,'optional links remain legal');
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     for(const p of ['uaf','naf41-uaf'])context.arch.registerProfile(p,JSON.parse(await readFile(`profiles/${p}.json`,'utf8')));
     assert.equal(context.arch.validate(source).valid,true);assert.deepEqual(Array.from(context.arch.validate(source).diagnostics),[]);
@@ -671,7 +671,7 @@ test('the user C1 taxonomy accepts out-of-view Goals and generated profile scrip
   assert.equal(arch.validate(source,{validation:'strict'}).valid,true);
   const model=arch.parse(source),graph=arch.layout(model);assert.equal(model.nodes.filter(n=>n.type==='Goal').length,3);assert.equal(graph.nodes.length,6);assert.equal(graph.edges.length,5);
   const expected=arch.renderToString(source,{idPrefix:'same'});
-  for(const bundle of ['arch.js','arch.min.js'])for(const scripts of [['profiles/uaf.js','profiles/naf41-uaf.js'],['profiles/profiles.js']]) {
+  for(const bundle of ['arch.core.min.js', 'arch.min.js'])for(const scripts of [['profiles/uaf.js','profiles/naf41-uaf.js'],['profiles/profiles.js']]) {
     const context=vm.createContext({});vm.runInContext(await readFile(bundle,'utf8'),context);
     for(const script of scripts)vm.runInContext(await readFile(script,'utf8'),context);
     assert.equal(context.arch.renderToString(source,{idPrefix:'same'}),expected);
@@ -943,7 +943,7 @@ test('the editable NAFv4.1 example validates as one model across its nine views'
   const model = arch.parse(source);
   assert.equal(model.views.length, 9);
   for (const view of model.views) assert.match(arch.renderToString(model, { view: view.id }), /<svg/);
-  for (const bundle of ['arch.js','arch.min.js']) for (const scripts of [['profiles/uaf.js','profiles/naf41-uaf.js'],['profiles/profiles.js']]) {
+  for (const bundle of ['arch.core.min.js', 'arch.min.js']) for (const scripts of [['profiles/uaf.js','profiles/naf41-uaf.js'],['profiles/profiles.js']]) {
     const context = vm.createContext({});
     vm.runInContext(await readFile(bundle,'utf8'),context);
     for (const script of scripts) vm.runInContext(await readFile(script,'utf8'),context);

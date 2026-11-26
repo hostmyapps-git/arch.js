@@ -61,7 +61,7 @@ test('enable-background exports register as SVG attributes and inline styles wit
   assert.match(svg,/enable-background="accumulate"/);assert.doesNotMatch(svg,/enable-background="new/);
   const pack={icons:{sample:{body:'<svg viewBox="0 0 24 24" enable-background="new 0 0 24 24"><g style="enable-background:accumulate;fill:Gold"><path d="M0 0h24v24H0Z"/></g></svg>'}}};
   arch.registerIconPack('background-bundle',pack);const expected=arch.renderIconToString('background-bundle.sample',{idPrefix:'same'});
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('background-bundle',pack);
     assert.equal(context.arch.renderIconToString('background-bundle.sample',{idPrefix:'same'}),expected);
   }
@@ -88,7 +88,7 @@ test('data-name and other data-* export metadata are accepted and omitted withou
     .replace('data-icon="data-metadata.plain"','data-icon="data-metadata.metadata"');
   const actual=arch.renderIconToString('data-metadata.metadata',{title:'Same icon',idPrefix:'same'});
   assert.equal(actual,expected);assert.doesNotMatch(actual,/data-(?:name|url|onload|ref|build)=/);assert.equal(JSON.stringify(pack),before);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('data-metadata',pack);
     assert.equal(context.arch.renderIconToString('data-metadata.metadata',{title:'Same icon',idPrefix:'same'}),expected);
   }
@@ -131,7 +131,7 @@ test('organization reference pack including NATO, Rolls-Royce and Siemens regist
   for(const id of Object.keys(pack.icons))assert.match(arch.renderIconToString(`organizations.${id}`),/^<svg/);
   assert.match(arch.renderIconToString('organizations.nato'),/contrast-color\(currentColor\)/);
   assert.match(arch.renderIconToString('organizations.siemenshealthineers_color'),/fill="#ec6602"/);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('organizations',pack);
     for(const id of Object.keys(pack.icons))assert.equal(context.arch.renderIconToString(`organizations.${id}`,{idPrefix:'same'}),arch.renderIconToString(`organizations.${id}`,{idPrefix:'same'}));
   }
@@ -160,7 +160,7 @@ test('original SVG input is copied/frozen and prototype-like icon IDs remain ord
 
 test('both self-contained browser bundles register original Iconify JSON without browser DOM globals',async()=>{
   arch.registerIconPack('fixture',gradient);const expected=arch.renderIconToString('fixture.sample',{idPrefix:'fixed'});
-  for(const file of ['arch.js','arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('fixture',gradient);assert.equal(context.arch.renderIconToString('fixture.sample',{idPrefix:'fixed'}),expected);}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);context.arch.registerIconPack('fixture',gradient);assert.equal(context.arch.renderIconToString('fixture.sample',{idPrefix:'fixed'}),expected);}
 });
 
 test('full editor SVG exports infer dimensions, remove only inert standard headers and preserve px/style presentation',()=>{

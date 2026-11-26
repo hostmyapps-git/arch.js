@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import {pathSamples,pointOnPath} from '../src/reference-nodes.js';
 
 const profile={nodeTypes:{actor:{template:'person'},item:{template:'artifact'}},relationTypes:{flow:{from:['actor'],to:['actor'],attributes:{payload:{type:'reference',targets:['item'],many:true}},referenceLabels:{payload:'Carries'},referenceDisplay:'nodes'}}};
@@ -110,7 +110,7 @@ test('positioned endpoints round-trip through JSON, DSL, meta and both bundles w
  }
  assert.ok(arch.inspectSource(text,{profile}).valid);assert.equal(JSON.stringify(model),before);
  assert.match(arch.renderToString('@help routing'),/Positions along node sides/);
- for(const bundle of ['arch.js','arch.min.js']) {
+ for(const bundle of ['arch.core.min.js', 'arch.min.js']) {
   const context=vm.createContext({});vm.runInContext(await readFile(bundle,'utf8'),context);
   const options={profile,idPrefix:'ports'};
   assert.equal(context.arch.renderToString(text,options),arch.renderToString(text,options));

@@ -88,7 +88,7 @@ Für lokale `file://`-Seiten erzeugt der Build aus allen `profiles/*.json` das
 optionale Browser-Script `profiles/profiles.js`:
 
 ```html
-<script src="arch.min.js"></script>
+<script src="arch.core.min.js"></script>
 <script src="profiles/profiles.js"></script>
 ```
 

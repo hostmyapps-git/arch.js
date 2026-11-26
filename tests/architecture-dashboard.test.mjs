@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import {cases, document} from './fixtures/naf41/cases.mjs';
 
 const readProfile = async file => JSON.parse(await readFile(new URL('../profiles/'+file,import.meta.url),'utf8'));

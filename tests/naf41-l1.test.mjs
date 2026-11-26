@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 for (const id of ['uaf','naf41-uaf']) arch.registerProfile(id, JSON.parse(await readFile(`profiles/${id}.json`, 'utf8')));
 const example = await readFile('examples/naf41-logical-taxonomy.arch', 'utf8');
@@ -21,7 +21,7 @@ test('L1 p.127 example accepts every displayed stereotype and relationship witho
   assert.equal(g.edges.find(e => e.id === 'aggregatesRescue').target,'rescue');
   const svg = arch.renderToString(example,{idPrefix:'l1'});
   assert.equal(arch.renderToString(arch.translate(example),{idPrefix:'l1'}),svg);
-  for (const file of ['arch.js','arch.min.js']) {
+  for (const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});
     vm.runInContext(await readFile(file,'utf8'),context);
     vm.runInContext(await readFile('profiles/profiles.js','utf8'),context);

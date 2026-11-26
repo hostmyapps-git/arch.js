@@ -72,7 +72,7 @@ test('compact tree demo keeps JSON, named groups, shared paths and both bundles 
     const g=arch.layout(source,{view});checkGeometry(g);assert.ok(g.sharedPaths?.length);
     const expected=arch.renderToString(source,{view,idPrefix:'compact'});
     assert.equal(arch.renderToString(arch.translate(source),{view,idPrefix:'compact'}),expected);
-    for(const file of ['arch.js','arch.min.js']) {
+    for(const file of ['arch.core.min.js', 'arch.min.js']) {
       const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);
       assert.equal(c.arch.renderToString(source,{view,idPrefix:'compact'}),expected);
     }

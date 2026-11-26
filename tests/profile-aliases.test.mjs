@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import {compileProfile, matches, concreteSubtypes, typeConnections} from '../src/profiles.js';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
@@ -134,10 +134,10 @@ test('alias and canonical relationship names can share paths, retain edge identi
   assert.deepEqual(g.sharedPaths[0].types,['flow','connects']);assert.deepEqual(g.sharedPaths[0].edgeIds,['first','second']);
   assert.deepEqual(g.edges.map(e=>e.type),['flow','connects']);
   const expected=arch.renderToString(s,{profile:p,idPrefix:'aliases'});
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     context.arch.registerProfile(p.id,p);
     assert.equal(context.arch.renderToString(s,{profile:'alias-network@1',idPrefix:'aliases'}),expected);
-    assert.match(context.arch.help('aliases alias-network@1'),/connects -> flow/);
+    if (file === 'arch.min.js') assert.match(context.arch.help('aliases alias-network@1'),/connects -> flow/);
   }
 });

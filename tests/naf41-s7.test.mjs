@@ -13,7 +13,7 @@ test('S7 p.120 supports both parameter chains, extends and embeds S3, and preser
   const g=arch.layout(example,{view});assert.equal(g.nodes.length,15);assert.equal(g.edges.length,15);
   assert.equal(g.edges.filter(e=>e.type==='InvolvesLogicalResource').length,2);
   assert.equal(arch.renderToString(example,{view,idPrefix:'s7'}),arch.renderToString(arch.translate(example),{view,idPrefix:'s7'}));
-  for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);for(const id of ['uaf','naf41-uaf'])c.arch.registerProfile(id,JSON.parse(await readFile(`profiles/${id}.json`,'utf8')));assert.equal(c.arch.renderToString(example,{view,idPrefix:'s7'}),arch.renderToString(example,{view,idPrefix:'s7'}));}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);for(const id of ['uaf','naf41-uaf'])c.arch.registerProfile(id,JSON.parse(await readFile(`profiles/${id}.json`,'utf8')));assert.equal(c.arch.renderToString(example,{view,idPrefix:'s7'}),arch.renderToString(example,{view,idPrefix:'s7'}));}
  }
 });
 test('logical involves accepts information items, rejects physical/active targets, wrong sources and reversed edges',()=>{

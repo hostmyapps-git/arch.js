@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const profile = {
   nodeTypes: {

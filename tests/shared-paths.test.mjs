@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import {pathSamples} from '../src/reference-nodes.js';
 const profile={nodeTypes:{actor:{},item:{}},relationTypes:{flow:{style:'dependency',from:['actor'],to:['actor'],directions:['forward','both'],attributes:{payload:{type:'reference',targets:['item'],many:true}},referenceDisplay:'nodes',referenceLabels:{payload:'Carries'}},other:{style:'dependency',from:['actor'],to:['actor']},solid:{style:'association',from:['actor'],to:['actor']}}};
 const source=(rules='',type='flow',reverse=false)=>`architecture "Shared paths" {model {

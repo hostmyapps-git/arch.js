@@ -8,7 +8,7 @@ Eine menschenlesbare Sprache beschreibt Architekturmodelle und deren Ansichten.
 Die Bibliothek erzeugt eigenständig Inline-SVG im Browser und SVG-Strings in Node.
 Die Sprache aller eingebauten Hilfe-, Status- und Diagnosetexte ist Englisch.
 Modelltitel, Beschreibungen und andere nutzerdefinierte Texte sind sprachunabhängig.
-Lieferumfang: `arch.js`, `arch.min.js`, `index.html`, `studio.html`, `test.md`, editierbare
+Lieferumfang: `arch.core.min.js`, `arch.min.js`, `index.html`, `studio.html`, `test.md`, editierbare
 Beispiele und Quellcode. Browserbundles ohne externe Laufzeitscripts, ohne
 erforderlichen Renderingserver, CDN oder Netzwerkanfrage zum Rendern.
 Direkte Node-Quellimporte benötigen die gepinnten npm-Laufzeitabhängigkeiten;
@@ -431,7 +431,7 @@ Registry-Abfragen laden keine externen Quellen. Große Iconlisten haben 100 Name
 pro Seite, optionale Teilstringsuche und eine Navigation per Folgebefehl. Typ-,
 Relations- und Viewpoint-Details stammen aus dem kompilierten Profil einschließlich
 Vererbung. Explizite Namen im Befehl werden bei Ausgabe aufgelöst, ansonsten gilt
-das ausgewählte Profil. Die Hilfe wird vollständig in beide Browserbundles gebaut.
+das ausgewählte Profil. Die Hilfe ist in `arch.min.js` enthalten.
 Die Einstiegsseite und ihre Detailseiten verknüpfen Themen, Typen und
 Beziehungen. `render` und `renderAll` aktivieren je Hilfeblock einen Verlauf
 mit Back, Forward, Reference und Up. Das Studio synchronisiert ihn mit dem
@@ -914,15 +914,25 @@ architecture "Customer platform" {
 
 ## API
 
-Browser: `<script src="arch.min.js"></script>` stellt `window.arch` bereit.
-Node/ESM: `import * as arch from './src/arch.js'`.
+Im Browser stellt `arch.core.min.js` die Kern-API als `window.arch` bereit.
+`arch.min.js` ergänzt dieselbe API um Hilfe, Dashboard, Berichte,
+Quelltextinspektion und interaktive Draft-Details. Pro Seite ein Bundle wählen.
+In Node stehen dieselben Varianten unter `./src/arch.js` und
+`./src/arch.studio.js` zur Verfügung.
+
+Die Kern-API unterstützt alle fachlichen Diagramme und deklarierte `@meta`-Views.
+`@help`-Ausgabe und Dashboard-Präsentation im DOM benötigen Studio. Der Kern
+meldet dafür `ARCH_STUDIO_REQUIRED`. Für Diagramme mit
+`config { presentation dashboard }` stehen Validierung und SVG-Export im Kern
+zur Verfügung. `{ presentation: 'diagram' }` wählt bei DOM-Aufrufen die SVG-Ausgabe.
+Diagnose-Links können mit `helpBaseURL` auf eine Studio-URL verweisen.
 
 | Aufruf | Ergebnis |
 | --- | --- |
 | `parse(source, { profile })` | DSL-/JSON-String oder JSON-Quellobjekt → Architekturmodell `{ title, description, nodes, edges, views, profile, config? }` oder Hilfedokument mit `kind: 'help'` |
-| `help(query, { profile })` | eingebaute Referenz als Text; Thema/Parameter ohne `@help` |
+| `help(query, { profile })` (Studio) | eingebaute Referenz als Text; Thema/Parameter ohne `@help` |
 | `translate(source, { format? })` | normalisierter DSL-/JSON-Quellstring; Standard ist die andere Notation |
-| `inspectSource(source, { profile?, format? })` | Quellübersetzung, Validierungsbericht und Korrekturkandidaten mit Quellstellen |
+| `inspectSource(source, { profile?, format? })` (Studio) | Quellübersetzung, Validierungsbericht und Korrekturkandidaten mit Quellstellen |
 | `validate(sourceOrModel, { profile, view, views })` | Bericht `{ valid, profile: { id, version } oder null, diagnostics }` |
 | `registerProfile(name, definition)` | atomare Registrierung und unabhängige Kopie des expandierten Profils |
 | `getProfiles()` / `getProfile(id)` | registrierte Namen / unabhängiger Profil-Snapshot |
@@ -931,7 +941,7 @@ Node/ESM: `import * as arch from './src/arch.js'`.
 | `renderToString(sourceOrModel, { view, views, theme, idPrefix, profile })` | eigenständiger SVG-String |
 | `renderDiagram(sourceOrModel, options)` | `{ graph, svg }` aus einem Layoutdurchlauf. Dieselben Optionen wie bei `renderToString`. |
 | `render(target, sourceOrModel, options)` | ersetzt Inhalt eines DOM-Elements; gibt SVG zurück |
-| `attachDraftDetails(svg, graph)` | aktiviert die anklickbaren Draft-Details für ein bereits eingefügtes SVG und das zugehörige Layout aus `renderDiagram()`; gibt SVG zurück |
+| `attachDraftDetails(svg, graph)` (Studio) | aktiviert die anklickbaren Draft-Details für ein bereits eingefügtes SVG und das zugehörige Layout aus `renderDiagram()`; gibt SVG zurück |
 | `renderAll({ root, selector, …options })` | rendert `pre > code.language-arch` und `[data-arch]`; gibt SVG-Liste zurück |
 | `renderMarkdown(markdown, options)` | sicherer HTML-String für Absätze, Überschriften und Code-Fences, darin Inline-SVG |
 | `registerIconPack(name, pack)` | prüft und registriert ein JSON-Iconpack atomar |
@@ -939,7 +949,7 @@ Node/ESM: `import * as arch from './src/arch.js'`.
 | `renderIconToString(name, { size, title })` | einzelnes Icon als zugängliches, eigenständiges SVG; Standardgröße 24, Bereich größer 0 bis 512 |
 | `ArchError` | Fehler mit `message`, `line`, `column`, `code` und gegebenenfalls JSON-`path` |
 
-`render()` und `renderAll()` aktivieren die Elementdetails in Draft-Ansichten
+Im Studio-Bundle aktivieren `render()` und `renderAll()` die Elementdetails in Draft-Ansichten
 automatisch in Browsern mit HTML-Popover-Unterstützung. Die Anzeige ist ein
 HTML-Element neben dem SVG. Sie liest Modelldaten aus dem Layout, trennt die
 Modell-ID von der Darstellungs-ID eingebetteter Knoten und filtert
@@ -1085,7 +1095,7 @@ nichts stillschweigend ausgelassen. Rohes SVG wird nicht in die Ausgabe injizier
 
 Ergebnis: `icons/bootstrap.json` (2.090 Namen), `icons/lucide.json` (2.377),
 `icons/tabler.json` (6.788), insgesamt 11.255 Icons/Aliase. Zusätzlich erzeugt
-der Build das optionale `icons/iconpacks.js`, das nach `arch.js` alle drei Packs
+der Build das optionale `icons/iconpacks.js`, das nach dem Browserbundle alle drei Packs
 ohne Fetch registriert. Die Bibliotheksbundles enthalten die externen Packs
 nicht, damit das Einbetten einzelner oder eigener Packs schlank bleibt.
 
@@ -1096,8 +1106,8 @@ Schreiben geprüft. Normale Builds benötigen keine Netzwerkverbindung.
 ## Beispieloberfläche
 
 `index.html` ist die Startseite mit Playground und Dokumentation. Sie verwendet
-ein eingebettetes Stylesheet und lädt das Browserbundle `arch.min.js`.
-`studio.html` enthält die vollständige Beispieloberfläche. Beide Seiten
+ein eingebettetes Stylesheet und lädt das Browserbundle `arch.core.min.js`.
+`studio.html` lädt `arch.min.js` und enthält die vollständige Beispieloberfläche. Beide Seiten
 funktionieren über `file://` mit lokalen Script-Tags. Studio-Beispiele werden beim Build aus `examples/`
 in `demo/examples.js` eingebettet. Layout: Navigation, Quelleneditor, SVG-Canvas,
 Informationsleiste. Funktionen: Live-Rendering mit Debounce, Beispiele,

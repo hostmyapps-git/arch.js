@@ -29,7 +29,7 @@ test('JSON DSL meta and both bundles preserve reuse declarations and geometry',a
  const s=doc(base+'view ext "Ext" {extends base style a {height 150}} view host "Host" {include c embed ext as region {frame true} place region at (0,0)}');
  const json=a.translate(s),dsl=a.translate(json,{format:'dsl'});assert.match(dsl,/embed ext as region/);assert.match(dsl,/extends base/);
  const opts={view:'host',idPrefix:'reuse'};assert.equal(a.renderToString(json,opts),a.renderToString(s,opts));assert.equal(a.renderToString(dsl,opts),a.renderToString(s,opts));
- for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(s,opts),a.renderToString(s,opts));}
+ for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(s,opts),a.renderToString(s,opts));}
 });
 
 test('embedded projections retain hidden edges, packages and graphical reference attachments',()=>{

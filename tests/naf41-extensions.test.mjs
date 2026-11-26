@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { DOMParser } from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 import { relationshipEndpointIssues } from '../src/profile-validation.js';
 import { cases as nafCases, document as nafDocument } from './fixtures/naf41/cases.mjs';
 import { cases, document } from './fixtures/naf41-archimate/cases.mjs';

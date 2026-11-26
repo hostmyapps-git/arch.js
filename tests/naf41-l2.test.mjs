@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 for(const id of ['uaf','naf41-uaf'])arch.registerProfile(id,JSON.parse(await readFile(`profiles/${id}.json`,'utf8')));
 const example=await readFile('examples/naf41-needlines.arch','utf8');
@@ -91,7 +91,7 @@ test('L2 p.129 supports all four nodes and six directed needlines, including cyc
   const parallel=doc(compact+' relation other a -> b "status" {type Needline}');assert.equal(arch.validate(parallel).valid,true);
   const expected=arch.renderToString(example,{idPrefix:'l2'});
   assert.equal(arch.renderToString(arch.translate(example),{idPrefix:'l2'}),expected);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);vm.runInContext(await readFile('profiles/profiles.js','utf8'),c);
     assert.equal(c.arch.renderToString(example,{idPrefix:'l2'}),expected);
   }

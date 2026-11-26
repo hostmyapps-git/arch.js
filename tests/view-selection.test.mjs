@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {DOMParser} from '@xmldom/xmldom';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const source=(selection='',profile='')=>`architecture "Architecture <safe>" {
  ${selection||profile?`config {${profile} ${selection}}`:''}
@@ -86,7 +86,7 @@ test('Markdown, help and both browser bundles support view selection with a stan
  const text=source('views [detail, overview]'),html=arch.renderMarkdown('```arch\n'+text+'\n```');assert.match(html,/data-arch-views="2"/);
  assert.match(arch.renderToString('architecture "Help" {config {views all} @help views\n}'),/data-arch-help="views"/);
  const expected=arch.renderToString(text,{idPrefix:'bundle'});
- for(const file of ['arch.js','arch.min.js']) {
+ for(const file of ['arch.core.min.js', 'arch.min.js']) {
   const context={};vm.runInNewContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(text,{idPrefix:'bundle'}),expected);
  }
 });

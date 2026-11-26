@@ -5,7 +5,10 @@
   "description": "A readable architecture language and dependency-free inline SVG renderer",
   "type": "module",
   "main": "./src/arch.js",
-  "exports": "./src/arch.js",
+  "exports": {
+    ".": "./src/arch.js",
+    "./studio": "./src/arch.studio.js"
+  },
   "engines": {
     "node": ">=22"
   },

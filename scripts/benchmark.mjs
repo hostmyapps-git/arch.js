@@ -6,7 +6,7 @@ import { arch as cpuArchitecture, platform } from 'node:os';
 
 // Pass a module from another checkout to compare implementations with the
 // same profile revisions and input documents from this working directory.
-const modulePath = resolve(process.argv[2] ?? 'src/arch.js');
+const modulePath = resolve(process.argv[2] ?? 'src/arch.studio.js');
 const arch = await import(pathToFileURL(modulePath));
 const uaf = JSON.parse(await readFile('profiles/uaf.json', 'utf8'));
 arch.registerProfile(uaf.id, uaf);

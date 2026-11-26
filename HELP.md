@@ -1,6 +1,8 @@
 # Eingebaute Hilfe
 
-Die Hilfe ist Teil von `arch.js` und `arch.min.js` und funktioniert offline.
+Die Hilfe ist Teil von `arch.min.js` und funktioniert offline.
+Das Kernbundle `arch.core.min.js` kann über `helpBaseURL` aus Diagnosemeldungen
+auf die Referenz in Studio verlinken.
 Alle eingebauten Hilfetexte und Fehlermeldungen erscheinen auf Englisch.
 Diese Datei ergänzt die Laufzeithilfe um Rezepte und Grenzen. Die vollständige
 Sprach-/API-Referenz steht in [SPEC.md](SPEC.md), die Unterstützung je Renderer
@@ -491,7 +493,7 @@ pro Codeblock. SVG unterstützt `theme: 'light' | 'dark'`, die Ansicht `help`
 und einen validierten `idPrefix`. Text wird escaped, lange Zeilen werden
 umgebrochen; keine ausführbaren HTML-Inhalte oder Netzwerkanfragen.
 
-`render()` und `renderAll()` verbinden die Diagnose-Links automatisch mit der
+In Studio verbinden `render()` und `renderAll()` die Diagnose-Links mit der
 eingebauten Hilfe. Wer `renderDiagram().svg` selbst einfügt, ruft danach
 `arch.attachDiagnosticHelp(container, graph, options)` auf. Der Container
 umschließt das SVG und die Elementdetails. Für eigene HTML-Fehleranzeigen

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const profile=()=>({nodeTypes:{service:{template:'service',attributes:{owner:{required:true}}}},relationTypes:{link:{from:['service'],to:['service'],style:'flow',directions:['forward','both'],outgoing:{min:1,max:2},incoming:{min:1,max:2}}},defaultRelation:'link'});
 const source=(body='service a "A"',extra='',config='')=>`architecture "Draft" {${config} model {${body}} ${extra}}`;
@@ -93,7 +93,7 @@ test('draft and hidden edges work in both bundles and Markdown; example remains 
   const text=await readFile('examples/draft.arch','utf8'),model=arch.parse(text),before=JSON.stringify(model);
   assert.equal(arch.layout(model).edges.length,0);const expected=arch.renderToString(model,{idPrefix:'same'});assert.equal(JSON.stringify(model),before);
   assert.match(arch.renderMarkdown('```arch\n'+text+'\n```'),/arch-validation-notices/);
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(text,{idPrefix:'same'}),expected);
   }
 });
@@ -129,7 +129,7 @@ test('presentation hides do not satisfy or suppress semantic requirements and bo
   const text=source(pair,'view v "V" {viewpoint v style a {display none}}');
   assert.equal(arch.validate(text,{profile:p}).valid,true);assert.deepEqual(arch.layout(text,{profile:p}).nodes.map(n=>n.id),['b']);
   const hidden=source(defaultPair,'view v "V" {style a {display none}}'),expected=arch.renderToString(hidden,{idPrefix:'same'});
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(hidden,{idPrefix:'same'}),expected);
   }
 });

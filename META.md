@@ -28,7 +28,8 @@ architecture "Architecture with source" {
 Diese Views sind regulär über ihre IDs auswählbar, in `config.views` sortierbar
 und mit `views all` gemeinsam mit Diagrammen als ein eigenständiges SVG
 exportierbar. Helle/dunkle Themes und die vorhandenen Einbettungs-APIs gelten
-ebenfalls. Das Demo-Beispiel **Architecture source views** zeigt dies:
+ebenfalls. Beide Browserbundles rendern deklarierte Meta-Views. Das Beispiel
+**Architecture source views** im Studio zeigt dies.
 [meta.arch](examples/meta.arch).
 
 Die Kurzform direkt im Architekturblock erzeugt eine eigene View mit der ID

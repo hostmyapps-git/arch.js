@@ -28,7 +28,21 @@ try {
   await landing.getByRole('heading',{name:'Architecture you can read.'}).waitFor();
   await landing.locator('#hero-diagram svg[data-arch-svg="dark"]').waitFor();
   await landing.locator('#play-preview svg').waitFor();
-  assert.deepEqual(landingRequests.map(url=>new URL(url).pathname),['/','/arch.min.js']);
+  assert.deepEqual(landingRequests.map(url=>new URL(url).pathname),['/','/arch.core.min.js']);
+  const corePresentation = await landing.evaluate(() => {
+    const source = 'architecture "Test" { config { presentation dashboard } model { service app "App" } }';
+    const host = document.createElement('div');
+    let error;
+    try { arch.render(host, source); }
+    catch (issue) { error = issue.code; }
+    return {
+      error,
+      diagram: arch.render(host, source, { presentation:'diagram' }).localName,
+      validates: arch.validate(source).valid,
+      svgExport: arch.renderToString(source).startsWith('<svg')
+    };
+  });
+  assert.deepEqual(corePresentation, {error:'ARCH_STUDIO_REQUIRED',diagram:'svg',validates:true,svgExport:true});
   await landing.screenshot({path:'test-results/landing.png',fullPage:true});
   const playView=landing.getByLabel('View',{exact:true});
   const playExample=landing.getByLabel('Example',{exact:true});
@@ -78,6 +92,8 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => requests.push(request.url()));
   await page.goto(new URL('studio.html',address).href); await page.waitForSelector('#diagram svg');
+  assert.ok(requests.some(url => new URL(url).pathname === '/arch.min.js'));
+  assert.ok(requests.every(url => new URL(url).pathname !== '/arch.core.min.js'));
   assert.equal(await page.locator('#error').isVisible(), false);
   assert.equal(await page.locator('#diagram [data-node]').count(), 8);
   const namedColors=JSON.parse(await readFile('src/css3-colors.js','utf8').then(s=>s.slice(s.indexOf('{'),s.lastIndexOf('}')+1)));

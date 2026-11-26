@@ -39,7 +39,7 @@ test('JSON DSL meta and both bundles preserve label expressions and normalize fr
  for(const label of ['(a.right+40,b.centerY-20)','1/3','0','1']) {
   const source=doc(`route e {curve rounded label ${label}}`),json=arch.translate(source),dsl=arch.translate(json,{format:'dsl'});
   const opts={idPrefix:'labels'};assert.equal(arch.renderToString(json,opts),arch.renderToString(source,opts));assert.equal(arch.renderToString(dsl,opts),arch.renderToString(source,opts));
-  for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,opts),arch.renderToString(source,opts));}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,opts),arch.renderToString(source,opts));}
  }
  const json=JSON.parse(arch.translate(doc('route e {label 0.5}')));json.architecture.views.v.route.e.label=['a.x } model {',0];assert.equal(arch.validate(json).valid,false);
  json.architecture.views.v.route.e.label='1/4';position(arch.layout(json),0.25);
@@ -61,7 +61,7 @@ test('fixed label offsets follow route length in either direction, clamp endpoin
   assert.equal(arch.renderToString(source,{idPrefix:'offset'}),arch.renderToString(arch.translate(source),{idPrefix:'offset'}));
  }
  const source=doc('routes {label 0.25 offset 60} route e {label 0.5 offset -20}');
- for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,{idPrefix:'offset'}),arch.renderToString(source,{idPrefix:'offset'}));}
+ for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,{idPrefix:'offset'}),arch.renderToString(source,{idPrefix:'offset'}));}
  const zero=arch.layout(doc('route e {path "M 20 30 L 20 30" label 0.5 offset 200}'));assert.deepEqual(zero.edges[0].label,{x:20,y:30});
  const direct=arch.layout(doc('route e {curve straight label 0 offset 80}'));assert.ok(Math.abs(Math.hypot(direct.edges[0].label.x-direct.edges[0].points[0].x,direct.edges[0].label.y-direct.edges[0].points[0].y)-80)<1e-6);
  const end=arch.layout(doc('route e {curve straight label 1 offset -40}'));assert.ok(end.edges[0].label.x<end.edges[0].points.at(-1).x);
@@ -116,7 +116,7 @@ test('offset expressions use final card/group measures, retain source expression
  const m=arch.parse(source),before=JSON.stringify(m),g=arch.layout(m),edge=g.edges[0];assert.equal(edge.label.x,edge.points[0].x+node(g,'a').width/2+node(g,'b').height/4);assert.equal(JSON.stringify(m),before);
  const json=arch.translate(source);assert.equal(typeof JSON.parse(json).architecture.views.v.route.e.label.offset,'string');assert.equal(arch.renderToString(json,{idPrefix:'expression-offset'}),arch.renderToString(source,{idPrefix:'expression-offset'}));
  assert.equal(arch.renderToString(arch.translate(json,{format:'dsl'}),{idPrefix:'expression-offset'}),arch.renderToString(source,{idPrefix:'expression-offset'}));
- for(const file of ['arch.js','arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,{idPrefix:'expression-offset'}),arch.renderToString(source,{idPrefix:'expression-offset'}));}
+ for(const file of ['arch.core.min.js', 'arch.min.js']){const c=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),c);assert.equal(c.arch.renderToString(source,{idPrefix:'expression-offset'}),arch.renderToString(source,{idPrefix:'expression-offset'}));}
  const tree=arch.layout(doc('tree g {nodes [a,b]} route e {label 0.5 offset -g.width/8}').replace('place a at (0,0) place b at (600,200)',''));assert.ok(Number.isFinite(tree.edges[0].label.x));
  const free=arch.layout(doc('route e {path "M 0 0 L 900 0" label 0 offset a.width/2}'));assert.equal(free.edges[0].label.x,node(free,'a').width/2);
 });

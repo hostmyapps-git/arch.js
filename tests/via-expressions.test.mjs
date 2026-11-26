@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const body='service a "A" service b "B" service c "C" relation e a -> b "Calls" relation f b -> c "Next"';
 const doc=(view,model=body)=>`architecture "Via expressions" {model{${model}}view v "V"{${view}}}`;
@@ -119,7 +119,7 @@ test('via JSON/DSL/meta translation preserves expressions with coordinate JSON d
   const invalid=JSON.parse(json);invalid.architecture.views.v.route.e.via[0][0]='a.x / 0';assert.match(arch.validate(invalid).diagnostics[0].path,/via\/0\/0/);
   invalid.architecture.views.v.route.e.via[0][0]='missing.x';assert.match(arch.validate(invalid).diagnostics[0].path,/route\/e/);
   assert.match(arch.help('routing'),/Calculated via/);
-  for(const file of ['arch.js','arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{idPrefix:'via'}),expected);}
+  for(const file of ['arch.core.min.js', 'arch.min.js']){const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);assert.equal(context.arch.renderToString(source,{idPrefix:'via'}),expected);}
 });
 
 test('via expressions stay view-local across stacked views and template paths do not pin unused reference cards',()=>{

@@ -30,7 +30,7 @@ test('S8 pp.121–122 accepts service-to-policy satisfaction in the explicitly s
   assert.equal(graph.edges.find(e => e.type === 'SatisfiesServicePolicy').source, 'service');
   const svg = arch.renderToString(source, {idPrefix:'s8'});
   assert.equal(arch.renderToString(arch.translate(source), {idPrefix:'s8'}), svg);
-  for (const file of ['arch.js','arch.min.js']) {
+  for (const file of ['arch.core.min.js', 'arch.min.js']) {
     const context = vm.createContext({});
     vm.runInContext(await readFile(file, 'utf8'), context);
     vm.runInContext(await readFile('profiles/profiles.js', 'utf8'), context);

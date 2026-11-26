@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import * as arch from '../src/arch.js';
+import * as arch from '../src/arch.studio.js';
 
 const doc=(relations='relation exchange a <-> b "Exchange"',view='',config='')=>`architecture "Exchange" {${config} model {service a "A" service b "B" ${relations}} ${view}}`;
 const schema=()=>({nodeTypes:{service:{template:'service'},other:{template:'node'}},relationTypes:{exchange:{from:['service'],to:['service'],style:'flow',directions:['forward','both']}},defaultRelation:'exchange'});
@@ -90,7 +90,7 @@ test('help and both standalone bundles expose directions and render the same sin
   assert.match(arch.renderToString('@help relations default flow'),/both/);
   assert.match(arch.renderToString('@help connections default service'),/directions: forward, both/);
   const expected=arch.renderToString(doc(),{idPrefix:'same'});
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     assert.equal(context.arch.renderToString(doc(),{idPrefix:'same'}),expected);
     assert.equal(JSON.parse(context.arch.translate(doc())).architecture.model.relations.exchange.direction,'both');

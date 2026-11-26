@@ -484,7 +484,7 @@ test('diagram options reject unknown fields, unsafe colors, manual routing, and 
 
 test('both shipped bundles expose all seven renderers identically',async()=>{
   const expected=model.views.map(v=>arch.renderToString(source,{view:v.id,idPrefix:'stable'}));
-  for(const file of ['arch.js','arch.min.js']) {
+  for(const file of ['arch.core.min.js', 'arch.min.js']) {
     const context=vm.createContext({});vm.runInContext(await readFile(file,'utf8'),context);
     const output=model.views.map(v=>context.arch.renderToString(source,{view:v.id,idPrefix:'stable'}));
     assert.deepEqual(output,expected);
