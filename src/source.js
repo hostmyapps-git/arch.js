@@ -85,6 +85,7 @@ function jsonSource(model) {
     const result = {name:v.title};
     if(v.meta!==undefined)result['@meta']=v.meta;
     for (const key of ['extends','direction','theme','spacing','viewpoint','represents','include','exclude','referenceDisplay','referenceOccurrences','diagram','propertyFields','backgroundColor','backgroundImage','showBackgroundImage']) if (v[key] !== undefined && !(v.extends&&['direction','theme','spacing'].includes(key)&&v._explicit&&!v._explicit.includes(key))) result[key] = clean(v[key]);
+    if (v.diagram?.columnWidths !== undefined) result.diagram.columnWidths = copy(v.diagram.columnWidths);
     if (Object.keys(v.places).length) result.place = places(v.places);
     if (Object.keys(v.virtualPlaces??{}).length) result.virtualPlace = places(v.virtualPlaces);
     if (Object.keys(v.styles).length) result.style = clean(v.styles);

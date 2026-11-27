@@ -227,6 +227,18 @@ Standardfarbe der Zeichenfläche. In `architecture.views.<ID>` überschreibt
 er diese Vorgabe. Erlaubt sind Hexwerte wie `"#f4f6fa"`, CSS3-Farbnamen und
 `"transparent"`.
 
+Für eine Tabelle sind `width` und `columnWidths` im `diagram`-Objekt optional.
+Die Schlüssel in `columnWidths` entsprechen den ausgewählten Feldnamen.
+
+```json
+"diagram": {
+  "type": "table",
+  "fields": ["title", "type", "description"],
+  "width": 1000,
+  "columnWidths": { "title": 240, "type": 160 }
+}
+```
+
 `backgroundImage` ist ein String und kann in einer View, einem Element oder
 einem Node-Style stehen. `showBackgroundImage` ist ein boolescher Wert. In
 einer View steuert er die Elementbilder, im Node-Style die einzelne Karte.

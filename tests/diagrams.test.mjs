@@ -500,6 +500,49 @@ test('table renders typed custom values and guards against unknown columns',()=>
   assert.throws(()=>arch.renderToString(input.replace('enabled, note]','enabled, typo]'),{profile}),/Unknown table field typo/);
 });
 
+test('table and column widths reflow cells and preserve explicit widths in JSON and SVG', () => {
+  const source = settings => `architecture "Table widths" {
+    model { system app "App" { description "${'Wider columns reduce wrapping and let more of the table fit vertically. '.repeat(5)}" } }
+    view data "Data" { diagram table { fields [title, type, description] ${settings} } }
+  }`;
+  const render = input => arch.renderToString(input,{idPrefix:'table-width'});
+  const metrics = input => {
+    const root = xml(render(input)).documentElement;
+    const [row] = [...root.getElementsByTagName('g')].filter(group => group.hasAttribute('data-node'));
+    const cells = [...row.getElementsByTagName('text')];
+    return {width:+root.getAttribute('width'), height:+root.getAttribute('height'),
+      typeStart:+cells[1].getAttribute('x'), descriptionStart:+cells[2].getAttribute('x'),
+      descriptionLines:cells[2].getElementsByTagName('tspan').length};
+  };
+  const defaults = metrics(source(''));
+  assert.equal(defaults.width,786); // 746 table width plus the SVG margins.
+  const wide = metrics(source('width 1000'));
+  assert.equal(wide.width,1040);
+  assert.ok(wide.descriptionLines < defaults.descriptionLines && wide.height < defaults.height);
+  const columnOnly = metrics(source('columnWidths { description 600 }'));
+  assert.equal(columnOnly.width,1106);
+  assert.equal(columnOnly.descriptionStart,defaults.descriptionStart);
+  const custom = source('width 1000 columnWidths { title 240 type 160 }');
+  const mixed = metrics(custom);
+  assert.equal(mixed.width,1040);
+  assert.equal(mixed.typeStart,256);
+  assert.equal(mixed.descriptionStart,416);
+  assert.equal(mixed.descriptionLines,columnOnly.descriptionLines);
+  const json = JSON.parse(arch.translate(custom,{format:'json'}));
+  assert.deepEqual(json.architecture.views.data.diagram.columnWidths,{title:240,type:160});
+  assert.equal(render(json),render(custom));
+  assert.equal(render(arch.translate(json,{format:'dsl'})),render(custom));
+  assert.equal(metrics(source('width 192')).descriptionStart,144);
+  for (const [settings, error] of [
+    ['width 191', /at least 192/],
+    ['width 300 columnWidths { title 200 }', /at least 328/],
+    ['columnWidths { title 40 }', /Width of column title/],
+    ['columnWidths { id 200 }', /id is not a selected column/],
+    ['width 500 columnWidths { title 100 type 100 description 100 }', /must equal the sum/],
+    ['columnWidths { title 200 title 300 }', /Duplicate column width/]
+  ]) assert.throws(() => render(source(settings)),error);
+});
+
 test('Sankey uses consistent weights, supports rank skips and diagnoses cycles',()=>{
   const profile={nodeTypes:{item:{}},relationTypes:{flow:{attributes:{amount:{type:'number',required:true}}}}};
   const nodes='item a "A" item b "B" item c "C"';

@@ -7,7 +7,7 @@ const words = new Set(('architecture model config presentation dashboard view di
   + 'from to via curve path label offset sideOffset sharePath dasharray crossings color width height '
   + 'initial final lanes laneAttribute participants messages orderAttribute showContext true false null '
   + 'required attributes attribute enum abstract container contains requiredNodes requiredRelations '
-  + 'incoming outgoing defaultRelation propertyFields table fields mode rows columns startAttribute endAttribute '
+  + 'incoming outgoing defaultRelation propertyFields table fields mode columnWidths rows columns startAttribute endAttribute '
   + 'all none strict draft auto rounded orthogonal bezier straight virtual references referenceDisplay referenceOccurrences '
   + 'person system application service component database queue interface capability process artifact node package '
   + 'allowSelf min max minLength maxLength valueAttribute parentAttribute ownerAttribute signatureAttribute methods functions interfaces ports parameters '

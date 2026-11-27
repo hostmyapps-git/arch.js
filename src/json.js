@@ -379,6 +379,13 @@ export function jsonToDSL(input) {
               } else if (name==='final') {
                 const ids = Array.isArray(a) ? a.map((value,i)=>id(value,child(path,i))) : [id(a,path)];
                 emit(`final [${ids.join(', ')}]`,path);
+              } else if (v.type === 'table' && name === 'columnWidths') {
+                emit('columnWidths {',path);
+                for (const [column,width] of Object.entries(obj(a,path))) {
+                  const cp = child(path,column);
+                  emit(`${identifier.test(column) ? column : text(column,cp)} ${scalar(width,cp)}`,cp);
+                }
+                emit('}',path);
               } else field(name,a,path);
             }
             emit('}', vp);

@@ -394,7 +394,9 @@ export function helpContent(model, options = {}) {
       timeline: ['startAttribute/endAttribute select the date fields (defaults start/end).', 'Use startAttribute date endAttribute date to plot a single date as a milestone.', 'Set datedOnly true to draw only elements with a configured date field. Keep undated context in the selection for viewpoint validation. An element with a date still needs a valid start and end.'],
       table: ['mode elements (default) lists visible elements. mode relationships lists selected relationships and uses names for source and target.',
         'fields sets ordered columns. Use built-in fields or attributes declared by the selected profile types.',
-        'diagram table { mode relationships fields [source, type, target, title] }'],
+        'width sets the total table width in SVG units. columnWidths sets widths by field name. Each column needs at least 64 units.',
+        'Use either option on its own or both together. With width, the remaining space goes to columns without an explicit width. If every column has a width, their sum must match width.',
+        'Without width, unspecified columns retain their default widths. Text wraps to fit, and row heights follow the wrapped text.'],
       sankey: ['relations limits the diagram to specified relationship types. Only endpoints of the selected flows are drawn.',
         'weightAttribute selects a positive numeric attribute on each selected relationship. Each link contributes one unit by default.',
         'Flows must be directed and acyclic. Use connected for feedback or bidirectional links.'],
@@ -410,6 +412,8 @@ export function helpContent(model, options = {}) {
       const options = DIAGRAM_OPTIONS[type] ?? GRID_OPTIONS;
       section(type, `diagram ${type}${options.length ? ' { ... }' : ''}`, `Valid options: ${list(options)}`,
         Object.hasOwn(notes,type) ? notes[type] : gridNotes);
+      if (type === 'table') codeSection('Set table and column widths', 'dsl', 'diagram table {',
+        '  fields [title, type, description]', '  width 1000', '  columnWidths {', '    title 240', '    type 160', '  }', '}');
     }
     section('Lists and layout', 'Use square brackets for diagram lists such as participants [user, app]. final also accepts a comma-separated list without brackets.', 'All referenced elements must be visible.', 'place applies to connected, class and state. Connected views support all route options; activity views with lanes support from, to and via. style is also available in other diagrams.');
   } else if (topic === 'views') {

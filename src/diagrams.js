@@ -14,7 +14,7 @@ import { flowActivityRows } from './activity-layout.js';
 import { drawTimeline } from './timeline.js';
 import { polyPath } from './svg-path.js';
 import { rememberGeometry } from './draft-geometry.js';
-import { tableFieldNames, tableLayout, drawTable } from './table.js';
+import { tableFieldNames, validateTableWidths, tableLayout, drawTable } from './table.js';
 import { sankeyFlow, sankeyRanks, sankeyLayout, drawSankey } from './sankey.js';
 import { gridProjection, drawNafGrid } from './naf-grid.js';
 import { DIAGRAMS, GRID_MODES, GRID_OPTIONS, GRID_VISIBILITY, GRID_VISIBILITY_ERROR, gridDefinition, isGridDiagram } from './diagram-types.js';
@@ -26,7 +26,7 @@ export const DIAGRAM_OPTIONS = {
   state: ['initial','final'], activity: ['lanes','laneAttribute','layout','initial','final','decisions','forks','joins'],
   matrix: ['rows','columns','relations'], heatmap: ['valueAttribute','parentAttribute','min','max','colorLow','colorHigh'],
   timeline: ['startAttribute','endAttribute','datedOnly'],
-  table: ['fields','mode'],
+  table: ['fields','mode','width','columnWidths'],
   sankey: ['relations','weightAttribute'],
   nafgrid: GRID_OPTIONS, viewpointGrid: GRID_OPTIONS,
   class: ['attributes','methods','functions','interfaces','ports','parameters','ownerAttribute','signatureAttribute','propertyFields']
@@ -145,6 +145,7 @@ export function validateDiagramView(profile, view, graph) {
       continue;
     }
     if (type === 'tree' && key === 'padding') continue; // Shared tree option validation accepts numbers and tuples.
+    if (type === 'table' && ['width','columnWidths'].includes(key)) continue; // Validate the widths together below.
     if(type==='table' && key==='fields') {
       if (!Array.isArray(v) || !v.length || v.length > 16 || new Set(v).size !== v.length) fail('fields requires 1–16 unique column names',view);
       const known = tableFieldNames(c.mode,c.mode==='relationships'?edges:nodes,profile);
@@ -168,6 +169,7 @@ export function validateDiagramView(profile, view, graph) {
     else if(typeof v!=='string') fail(`${key} must be a string`,view);
     if(key.startsWith('color')&&!normalizeColor(v)) fail(`Invalid color ${key}`,view);
   }
+  if (type === 'table') validateTableWidths(c,message => fail(message,view));
   if(Object.keys(view.places).length&& !['connected','class','state'].includes(type))fail('place requires a connected, class or state view',view);
   if (type !== 'connected') {
     if (view.referenceRoutes?.length) fail('Reference connector routing is only supported for connected views',view);

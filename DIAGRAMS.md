@@ -810,6 +810,26 @@ jeder sichtbaren Beziehung eine Zeile. In diesem Modus zeigen `source` und
 Neben den Standardfeldern stehen die im Profil deklarierten Attribute der
 ausgewählten Typen zur Verfügung.
 
+```arch
+diagram table {
+  fields [title, type, description]
+  width 1000
+  columnWidths {
+    title 240
+    type 160
+  }
+}
+```
+
+`width` setzt die Gesamtbreite in SVG-Einheiten. `columnWidths` setzt die
+Breiten ausgewählter Spalten anhand ihrer Feldnamen. Im Beispiel erhält
+`description` die übrigen 600 Einheiten. Bei mehreren flexiblen Spalten wird
+der verfügbare Platz anhand ihrer Standardbreiten verteilt. Ohne `width`
+behalten diese Spalten ihre Standardbreiten. Sind alle Spaltenbreiten gesetzt,
+muss eine zusätzlich angegebene Gesamtbreite ihrer Summe entsprechen.
+Jede Spalte braucht mindestens 64 Einheiten. Der Text wird für die gewählte
+Breite neu umbrochen, und die Zeilenhöhe passt sich daran an.
+
 ## Gewichtete Flüsse mit `sankey`
 
 ```arch

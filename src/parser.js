@@ -476,6 +476,15 @@ function parseDSLDocument(source, recovery) {
             if (Object.hasOwn(diagram,name)) fail(`Duplicate diagram option: ${name}`,option);
             if (['propertyFields','final','viewpoints'].includes(name)) diagram[name] = nameList(text);
             else if (diagram.type === 'tree' && name === 'padding') diagram.padding = paddingValue();
+            else if (diagram.type === 'table' && name === 'columnWidths') {
+              const widths = dict();
+              block(() => {
+                const column = peek(), field = text();
+                if (Object.hasOwn(widths,field)) fail(`Duplicate column width: ${field}`,column);
+                widths[field] = scalar();
+              });
+              diagram.columnWidths = widths;
+            }
             else diagram[name] = scalar();
           });
           view.diagram = diagram;
