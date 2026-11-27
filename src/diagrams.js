@@ -8,6 +8,7 @@ import {positionClassCards} from './class-placement.js';
 import {sequenceProjection,drawSequence} from './sequence.js';
 import {stateProjection,stateObjectEvents,stateTransitionLabels,validateStatePlacement,appendVirtualStates,drawState} from './state.js';
 import { backgroundImageMarkup, nodeBackgroundMarkup } from './background-images.js';
+import { viewBackground } from './view-background.js';
 import { laneLeft, laneWidth, laneTop, laneHeader, swimlaneRoutes, swimlaneFrame } from './activity-routing.js';
 import { flowActivityRows } from './activity-layout.js';
 import { drawTimeline } from './timeline.js';
@@ -277,6 +278,7 @@ export function validateDiagramView(profile, view, graph) {
 function scene(graph, theme, prefix, classPlacement, measureOnly = false) {
   const {nodes,edges,view,profileRules}=graph, c={...view.diagram,colorLow:normalizeColor(view.diagram.colorLow),colorHigh:normalizeColor(view.diagram.colorHigh)}, type=c.type;
   const dark=theme==='dark', bg=dark?'#111827':'#fafbfe', text=dark?'#f1f5f9':'#1e293b', border=dark?'#8b9ab2':'#64748b', muted=dark?'#b4bfd0':'#52627a';
+  const canvas = viewBackground(view.backgroundColor,theme);
   const byId = new Map(nodes.map(n => [n.id,n]));
   // The measurement pass still computes positions for cards and sequence
   // references. Only labels that affect bounds are wrapped in this pass.
@@ -294,7 +296,7 @@ function scene(graph, theme, prefix, classPlacement, measureOnly = false) {
   }
   if (isGridDiagram(type,profileRules)) {
     const plan = gridPlans.get(nodes);
-    return {width:plan.width,height:plan.height,body:measureOnly?'':drawNafGrid(plan,dark,prefix,bg)};
+    return {width:plan.width,height:plan.height,body:measureOnly?'':drawNafGrid(plan,dark,prefix,bg,view.backgroundColor===undefined?undefined:canvas)};
   }
   if(!nodes.length && !(type==='timeline' && c.datedOnly))return {body:'',width:300,height:180};
   const wrap=(s,limit)=> {
@@ -322,7 +324,7 @@ function scene(graph, theme, prefix, classPlacement, measureOnly = false) {
   const card=(n,x,y,w=220,h=90,body)=> {
     Object.assign(n,{x,y,width:w,height:h});
     if (measureOnly) return { x,y,width:w,height:h };
-    const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.opacity??(n.backgroundColor?DEFAULT_BACKGROUND_OPACITY:1), fg=foreground(composite(fill,bg,opacity));
+    const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.opacity??(n.backgroundColor?DEFAULT_BACKGROUND_OPACITY:1), fg=foreground(composite(fill,canvas.backdrop,opacity));
     out.push(`<g data-node="${esc(n.id)}" data-type="${esc(n.type)}" transform="translate(${x} ${y})"><title>${esc(n.title)}</title>`);
     rect(0,0,w,h,fill,opacity);out.push(cardBackground(n,w,h,6));
     label(n.type,14,22,w-28,10,fg);label(n.title,14,45,w-28,14,fg); if(body) body(fg); out.push('</g>');
@@ -402,7 +404,7 @@ function scene(graph, theme, prefix, classPlacement, measureOnly = false) {
     if (measureOnly) return { width, height };
     const leaves = node => metrics.get(node.id).leaves;
     const mix=(a,b,t)=>composite(b,a,t),min=c.min??0,max=c.max??5;
-    const tile=(n,x,y,w,h,backdrop=bg)=>{const v=value(n,c.valueAttribute),fill=v===undefined?(dark?'#64748b':'#94a3b8'):mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',(v-min)/(max-min)),fg=foreground(composite(fill,backdrop,n.opacity??0.2));out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v??'No value')}</title>`);rect(x,y,w,h,fill,n.opacity??0.2);label(`${n.title} · ${v??'—'}`,x+12,y+25,w-24,13,fg);out.push('</g>');let cx=x+12;for(const k of children(n.id)){const kw=(w-24)*leaves(k)/leaves(n);tile(k,cx,y+45,kw-8,h-57,composite(fill,backdrop,n.opacity??0.2));cx+=kw;}};
+    const tile=(n,x,y,w,h,backdrop=canvas.backdrop)=>{const v=value(n,c.valueAttribute),fill=v===undefined?(dark?'#64748b':'#94a3b8'):mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',(v-min)/(max-min)),fg=foreground(composite(fill,backdrop,n.opacity??0.2));out.push(`<g data-tile="${esc(n.id)}"><title>${esc(n.title)}: ${esc(v??'No value')}</title>`);rect(x,y,w,h,fill,n.opacity??0.2);label(`${n.title} · ${v??'—'}`,x+12,y+25,w-24,13,fg);out.push('</g>');let cx=x+12;for(const k of children(n.id)){const kw=(w-24)*leaves(k)/leaves(n);tile(k,cx,y+45,kw-8,h-57,composite(fill,backdrop,n.opacity??0.2));cx+=kw;}};
     let x=20;for(const n of roots){const w=leaves(n)*250;tile(n,x,20,w-15,height-105);x+=w;}
     for(let i=0;i<=10;i++)rect(25+i*28,height-55,28,18,mix(c.colorLow??'#fee2e2',c.colorHigh??'#16a34a',i/10),0.2,0);
     label(`${min} → ${max} · — = no value`,25,height-12,450,12,muted);
@@ -455,7 +457,7 @@ function scene(graph, theme, prefix, classPlacement, measureOnly = false) {
     for(const card of cards) {
       const {n,lines,h,ownPorts}=card,cardWidth=n.width,x=n.x,cardY=n.y;
       const fill=n.backgroundColor??(dark?'#1e293b':'#ffffff'), opacity=n.opacity??(n.backgroundColor?DEFAULT_BACKGROUND_OPACITY:1);
-      const visible=composite(fill,bg,opacity), fg=n.backgroundColor||n.opacity!==undefined?foreground(visible):text;
+      const visible=composite(fill,canvas.backdrop,opacity), fg=n.backgroundColor||n.opacity!==undefined?foreground(visible):text;
       const subdued=n.backgroundColor?fg:sectionColor;
       const accent=n.accent&&contrast(n.accent,visible)>=4.5?n.accent:(n.backgroundColor?fg:dark?'#a5b4fc':'#6366f1');
       pos.set(n.id,{x,y:cardY,width:cardWidth,height:h});
@@ -637,6 +639,7 @@ const tablePlans = new WeakMap();
 const sankeyPlans = new WeakMap();
 const gridPlans = new WeakMap();
 export function toDiagramSVG(graph,{theme,idPrefix}) {
+  const canvas = viewBackground(graph.view.backgroundColor,theme);
   const result=scene(graph,theme,idPrefix,classPlacementPlans.get(graph.nodes)),bg=theme==='dark'?'#111827':'#fafbfe',stroke=theme==='dark'?'#8b9ab2':'#64748b',b=result.bounds??{x:-20,y:-20,width:result.width+40,height:result.height+40};
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="${idPrefix}-diagram" data-arch-svg="${theme}" data-diagram="${graph.view.diagram.type}" role="img" aria-labelledby="${idPrefix}-title" width="${b.width}" height="${b.height}" viewBox="${b.x} ${b.y} ${b.width} ${b.height}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:${bg}"><title id="${idPrefix}-title">${esc(graph.title)} — ${esc(graph.view.title)}</title><defs><filter id="${idPrefix}-class-shadow" x="-15%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="${theme==='dark'?0.22:0.07}"/></filter><marker id="${idPrefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9Z" fill="${stroke}"/></marker><marker id="${idPrefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 L11 6 L1 11Z" fill="${bg}" stroke="${stroke}"/></marker></defs><rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${bg}"/>${backgroundImageMarkup(graph.view.backgroundImage,b,'view')}${result.body}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="${idPrefix}-diagram" data-arch-svg="${theme}" data-diagram="${graph.view.diagram.type}" role="img" aria-labelledby="${idPrefix}-title" width="${b.width}" height="${b.height}" viewBox="${b.x} ${b.y} ${b.width} ${b.height}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:${canvas.color}"><title id="${idPrefix}-title">${esc(graph.title)} — ${esc(graph.view.title)}</title><defs><filter id="${idPrefix}-class-shadow" x="-15%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="${theme==='dark'?0.22:0.07}"/></filter><marker id="${idPrefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9Z" fill="${stroke}"/></marker><marker id="${idPrefix}-triangle" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M1 1 L11 6 L1 11Z" fill="${bg}" stroke="${stroke}"/></marker></defs><rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" fill="${canvas.fill}"/>${backgroundImageMarkup(graph.view.backgroundImage,b,'view')}${result.body}</svg>`;
 }

@@ -209,11 +209,13 @@ function edgeLabelMetrics(edge,route,profile,modelNodes,showRouteStereotypes) {
 
 export function layoutView(document, viewId) {
   const { model, profile, views, graph, plans } = document;
-  const view = views.get(viewId);
+  const definition = views.get(viewId);
+  const view = definition.backgroundColor === undefined && model.config?.backgroundColor !== undefined
+    ? {...definition,backgroundColor:model.config.backgroundColor} : definition;
   if(view.meta!==undefined)return layoutMeta(model,profile,view);
   const draft = document.mode === 'draft';
   const showRouteStereotypes = model.config?.showRouteStereotypes;
-  const projection = graph.project(view), visible = projection.ids;
+  const projection = graph.project(definition), visible = projection.ids;
   const { styles: stylePlan, placement: positions, routeReferences, presentation, statePlacement } = plans.get(viewId);
   const trees = presentation?.trees ?? view.trees ?? {};
   // Reuse validation for embedded views. Each layout still owns its positioned
@@ -304,7 +306,7 @@ export function layoutView(document, viewId) {
     return tree;
   }
   if (view.diagram && view.diagram.type !== 'connected') return layoutDiagram(model, profile, view, nodes, edges, positions,
-    ['state','activity'].includes(view.diagram.type) ? graph.project(view,false).edges : undefined,statePlacement,document);
+    ['state','activity'].includes(view.diagram.type) ? graph.project(definition,false).edges : undefined,statePlacement,document);
   const groupStates=[],treeEdges=new Map();
   const initialPlaces=Object.fromEntries(Object.entries(view.places).map(([id,p])=>[id,{...p,at:{x:typeof p.at.x==='number'?p.at.x:0,y:typeof p.at.y==='number'?p.at.y:0}}]));
   for(const [id,options]of Object.entries(trees)) {
@@ -416,7 +418,9 @@ export function layoutView(document, viewId) {
           ...(ref.connectorLabel ? { connectorLabel:shiftPoint(ref.connectorLabel) } : {}) });
       }
       for(const g of local.embeddingGroups??[])embeddingGroups.push({...g,id:`${id}.${g.id}`,owner:id,bounds:{...g.bounds,x:g.bounds.x+dx,y:g.bounds.y+dy}});
+      const backgroundColor = normalizeColor(views.get(view.embeddings[id].view).backgroundColor);
       embeddingGroups.push({id,title:local.view.title,frame:view.embeddings[id].frame===true,
+        ...(backgroundColor!==undefined?{backgroundColor}:{}),
         ...(local.view.backgroundImage?{backgroundImage:local.view.backgroundImage}:{}),
         bounds:{x:proxy.x,y:proxy.y,width:proxy.width,height:proxy.height}});
     } else for(const edge of local.edges) {
@@ -530,7 +534,7 @@ export function layoutView(document, viewId) {
     edge.label=shiftLabelAcrossPath(edge.label,samples,anchor,sideOffset);
   for (const ref of embeddedReferences) referenceNodes.push(ref);
   const extents = nodes.flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
-  for(const group of embeddingGroups)if(group.frame||group.backgroundImage)extents.push({x:group.bounds.x,y:group.bounds.y},{x:group.bounds.x+group.bounds.width,y:group.bounds.y+group.bounds.height});
+  for(const group of embeddingGroups)if(group.frame||group.backgroundImage||group.backgroundColor)extents.push({x:group.bounds.x,y:group.bounds.y},{x:group.bounds.x+group.bounds.width,y:group.bounds.y+group.bounds.height});
   for (const occurrence of referenceNodes) {
     extents.push({x:occurrence.node.x,y:occurrence.node.y},{x:occurrence.node.x+occurrence.node.width,y:occurrence.node.y+occurrence.node.height});
     for (const point of occurrence.points) extents.push(point);

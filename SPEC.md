@@ -700,6 +700,11 @@ architecture "Customer platform" {
   Kopfbereich und passen die Kopfhöhe an. Im Logo-Modus bleibt das Icon ohne
   Vorgabe zentriert, mit Vorgabe wird es innerhalb des gepolsterten Rechtecks
   seitlich ausgerichtet. Seitenverhältnis und Farben bleiben erhalten.
+- `config { backgroundColor COLOR }` setzt die Standardfarbe der View-Zeichenfläche.
+  `view ID "Titel" { backgroundColor COLOR }` überschreibt sie. Bei `extends`
+  hat die Farbe der Basis-View Vorrang vor dem Konfigurationswert. Ohne
+  Farbwert gilt das Theme. `COLOR` ist ein CSS3-Farbname, ein quotierter
+  `#RGB`- oder `#RRGGBB`-Wert oder `transparent`.
 - `view ID "Titel" { backgroundImage "URL" }` setzt ein sichtbares Bild hinter
   den SVG-Inhalt. Elemente können `backgroundImage "URL"` im Modell oder im
   View-Style angeben. Die Bildquelle im Style hat Vorrang.

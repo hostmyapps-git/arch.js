@@ -197,6 +197,29 @@ try {
   assert.equal(backgrounds.icons, 1);
   console.log('✓ View and card backgrounds rasterize in standalone SVG; card image is clipped and icon remains visible');
 
+  const canvasColors = await page.evaluate(async () => {
+    const source = `architecture "View backgrounds" {
+      config { views all backgroundColor "#e8eef7" }
+      model { system card "Card" }
+      view solid "Solid" { backgroundColor gold }
+      view clear "Clear" { backgroundColor transparent }
+    }`;
+    const {graph, svg} = arch.renderDiagram(source);
+    const image = new Image();
+    image.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0);
+    const pixel = (x, y) => Array.from(context.getImageData(x, y, 1, 1).data);
+    const [solid,clear] = graph.sections;
+    return [pixel(5,5), pixel(solid.x+5,solid.y+solid.headingHeight+5), pixel(clear.x+5,clear.y+clear.headingHeight+5)];
+  });
+  assert.deepEqual(canvasColors, [[232,238,247,255], [255,215,0,255], [0,0,0,0]]);
+  console.log('✓ Stacked SVGs rasterize the global and view colors and retain transparent canvases');
+
   await page.locator('[data-example="help"]').click();
   assert.equal(await page.locator('#error').isVisible(), false);
   assert.equal(await page.locator('#diagram [data-arch-help="overview"]').count(), 1);

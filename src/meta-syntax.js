@@ -16,6 +16,6 @@ export function validateMetaView(view) {
       view.routeDefaults !== undefined || view.referenceDisplay !== undefined || view.referenceOccurrences !== undefined ||
       view.backgroundImage !== undefined || view.showBackgroundImage !== undefined ||
       view.direction !== 'right' || view.spacing !== 80)
-    fail('meta views support a source format and theme; model filters, viewpoints, diagrams and layout/style settings do not apply');
+    fail('meta views support a source format, theme and background color; model filters, viewpoints, diagrams and layout/style settings do not apply');
   return true;
 }

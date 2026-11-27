@@ -9,6 +9,7 @@ import { iconifyMarkup } from './iconify.js';
 import { metaSVG } from './meta.js';
 import {effectiveDasharray} from './route-styles.js';
 import { backgroundImageMarkup, nodeBackgroundMarkup } from './background-images.js';
+import { viewBackground } from './view-background.js';
 import { crossingBridges } from './route-crossings.js';
 import { dashedOverlaps } from './dashed-overlaps.js';
 import { traceLinearPath } from './svg-path.js';
@@ -141,11 +142,14 @@ function renderSVG(graph, options = {}) {
     ? { dark: true, bg: '#111827', card: '#1e293b', package: '#162032', border: '#3b4960', text: '#f1f5f9', muted: '#a4b2c7', edge: '#9caac0' }
     : { bg: '#fafbfe', card: '#ffffff', package: '#f0f3fa', border: '#d8dfec', text: '#1e293b', muted: '#738198', edge: '#94a3b8' };
   const b = graph.bounds;
+  const canvas = viewBackground(graph.view.backgroundColor, theme);
+  const embeddingGroups = (graph.embeddingGroups ?? []).slice().reverse();
+  const embedFills = new Map(embeddingGroups.map(group => [group.id, group.backgroundColor]));
   const nodeById = new Map(graph.nodes.map(node => [node.id, node])), backdrops = new Map();
   const backdropFor = node => {
     if (backdrops.has(node.id)) return backdrops.get(node.id);
     const parent = nodeById.get(node.parent);
-    const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? DEFAULT_BACKGROUND_OPACITY : 1)) : palette.bg;
+    const color = parent ? composite(parent.backgroundColor ?? palette.package, backdropFor(parent), parent.opacity ?? (parent.backgroundColor ? DEFAULT_BACKGROUND_OPACITY : 1)) : embedFills.get(node.treeGroup) ?? canvas.backdrop;
     backdrops.set(node.id, color); return color;
   };
   const markersFor = (id,color) => `
@@ -239,13 +243,17 @@ function renderSVG(graph, options = {}) {
     const footer=identity.length?`<g data-reference-id="${escape(occurrence.nodeId)}"><rect x="${num(card.x)}" y="${num(card.y+card.referenceContentHeight)}" width="${num(card.width)}" height="${num(card.height-card.referenceContentHeight)}" rx="4" fill="${palette.bg}" stroke="${palette.border}"/>${linesMarkup(identity,card.x+10,card.y+card.referenceContentHeight+16,11,palette.text,500,16)}</g>`:'';
     return `<g class="arch-edge-reference" data-reference-for="${escape(occurrence.edgeIds.join(' '))}" data-reference-node="${escape(occurrence.nodeId)}" data-reference-attribute="${escape(occurrence.attribute)}">${nodeMarkup({...card,height:card.referenceContentHeight??card.height},palette,prefix,palette.bg,`${prefix}-reference-${index}`)}${footer}</g>`;
   }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree?' data-diagram="tree"':''} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${palette.bg};color:${palette.text}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="${prefix}-diagram" data-arch-svg="${theme}"${graph.tree?' data-diagram="tree"':''} role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${num(b.x)} ${num(b.y)} ${num(b.width)} ${num(b.height)}" width="${num(b.width)}" height="${num(b.height)}" style="max-width:100%;height:auto;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:${canvas.color};color:${palette.text}">
     <title id="${prefix}-title">${escape(graph.title)} — ${escape(graph.view.title)}</title>
     <desc id="${prefix}-desc">${escape(graph.description || `${graph.nodes.length} architecture elements, ${graph.edges.length} relationships`)}</desc>
     ${definitions.replace('</defs>',[...coloredMarkers.values()].map(m=>m.markup).join('')+maskDefinitions.join('')+'</defs>')}<style>#${prefix}-diagram .arch-node{outline:none}#${prefix}-diagram .arch-node:focus>g:first-of-type{filter:none}#${prefix}-diagram .arch-node:focus{outline:2px solid #818cf8;outline-offset:5px;border-radius:12px}</style>
-    <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${palette.bg}"/>
+    <rect x="${num(b.x)}" y="${num(b.y)}" width="${num(b.width)}" height="${num(b.height)}" fill="${canvas.fill}"/>
     ${backgroundImageMarkup(graph.view.backgroundImage, b, 'view')}
-    ${(graph.embeddingGroups??[]).slice().reverse().map(g => backgroundImageMarkup(g.backgroundImage, g.bounds, 'embed')).join('')}
+    ${embeddingGroups.map(({id, bounds, backgroundImage}) => {
+      const fill = embedFills.get(id);
+      const paint = fill ? `<rect data-embed-background="${escape(id)}" x="${num(bounds.x)}" y="${num(bounds.y)}" width="${num(bounds.width)}" height="${num(bounds.height)}" fill="${fill}"/>` : '';
+      return paint + backgroundImageMarkup(backgroundImage,bounds,'embed');
+    }).join('')}
     ${graph.nodes.filter(n => n.container).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}
     ${(graph.embeddingGroups??[]).filter(g=>g.frame).map(g=>`<g data-embed="${escape(g.id)}"><rect x="${num(g.bounds.x)}" y="${num(g.bounds.y)}" width="${num(g.bounds.width)}" height="${num(g.bounds.height)}" rx="8" fill="none" stroke="${palette.edge}"/><text x="${num(g.bounds.x+12)}" y="${num(g.bounds.y+22)}" fill="${palette.muted}" font-size="13">${escape(singleLine(g.title,Math.max(20,g.bounds.width-24),13))}</text><title>${escape(g.title)}</title></g>`).join('')}${edgePaths}${referenceConnectors}${graph.nodes.filter(n => !n.container && !n.referenceOnly).map(n => nodeMarkup(n, palette, prefix, backdropFor(n))).join('')}${referenceCards}${edgeLabels}
   </svg>`;

@@ -2,6 +2,7 @@ import { escape } from './svg-values.js';
 import {ArchError} from './errors.js';
 import { isTypeRecoveryDiagnostic } from './syntax-recovery.js';
 import { diagnosticHelpLink } from './diagnostic-help.js';
+import { normalizeViewBackgroundColor, viewBackground } from './view-background.js';
 
 export function validationMode(model,options={}) {
   const show=options.showValidation??model.config?.showValidation;if(show!==undefined&&typeof show!=='boolean')throw new ArchError('showValidation must be true or false',model.config?.loc,'ARCH_VALIDATION');
@@ -73,7 +74,12 @@ function sourceErrorLabel(diagnostics) {
   return `${kinds.length === 1 ? kinds[0] : kinds.slice(0, -1).join(', ') + ' and ' + kinds.at(-1)} errors`;
 }
 export function noticesSVG(graph,renderContent,options={}) {
-  const theme=options.theme??graph.view.theme,dark=theme==='dark',bg=dark?'#111827':'#fafbfe';
+  const theme=options.theme??graph.view.theme,dark=theme==='dark';
+  const background = graph.sections
+    ? graph.sections.some(({graph: child}) => normalizeViewBackgroundColor(child.view.backgroundColor) === 'transparent')
+      ? 'transparent' : graph.backgroundColor
+    : graph.view.backgroundColor;
+  const canvas = viewBackground(background,theme);
   const syntax = graph.kind === 'syntax-notices', mode = graph.validationMode ?? 'draft';
   const [fill, stroke, fg] = syntax
     ? dark ? ['#450a0a','#f87171','#fecaca'] : ['#fef2f2','#dc2626','#7f1d1d']
@@ -94,7 +100,7 @@ export function noticesSVG(graph,renderContent,options={}) {
     const {query,href,label}=diagnosticHelpLink(diagnostic,options);
     return `<a href="${escape(href)}" data-arch-diagnostic-help="${escape(query)}" aria-label="${escape(label)}"><title>${escape(label)}</title><text ${attrs} x="40" text-decoration="underline">${escape(text)}</text></a>`;
   }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" data-arch-svg="${escape(theme)}" ${marker} role="group" aria-label="${escape(graph.title)} — ${heading}" viewBox="0 0 ${round(width)} ${round(height)}" width="${round(width)}" height="${round(height)}" style="max-width:100%;height:auto;background:${bg}"><rect width="${round(width)}" height="${round(height)}" fill="${bg}"/>${content}<g class="${className}s" role="group" aria-label="${groupLabel}"><rect x="8" y="${round(y)}" width="${round(width-16)}" height="${round(height-y-8)}" rx="8" fill="${fill}" stroke="${stroke}"/><g fill="${fg}" font-family="ui-monospace,Consolas,monospace"><text x="24" y="${round(y+28)}" font-size="14" font-weight="700">${heading}</text>${rows}</g></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" data-arch-svg="${escape(theme)}" ${marker} role="group" aria-label="${escape(graph.title)} — ${heading}" viewBox="0 0 ${round(width)} ${round(height)}" width="${round(width)}" height="${round(height)}" style="max-width:100%;height:auto;background:${canvas.color}"><rect width="${round(width)}" height="${round(height)}" fill="${canvas.fill}"/>${content}<g class="${className}s" role="group" aria-label="${groupLabel}"><rect x="8" y="${round(y)}" width="${round(width-16)}" height="${round(height-y-8)}" rx="8" fill="${fill}" stroke="${stroke}"/><g fill="${fg}" font-family="ui-monospace,Consolas,monospace"><text x="24" y="${round(y+28)}" font-size="14" font-weight="700">${heading}</text>${rows}</g></g></svg>`;
 }
 
 export function validationMarkersSVG(svg,graph) {

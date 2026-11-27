@@ -222,6 +222,11 @@ Gruppierte Routen wie `route r1, r2 { curve straight }` werden genauso in
 einzelne Einträge im JSON-Objekt `route` übersetzt. Bei mehreren Angaben
 enthält der Export pro Beziehung und Eigenschaft den zuletzt gesetzten Wert.
 
+`backgroundColor` ist ein String. In `architecture.config` setzt er die
+Standardfarbe der Zeichenfläche. In `architecture.views.<ID>` überschreibt
+er diese Vorgabe. Erlaubt sind Hexwerte wie `"#f4f6fa"`, CSS3-Farbnamen und
+`"transparent"`.
+
 `backgroundImage` ist ein String und kann in einer View, einem Element oder
 einem Node-Style stehen. `showBackgroundImage` ist ein boolescher Wert. In
 einer View steuert er die Elementbilder, im Node-Style die einzelne Karte.

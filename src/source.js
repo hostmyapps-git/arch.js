@@ -28,6 +28,7 @@ function jsonSource(model) {
     if (own(original, 'presentation')) config.presentation = original.presentation;
     if(own(original,'showValidation'))config.showValidation=original.showValidation;
     if(own(original,'showRouteStereotypes'))config.showRouteStereotypes=original.showRouteStereotypes;
+    if(own(original,'backgroundColor'))config.backgroundColor=original.backgroundColor;
     if (own(original, 'syntaxRecovery')) config.syntaxRecovery = original.syntaxRecovery;
     if (own(original, 'validation')) config.validation = original.validation;
     if (original.definition) {
@@ -83,7 +84,7 @@ function jsonSource(model) {
   a.views = collection(model.views.map(v => {
     const result = {name:v.title};
     if(v.meta!==undefined)result['@meta']=v.meta;
-    for (const key of ['extends','direction','theme','spacing','viewpoint','represents','include','exclude','referenceDisplay','referenceOccurrences','diagram','propertyFields','backgroundImage','showBackgroundImage']) if (v[key] !== undefined && !(v.extends&&['direction','theme','spacing'].includes(key)&&v._explicit&&!v._explicit.includes(key))) result[key] = clean(v[key]);
+    for (const key of ['extends','direction','theme','spacing','viewpoint','represents','include','exclude','referenceDisplay','referenceOccurrences','diagram','propertyFields','backgroundColor','backgroundImage','showBackgroundImage']) if (v[key] !== undefined && !(v.extends&&['direction','theme','spacing'].includes(key)&&v._explicit&&!v._explicit.includes(key))) result[key] = clean(v[key]);
     if (Object.keys(v.places).length) result.place = places(v.places);
     if (Object.keys(v.virtualPlaces??{}).length) result.virtualPlace = places(v.virtualPlaces);
     if (Object.keys(v.styles).length) result.style = clean(v.styles);
@@ -142,8 +143,8 @@ function formatSource(source,format) {
 
 const styleKeys = ['template','accent','icon','iconPosition','backgroundColor','backgroundImage','showBackgroundImage','opacity','display','fontSize','width','height','showIcon','showLabel','showStereotype','showDescription','showTechnology','propertyFields'];
 const routingKeys = ['source','target','from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel','showStereotype','sharePath','color','width','dasharray','crossings','crossingRadius','avoidObstacles'];
-const viewKeys = ['extends','embed','name','@meta','meta','diagram','tree','direction','theme','spacing','viewpoint','represents','include','exclude','place','virtualPlace','style','routes','route','virtualRoute','referenceDisplay','referenceOccurrences','propertyFields','backgroundImage','showBackgroundImage'];
-const configKeys = ['showValidation','showRouteStereotypes','syntaxRecovery','profile','views','presentation','validation','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
+const viewKeys = ['extends','embed','name','@meta','meta','diagram','tree','direction','theme','spacing','viewpoint','represents','include','exclude','place','virtualPlace','style','routes','route','virtualRoute','referenceDisplay','referenceOccurrences','propertyFields','backgroundColor','backgroundImage','showBackgroundImage'];
+const configKeys = ['showValidation','showRouteStereotypes','syntaxRecovery','profile','views','presentation','validation','backgroundColor','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
 const profileKeys = ['extends','template','container','abstract','contains','attribute','attributes','icon','accent','backgroundColor','styleGroup','from','to','directions','style','allowSelf','acyclic','sequenceContext','incoming','outgoing','nodes','relations','requiredNodes','requiredRelations'];
 function jsonKeys(path='') {
   if(path==='/architecture')return ['name','description','config','model','views','@help','@meta'];

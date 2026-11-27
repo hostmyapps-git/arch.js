@@ -174,7 +174,7 @@ export function helpContent(model, options = {}) {
       'With config { views all }, diagram and source views render together in one SVG, in the selected order.',
       'An architecture-level @meta json or @meta dsl adds a selectable view named meta-json or meta-dsl.',
       'Source views show the entire normalized architecture, including their own directives exactly once. No recursive rendering.',
-      'Only format and theme apply. Filters, viewpoints, diagram settings and node/route styles do not apply.',
+      'Source views support format, theme and backgroundColor. Filters, viewpoints, diagram settings and node/route styles do not apply.',
       'Model rules and other views are still validated. Meta views do not require domain viewpoints.',
       '@meta requires architecture source; a context-free standalone @meta command cannot translate an absent model.');
     section('Meta view', 'In the editor View menu, choose Meta view · JSON for DSL input or Meta view · DSL for JSON input.',
@@ -429,6 +429,10 @@ export function helpContent(model, options = {}) {
       'External cards use normal connected layout; directly linked top-level cards are aligned beside the group when unplaced. Internal hierarchy edges use automatic tree paths; route overrides remain available.',
       'Route precedence: individual route properties, then group curve, showLabels, showStereotype and sharePath, then view routes defaults. showStereotype falls back to config.showRouteStereotypes. showLabels controls regular text. label none hides the entire label. See @help diagrams tree for hierarchy constraints.');
     section('Selection', 'Including a container includes its descendants. Required ancestor containers are added automatically.', 'Edges appear only when both endpoints are visible.', 'Without a view block, the default view is created automatically.', '@help routing', '@help styles', '@help diagrams');
+    codeSection('Set a view background', 'dsl', 'view overview "Overview" {', '  backgroundColor transparent', '}');
+    section('Background color', 'Accepts transparent, a CSS3 color name such as white, or a quoted hex color such as "#f4f6fa".',
+      'A view uses its own color, then inherits from its base view and the architecture config. With no color configured, the view theme supplies the default.',
+      'The color applies to the SVG canvas, behind any background image. The surrounding page shows through when the canvas is transparent.', '@help config', '@help colors');
     section('Background images', 'backgroundImage "/images/site-plan.png"  // visible behind the diagram',
       'showBackgroundImage true  // show element background images in this view; default false',
       'Use style NODE_ID { showBackgroundImage false } to override the view default on one element.', '@help styles');
@@ -580,6 +584,8 @@ export function helpContent(model, options = {}) {
       'overview  —  Selects one view by ID.',
       '[overview, detail]  —  Selects unique view IDs in the listed order. Commas also work without brackets.',
       'Omitting views selects the first declared view. Multiple selected views stack in one SVG. The dashboard opens the first selected view and its catalog includes every declared view.');
+    codeSection('Default view background', 'dsl', 'config {', '  backgroundColor "#f4f6fa"', '}');
+    section('View canvas', 'Set backgroundColor to a quoted hex value, a CSS3 color name, or transparent. Individual views can override this default.', '@help views');
     section('Relationship stereotypes', 'config { showRouteStereotypes true }',
       'Sets the default for connected views, standalone tree views and named tree groups. The default is false. Override it with showStereotype in a route, view routes, diagram tree or named tree group.');
     section('Select a registered profile', 'architecture "Title" {', '  config { profile PROFILE }', '  model { ... }', '}', 'options.profile overrides this selection. Register external profiles before rendering.');

@@ -488,6 +488,7 @@ function parseDSLDocument(source, recovery) {
         else if (['include', 'exclude'].includes(key.value)) view[key.value] = nameList();
         else if (key.value === 'spacing') view.spacing = typed('number').value;
         else if (key.value === 'backgroundImage') view.backgroundImage = typed('string').value;
+        else if (key.value === 'backgroundColor') view.backgroundColor = text();
         else if (key.value === 'showBackgroundImage') view.showBackgroundImage = scalar();
         else if (key.value === 'propertyFields') view.propertyFields=nameList(text);
         else if (['direction', 'theme', 'viewpoint', 'represents', 'referenceDisplay', 'referenceOccurrences'].includes(key.value)) view[key.value] = word();
@@ -548,7 +549,7 @@ function parseDSLDocument(source, recovery) {
       } else {
         if (seen.has(key.value)) fail(`Duplicate profile option: ${key.value}`, key);
         seen.add(key.value);
-        if (key.value === 'profile') config.profile = text();
+        if (key.value === 'profile' || key.value === 'backgroundColor') config[key.value] = text();
         else if (key.value === 'views') {
           if (is('[')) config.views = scalar();
           else {
@@ -572,9 +573,9 @@ function parseDSLDocument(source, recovery) {
       }
     });
     const hasDefinition = Object.keys(definition.nodeTypes).length || Object.keys(definition.relationTypes).length || Object.keys(definition.viewpoints).length || Object.keys(definition.styleGroups).length || definition.extends;
-    const runtimeOnly = [...seen].every(key => ['profile', 'views', 'presentation', 'validation', 'showValidation', 'syntaxRecovery', 'showRouteStereotypes'].includes(key));
+    const runtimeOnly = [...seen].every(key => ['profile', 'views', 'presentation', 'validation', 'showValidation', 'syntaxRecovery', 'showRouteStereotypes', 'backgroundColor'].includes(key));
     if (config.profile && (hasDefinition || !runtimeOnly)) fail('Choose either config profile or an inline profile definition', loc);
-    if (config.profile || !hasDefinition && runtimeOnly && ['views','presentation','syntaxRecovery','showRouteStereotypes'].some(key => seen.has(key))) delete config.definition;
+    if (config.profile || !hasDefinition && runtimeOnly && ['views','presentation','syntaxRecovery','showRouteStereotypes','backgroundColor'].some(key => seen.has(key))) delete config.definition;
     model.config = config;
   };
   block(() => {

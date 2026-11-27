@@ -169,9 +169,9 @@ function cardContent(title, group, width, modes, selected, selectedProducts, com
   return {lines,sections,products,diagrams,currentViews,currentProducts,state,h:h+(sections.length?6:0)};
 }
 
-export function drawNafGrid(plan, dark, prefix, diagramBackground) {
+export function drawNafGrid(plan, dark, prefix, diagramBackground, canvas) {
   const sharedPalette = plan.rows.some(row => row.styleGroup);
-  const surface = sharedPalette ? diagramBackground : dark?'#1a2538':'#fff';
+  const surface = canvas?.backdrop ?? (sharedPalette ? diagramBackground : dark?'#1a2538':'#fff');
   const overlayColor = dark ? '#2b313c' : '#e3e6ec';
   const shadowId = `${prefix}-grid-card-shadow`;
   const ink = dark?'#edf4ff':'#253550', muted = dark?'#b5c4db':'#586d88', line=dark?'#3b4c66':'#d7e1ef';
@@ -182,7 +182,7 @@ export function drawNafGrid(plan, dark, prefix, diagramBackground) {
     ${selector} [data-grid-entry-state="selected"] rect{fill:var(--grid-ink);fill-opacity:.15}
   </style>`;
   const shadow = sharedPalette ? `<defs>${cardShadowFilter(shadowId)}</defs>` : '';
-  const base = styles+shadow+`<rect width="${plan.width}" height="${plan.height}" rx="14" fill="${surface}" stroke="${line}"/>`+
+  const base = styles+shadow+`<rect width="${plan.width}" height="${plan.height}" rx="14" fill="${canvas?.fill ?? surface}" stroke="${line}"/>`+
     plan.titles.map((title,i)=>heading(title,14,28+20*i,17,ink,750)).join('')+
     plan.legend.map((text,i)=>heading(text,14,plan.legendY+15*i,12)).join('')+
     plan.columnLines.flatMap((names,col)=>names.map((name,i)=>heading(name,plan.offsets[col]+8,plan.columnsY+15*i,12))).join('');

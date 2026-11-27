@@ -11,6 +11,7 @@ import { TEMPLATES, matches, resolveProfile } from './profiles.js';
 import { profileDiagnostics, viewpointRelationshipMessage } from './profile-validation.js';
 import { validationMode, validationDiagnostics } from './validation-mode.js';
 import { validateBackgroundImage } from './background-images.js';
+import { normalizeViewBackgroundColor } from './view-background.js';
 import { validateViewRoutes } from './route-validation.js';
 import { validateTreeGroups } from './tree-groups.js';
 import { diagramOptionName, validateDiagramView } from './diagrams.js';
@@ -22,6 +23,10 @@ import { bindPresentation, occurrenceCatalogs, findCard } from './view-occurrenc
 import { hasOmittedModelDeclarations, isPreviewRecoveryEnabled } from './syntax-recovery.js';
 
 const fail = (message, loc) => { throw new ArchError(message, loc, 'ARCH_VALIDATION'); };
+function validateCanvasColor(value, loc, help) {
+  if (value !== undefined && !normalizeViewBackgroundColor(value))
+    fail('backgroundColor requires a hex color, CSS3 color name or transparent',{...loc,help});
+}
 
 // This context belongs to one operation. Public models are editable, so a new
 // operation validates the current input even if it came from parse().
@@ -37,6 +42,7 @@ export function validateModel(model, options = {}, profile, {partialModel, recov
   if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views) || !model.views.length)
     fail('Invalid model; use parse(source)');
   checkPresentationMode(model.config?.presentation, model.config?.loc);
+  validateCanvasColor(model.config?.backgroundColor,model.config?.loc,'@help config');
   const showRouteStereotypes = model.config?.showRouteStereotypes;
   if (showRouteStereotypes !== undefined && typeof showRouteStereotypes !== 'boolean')
     fail('showRouteStereotypes must be true or false',{...model.config.loc,help:'@help config'});
@@ -99,6 +105,7 @@ export function validateModel(model, options = {}, profile, {partialModel, recov
   for (const view of model.views) {
     if (!['right', 'down'].includes(view.direction)) fail('direction must be right or down', view.loc);
     if (!['light', 'dark'].includes(view.theme)) fail('theme must be light or dark', view.loc);
+    validateCanvasColor(view.backgroundColor,view.loc,'@help views');
     if (view.represents !== undefined && !nodes.has(view.represents))
       fail(`Unknown element represented by view ${view.id}: ${view.represents}`,view.loc);
     if(validateMetaView(view)) continue;

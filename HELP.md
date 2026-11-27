@@ -871,6 +871,23 @@ kombinierbare Textfelder verwende `display standard`.
 Die Optionen gelten für Connected-Views und deren Referenzkarten; Modellwerte
 und Tooltips bleiben erhalten.
 
+## Hintergrundfarbe der Views
+
+```arch
+architecture "Standort" {
+  config { backgroundColor "#f4f6fa" }
+  model { system dc "Datacenter" }
+  view overview "Übersicht" {}
+  view embedded "Für die Webseite" { backgroundColor transparent }
+}
+```
+
+`config.backgroundColor` setzt die Standardfarbe für die Zeichenfläche.
+Eine View kann die Farbe überschreiben. Ohne Farbangabe gilt die Farbe des
+Themes. Erlaubt sind CSS3-Farbnamen, Hexwerte in Anführungszeichen und
+`transparent`. Eine transparente Zeichenfläche lässt die umgebende Seite
+durchscheinen. Hintergrundbilder und Karten liegen über der Zeichenfläche.
+
 ## Hintergrundbilder für Views und Elemente
 
 ```arch
