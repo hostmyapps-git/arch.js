@@ -24,6 +24,11 @@ export const dashboardStyle = `
 .ad-header .ad-primary{background:#fff;color:#1c3267;border-color:white}
 .ad-header .ad-primary:hover{background:#e9eefc}
 .ad-export-status{padding:8px 16px;background:var(--panel);color:var(--muted);border-bottom:1px solid var(--line)}
+.ad-export-menu{position:relative}
+.ad-export-menu summary{cursor:pointer}
+.ad-export-formats{position:absolute;z-index:4;right:0;top:calc(100% + 6px);display:grid;min-width:165px;padding:5px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px #19264329}
+.ad-export-formats .ad-button{border:0;background:var(--panel);color:var(--ink);text-align:left}
+.ad-export-formats .ad-button:hover:not(:disabled){background:var(--wash)}
 .ad-notes{width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:20px;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:var(--panel)}
 .ad-notes::backdrop{background:#1322439e}
 .ad-notes-header{display:flex;justify-content:space-between;align-items:center;gap:12px}

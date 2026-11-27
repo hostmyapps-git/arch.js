@@ -3,6 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const source = $('source'), diagram = $('diagram'), canvas = $('canvas');
+  const exportMenu = $('studio-export'), exportButtons = [...exportMenu.querySelectorAll('[data-studio-export]')];
   const studioBody = $('studio-body'), editorPanel = $('source-panel'), previewPanel = $('preview-panel');
   const divider = $('studio-divider'), paneButtons = [...document.querySelectorAll('[data-studio-pane]')];
   const stackedPanes = matchMedia('(max-width:620px)');
@@ -132,6 +133,7 @@
     canvas.hidden = true; $('source-meta').hidden = false; $('error').hidden = true;
     $('toggle-theme').disabled = $('zoom-in').disabled = $('zoom-out').disabled = $('fit').disabled = true;
     $('export-svg').disabled = true;
+    exportButtons.forEach(button => { button.disabled = true; });
     $('meta-title').textContent = `${metaResult.sourceFormat.toUpperCase()} → ${metaResult.targetFormat.toUpperCase()}`;
     if(metaResult.title)$('model-title').textContent=metaResult.title;
     $('profile-info').textContent=metaResult.profile?`${metaResult.profile.id} · ${metaResult.profile.version}`:'Source inspection';
@@ -282,6 +284,7 @@
       }
       $('error').hidden = true;
       $('export-svg').disabled = Boolean(sourceErrors);
+      exportButtons.forEach(button => { button.disabled = Boolean(sourceErrors) || graph.kind === 'help'; });
       if (resetFit) fit(); else setZoom(zoom);
       const wantsDashboard = next.kind !== 'help' && next.config?.presentation === 'dashboard';
       if (wantsDashboard && !configuredDashboardShown) openDashboard();
@@ -301,6 +304,7 @@
       updateViews();
       $('render-status').textContent = 'Check your source · last valid preview retained';
       source.setAttribute('aria-invalid', 'true'); $('export-svg').disabled = true;
+      exportButtons.forEach(button => { button.disabled = true; });
     }
   }
   function selectExample(example) {
@@ -328,10 +332,10 @@
     clearTimeout(toastTimeout); $('toast').textContent = message; $('toast').hidden = false;
     toastTimeout = setTimeout(() => $('toast').hidden = true, 2500);
   }
-  function download(content, type, extension) {
+  function download(content, type, extension, filename) {
     const blob = new Blob([content], { type }), url = URL.createObjectURL(blob);
     const link = document.createElement('a'); link.href = url;
-    link.download = `${(model?.title ?? 'architecture').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'architecture'}.${extension}`;
+    link.download = filename ?? `${(model?.title ?? 'architecture').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'architecture'}.${extension}`;
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function addDocument(example, symbol, menu, list) {
@@ -437,7 +441,30 @@
   });
   $('zoom-in').addEventListener('click', () => setZoom(zoom * 1.25));
   $('zoom-out').addEventListener('click', () => setZoom(zoom / 1.25)); $('fit').addEventListener('click', fit);
-  $('export-svg').addEventListener('click', () => { if (lastSvg) { download(lastSvg, 'image/svg+xml;charset=utf-8', 'svg'); toast('Your SVG is ready.'); } });
+  $('export-svg').addEventListener('click', async () => {
+    if (!lastSvg) return;
+    try {
+      download(await arch.embedSVGImages(lastSvg), 'image/svg+xml;charset=utf-8', 'svg');
+      toast('Your SVG is ready.');
+    } catch (error) { toast(error.message); }
+  });
+  for (const button of exportButtons) button.addEventListener('click', async () => {
+    const format = button.dataset.studioExport;
+    const options = {view:viewOverride ? viewId : undefined, profile:profileOverride, theme, notes:notesByExample.get(currentExample.id)};
+    exportMenu.open = false;
+    exportMenu.querySelector('summary').focus();
+    try {
+      if (format==='studio' || format==='html') {
+        const renderHTML = format==='studio' ? arch.renderStudioToHTML : arch.renderDashboardToPortableHTML;
+        const content = await renderHTML(source.value,options);
+        download(content,'text/html;charset=utf-8',format==='studio'?'studio.html':'html');
+      } else {
+        const file = await arch.exportDiagram(model,format,options);
+        download(file.data,file.mimeType,format,file.name);
+      }
+      toast('Your download is ready.');
+    } catch (error) { toast(error.message); }
+  });
   function openDashboard() {
     const modal = $('architecture-dashboard');
     const input = source.value;

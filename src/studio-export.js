@@ -3,18 +3,23 @@ import { modelSource } from './source.js';
 import { getProfile } from './profiles.js';
 import { getIcon } from './icons.js';
 import { iconifyMarkup } from './iconify.js';
-import { embeddedBackgroundImage, registerBackgroundImages, validateBackgroundImage } from './background-images.js';
+import { registerBackgroundImages } from './background-images.js';
+import { imageBaker } from './diagram-export/images.js';
 
 export const canExportStudio = typeof __archStudioRuntime === 'function' && typeof __ARCH_STUDIO_SHELL__ === 'string';
 const restoredIcons = new WeakMap();
 
 export function downloadHTML(document, title, html, suffix = '') {
-  const browser = document.defaultView;
-  const url = browser.URL.createObjectURL(new browser.Blob([html],{type:'text/html;charset=utf-8'}));
-  const link = document.createElement('a');
   const name = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'architecture';
+  downloadFile(document,{name:name+suffix+'.html',data:html,mimeType:'text/html;charset=utf-8'});
+}
+
+export function downloadFile(document, {name,data,mimeType}) {
+  const browser = document.defaultView;
+  const url = browser.URL.createObjectURL(new browser.Blob([data],{type:mimeType}));
+  const link = document.createElement('a');
   link.href = url;
-  link.download = name + suffix + '.html';
+  link.download = name;
   link.click();
   browser.setTimeout(() => browser.URL.revokeObjectURL(url),1000);
 }
@@ -51,33 +56,6 @@ function modelAssets(model, profile) {
   return {icons:[...packs].map(([name,icons])=>[name,{icons}]),images};
 }
 
-async function inlineImage(source, options) {
-  const embedded = embeddedBackgroundImage(source);
-  if (embedded) return [source,embedded];
-  try {
-    if (options.loadImage) {
-      const data = await options.loadImage(source);
-      validateBackgroundImage(data);
-      if (!data?.startsWith('data:')) throw new Error('Expected a raster data URL');
-      return [source,data];
-    }
-    const url = new URL(source,options.baseURL ?? globalThis.document?.baseURI);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Image request failed');
-    const blob = await response.blob();
-    const data = await new Promise((resolve,reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
-    validateBackgroundImage(data);
-    return [source,data];
-  } catch {
-    throw new ArchError(`Could not embed background image ${source}. Use a raster data URL or make the image accessible to the browser.`,{},'ARCH_STUDIO_EXPORT');
-  }
-}
-
 export function restoreStudioDependencies({profiles,icons,images}, registerProfile, registerIconPack) {
   for (const profile of profiles) registerProfile(profile.id,profile);
   for (const [name,pack] of icons) {
@@ -111,7 +89,8 @@ export async function portableStudio(prepared, originalSource, options) {
     if (options.profile!==undefined || active!==declaredRevision) profileOverride = active;
   }
   const {icons,images} = modelAssets(model,profile);
-  const files = await Promise.all([...images].map(source=>inlineImage(source,options)));
+  const {resolve} = imageBaker(options);
+  const files = await Promise.all([...images].map(async source=>[source,await resolve(source)]));
   const data = htmlJSON({ source,title:report.title,view:options.view ?? report.initialView ?? report.views[0]?.id,
     theme:options.theme, profile:profileOverride, profiles:[...profiles.values()],icons,images:files,
     notes:options.notes,notesKey:options.notesKey,revision:exportRevision() });

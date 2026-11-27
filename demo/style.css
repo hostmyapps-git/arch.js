@@ -16,6 +16,12 @@
 .meta-diagnostic .diagnostic-help{display:block;width:fit-content;margin:5px 0 8px;font-size:11px;font-weight:600}
 #error>div+div{margin-top:6px}
 .page-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.studio-export{position:relative}
+.studio-export summary{cursor:pointer;white-space:nowrap}
+.studio-export-formats{position:absolute;right:0;top:calc(100% + 6px);z-index:6;min-width:150px;display:grid;padding:5px;border:1px solid var(--line);background:#fff;border-radius:8px;box-shadow:0 6px 22px #25305222}
+.studio-export-formats button{padding:8px 10px;text-align:left;font-size:11px;color:var(--ink);background:none;border:0;border-radius:5px;white-space:nowrap}
+.studio-export-formats button:hover:not(:disabled){background:#eeefff}
+.studio-export-formats button:disabled{opacity:.45}
 .open-file-button{font-size:11px;font-weight:650;white-space:nowrap}
 .file-title,#opened-files .example-button>span:last-child{min-width:0;overflow-wrap:anywhere}
 dialog#architecture-dashboard{padding:0;border:1px solid #dce3f0;border-radius:16px;width:calc(100vw - 36px);max-width:1700px;max-height:calc(100dvh - 36px);overflow:auto;background:#f5f7fb;color:#15213b}

@@ -2851,12 +2851,14 @@ try {
   const imageURL = new URL('portable-test.gif',address).href;
   await markdownPage.route(imageURL,route=>route.fulfill({contentType:'image/gif',
     body:Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7','base64')}));
+  await markdownPage.route(new URL('portable-test.svg',address).href,route=>route.fulfill({contentType:'image/svg+xml',
+    body:'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10" fill="red"/></svg>'}));
   const embeddedSource = `architecture "Portable review" {
     # Keep this original comment
     config {profile "portable-fixture@2" presentation dashboard views overview}
-    model {Tool app "Review service" {icon portable.sample}}
+    model {Tool app "Review service" {icon portable.sample backgroundImage "portable-test.gif"}}
     view overview "Overview" {}
-    view details "Details" {backgroundImage "portable-test.gif"}
+    view details "Details" {backgroundImage "portable-test.svg" showBackgroundImage true}
   }`;
   async function embedDashboards() {
     await markdownPage.goto(address);
@@ -2897,6 +2899,15 @@ try {
   await review.getByRole('button',{name:'Notes',exact:true}).click();
   await notesDialog.getByRole('textbox',{name:'View notes · Details',exact:true}).fill('Details follow-up.');
   await notesDialog.getByRole('button',{name:'Close notes'}).click();
+  for (const [label,extension] of [['SVG','svg'],['draw.io','drawio'],['Visio','vsdx'],['Excalidraw','excalidraw']]) {
+    await review.locator('.ad-export-menu summary').click();
+    const [file] = await Promise.all([markdownPage.waitForEvent('download'),
+      review.getByRole('button',{name:`Export ${label}`,exact:true}).click()]);
+    assert.equal(file.suggestedFilename(),`portable-review-details.${extension}`);
+    const bytes = await readFile(await file.path());
+    if (extension==='vsdx') assert.equal(bytes.readUInt32LE(0),0x04034b50);
+    else assert.match(bytes.toString(),/data:image\/png[;,]/);
+  }
   const exportedStudioEvent=markdownPage.waitForEvent('download');
   await review.getByRole('button',{name:'Download Studio',exact:true}).click();
   const exportedStudio=await exportedStudioEvent;
@@ -2909,6 +2920,7 @@ try {
   const snapshotData=JSON.parse(snapshotMarkup.match(/id="model">([^]*?)<\/script>/)[1]);
   assert.equal(snapshotData.notes.architecture,architectureNote);
   assert.deepEqual(snapshotData.notes.views,{overview:'Review the overview.',details:'Details follow-up.'});
+  assert.match(snapshotData.report.previews.details.svg,/data:image\/png;base64,/);
   await markdownPage.close();
 
   const portable = await browser.newPage({viewport:{width:1480,height:980}});
@@ -2921,7 +2933,8 @@ try {
   await portable.goto(pathToFileURL(path.resolve(studioFile)).href);
   const portableDashboard = portable.getByRole('dialog',{name:'Architecture dashboard'});
   await portableDashboard.locator('.ad-viewbar').getByRole('heading',{name:'Details',exact:true}).waitFor();
-  assert.equal(await portableDashboard.locator('.ad-diagram image').getAttribute('href').then(value=>value.startsWith('data:image/gif;')),true);
+  assert.deepEqual(await portableDashboard.locator('.ad-diagram image').evaluateAll(items=>items.map(item=>item.getAttribute('href').split(';')[0])),
+    ['data:image/png','data:image/gif']);
   assert.equal(await portableDashboard.locator('.ad-diagram [data-icon="portable.sample"]').count(),1);
   assert.equal(await portableDashboard.getByRole('button',{name:'Notes',exact:true}).getAttribute('aria-description'),'3 saved notes');
   await portableDashboard.getByRole('button',{name:'Open notes for Overview',exact:true}).click();
@@ -2936,6 +2949,12 @@ try {
   await portableNotes.getByRole('button',{name:'Close notes'}).click();
   await portableDashboard.getByRole('button',{name:'Edit source',exact:true}).click();
   assert.equal(await portable.locator('#source').inputValue(),embeddedSource);
+  await portable.locator('#studio-export summary').click();
+  const [offlineDiagram] = await Promise.all([portable.waitForEvent('download'),
+    portable.getByRole('button',{name:'Export Excalidraw',exact:true}).click()]);
+  const offlineScene = JSON.parse(await readFile(await offlineDiagram.path(),'utf8'));
+  assert.equal(offlineScene.elements.filter(element=>element.type==='image').length,2);
+  assert.ok(Object.values(offlineScene.files).every(file=>file.dataURL.startsWith('data:image/png;base64,')));
   const portablePanes = portable.getByRole('group',{name:'Pane layout'});
   await portablePanes.getByRole('button',{name:'Editor',exact:true}).click();
   assert.equal(await portable.locator('#preview-panel').isVisible(),false);

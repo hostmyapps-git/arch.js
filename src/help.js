@@ -583,6 +583,9 @@ export function helpContent(model, options = {}) {
     section('View source in the dashboard', 'Source  —  Shows the active view definition, its model declarations and any required source views.',
       'DSL and JSON  —  Switch between syntax-highlighted formats. Copy source copies the current format.',
       'Both formats are generated from the model and available in the standalone HTML export.');
+    section('Diagram export', 'Export diagram  —  Downloads the active Dashboard view as SVG, draw.io, Visio, or Excalidraw.',
+      'In Studio, use Export SVG or the Export menu. Configured views export in selection order. draw.io and Visio use one page per view. Excalidraw stacks the views on one canvas.',
+      'The files contain their images. Image URLs require browser read access. A raster data URL also works. SVG source images are embedded as PNG when needed.');
     section('View selection', 'views  —  Chooses the SVG output and the dashboard’s starting view.',
       'all  —  Selects all declared views in declaration order.',
       'overview  —  Selects one view by ID.',

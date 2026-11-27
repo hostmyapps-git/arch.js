@@ -13,7 +13,8 @@ import { DIAGRAMS } from './diagrams.js';
 import { isJSONDocument } from './json.js';
 import { registerProfile } from './profiles.js';
 import { registerIconPack } from './icons.js';
-import { canExportStudio, downloadHTML, exportRevision, htmlJSON, portableStudio, restoreStudioDependencies as restoreDependencies } from './studio-export.js';
+import { canExportStudio, downloadFile, downloadHTML, exportRevision, htmlJSON, portableStudio, restoreStudioDependencies as restoreDependencies } from './studio-export.js';
+import { diagramFile, svgImageEmbedder } from './diagram-export/index.js';
 export * from './arch.js';
 export { help } from './help.js';
 export { inspectSource } from './source.js';
@@ -43,6 +44,14 @@ const runtime = createRuntime({
 const { renderGraph } = runtime;
 export const { layout, validate, renderToString, renderDiagram, render, renderAll, renderMarkdown } = runtime;
 
+export async function exportDiagram(sourceOrModel, format, options = {}) {
+  return diagramFile(layout(sourceOrModel,options),format,renderGraph,options);
+}
+
+export function embedSVGImages(svg, options = {}) {
+  return svgImageEmbedder(options)(svg);
+}
+
 export function architectureReport(sourceOrModel, options = {}) {
   const prepared = prepareArchitecture(sourceOrModel,options);
   return options.checkRendering ? dashboardPreviews(prepared,options,false) : prepared.report;
@@ -59,13 +68,15 @@ export function renderDashboard(target, sourceOrModel, options = {}) {
   const page = element.ownerDocument.createElement('div');
   const exportOptions = (view, notes) => ({...options,view,notes,notesKey:scope});
   dashboardUI(page,report,{...options, notesKey, getHelp:query=>dashboardHelp(query,profile),
-    onExport:options.onExport ?? ((view, notes) =>
-      downloadHTML(document,report.title,renderDashboardToHTML(prepared.model,exportOptions(view,notes)))),
+    onExport:options.onExport ?? (async (view, notes) =>
+      downloadHTML(document,report.title,await renderDashboardToPortableHTML(prepared.model,{...exportOptions(view,notes),document}))),
     onExportStudio:options.onExportStudio ?? (canExportStudio ? async (view, notes) => {
       const original = options.originalSource ?? editableInput(sourceOrModel);
-      const html = await portableStudio(prepared,original,{baseURL:document.baseURI,...exportOptions(view,notes)});
+      const html = await portableStudio(prepared,original,{baseURL:document.baseURI,...exportOptions(view,notes),document});
       downloadHTML(document,report.title,html,'-studio');
     } : undefined),
+    onDiagramExport:async (view,format) => downloadFile(document,
+      await diagramFile(layout(view),format,renderGraph,{...options,document})),
     viewSource,sourceTokens,
     renderView:id=>renderGraph(layout(id),{theme:options.theme})});
   const css = element.ownerDocument.createElement('style');
@@ -100,6 +111,20 @@ export function restoreStudioDependencies(workspace) {
 export function renderDashboardToHTML(sourceOrModel, options = {}) {
   const prepared = prepareArchitecture(sourceOrModel,options);
   const report = dashboardPreviews(prepared,options,true);
+  return dashboardHTML(prepared,report,options);
+}
+
+export async function renderDashboardToPortableHTML(sourceOrModel, options = {}) {
+  const prepared = prepareArchitecture(sourceOrModel,options);
+  const report = dashboardPreviews(prepared,options,true);
+  const embedImages = svgImageEmbedder(options);
+  await Promise.all(Object.values(report.previews).map(async preview => {
+    if (preview.svg) preview.svg = await embedImages(preview.svg);
+  }));
+  return dashboardHTML(prepared,report,options);
+}
+
+function dashboardHTML(prepared,report,options) {
   const helpPages = exportDashboardHelp(report,prepared.profile);
   const sources = exportDashboardSources(prepared);
   const payload = htmlJSON({report,view:options.view,helpPages,sources,notes:options.notes,notesKey:options.notesKey,revision:exportRevision()});

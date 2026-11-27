@@ -176,6 +176,9 @@ Architekturmodelle, prüfbare Profile und mehrere gestaltbare Views.
 - Vollständige Bootstrap-, Lucide- und Tabler-Iconpacks mit lokaler Galerie,
   Beispiel, JSON-Downloads sowie festgeschriebenen Quellen und Lizenzen.
 - Interaktiver Quelleneditor mit Live-Vorschau, Beispielen und SVG-Export.
+- Diagrammexport in Dashboard und Studio als SVG oder editierbar für draw.io
+  (`.drawio`), Excalidraw (`.excalidraw`) und Microsoft Visio (`.vsdx`). Bilder
+  sind in den Dateien eingebettet. [Exportformate](README.md#architektur-dashboard).
 
 Sieben zusätzliche Renderer sind jetzt verfügbar: Sequenz, Zustand,
 Aktivität/Swimlanes, Matrix, hierarchische Heatmap, Timeline/Gantt und
@@ -242,9 +245,6 @@ Die ersten Versionen sind implementiert. Weitere Ausbauschritte:
 - Iconsuche mit größerer Vorschau, Favoriten und Einfügen einer Iconreferenz.
 - Modelldetails/Relationen beim Anklicken eines SVG-Elements anzeigen.
 - PNG-/PDF-Export mit denselben Layouts wie die SVG-Ausgabe.
-- Export ausgewählter Views als editierbare Diagramme für draw.io (`.drawio`),
-  Excalidraw (`.excalidraw`) und Microsoft Visio (`.vsdx`). Die Übernahme von
-  Positionen, Beschriftungen und Verbindungen je Zielformat prüfen.
 - CLI für Validierung/Rendering und Integration in Dokumentations-Builds.
 - Ergänzende Firefox-/WebKit-Tests, Barrierefreiheitsprüfung und Leistungstests.
 - Optional vollständiger CommonMark-Adapter als getrennte Integration.

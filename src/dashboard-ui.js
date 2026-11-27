@@ -64,6 +64,20 @@ export function dashboardUI(root, report, options = {}) {
   actions.append(notesButton);
   if (options.onExport) actions.append(exportButton('Download HTML',options.onExport));
   if (options.onExportStudio) actions.append(exportButton('Download Studio',options.onExportStudio));
+  if (options.onDiagramExport) {
+    const menu = create('details','ad-export-menu');
+    const summary = create('summary','ad-button','Export diagram');
+    const formats = create('div','ad-export-formats');
+    for (const [format,title] of [['svg','SVG'],['drawio','draw.io'],['vsdx','Visio'],['excalidraw','Excalidraw']]) {
+      formats.append(exportButton(`Export ${title}`,async view => {
+        menu.open = false;
+        summary.focus();
+        await options.onDiagramExport(view,format);
+      }));
+    }
+    menu.append(summary,formats);
+    actions.append(menu);
+  }
   if (options.onEditSource) actions.append(button('Edit source',() => options.onEditSource(current().view)));
   if (options.onClose) actions.append(button('Close',options.onClose));
   header.append(heading,actions);

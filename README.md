@@ -539,8 +539,24 @@ die übrigen vorhandenen Notizen. Beide Downloads enthalten den aktuellen Stand.
   Bildern. Die Datei öffnet dieselbe Dashboard-View. **Edit source** öffnet
   den Editor, der auch offline rendert und erneut exportiert.
 
-Für externe Hintergrundbilder benötigt der Export Zugriff aus dem Browser.
-Rasterbilder als Data-URLs sind direkt in der Quelle enthalten.
+**Export diagram** lädt die aktive Dashboard-View als SVG, draw.io (`.drawio`),
+Visio (`.vsdx`) oder Excalidraw (`.excalidraw`). Im Studio stehen die Formate
+neben **Export SVG** unter **Export**, zusammen mit beiden HTML-Downloads.
+Bei **Configured views** exportiert Studio die ausgewählten Views in der
+konfigurierten Reihenfolge. draw.io und Visio verwenden je View eine Seite,
+Excalidraw ordnet sie untereinander an.
+
+SVG erhält die Darstellung des Renderers. Die drei editierbaren Formate
+übernehmen Formen, Beschriftungen und Routen als native Objekte. draw.io
+erhält rechtwinklige Routen mit ihren Eckpunkten und optionaler Rundung.
+Freie Kurven werden als Linienzüge übertragen. SVG-Effekte wie Filter, Masken
+und komplexe Füllungen können in den editierbaren Formaten abweichen.
+
+Die Downloads enthalten ihre Bilder. Für URL-basierte Bilder benötigt der
+Browser Lesezugriff. Wird eine Datei blockiert, kann das Bild als Raster-Data-URL
+in der Quelle hinterlegt werden. Verlinkte SVG-Bilder werden zur Einbettung als
+PNG gerendert. SVG und HTML behalten bereits unterstützte Rasterformate bei.
+Die Exportfunktionen sind Teil von `arch.min.js`.
 
 **Help** öffnet die integrierte Referenz mit Vor- und Zurücknavigation.
 Der HTML-Export enthält die Hauptthemen und die im Modell verwendeten
