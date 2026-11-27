@@ -67,7 +67,7 @@ export async function readImageFile(file, owner) {
   }
 }
 
-export function imageBaker({document:owner = globalThis.document,baseURL,loadImage,imageFiles} = {}) {
+export function imageBaker({document:owner = globalThis.document,baseURL,loadImage,imageFiles,imageURLs} = {}) {
   const loaded = new Map();
   const decoded = new Map();
   const browser = owner?.defaultView;
@@ -80,7 +80,9 @@ export function imageBaker({document:owner = globalThis.document,baseURL,loadIma
       if (!raster.test(data)) throw new Error('Expected a raster image data URL');
       return data;
     }
-    const url = backgroundImageURL(source,owner,baseURL);
+    const reference = imageURLs?.get(source) ?? source;
+    if (raster.test(reference)) return reference;
+    const url = backgroundImageURL(reference,owner,baseURL);
     let response;
     try { response = await (browser ?? globalThis).fetch(url); }
     catch (error) {

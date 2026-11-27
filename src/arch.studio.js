@@ -35,7 +35,7 @@ const runtime = createRuntime({
     const svg = element.firstElementChild;
     if (graph.kind === 'help') attachHelpNavigation(svg, graph, options);
     else {
-      if (options.imageSession || options.baseURL !== undefined || element.closest('[data-arch-image-base]')) {
+      if (options.imageSession || options.loadImage || options.baseURL !== undefined || element.closest('[data-arch-image-base]')) {
         (options.imageSession ?? createImageSession(element,options)).mount(element);
       }
       attachDiagnosticHelp(element, graph, options);

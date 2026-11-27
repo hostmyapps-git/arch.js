@@ -2985,7 +2985,32 @@ try {
 
   const imageSource = 'architecture "Local images" { config { presentation dashboard } model {system svc "Service"} view main "Main" {backgroundImage "./map.svg"} }';
   const localImage = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="24"><rect width="40" height="24" fill="tomato"/></svg>';
+  async function assertPaintedImage(page, preview) {
+    let pixel;
+    for (let attempt=0;attempt<10;attempt++) {
+      const screenshot = await preview.screenshot();
+      pixel = await page.evaluate(async data => {
+        const image = new Image();
+        image.src = 'data:image/png;base64,'+data;
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width=image.width;
+        canvas.height=image.height;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(image,0,0);
+        return [...ctx.getImageData(Math.round(image.width*.08),Math.round(image.height*.1),1,1).data];
+      },screenshot.toString('base64'));
+      if (pixel[0]-pixel[1]>30 && pixel[0]-pixel[2]>30) return pixel;
+    }
+    assert.fail(`Expected the tinted background image in the live preview, got ${pixel}`);
+  }
+  const assertSamePixel = (actual,expected) => assert.ok(actual.every((channel,i)=>Math.abs(channel-expected[i])<=2),
+    `Expected ${expected}, got ${actual}`);
   const assetPage = await browser.newPage();
+  const imageRequests = [];
+  assetPage.on('request',request=>{
+    if (request.url().endsWith('/map.svg')) imageRequests.push(request.url());
+  });
   await assetPage.route(new URL('available/map.svg',address).href,route=>route.fulfill({contentType:'image/svg+xml',body:localImage}));
   await assetPage.route(new URL('missing/map.svg',address).href,route=>route.fulfill({status:404,body:'Not found'}));
   await assetPage.goto(address);
@@ -3002,10 +3027,31 @@ try {
   for (const id of ['available','diagram']) {
     assert.equal(await assetPage.locator(`#${id} svg image`).getAttribute('href'),new URL('available/map.svg',address).href);
   }
+  const diagramPixel = await assertPaintedImage(assetPage,assetPage.locator('#diagram svg'));
+  assertSamePixel(await assertPaintedImage(assetPage,assetPage.locator('#available .ad-diagram svg')),diagramPixel);
+  assert.equal(imageRequests.includes(new URL('map.svg',address).href),false);
   const available = assetPage.locator('#available');
   const [availableHTML] = await Promise.all([assetPage.waitForEvent('download'),available.getByRole('button',{name:'Download HTML',exact:true}).click()]);
   const availableMarkup = await readFile(await availableHTML.path(),'utf8');
-  assert.match(JSON.parse(availableMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg,/data:image\/png;base64,/);
+  const availableSVG = JSON.parse(availableMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg;
+  const suppliedImage = availableSVG.match(/href="(data:image\/png;base64,[^"]+)"/)[1];
+  await assetPage.evaluate(({source,data}) => {
+    const host = document.createElement('div');
+    host.id='supplied-image';
+    document.body.append(host);
+    window.suppliedImageLoads=0;
+    arch.renderDashboard(host,source,{baseURL:'/supplied/',loadImage:async () => {
+      window.suppliedImageLoads++;
+      return data;
+    }});
+  },{source:imageSource,data:suppliedImage});
+  const supplied = assetPage.locator('#supplied-image');
+  assertSamePixel(await assertPaintedImage(assetPage,supplied.locator('.ad-diagram svg')),diagramPixel);
+  const [suppliedHTML] = await Promise.all([assetPage.waitForEvent('download'),supplied.getByRole('button',{name:'Download HTML',exact:true}).click()]);
+  const suppliedMarkup = await readFile(await suppliedHTML.path(),'utf8');
+  assert.ok(JSON.parse(suppliedMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg.includes(suppliedImage));
+  assert.equal(await assetPage.evaluate(()=>window.suppliedImageLoads),1);
+  assert.equal(imageRequests.includes(new URL('supplied/map.svg',address).href),false);
   const missing = assetPage.locator('#missing');
   await missing.getByRole('button',{name:'Attach image',exact:true}).waitFor();
   assert.match(await missing.locator('.ad-image-status').textContent(),/\/missing\/map\.svg/);
@@ -3019,6 +3065,7 @@ try {
   const attachedSVG = JSON.parse(attachedMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg;
   assert.match(attachedSVG,/href="data:image\/png;base64,/);
   assert.match(await missing.locator('svg image').getAttribute('href'),/^data:image\/png;base64,/);
+  assertSamePixel(await assertPaintedImage(assetPage,missing.locator('.ad-diagram svg')),diagramPixel);
   assert.equal(await missing.locator('.ad-image-status').isVisible(),false);
   assert.equal(await available.locator('svg image').getAttribute('href'),new URL('available/map.svg',address).href);
   const [attachedStudio] = await Promise.all([assetPage.waitForEvent('download'),missing.getByRole('button',{name:'Download Studio',exact:true}).click()]);
@@ -3031,6 +3078,33 @@ try {
   const attachedFiles = Object.values(JSON.parse(await readFile(await attachedScene.path(),'utf8')).files);
   assert.equal(attachedFiles.length,1);
   assert.match(attachedFiles[0].dataURL,/^data:image\/png;base64,/);
+
+  await assetPage.route(new URL('preview/*.svg',address).href,route=>route.fulfill({contentType:'image/svg+xml',body:localImage}));
+  await assetPage.evaluate(source => {
+    const host = document.createElement('pre');
+    host.id = 'host-rewrite';
+    document.body.append(host);
+    const code = document.createElement('code');
+    code.className = 'language-arch';
+    code.textContent = source.replace(/}\s*$/, 'view other "Other" {backgroundImage "./other.svg"} }');
+    host.append(code);
+    arch.renderAll({root:host});
+    // LivePreview rewrites relative resources once, after arch.renderAll.
+    for (const image of host.querySelectorAll('svg image')) {
+      const href = image.getAttribute('href');
+      if (href?.startsWith('./')) image.setAttribute('href','/preview/'+href.slice(2));
+    }
+  },imageSource);
+  const rewritten = assetPage.locator('#host-rewrite');
+  assert.equal(await rewritten.locator('svg image').getAttribute('href'),'/preview/map.svg');
+  assertSamePixel(await assertPaintedImage(assetPage,rewritten.locator('.ad-diagram svg')),diagramPixel);
+  const [rewrittenHTML] = await Promise.all([assetPage.waitForEvent('download'),rewritten.getByRole('button',{name:'Download HTML',exact:true}).click()]);
+  const rewrittenMarkup = await readFile(await rewrittenHTML.path(),'utf8');
+  const previews = JSON.parse(rewrittenMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews;
+  for (const view of ['main','other']) assert.match(previews[view].svg,/href="data:image\/png;base64,/);
+  await rewritten.getByRole('button',{name:'Next view'}).click();
+  assert.equal(await rewritten.locator('svg image').getAttribute('href'),new URL('preview/other.svg',address).href);
+  assertSamePixel(await assertPaintedImage(assetPage,rewritten.locator('.ad-diagram svg')),diagramPixel);
   await assetPage.close();
 
   await mkdir('test-results/local-image',{recursive:true});
@@ -3039,7 +3113,9 @@ try {
     <script>arch.render('#host',${JSON.stringify(imageSource)})</script>`);
   const localPage = await browser.newPage();
   await localPage.goto(pathToFileURL(path.resolve('test-results/local-image/index.html')).href);
-  assert.match(await localPage.locator('#host svg image').getAttribute('href'),/^file:.*\/local-image\/map\.svg$/);
+  assert.match(await localPage.locator('#host svg image').evaluate(image=>new URL(image.getAttribute('href'),image.baseURI).href),/^file:.*\/local-image\/map\.svg$/);
+  const localPreview = localPage.locator('#host .ad-diagram svg');
+  assertSamePixel(await assertPaintedImage(localPage,localPreview),diagramPixel);
   await localPage.locator('.ad-export-menu summary').click();
   const localDownload = localPage.waitForEvent('download');
   await localPage.getByRole('button',{name:'Export SVG',exact:true}).click();
@@ -3047,8 +3123,9 @@ try {
   await localPicker.getByText(/Choose the local image to include/).waitFor();
   await localPicker.getByLabel('Choose image file').setInputFiles('test-results/local-image/map.svg');
   assert.match(await readFile(await (await localDownload).path(),'utf8'),/href="data:image\/png;base64,/);
+  assertSamePixel(await assertPaintedImage(localPage,localPreview),diagramPixel);
   await localPage.close();
-  console.log('✓ Relative image bases, Dashboard 404 recovery, portable downloads, and file:// image attachment');
+  console.log('✓ Live image pixels, scoped resolvers, Dashboard 404 recovery, and portable downloads over HTTP and file://');
 
   await direct.setViewportSize({width:1960,height:1200});
   await direct.locator('[data-example="taxonomy"]').click();

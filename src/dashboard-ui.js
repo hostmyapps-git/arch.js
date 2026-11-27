@@ -683,8 +683,8 @@ export function dashboardUI(root, report, options = {}) {
       if (panel?.svg) {
         // SVG comes from the arch.js renderer. User-provided values are
         // escaped by that renderer before this markup reaches the browser.
-        diagram.innerHTML = panel.svg;
-        options.imageSession?.mount(diagram,(source,message) => {
+        if (!options.imageSession) diagram.innerHTML = panel.svg;
+        else options.imageSession.mount(diagram,(source,message) => {
           const row = create('div');
           const attach = button('Attach image',() => options.imageSession.choose(source,message));
           row.append(create('span',null,message),attach);
@@ -694,7 +694,7 @@ export function dashboardUI(root, report, options = {}) {
             row.remove();
             imageStatus.hidden = !imageStatus.childElementCount;
           };
-        });
+        },panel.svg);
         const edgeIds = new Map(Array.from(diagram.querySelectorAll('[data-edge]'),
           ({dataset}) => [dataset.edge,dataset.modelId ?? dataset.edge]));
         for (const glyph of diagram.querySelectorAll(glyphSelector)) {

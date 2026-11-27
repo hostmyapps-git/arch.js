@@ -257,8 +257,7 @@
       model = next; viewId = selected; viewOverride = explicit; bounds = graph.bounds; lastSvg = svg;
       $('profile-info').innerHTML = '<span class="live-dot"></span>';
       $('profile-info').append(document.createTextNode(`${model.profile.id} · ${model.profile.version}`));
-      diagram.innerHTML = svg;
-      imageSession().mount(diagram);
+      imageSession().mount(diagram,undefined,svg);
       if (graph.kind==='help') {
         helpSession ??= {id:++helpSessionSerial,source:source.value,profile:profileOverride};
         helpSession.graph=graph;

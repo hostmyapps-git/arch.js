@@ -459,6 +459,10 @@ Relative Bildpfade beziehen sich auf die Seite, die den Block rendert. Wenn
 die Markdown-Datei in einem anderen Verzeichnis liegt, setze `baseURL` beim
 Rendern oder `data-arch-image-base="/docs/architecture/"` am Codeblock bzw.
 einem umgebenden Element. Vorschau und Download verwenden dieselbe Basis.
+Wenn der Host Bilder über `loadImage` bereitstellt, nutzen Vorschau und
+Download die von dieser Funktion gelieferte Raster-Data-URL.
+Schreibt der Host relative Bildpfade nach dem Rendern auf sein eigenes
+Verzeichnis um, übernimmt das Dashboard diese URLs für die Downloads.
 
 ## Eingebaute Hilfe
 
