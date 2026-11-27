@@ -1177,18 +1177,21 @@ test('coverage keeps NAF grid positions and colors every viewpoint with a declar
     assert.equal(tiles.size,47);
     assert.deepEqual([...tiles].map(([id, tile]) => [id,bounds(tile)]),[...full].map(([id, tile]) => [id,bounds(tile)]));
     for (const [id,tile] of tiles) {
-      const modeled = ['L2','L2-L3','A1'].includes(id);
+      const modeled = ['L2','L2-L3','A1','A2'].includes(id);
       assert.equal(tile.getAttribute('data-grid-coverage'),modeled ? 'modeled' : 'unmodeled',id);
       assert.equal(frame(tile).getAttribute('fill'),modeled ? frame(full.get(id)).getAttribute('fill') : gray,id);
       assert.equal(frame(tile).getAttribute('fill-opacity'),modeled ? '0.2' : '1',id);
       assert.equal(tile.getAttribute('data-grid-state'),modeled ? 'available' : 'empty',id);
     }
+    assert.equal(tiles.get('A2').getAttribute('data-grid-views').split(' ').includes('coverageTiles'),true);
     assert.match(svg,/transform="rotate\(-90 [^"]+\)">L2-L3<\/text>/);
     assert.doesNotMatch(svg,/arch-grid-tile-overlay|data-view-link=/);
   }
   const scoped = arch.renderToString(example.replace('show coverage diagrams list','show coverage viewpoints L2, L7 diagrams list'),options);
   assert.deepEqual([...readTiles(scoped).keys()],['L2','L7']);
   assert.match(scoped,/data-view-link="logicalDiagram"/);
+  const listed = arch.renderToString(example,options);
+  assert.match(listed,/data-view-link="coverageTiles"/);
 });
 
 test('NAF grid rows match their node cards and follow style-group overrides', () => {

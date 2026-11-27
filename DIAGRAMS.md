@@ -889,9 +889,10 @@ Mit `include []` und `show selected` erhältst du ein leeres Raster.
 deklariert ist. `show coverage` behält das vollständige Profilraster bei.
 Kacheln mit mindestens einem deklarierten Diagramm behalten ihre Profilfarbe.
 Kacheln ohne Diagramm bleiben an ihrer Rasterposition und erscheinen grau.
-Für die Abdeckung zählen fachliche Diagrammviews. Raster- und `@meta`-Views
-bleiben bei der Zählung außen vor. Ein `View`-Modellelement allein zählt als
-Produkt. `include` steuert weiterhin die Auswahlmarkierung. Mit `viewpoints`
+Für die Abdeckung zählen auch Raster-Views. Eine A2-View mit `diagram nafgrid`
+färbt ihre eigene A2-Kachel in der Profilfarbe. `@meta`-Views bleiben bei der
+Zählung außen vor. Ein `View`-Modellelement allein zählt als Produkt.
+`include` steuert weiterhin die Auswahlmarkierung. Mit `viewpoints`
 kannst du die Viewpoint-Codes in jedem Anzeigemodus einschränken. Beide
 Listenschreibweisen sind möglich.
 

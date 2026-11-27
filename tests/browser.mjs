@@ -3050,6 +3050,10 @@ try {
   assert.equal(await unmodeledCell.getAttribute('data-grid-coverage'),'unmodeled');
   assert.equal(await unmodeledCell.getAttribute('data-product-count'),'1');
   assert.equal(await unmodeledCell.locator('.arch-grid-tile-frame').evaluate(el=>getComputedStyle(el).fill),'rgb(227, 230, 236)');
+  const coverageCell = dashboard.locator('.ad-diagram [data-naf-cell="A2"]');
+  assert.equal(await coverageCell.getAttribute('data-grid-coverage'),'modeled');
+  assert.equal(await coverageCell.getAttribute('data-grid-views'),'a2');
+  assert.equal(await coverageCell.locator('.arch-grid-tile-frame').evaluate(el=>getComputedStyle(el).fillOpacity),'0.2');
   assert.equal(await conceptCell.getAttribute('data-grid-coverage'),'modeled');
   assert.equal(await conceptCell.getAttribute('data-grid-state'),'available');
   assert.equal(await conceptCell.locator('.arch-grid-tile-frame').evaluate(el=>getComputedStyle(el).fill),'rgb(106, 90, 205)');

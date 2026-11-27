@@ -242,6 +242,9 @@ Die ersten Versionen sind implementiert. Weitere Ausbauschritte:
 - Iconsuche mit größerer Vorschau, Favoriten und Einfügen einer Iconreferenz.
 - Modelldetails/Relationen beim Anklicken eines SVG-Elements anzeigen.
 - PNG-/PDF-Export mit denselben Layouts wie die SVG-Ausgabe.
+- Export ausgewählter Views als editierbare Diagramme für draw.io (`.drawio`),
+  Excalidraw (`.excalidraw`) und Microsoft Visio (`.vsdx`). Die Übernahme von
+  Positionen, Beschriftungen und Verbindungen je Zielformat prüfen.
 - CLI für Validierung/Rendering und Integration in Dokumentations-Builds.
 - Ergänzende Firefox-/WebKit-Tests, Barrierefreiheitsprüfung und Leistungstests.
 - Optional vollständiger CommonMark-Adapter als getrennte Integration.

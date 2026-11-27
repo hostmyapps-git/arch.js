@@ -57,7 +57,7 @@ export function gridProjection(nodes, edges, profile, views, diagram, selectedVi
   }
   for (const view of views) {
     const code = cellCode(view.viewpoint);
-    if (view.meta!==undefined || isGridDiagram(view.diagram?.type,profile)) continue;
+    if (view.meta!==undefined || (!coverage && isGridDiagram(view.diagram?.type,profile))) continue;
     if (code && view.represents) {
       if (!represented.has(view.represents)) represented.set(view.represents,new Set());
       represented.get(view.represents).add(code);

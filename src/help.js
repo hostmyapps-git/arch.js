@@ -354,7 +354,7 @@ export function helpContent(model, options = {}) {
     const gridNotes = ['Select diagrams by ID in the grid view’s include list, for example include [l2, p2]. You can include model elements in the same list.',
       'show all (default) keeps empty and populated tiles visible. show selected displays only entries selected by include.',
       'show modeled displays only tiles with declared diagrams assigned to their viewpoint.',
-      'show coverage keeps the full grid and colors every tile with a declared diagram. Tiles without a diagram are gray, including tiles with View products only. Include still controls the selection outline.',
+      'show coverage keeps the full grid and colors every tile with a declared diagram, including the viewpoint of the grid itself. Tiles without a diagram are gray, including tiles with View products only. Include still controls the selection outline.',
       'Use viewpoints [L2, P2] to limit any display mode to those viewpoint codes. The list also accepts commas without brackets.',
       'With show modeled, include [] creates a diagram-only grid without marked selections. With show selected, include [] produces an empty grid.',
       'The NAF grid uses the same style-group colors and fill opacity as node cards. Selected tiles get a stronger outline. A gray overlay dims the fill and labels of unselected tiles. L2-L3 has a vertical label.',
@@ -403,7 +403,7 @@ export function helpContent(model, options = {}) {
       viewpointGrid: ['The default grid places the profile’s viewpoints automatically. It includes diagrams outside the grid in a separate tile.',...gridNotes],
       nafgrid: ['Profiles enable this renderer through viewpointGrid and define its entry viewpoint, rows, columns and cells. For naf41-uaf, use viewpoint A2.',
         'Products lists the selected model View elements. Use NafViewpoint with nafViewpoint, a Viewpoint ID matching a cell code, or a title beginning with a code such as L2 Logical Scenario.',
-        'Diagrams lists declared view blocks by their viewpoint, independent of config.views. Grid views themselves are omitted. Use represents MODEL_ID to link a diagram to its product.',
+        'Diagrams lists declared view blocks by their viewpoint, independent of config.views. Grid views appear in show coverage. Use represents MODEL_ID to link a diagram to its product.',
         'Other viewpoints and unassigned products appear below the grid.',...gridNotes],
       class: ['attributes/methods/functions/interfaces/ports/parameters: lists of element IDs.', 'ownerAttribute/signatureAttribute: attribute names (defaults owner/signature).', 'Parameters belong to methods/functions; other details belong to classes.', 'propertyFields [FIELD, FIELD]: display actual attribute values/reference IDs on each class card; different from member element IDs.', 'place CLASS_ID at (X, Y) supports numeric or calculated absolute view coordinates. Optional size sets minimum dimensions (cards remain at least 380 wide and grow for contents). Unplaced cards keep their automatic row positions.', 'Ports move with their owner and can be coordinate anchors. Details cannot be placed individually. Packages are flat class cards here. Tree groups, route/routes, via and graphical reference connectors remain connected-only.'],
     };
