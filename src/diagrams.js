@@ -161,7 +161,7 @@ export function validateDiagramView(profile, view, graph) {
           fail(`${key}: unknown or invisible reference ${id}`,view);
       }
     } else if(key==='layout') {if(!['auto','flow','model'].includes(v))fail('Activity layout must be auto, flow or model',view);}
-    else if(['showLabels','showContext','datedOnly'].includes(key)) {if(typeof v!=='boolean')fail(`${key} must be true or false`,view);}
+    else if(['showLabels','showStereotype','showContext','datedOnly'].includes(key)) {if(typeof v!=='boolean')fail(`${key} must be true or false`,view);}
     else if(['levelGap','siblingGap'].includes(key)) {if(!Number.isFinite(v)||v<16||v>800)fail(`${key} must be between 16 and 800`,view);}
     else if(['min','max'].includes(key)) { if(!Number.isFinite(v)) fail(`${key} must be finite`,view); }
     else if(typeof v!=='string') fail(`${key} must be a string`,view);

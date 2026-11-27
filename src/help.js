@@ -368,7 +368,7 @@ export function helpContent(model, options = {}) {
         'direction: down (default), up, right or left; orientation is an alias. Choose only one. Direction describes parent-to-child layout, independently of arrow direction.',
         'levelGap/siblingGap: 16–800 pixels (defaults 96/48); level gaps grow for edge labels. Siblings pack by occupied ranks, so shallow branches reuse free space above/beside wider subtrees while cards and automatic labels remain separated.',
         'Use padding 24 for equal margins or padding [24, 56, 32, 16] for top, right, bottom and left. The brackets are optional for a comma-separated list. Values are 0–10000000 SVG units. The default is 48 on each side. The same option defines the bounds of named tree groups.',
-        'showLabels: true (default) or false. curve: rounded (default) or orthogonal.',
+        'showLabels controls the relationship text and defaults to true. showStereotype displays «TYPE» and inherits config.showRouteStereotypes. curve: rounded (default) or orthogonal.',
         'sharePath: none (default), stereotypes (same exact relationship type) or all (compatible types/styles). Shared paths preserve logical relationships and individual labels; incompatible styles or obstructed corridors remain separate.',
         'Node styles, icons, visibility and minimum sizes work as in connected views. Packages are flat cards; containment is not the hierarchy.',
         'A visible node has at most one hierarchy parent; cycles, self-links, parallel hierarchy links and bidirectional links are errors. Use relations/include/exclude/display none to select a tree, or diagram connected for multiple inheritance.',
@@ -422,12 +422,12 @@ export function helpContent(model, options = {}) {
       'nodes phase, vision, goalA, goalB is equivalent. Single entries also become lists; nodes [] remains invalid.',
       'place hierarchy at (300, 0)  // optional group position', 'place capability at (0, 250)  // optional external card position',
       'Each group has its own direction: down (default), up, left or right. orientation is an alias. parentDirection auto/source/target selects hierarchy parents independently of arrow direction.',
-      'Other options: relations, levelGap, siblingGap, curve rounded/orthogonal, showLabels, sharePath none/stereotypes/all. relations selects hierarchy edges; other visible relationships remain drawn and routable. sharePath applies to the selected hierarchy edges.',
+      'Other options: relations, levelGap, siblingGap, curve rounded/orthogonal, showLabels, showStereotype, sharePath none/stereotypes/all. relations selects hierarchy edges; other visible relationships remain drawn and routable. sharePath applies to the selected hierarchy edges.',
       'Multiple groups are allowed. Members must be unique, visible non-container siblings; one node belongs to at most one group. Use include to select view contents and nodes to select group members.',
       'Compact packing uses occupied ranks, not full subtree rectangles; shallow siblings can sit beside a wide subtree without reserving its empty upper space.',
       'Groups are invisible layout regions, not model elements or packages. Group dimensions are automatic; place GROUP sets its bounding-box origin, relative to the parent package content if nested. Do not place individual members.',
       'External cards use normal connected layout; directly linked top-level cards are aligned beside the group when unplaced. Internal hierarchy edges use automatic tree paths; route overrides remain available.',
-      'Route precedence: individual route properties, then group curve/showLabels/sharePath, then view routes defaults. showLabels controls text; label none hides the entire label. See @help diagrams tree for hierarchy constraints.');
+      'Route precedence: individual route properties, then group curve, showLabels, showStereotype and sharePath, then view routes defaults. showStereotype falls back to config.showRouteStereotypes. showLabels controls regular text. label none hides the entire label. See @help diagrams tree for hierarchy constraints.');
     section('Selection', 'Including a container includes its descendants. Required ancestor containers are added automatically.', 'Edges appear only when both endpoints are visible.', 'Without a view block, the default view is created automatically.', '@help routing', '@help styles', '@help diagrams');
     section('Background images', 'backgroundImage "/images/site-plan.png"  // visible behind the diagram',
       'showBackgroundImage true  // show element background images in this view; default false',
@@ -460,7 +460,7 @@ export function helpContent(model, options = {}) {
     section('Tree groups', 'place TREE_GROUP_ID at (X, Y)', 'Positions the complete automatic tree; size and individual member placement are not supported. Outside nodes accept ordinary place. Internal edges accept route overrides, including label icons. @help views');
     section('Routing defaults (connected only)', 'routes {', '  curve straight', '  from auto', '}',
       'Defaults apply to every relationship and reference connector in this view, including routes without an individual block. Specific route properties override matching defaults, regardless of declaration order. Other defaults remain inherited.',
-      'Available fields: from, to, via, curve, label, sideOffset, path, icon, iconPosition, showIcon, showLabel, sharePath, color, width, dasharray, crossings, crossingRadius, avoidObstacles. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. Shared label defaults apply to relationship labels. Reference connector labels can be positioned in individual routes.',
+      'Available fields: from, to, via, curve, label, sideOffset, path, icon, iconPosition, showIcon, showLabel, showStereotype, sharePath, color, width, dasharray, crossings, crossingRadius, avoidObstacles. A target port/point in to applies to relationships; a fraction from 0 to 1 applies to reference connectors. Shared label defaults apply to relationship labels. Reference connector labels can be positioned in individual routes.',
       'On an individual host route, source GROUP.NODE and target GROUP.NODE select embedded cards for the model endpoints. from and to still select ports.',
       'Specific from/to/via/curve settings replace an inherited free path; an explicit path still controls the complete route. Empty routes {} keeps the existing automatic routing.');
     section('Multiple relationships',
@@ -507,7 +507,11 @@ export function helpContent(model, options = {}) {
       'Only visible nodes and groups in this view can be used; relationship IDs and other routes are not coordinate anchors. Graphical reference cards used as anchors become canonical cards in normal layout, also with perEdge occurrences. Other reference cards retain automatic placement.',
       'A hidden carrying edge or a hidden reference card does not evaluate its unused via. Unknown IDs and invalid arithmetic are still rejected in stored routes. Constant zero divisors fail validation; layout-dependent zero divisors fail during rendering.',
       'JSON: "via": [["source.right + 40", "target.y - 20"], ["target.x - 40", "target.centerY"]]. Source/meta exports preserve expressions.');
-    section('Independent label fields', 'routes { icon core.cloud showIcon true showLabel false }', 'route EDGE_ID { showIcon false showLabel true }', 'showIcon and showLabel are booleans (default true). showLabel controls visible text; showIcon controls the configured icon. Both false removes the label frame. label none hides the entire label regardless of these switches.');
+    section('Independent label fields', 'routes { showStereotype true }', 'route EDGE_ID { showLabel false showIcon false showStereotype true }',
+      'showStereotype displays the relationship type as «TYPE» above any label text. It inherits config.showRouteStereotypes when omitted. showLabel controls the title and reference text. showIcon controls the configured icon. Both default to true.',
+      'A label with no visible content has no frame. label none hides the entire label.');
+    section('Stereotypes in tree views', 'diagram tree { showStereotype true }',
+      'tree hierarchy { nodes [a, b, c] showStereotype true }', 'Use showLabels false to show the type without the regular label text.');
     section('Hide relationship labels', 'routes { label none }', 'route EDGE_ID { label none }', 'A local label (X, Y) overrides a global label none and shows the label again, including any inherited icon. Hidden labels occupy no layout space; relationship titles and references remain in the model and edge tooltip.');
     section('Hide entire relationships', 'style EDGE_ID { display none }', 'style EDGE_ID { display standard }',
       'View-local presentation only: hide the path, label/icon and carried reference connectors. Hidden relationships still count for profile/model constraints. Matrices omit their cells; explicit sequence message lists skip hidden messages.',
@@ -576,6 +580,8 @@ export function helpContent(model, options = {}) {
       'overview  —  Selects one view by ID.',
       '[overview, detail]  —  Selects unique view IDs in the listed order. Commas also work without brackets.',
       'Omitting views selects the first declared view. Multiple selected views stack in one SVG. The dashboard opens the first selected view and its catalog includes every declared view.');
+    section('Relationship stereotypes', 'config { showRouteStereotypes true }',
+      'Sets the default for connected views, standalone tree views and named tree groups. The default is false. Override it with showStereotype in a route, view routes, diagram tree or named tree group.');
     section('Select a registered profile', 'architecture "Title" {', '  config { profile PROFILE }', '  model { ... }', '}', 'options.profile overrides this selection. Register external profiles before rendering.');
     section('Custom inline profile', 'config {', '  type actor { template person }', '  type product {', '    template application', '    attribute owner { type string required true }', '  }', '  relation uses { from actor to product style flow }', '  defaultRelation uses', '}',
       'Choose either config profile or an inline definition. Inline profiles are not registered globally.');

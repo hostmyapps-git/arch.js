@@ -180,16 +180,18 @@ function routeEdge(edge, source, target, route, parallel, cards) {
 function treeGroupRoute(view,id,options) {
   const route={...routingOptions(view,view.routes[id])};
   if(options?.showLabels!==undefined&&view.routes[id]?.showLabel===undefined)route.showLabel=options.showLabels;
-  for(const key of ['curve','sharePath'])if(options?.[key]!==undefined&&view.routes[id]?.[key]===undefined)route[key]=options[key];
+  for(const key of ['curve','sharePath','showStereotype'])if(options?.[key]!==undefined&&view.routes[id]?.[key]===undefined)route[key]=options[key];
   return route;
 }
 
-function edgeLabelMetrics(edge,route,profile,modelNodes) {
+function edgeLabelMetrics(edge,route,profile,modelNodes,showRouteStereotypes) {
   const result={},labelHidden=route.label==='none';
   result.labelHidden=labelHidden;result.labelExplicit=route.label!==undefined;
   const omit=edge.referenceDisplay==='nodes'?new Set(edge.referenceItems.map(item=>`${item.attribute}\0${item.modelId??item.id}`)):new Set();
   const displayText=relationshipLabel(edge,profile.relationTypes[edge.type],modelNodes,omit);
   result.labelLines=labelHidden||route.showLabel===false?[]:wrap(displayText,displayText===edge.title?160:200,11);
+  if (!labelHidden && (route.showStereotype ?? showRouteStereotypes))
+    result.labelLines.unshift(...wrap(`«${edge.type}»`,200,11));
   result.labelWidth=labelHidden?0:Math.max(28,...result.labelLines.map(line=>textLength(line)*11+18));
   result.labelHeight=labelHidden?0:result.labelLines.length*15+8;result.labelTextOffset={x:0,y:0};
   if(!labelHidden&&route.showIcon!==false&&route.icon&&route.icon!=='none') {
@@ -210,6 +212,7 @@ export function layoutView(document, viewId) {
   const view = views.get(viewId);
   if(view.meta!==undefined)return layoutMeta(model,profile,view);
   const draft = document.mode === 'draft';
+  const showRouteStereotypes = model.config?.showRouteStereotypes;
   const projection = graph.project(view), visible = projection.ids;
   const { styles: stylePlan, placement: positions, routeReferences, presentation, statePlacement } = plans.get(viewId);
   const trees = presentation?.trees ?? view.trees ?? {};
@@ -309,7 +312,7 @@ export function layoutView(document, viewId) {
     const ids=new Set(members.map(n=>n.id)),parents=new Map(members.map(n=>[n.id,n.parent]));
     const localEdges=options._embed?[]:edges.filter(e=>ids.has(e.source)&&ids.has(e.target)).map(edge=>{
       const route=treeGroupRoute(view,edge.id,options);
-      return {...edge,treeLabel:edgeLabelMetrics(edge,route,profile,modelNodes)};
+      return {...edge,treeLabel:edgeLabelMetrics(edge,route,profile,modelNodes,showRouteStereotypes)};
     });
     const local=options._embed?embedded.get(id):layoutTree(model,profile,{...view,diagram:{type:'tree',...options}},members,localEdges,{sharePaths:false});
     const occurrences = presentation?.groups.get(id);
@@ -502,7 +505,7 @@ export function layoutView(document, viewId) {
       route.curve??=DEFAULT_CURVE;
       result.d=polyPath(preset.points,route.curve==='rounded');
     }
-    Object.assign(result,edgeLabelMetrics(edge,route,profile,modelNodes),routeStyle(route));
+    Object.assign(result,edgeLabelMetrics(edge,route,profile,modelNodes,showRouteStereotypes),routeStyle(route));
     if (draft && inputRoute) rememberGeometry(result, {route:inputRoute,resolvedRoute:route});
     return result;
   });

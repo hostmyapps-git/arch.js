@@ -1,7 +1,7 @@
 // View defaults apply before per-route overrides. Endpoint types differ:
 // model relationships use target ports; reference connectors use path fractions.
 export const DEFAULT_CURVE = 'rounded';
-const fields = ['from', 'to', 'via', 'curve', 'label', 'sideOffset', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath', 'color', 'width', 'dasharray', 'crossings','crossingRadius','avoidObstacles'];
+const fields = ['from', 'to', 'via', 'curve', 'label', 'sideOffset', 'path', 'icon', 'iconPosition', 'showIcon', 'showLabel', 'showStereotype', 'sharePath', 'color', 'width', 'dasharray', 'crossings','crossingRadius','avoidObstacles'];
 const geometryFields = ['from', 'to', 'via', 'curve', 'source', 'target'];
 const portDirections = {top:[0,-1], right:[1,0], bottom:[0,1], left:[-1,0]};
 
@@ -48,6 +48,7 @@ export function routingOptions(view, specific, reference = false) {
     delete defaults.iconPosition;
     delete defaults.showIcon;
     delete defaults.showLabel;
+    delete defaults.showStereotype;
     delete defaults.crossings;
     delete defaults.crossingRadius;
     delete defaults.avoidObstacles;

@@ -27,6 +27,7 @@ function jsonSource(model) {
     if (own(original, 'views')) config.views = copy(original.views);
     if (own(original, 'presentation')) config.presentation = original.presentation;
     if(own(original,'showValidation'))config.showValidation=original.showValidation;
+    if(own(original,'showRouteStereotypes'))config.showRouteStereotypes=original.showRouteStereotypes;
     if (own(original, 'syntaxRecovery')) config.syntaxRecovery = original.syntaxRecovery;
     if (own(original, 'validation')) config.validation = original.validation;
     if (original.definition) {
@@ -140,9 +141,9 @@ function formatSource(source,format) {
 }
 
 const styleKeys = ['template','accent','icon','iconPosition','backgroundColor','backgroundImage','showBackgroundImage','opacity','display','fontSize','width','height','showIcon','showLabel','showStereotype','showDescription','showTechnology','propertyFields'];
-const routingKeys = ['source','target','from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel','sharePath','color','width','dasharray','crossings','crossingRadius','avoidObstacles'];
+const routingKeys = ['source','target','from','to','via','curve','path','label','icon','iconPosition','showIcon','showLabel','showStereotype','sharePath','color','width','dasharray','crossings','crossingRadius','avoidObstacles'];
 const viewKeys = ['extends','embed','name','@meta','meta','diagram','tree','direction','theme','spacing','viewpoint','represents','include','exclude','place','virtualPlace','style','routes','route','virtualRoute','referenceDisplay','referenceOccurrences','propertyFields','backgroundImage','showBackgroundImage'];
-const configKeys = ['showValidation','syntaxRecovery','profile','views','presentation','validation','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
+const configKeys = ['showValidation','showRouteStereotypes','syntaxRecovery','profile','views','presentation','validation','id','title','version','extends','defaultRelation','requireViewpoint','type','relation','viewpoint','styleGroup'];
 const profileKeys = ['extends','template','container','abstract','contains','attribute','attributes','icon','accent','backgroundColor','styleGroup','from','to','directions','style','allowSelf','acyclic','sequenceContext','incoming','outgoing','nodes','relations','requiredNodes','requiredRelations'];
 function jsonKeys(path='') {
   if(path==='/architecture')return ['name','description','config','model','views','@help','@meta'];

@@ -267,7 +267,12 @@ Zuordnungspfeils steht im Schlüssel `"ELEMENT -> RELATION"`.
 `"label": "none"` verbirgt das ganze Kantenlabel, `"icon": "none"` nur dessen
 Icon. Weggelassene Eigenschaften verwenden die gemeinsamen Vorgaben.
 Konkrete `route`-Felder überschreiben `routes` feldweise. `"showIcon": false`
-und `"showLabel": false` sind unabhängig voneinander.
+blendet das Icon aus. `"showLabel": false` blendet Titel und Referenztexte
+aus. `"showStereotype": true` zeigt den Relationstyp als `«TYPE»`.
+Bei einem Baum funktioniert das auch unter `"diagram": {"type": "tree",
+"showStereotype": true}` oder in einer benannten Baumgruppe. Unter
+`"config": {"showRouteStereotypes": true}` setzt du den Standard für
+Connected- und Tree-Views.
 
 Alle neun Renderer und ihre Einstellungen sind verfügbar; `"diagram": "matrix"`
 ist die Kurzform ohne weitere Einstellungen. Tree-Views akzeptieren beispielsweise

@@ -291,11 +291,11 @@ function parseDSLDocument(source, recovery) {
   };
   const readRouting = (item, reference = false, defaults = false) => block(() => {
     const attr = typed('word');
-    const allowed = ['from', 'to', 'via', 'curve', 'path', 'label', 'sideOffset', ...(!reference ? ['icon', 'iconPosition', 'showIcon', 'showLabel', 'sharePath'] : []),
+    const allowed = ['from', 'to', 'via', 'curve', 'path', 'label', 'sideOffset', ...(!reference ? ['icon', 'iconPosition', 'showIcon', 'showLabel', 'showStereotype', 'sharePath'] : []),
       ...(!reference && !defaults ? ['source', 'target'] : []), ...(!reference ? ['crossings','crossingRadius','avoidObstacles'] : []), 'color', 'width', 'dasharray'];
     if (!allowed.includes(attr.value)) fail(`Unknown routing attribute: ${attr.value}`, attr);
     if (Object.hasOwn(item, attr.value)) fail(`Duplicate routing attribute: ${attr.value}`, attr);
-    if (['showIcon', 'showLabel', 'avoidObstacles'].includes(attr.value)) item[attr.value] = scalar();
+    if (['showIcon', 'showLabel', 'showStereotype', 'avoidObstacles'].includes(attr.value)) item[attr.value] = scalar();
     else if (['source', 'target'].includes(attr.value)) item[attr.value] = text();
     else if (attr.value === 'width') item.width = typed('number', 'route width').value;
     else if (attr.value === 'crossingRadius') item.crossingRadius = typed('number', 'crossing radius').value;
@@ -562,7 +562,7 @@ function parseDSLDocument(source, recovery) {
           config.presentation = scalar();
           checkPresentationMode(config.presentation, loc);
         }
-        else if (key.value === 'showValidation') config.showValidation=scalar();
+        else if (['showValidation','showRouteStereotypes'].includes(key.value)) config[key.value]=scalar();
         else if (key.value === 'syntaxRecovery') {
           config.syntaxRecovery = scalar();
           checkSyntaxRecovery(config.syntaxRecovery, key);
@@ -572,9 +572,9 @@ function parseDSLDocument(source, recovery) {
       }
     });
     const hasDefinition = Object.keys(definition.nodeTypes).length || Object.keys(definition.relationTypes).length || Object.keys(definition.viewpoints).length || Object.keys(definition.styleGroups).length || definition.extends;
-    const runtimeOnly = [...seen].every(key => ['profile', 'views', 'presentation', 'validation', 'showValidation', 'syntaxRecovery'].includes(key));
+    const runtimeOnly = [...seen].every(key => ['profile', 'views', 'presentation', 'validation', 'showValidation', 'syntaxRecovery', 'showRouteStereotypes'].includes(key));
     if (config.profile && (hasDefinition || !runtimeOnly)) fail('Choose either config profile or an inline profile definition', loc);
-    if (config.profile || !hasDefinition && runtimeOnly && ['views','presentation','syntaxRecovery'].some(key => seen.has(key))) delete config.definition;
+    if (config.profile || !hasDefinition && runtimeOnly && ['views','presentation','syntaxRecovery','showRouteStereotypes'].some(key => seen.has(key))) delete config.definition;
     model.config = config;
   };
   block(() => {

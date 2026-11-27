@@ -55,7 +55,9 @@ export function validateViewRoutes(view, profile, { nodesById: nodes, edgesById:
     if ((reference && route.to !== undefined && typeof route.to !== 'string' || defaults && typeof route.to === 'number') &&
       (!Number.isFinite(route.to) || route.to < 0 || route.to > 1))
       fail('Reference route to must be a number or an expression that evaluates to a value between 0 and 1', route.loc);
-    for (const key of ['showIcon', 'showLabel']) if (route[key] !== undefined && typeof route[key] !== 'boolean') fail(`${key} must be true or false`, route.loc);
+    if (reference && route.showStereotype !== undefined)
+      fail('showStereotype applies to relationship routes',route.loc);
+    for (const key of ['showIcon', 'showLabel', 'showStereotype']) if (route[key] !== undefined && typeof route[key] !== 'boolean') fail(`${key} must be true or false`, route.loc);
     if (route.sideOffset!==undefined && typeof route.sideOffset!=='string' &&
       (!Number.isFinite(route.sideOffset)||Math.abs(route.sideOffset)>1e7))
       fail('sideOffset must be a finite offset within ±10000000',route.loc);

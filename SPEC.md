@@ -746,7 +746,7 @@ architecture "Customer platform" {
   unverändert im Modell erhalten; Knotentitel/Beschreibungen können umbrechen.
 - `routes { from PORT; to TARGET; via (X,Y), …; curve ART;
   label (X,Y); path "SVG-PFAD"; icon PACK.NAME; iconPosition POSITION;
-  showIcon BOOLEAN; showLabel BOOLEAN; sharePath MODUS;
+  showIcon BOOLEAN; showLabel BOOLEAN; showStereotype BOOLEAN; sharePath MODUS;
   color FARBE; width ZAHL; dasharray MUSTER; crossings MODUS; crossingRadius ZAHL }` setzt Vorgaben für alle fachlichen Kanten
   und grafischen Zuordnungspfeile einer Connected-View. Jede Eigenschaft einer
   konkreten `route` hat Vorrang vor derselben Vorgabe, unabhängig von der
@@ -861,12 +861,13 @@ architecture "Customer platform" {
   Seitenverhältnis aus registrierten Packs bleiben erhalten; lokale SVG-IDs
   werden je Label isoliert. Knotenpositionen und Zuordnungspfeile erhalten
   dadurch keine neuen Iconoptionen.
-- `showIcon` und `showLabel` in `route`/`routes` steuern Icon und Text eines
-  fachlichen Relationslabels unabhängig (boolesch, Standard `true`). Icons
-  werden nur bei gesetzter Iconreferenz gezeichnet. Beide Schalter auf `false`
-  entfernen auch den Labelrahmen; sichtbare reine Icon-/Textlabels passen ihre
-  Maße an. Konkrete Angaben überschreiben Vorgaben unabhängig. Zuordnungspfeile
-  erhalten dadurch keine Labels und bleiben automatisch routbar.
+- `showIcon`, `showLabel` und `showStereotype` steuern die sichtbaren Inhalte
+  eines Relationslabels in `route` und `routes`. Die Standardwerte für Icon
+  und Text sind `true`. Der Stereotyp erbt `config.showRouteStereotypes`
+  mit Standardwert `false`.
+  `showStereotype true` zeigt den Relationstyp als `«TYPE»` oberhalb des
+  Labeltexts. Icons benötigen eine Iconreferenz. Der Labelrahmen passt sich
+  dem sichtbaren Inhalt an. Einzelrouten überschreiben die Standards feldweise.
 - `label none` in `routes` oder einer fachlichen `route` blendet das gesamte
   Label einschließlich Text, Rahmen und Icon aus. Eine konkrete Labelposition
   `(X,Y)` überschreibt eine globale Ausblendung und zeigt das Label samt geerbtem
@@ -1237,6 +1238,7 @@ sieben Views. Es gibt keine automatische vollständige UML-/BPMN-/NAF-Konformit�
 Klammern, Reihenfolge oben, rechts, unten, links. Jeweils 0–10000000 SVG-Einheiten,
 Standard 48 je Seite),
 `curve rounded|orthogonal`, `showLabels` (Boolean, Standard true),
+`showStereotype` (Boolean, erbt `config.showRouteStereotypes`),
 `sharePath none|stereotypes|all` (Standard none).
 `auto` verwendet bei Generalisierungen das Ziel als Elternteil, sonst die Quelle.
 Modellrichtung und Marker bleiben erhalten. Eltern sind über ihren geordneten
@@ -1266,7 +1268,9 @@ Layoutknoten erscheinen nicht in `nodes`/SVG. Modellparent/Identität bleiben er
 Gruppen unterstützen alle Tree-Optionen; Filter betreffen ausschließlich die
 Hierarchiebildung, andere Kanten bleiben Connected-Kanten. `route` und grafische
 Referenzen funktionieren auch an internen Kanten. Konkrete Routen übersteuern
-Gruppen-`curve`/`showLabels`/`sharePath`, diese übersteuern entsprechende `routes`-Vorgaben.
+Gruppen-`curve`/`showLabels`/`showStereotype`/`sharePath`, diese übersteuern
+entsprechende `routes`-Vorgaben. Als Architekturstandard für Connected- und
+Tree-Views gilt `config { showRouteStereotypes true }`.
 Mitglieder: eindeutige sichtbare Nicht-Container unter demselben Modellparent,
 höchstens eine Gruppe pro Node. Gruppen dürfen in Packages liegen. `place GRUPPE`
 setzt den Bounding-Box-Ursprung; keine individuelle Mitgliederposition/Größenvorgabe

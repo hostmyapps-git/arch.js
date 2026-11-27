@@ -682,7 +682,7 @@ route r2 { curve straight }
 `route [r1, r2] { … }` ist gleichwertig. Im Beispiel übernimmt `r2` die
 Andockseiten aus dem gemeinsamen Block und verwendet `straight`.
 
-Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon`, `showLabel`, `sharePath`, `color`, `width`, `dasharray`, `crossings` und `crossingRadius`. Eine einzelne Host-Kante kann zusätzlich mit `source` und `target` konkrete Karten aus Einbettungen auswählen. Ein `to`-Port oder
+Erlaubt sind `from`, `to`, `via`, `curve`, `label`, `path`, `icon`, `iconPosition`, `showIcon`, `showLabel`, `showStereotype`, `sharePath`, `color`, `width`, `dasharray`, `crossings` und `crossingRadius`. Eine einzelne Host-Kante kann zusätzlich mit `source` und `target` konkrete Karten aus Einbettungen auswählen. Ein `to`-Port oder
 absoluter Zielpunkt gilt für fachliche Kanten; ein `to`-Wert von 0 bis 1 für
 Zuordnungspfeile. Ein `label` im gemeinsamen `routes`-Block gilt für fachliche
 Kanten. Zuordnungspfeile erhalten ihre `label`-Vorgabe direkt in der Einzelroute.
@@ -942,18 +942,26 @@ gehören nicht zu diesen Styleausdrücken. In JSON stehen Ausdrücke als Strings
 DSL-/JSON-/Meta-Ausgabe bewahrt die Referenzen. Laufzeithilfe: `@help styles`.
 Vollständiges Beispiel: [style-expressions.arch](examples/style-expressions.arch).
 
-## Route-Icon und Text getrennt auswählen
+## Route-Icon, Text und Stereotyp getrennt auswählen
 
 ```arch
-routes { icon core.cloud showIcon true showLabel false }
-route pickup { showIcon false showLabel true }
+routes { icon core.cloud showStereotype true }
+route pickup { showIcon false showLabel false }
 ```
 
-`showIcon` und `showLabel` sind standardmäßig `true`; `showLabel` steuert den
-Labeltext. So lassen sich nur Icon, nur Text oder beide darstellen. Beide
-Schalter auf `false` blenden auch den Rahmen aus. Einzelne `route`-Angaben
-überschreiben die Vorgaben pro Eigenschaft. `label none` blendet weiterhin das
-ganze Label aus, unabhängig von diesen Schaltern.
+In Connected-Views steuert `showLabel` den Titel und die Referenztexte.
+`showIcon` steuert das konfigurierte Icon. Beide sind standardmäßig `true`.
+`showStereotype true` zeigt den Relationstyp als `«TYPE»` oberhalb des
+Labeltexts. Im Beispiel zeigt `pickup` nur den
+Stereotyp. Einzelne `route`-Angaben überschreiben die Vorgaben pro
+Eigenschaft. `label none` blendet alle drei Inhalte samt Rahmen aus.
+
+Mit `config { showRouteStereotypes true }` aktivierst du Stereotype für alle
+Connected- und Tree-Views. Der Standardwert ist `false`. Für eine einzelne
+Tree-View verwende `diagram tree { showStereotype true }`. Eine benannte Gruppe
+akzeptiert `tree hierarchy { nodes [a, b, c] showStereotype true }`. In Bäumen
+blendet `showLabels false` den gewöhnlichen Text aus und lässt den Stereotyp
+sichtbar, wenn er aktiviert ist.
 
 Vollständiges Beispiel: [node-presentation.arch](examples/node-presentation.arch).
 Details unter `@help styles` und `@help routing`.

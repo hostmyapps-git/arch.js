@@ -11,7 +11,7 @@ const words = new Set(('architecture model config presentation dashboard view di
   + 'all none strict draft auto rounded orthogonal bezier straight virtual references referenceDisplay referenceOccurrences '
   + 'person system application service component database queue interface capability process artifact node package '
   + 'allowSelf min max minLength maxLength valueAttribute parentAttribute ownerAttribute signatureAttribute methods functions interfaces ports parameters '
-  + 'returns asyncMessages decisions forks joins finals styleGroup accent showLabel showStereotype showIcon').split(/\s+/));
+  + 'returns asyncMessages decisions forks joins finals styleGroup accent showLabel showLabels showStereotype showRouteStereotypes showIcon').split(/\s+/));
 const patterns = {
   json: new RegExp(`(?<key>${strings})(?=\\s*:)|(?<string>${strings})|(?<number>-?\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)|(?<word>[A-Za-z_][\\w.-]*)|(?<punctuation>[{}\\[\\]:,])`, 'g'),
   dsl: new RegExp(`(?<string>${strings})|(?<comment>#[^\\n]*|//[^\\n]*)|(?<number>-?\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)|(?<word>@(?:help|meta)\\b|[A-Za-z_][\\w.-]*)|(?<punctuation><->|->|[{}\\[\\](),])`, 'g'),

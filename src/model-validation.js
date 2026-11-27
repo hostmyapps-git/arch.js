@@ -37,6 +37,9 @@ export function validateModel(model, options = {}, profile, {partialModel, recov
   if (!model || !Array.isArray(model.nodes) || !Array.isArray(model.edges) || !Array.isArray(model.views) || !model.views.length)
     fail('Invalid model; use parse(source)');
   checkPresentationMode(model.config?.presentation, model.config?.loc);
+  const showRouteStereotypes = model.config?.showRouteStereotypes;
+  if (showRouteStereotypes !== undefined && typeof showRouteStereotypes !== 'boolean')
+    fail('showRouteStereotypes must be true or false',{...model.config.loc,help:'@help config'});
   // Older parse() results can still reach layout() as editable model data.
   const usesLegacyFinal = ({diagram}) => diagram && Object.hasOwn(diagram,'finals') && diagramOptionName(diagram.type,'finals')==='final';
   if (model.views.some(usesLegacyFinal)) model = {...model,views:model.views.map(view => {

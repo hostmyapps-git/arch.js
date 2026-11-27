@@ -113,10 +113,12 @@ bilden alle sichtbaren Beziehungen die Hierarchie.
   `padding [24, 56, 32, 16]` setzt oben, rechts, unten und links einzeln.
   Die Klammern sind optional. Standard sind 48 SVG-Einheiten pro Seite. Werte von 0 bis 10000000 sind
   zulässig. Die Abstände zwischen den Karten bleiben davon unabhängig.
-- `curve rounded` (Standard) oder `orthogonal`; `showLabels true` (Standard)
-  oder `false`. Keine manuellen `place`-/`route`-/`routes`-Blöcke und keine
-  grafischen Referenzkarten. Profilkonfigurierte Referenztexte bleiben in Labels
-  beziehungsweise Tooltips erhalten.
+- `curve rounded` ist Standard. `curve orthogonal` zeichnet eckige Knicke.
+  `showLabels false` blendet den regulären Text aus. `showStereotype true`
+  zeigt den Relationstyp als `«TYPE»`. Ohne lokale Angabe gilt
+  `config.showRouteStereotypes`.
+- Der Baum berechnet Positionen und Routen automatisch. Profilkonfigurierte
+  Referenztexte erscheinen in den Labels und Tooltips.
 - `sharePath none` (Standard), `stereotypes` oder `all`: gemeinsame Abschnitte
   bei gleichem Start-/Zielknoten. `stereotypes` bündelt exakt gleiche Typen,
   `all` auch verschiedene Typen mit kompatibler Darstellung. Semantische Kanten
@@ -192,9 +194,10 @@ verfügbar. Styling erfolgt weiterhin auf den Nodes und Beziehungen.
 
 Interne Hierarchiekanten erhalten Tree-Routen. `route` kann Ports, Stützpunkte,
 Kurve, Labelposition/-Icon und Sichtbarkeit wie gewohnt überschreiben.
-Für `curve`, Labeltext und `sharePath` gilt: konkrete Route vor Gruppen-`curve`/`showLabels`/`sharePath`
-vor View-`routes`. `showLabels false` blendet Text aus; `label none` entfernt
-das gesamte Label einschließlich Icon. Grafische Referenzkarten und ihre Routen
+Für Kurven, Labeltext, Stereotype und Pfadbündelung hat eine Einzelroute
+Vorrang vor der Baumgruppe. Danach folgen die View-`routes` und für Stereotype
+`config.showRouteStereotypes`. `showLabels false` blendet den regulären Text
+aus. `label none` entfernt das gesamte Label. Grafische Referenzkarten und ihre Routen
 bleiben verfügbar. Ausgeblendete Nodes/Kanten nehmen nicht am Layout teil,
 das vollständige Modell bleibt Gegenstand der Profilprüfung.
 `tree hierarchy {nodes [a,b,c] sharePath stereotypes}` bündelt die ausgewählten

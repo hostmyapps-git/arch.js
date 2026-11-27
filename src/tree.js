@@ -8,7 +8,7 @@ import {DEFAULT_CURVE} from './routing-options.js';
 const fail=(message,view)=>{throw new ArchError(`View ${view.id}: ${message}`,{...view.loc,help:'@help diagrams tree'},'ARCH_VALIDATION');};
 const defaultPadding = 48;
 const validPadding = value => Number.isFinite(value) && value >= 0 && value <= 1e7;
-export const TREE_OPTIONS=['relations','parentDirection','orientation','direction','levelGap','siblingGap','padding','showLabels','curve','sharePath'];
+export const TREE_OPTIONS=['relations','parentDirection','orientation','direction','levelGap','siblingGap','padding','showLabels','showStereotype','curve','sharePath'];
 export function validateTreeOptions(c,profile,view) {
   for(const key of Object.keys(c))if(!['type','nodes','loc','propertyFields',...TREE_OPTIONS].includes(key))fail(`Unknown tree option: ${key}`,view);
   if(c.orientation!==undefined&&c.direction!==undefined)fail('Choose direction or orientation for a tree, not both',view);
@@ -18,7 +18,8 @@ export function validateTreeOptions(c,profile,view) {
   if (padding !== undefined && !(Array.isArray(padding)
     ? padding.length === 4 && [...padding].every(validPadding) : validPadding(padding)))
     fail('padding must be a number or [top, right, bottom, left] with values between 0 and 10000000',view);
-  if(c.showLabels!==undefined&&typeof c.showLabels!=='boolean')fail('showLabels must be true or false',view);
+  for (const key of ['showLabels','showStereotype'])
+    if (c[key]!==undefined && typeof c[key]!=='boolean') fail(`${key} must be true or false`,view);
   if(c.sharePath!==undefined&&!['none','stereotypes','all'].includes(c.sharePath))fail('sharePath must be none, stereotypes or all',view);
   if(c.relations!==undefined) {
     if(!Array.isArray(c.relations)||new Set(c.relations).size!==c.relations.length||c.relations.some(t=>typeof t!=='string'||!Object.hasOwn(profile.relationTypes,t)))fail('Tree relations must be unique known relationship types',view);
@@ -75,9 +76,12 @@ export function layoutTree(model,profile,view,inputNodes,inputEdges,{sharePaths=
   const nodes=inputNodes.map(n=>({...n,parent:null,container:false}));
   const byId=new Map(nodes.map(n=>[n.id,n])),tree=treeStructure(nodes,inputEdges,profile,view),c=view.diagram;
   const direction=c.direction??c.orientation??'down',down=['down','up'].includes(direction),flip=['up','left'].includes(direction),siblingGap=c.siblingGap??48;
+  const showStereotype = c.showStereotype ?? model.config?.showRouteStereotypes;
   const labelData=new Map(tree.links.map(({edge,child})=>{
     if(edge.treeLabel)return [child,{lines:edge.treeLabel.labelLines,width:edge.treeLabel.labelWidth,height:edge.treeLabel.labelHeight,metrics:edge.treeLabel}];
-    const lines=c.showLabels===false?[]:wrap(edge.labelText??edge.title,Math.min(180,byId.get(child).width-38),11);
+    const textWidth = Math.min(180,byId.get(child).width-38);
+    const lines=c.showLabels===false?[]:wrap(edge.labelText??edge.title,textWidth,11);
+    if (showStereotype) lines.unshift(...wrap(`«${edge.type}»`,textWidth,11));
     const width=lines.length?Math.min(198,byId.get(child).width-20):0,height=lines.length?lines.length*15+8:0;
     return [child,{lines,width,height}];
   }));
