@@ -2,8 +2,25 @@ import { ArchError } from '../errors.js';
 import { embeddedBackgroundImage } from '../background-images.js';
 
 const raster = /^data:image\/(?:png|jpeg|gif|webp|avif);base64,[a-z0-9+/]+={0,2}$/i;
+const rasterType = /^image\/(?:png|jpeg|gif|webp|avif)$/i;
 const numeric = (node,name) => Number(node.getAttribute(name));
 export const decodePNG = data => Uint8Array.from(atob(data.slice(data.indexOf(',')+1)),char=>char.charCodeAt(0));
+
+export function backgroundImageURL(source, document, baseURL) {
+  const base = baseURL === undefined ? document?.baseURI : new URL(baseURL,document?.baseURI).href;
+  const url = new URL(source,base);
+  if (!['https:','http:','file:'].includes(url.protocol)) throw new Error('Unsupported image URL protocol');
+  return url;
+}
+
+function rasterData(blob, browser) {
+  return new Promise((resolve,reject) => {
+    const reader = new browser.FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 
 function cropImage(image, item, owner, edit) {
   const width = edit ? numeric(item,'width') : image.naturalWidth;
@@ -37,12 +54,25 @@ function cropImage(image, item, owner, edit) {
   return canvas.toDataURL('image/png');
 }
 
-export function imageBaker({document:owner = globalThis.document,baseURL,loadImage} = {}) {
+export async function readImageFile(file, owner) {
+  const browser = owner.defaultView;
+  const url = browser.URL.createObjectURL(file);
+  try {
+    const image = new browser.Image();
+    image.src = url;
+    await image.decode();
+    return rasterType.test(file.type) ? await rasterData(file,browser) : cropImage(image,undefined,owner,false);
+  } finally {
+    browser.URL.revokeObjectURL(url);
+  }
+}
+
+export function imageBaker({document:owner = globalThis.document,baseURL,loadImage,imageFiles} = {}) {
   const loaded = new Map();
   const decoded = new Map();
   const browser = owner?.defaultView;
   async function load(source) {
-    const embedded = embeddedBackgroundImage(source);
+    const embedded = imageFiles?.get(source) ?? embeddedBackgroundImage(source);
     if (embedded) return embedded;
     if (raster.test(source)) return source;
     if (loadImage) {
@@ -50,17 +80,16 @@ export function imageBaker({document:owner = globalThis.document,baseURL,loadIma
       if (!raster.test(data)) throw new Error('Expected a raster image data URL');
       return data;
     }
-    const response = await fetch(new URL(source,baseURL ?? owner?.baseURI));
-    if (!response.ok) throw new Error(`Image request returned ${response.status}`);
-    const blob = await response.blob();
-    if (/^image\/(?:png|jpeg|gif|webp|avif)$/i.test(blob.type)) {
-      return new Promise((resolve,reject) => {
-        const reader = new browser.FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-      });
+    const url = backgroundImageURL(source,owner,baseURL);
+    let response;
+    try { response = await (browser ?? globalThis).fetch(url); }
+    catch (error) {
+      if (url.protocol === 'file:') throw new Error('Choose the local image to include it in the export',{cause:error});
+      throw error;
     }
+    if (!response.ok) throw new Error(`Image request returned ${response.status} (${url.href})`);
+    const blob = await response.blob();
+    if (rasterType.test(blob.type)) return rasterData(blob,browser);
     // SVG and other formats are decoded in image mode, which disables scripts.
     return browser.URL.createObjectURL(blob);
   }
@@ -83,7 +112,9 @@ export function imageBaker({document:owner = globalThis.document,baseURL,loadIma
       throw new Error('Image conversion requires a browser');
     } catch (cause) {
       const name = source && !source.startsWith('data:') ? source : 'embedded image';
-      throw new ArchError(`Could not embed background image ${name}. ${cause.message}`,{},'ARCH_DIAGRAM_EXPORT');
+      const error = new ArchError(`Could not embed background image ${name}. ${cause.message}`,{},'ARCH_DIAGRAM_EXPORT');
+      if (source && !source.startsWith('data:')) error.imageSource = source;
+      throw error;
     }
   }
   return {resolve, async bake(root, editable) {

@@ -455,6 +455,11 @@ etwa `<pre data-arch-notes-key="system-review">`, oder bei `arch.render()`
 bzw. `arch.renderDashboard()` die Option `notesKey` setzen. Ohne Kennung wird
 die Position des Blocks im Dokument verwendet.
 
+Relative Bildpfade beziehen sich auf die Seite, die den Block rendert. Wenn
+die Markdown-Datei in einem anderen Verzeichnis liegt, setze `baseURL` beim
+Rendern oder `data-arch-image-base="/docs/architecture/"` am Codeblock bzw.
+einem umgebenden Element. Vorschau und Download verwenden dieselbe Basis.
+
 ## Eingebaute Hilfe
 
 Hilfe, generierte Beschriftungen und Fehlermeldungen der Bibliothek sind auf
@@ -552,11 +557,13 @@ erhält rechtwinklige Routen mit ihren Eckpunkten und optionaler Rundung.
 Freie Kurven werden als Linienzüge übertragen. SVG-Effekte wie Filter, Masken
 und komplexe Füllungen können in den editierbaren Formaten abweichen.
 
-Die Downloads enthalten ihre Bilder. Für URL-basierte Bilder benötigt der
-Browser Lesezugriff. Wird eine Datei blockiert, kann das Bild als Raster-Data-URL
-in der Quelle hinterlegt werden. Verlinkte SVG-Bilder werden zur Einbettung als
-PNG gerendert. SVG und HTML behalten bereits unterstützte Rasterformate bei.
-Die Exportfunktionen sind Teil von `arch.min.js`.
+Die Downloads enthalten ihre Bilder. Kann Dashboard ein Bild nicht laden,
+zeigt es die aufgelöste Adresse und bietet **Attach image** an. Fehlt dem
+Browser beim Download der Lesezugriff, kannst du die Datei im Dialog
+auswählen. Dashboard aktualisiert die Vorschau und setzt den Download fort.
+Das funktioniert auch für lokale Seiten unter `file://`. Verlinkte SVG-Bilder
+werden zur Einbettung als PNG gerendert. SVG und HTML behalten bereits
+unterstützte Rasterformate bei. Die Exportfunktionen sind Teil von `arch.min.js`.
 
 **Help** öffnet die integrierte Referenz mit Vor- und Zurücknavigation.
 Der HTML-Export enthält die Hauptthemen und die im Modell verwendeten

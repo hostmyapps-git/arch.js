@@ -18,6 +18,11 @@
   let currentExample, model, viewId, theme, profileOverride, zoom = 1, bounds, debounce, toastTimeout, lastSvg;
   const drafts = new Map();
   const documents = new Map();
+  const imageSessions = new WeakMap();
+  const imageSession = () => {
+    if (!imageSessions.has(currentExample)) imageSessions.set(currentExample,arch.createImageSession(studioBody));
+    return imageSessions.get(currentExample);
+  };
   let openedFileCount = 0;
   const notesByExample = new Map(workspace?.notes ? [['workspace',workspace.notes]] : []);
   const highlightMarkup = (text, format) => arch.sourceTokens(text, format).map(token =>
@@ -253,6 +258,7 @@
       $('profile-info').innerHTML = '<span class="live-dot"></span>';
       $('profile-info').append(document.createTextNode(`${model.profile.id} · ${model.profile.version}`));
       diagram.innerHTML = svg;
+      imageSession().mount(diagram);
       if (graph.kind==='help') {
         helpSession ??= {id:++helpSessionSerial,source:source.value,profile:profileOverride};
         helpSession.graph=graph;
@@ -444,7 +450,8 @@
   $('export-svg').addEventListener('click', async () => {
     if (!lastSvg) return;
     try {
-      download(await arch.embedSVGImages(lastSvg), 'image/svg+xml;charset=utf-8', 'svg');
+      const svg = lastSvg;
+      download(await imageSession().run(assets => arch.embedSVGImages(svg,assets)), 'image/svg+xml;charset=utf-8', 'svg');
       toast('Your SVG is ready.');
     } catch (error) { toast(error.message); }
   });
@@ -456,10 +463,12 @@
     try {
       if (format==='studio' || format==='html') {
         const renderHTML = format==='studio' ? arch.renderStudioToHTML : arch.renderDashboardToPortableHTML;
-        const content = await renderHTML(source.value,options);
+        const input = source.value;
+        const content = await imageSession().run(assets => renderHTML(input,{...options,...assets}));
         download(content,'text/html;charset=utf-8',format==='studio'?'studio.html':'html');
       } else {
-        const file = await arch.exportDiagram(model,format,options);
+        const input = model;
+        const file = await imageSession().run(assets => arch.exportDiagram(input,format,{...options,...assets}));
         download(file.data,file.mimeType,format,file.name);
       }
       toast('Your download is ready.');
@@ -473,6 +482,7 @@
     try {
       arch.renderDashboard($('dashboard-content'),input,{
         ...settings,
+        imageSession:imageSession(),
         notesKey:currentExample.notesKey ?? (workspace && id==='workspace' ? ['portable',workspace.notesKey ?? workspace.title,workspace.revision] : ['studio',id]),
         notes:notesByExample.get(id),
         onNotes:notes => notesByExample.set(id,notes),

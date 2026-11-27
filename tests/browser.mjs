@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { readFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { cases as naf41Cases, document as naf41Document } from './fixtures/naf41/cases.mjs';
@@ -2982,6 +2982,73 @@ try {
   assert.ok(portableRequests.every(url=>url.startsWith('file:') || url.startsWith('data:')));
   await portable.close();
   console.log('✓ Markdown dashboards isolate and autosave notes, export both HTML formats, and reopen and re-export editable Studio offline');
+
+  const imageSource = 'architecture "Local images" { config { presentation dashboard } model {system svc "Service"} view main "Main" {backgroundImage "./map.svg"} }';
+  const localImage = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="24"><rect width="40" height="24" fill="tomato"/></svg>';
+  const assetPage = await browser.newPage();
+  await assetPage.route(new URL('available/map.svg',address).href,route=>route.fulfill({contentType:'image/svg+xml',body:localImage}));
+  await assetPage.route(new URL('missing/map.svg',address).href,route=>route.fulfill({status:404,body:'Not found'}));
+  await assetPage.goto(address);
+  await assetPage.addScriptTag({url:new URL('arch.min.js',address).href});
+  await assetPage.evaluate(source => {
+    for (const id of ['available','missing','diagram']) {
+      const host=document.createElement('div');
+      host.id=id;
+      host.dataset.archImageBase=id==='diagram' ? '/available/' : `/${id}/`;
+      document.body.append(host);
+      arch.render(host,source,id==='diagram' ? {presentation:'diagram'} : undefined);
+    }
+  },imageSource);
+  for (const id of ['available','diagram']) {
+    assert.equal(await assetPage.locator(`#${id} svg image`).getAttribute('href'),new URL('available/map.svg',address).href);
+  }
+  const available = assetPage.locator('#available');
+  const [availableHTML] = await Promise.all([assetPage.waitForEvent('download'),available.getByRole('button',{name:'Download HTML',exact:true}).click()]);
+  const availableMarkup = await readFile(await availableHTML.path(),'utf8');
+  assert.match(JSON.parse(availableMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg,/data:image\/png;base64,/);
+  const missing = assetPage.locator('#missing');
+  await missing.getByRole('button',{name:'Attach image',exact:true}).waitFor();
+  assert.match(await missing.locator('.ad-image-status').textContent(),/\/missing\/map\.svg/);
+  const htmlEvent = assetPage.waitForEvent('download');
+  await missing.getByRole('button',{name:'Download HTML',exact:true}).click();
+  const picker = assetPage.getByRole('dialog',{name:'Attach background image'});
+  await picker.getByText(/Image request returned 404.*\/missing\/map\.svg/).waitFor();
+  await picker.getByLabel('Choose image file').setInputFiles({name:'map.svg',mimeType:'image/svg+xml',buffer:Buffer.from(localImage)});
+  const attachedHTML = await htmlEvent;
+  const attachedMarkup = await readFile(await attachedHTML.path(),'utf8');
+  const attachedSVG = JSON.parse(attachedMarkup.match(/id="model">([^]*?)<\/script>/)[1]).report.previews.main.svg;
+  assert.match(attachedSVG,/href="data:image\/png;base64,/);
+  assert.match(await missing.locator('svg image').getAttribute('href'),/^data:image\/png;base64,/);
+  assert.equal(await missing.locator('.ad-image-status').isVisible(),false);
+  assert.equal(await available.locator('svg image').getAttribute('href'),new URL('available/map.svg',address).href);
+  const [attachedStudio] = await Promise.all([assetPage.waitForEvent('download'),missing.getByRole('button',{name:'Download Studio',exact:true}).click()]);
+  const studioMarkup = await readFile(await attachedStudio.path(),'utf8');
+  const attachment = JSON.parse(studioMarkup.match(/id="studio-workspace">([^]*?)<\/script>/)[1]).images[0];
+  assert.equal(attachment[0],'./map.svg');
+  assert.match(attachment[1],/^data:image\/png;base64,/);
+  await missing.locator('.ad-export-menu summary').click();
+  const [attachedScene] = await Promise.all([assetPage.waitForEvent('download'),missing.getByRole('button',{name:'Export Excalidraw',exact:true}).click()]);
+  const attachedFiles = Object.values(JSON.parse(await readFile(await attachedScene.path(),'utf8')).files);
+  assert.equal(attachedFiles.length,1);
+  assert.match(attachedFiles[0].dataURL,/^data:image\/png;base64,/);
+  await assetPage.close();
+
+  await mkdir('test-results/local-image',{recursive:true});
+  await writeFile('test-results/local-image/map.svg',localImage);
+  await writeFile('test-results/local-image/index.html',`<!doctype html><script src="../../arch.min.js"></script><main id="host"></main>
+    <script>arch.render('#host',${JSON.stringify(imageSource)})</script>`);
+  const localPage = await browser.newPage();
+  await localPage.goto(pathToFileURL(path.resolve('test-results/local-image/index.html')).href);
+  assert.match(await localPage.locator('#host svg image').getAttribute('href'),/^file:.*\/local-image\/map\.svg$/);
+  await localPage.locator('.ad-export-menu summary').click();
+  const localDownload = localPage.waitForEvent('download');
+  await localPage.getByRole('button',{name:'Export SVG',exact:true}).click();
+  const localPicker = localPage.getByRole('dialog',{name:'Attach background image'});
+  await localPicker.getByText(/Choose the local image to include/).waitFor();
+  await localPicker.getByLabel('Choose image file').setInputFiles('test-results/local-image/map.svg');
+  assert.match(await readFile(await (await localDownload).path(),'utf8'),/href="data:image\/png;base64,/);
+  await localPage.close();
+  console.log('✓ Relative image bases, Dashboard 404 recovery, portable downloads, and file:// image attachment');
 
   await direct.setViewportSize({width:1960,height:1200});
   await direct.locator('[data-example="taxonomy"]').click();

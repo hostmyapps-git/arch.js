@@ -193,7 +193,7 @@ test('browser editions expose the intended APIs and share rendering and validati
   const results = [];
   const studioApis = ['help', 'inspectSource', 'sourceTokens', 'attachDiagnosticHelp', 'attachHelpNavigation',
     'attachDraftDetails', 'createDiagnosticHelpLink', 'architectureReport', 'renderDashboard', 'renderDashboardToHTML',
-    'renderStudioToHTML', 'restoreStudioDependencies', 'exportDiagram', 'embedSVGImages', 'renderDashboardToPortableHTML'];
+    'renderStudioToHTML', 'restoreStudioDependencies', 'exportDiagram', 'embedSVGImages', 'renderDashboardToPortableHTML', 'createImageSession'];
   assert.deepEqual(Object.keys(studio).sort(), [...Object.keys(arch), ...studioApis].sort());
   for (const [file, api] of [['arch.core.min.js', arch], ['arch.min.js', studio]]) {
     const context = vm.createContext({}); vm.runInContext(await readFile(file, 'utf8'), context);

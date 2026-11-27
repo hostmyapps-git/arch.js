@@ -15,6 +15,7 @@ import { registerProfile } from './profiles.js';
 import { registerIconPack } from './icons.js';
 import { canExportStudio, downloadFile, downloadHTML, exportRevision, htmlJSON, portableStudio, restoreStudioDependencies as restoreDependencies } from './studio-export.js';
 import { diagramFile, svgImageEmbedder } from './diagram-export/index.js';
+import { createImageSession } from './image-session.js';
 export * from './arch.js';
 export { help } from './help.js';
 export { inspectSource } from './source.js';
@@ -22,6 +23,7 @@ export { sourceTokens } from './source-highlight.js';
 export { attachDraftDetails } from './draft-details.js';
 export { attachDiagnosticHelp, attachHelpNavigation } from './help-navigation.js';
 export { createDiagnosticHelpLink } from './diagnostic-help.js';
+export { createImageSession };
 
 const runtime = createRuntime({
   layoutHelp, renderHelp:helpSVG, renderDashboard, rememberDraftDetails,
@@ -33,6 +35,9 @@ const runtime = createRuntime({
     const svg = element.firstElementChild;
     if (graph.kind === 'help') attachHelpNavigation(svg, graph, options);
     else {
+      if (options.imageSession || options.baseURL !== undefined || element.closest('[data-arch-image-base]')) {
+        (options.imageSession ?? createImageSession(element,options)).mount(element);
+      }
       attachDiagnosticHelp(element, graph, options);
       attachDraftDetails(svg, graph, options);
     }
@@ -66,17 +71,19 @@ export function renderDashboard(target, sourceOrModel, options = {}) {
   const scope = options.notesKey ?? element.closest('[data-arch-notes-key]')?.getAttribute('data-arch-notes-key') ?? dashboardScope(element);
   const notesKey = `archjs:notes:v1:${JSON.stringify([document.location?.pathname,scope])}`;
   const page = element.ownerDocument.createElement('div');
+  const images = options.imageSession ?? createImageSession(element,options);
   const exportOptions = (view, notes) => ({...options,view,notes,notesKey:scope});
   dashboardUI(page,report,{...options, notesKey, getHelp:query=>dashboardHelp(query,profile),
-    onExport:options.onExport ?? (async (view, notes) =>
-      downloadHTML(document,report.title,await renderDashboardToPortableHTML(prepared.model,{...exportOptions(view,notes),document}))),
+    onExport:options.onExport ?? ((view, notes) => images.run(async assets =>
+      downloadHTML(document,report.title,await renderDashboardToPortableHTML(prepared.model,{...exportOptions(view,notes),...assets})))),
     onExportStudio:options.onExportStudio ?? (canExportStudio ? async (view, notes) => {
       const original = options.originalSource ?? editableInput(sourceOrModel);
-      const html = await portableStudio(prepared,original,{baseURL:document.baseURI,...exportOptions(view,notes),document});
+      const html = await images.run(assets=>portableStudio(prepared,original,{...exportOptions(view,notes),...assets}));
       downloadHTML(document,report.title,html,'-studio');
     } : undefined),
-    onDiagramExport:async (view,format) => downloadFile(document,
-      await diagramFile(layout(view),format,renderGraph,{...options,document})),
+    onDiagramExport:async (view,format) => downloadFile(document,await images.run(assets=>
+      diagramFile(layout(view),format,renderGraph,{...options,...assets}))),
+    imageSession:images,
     viewSource,sourceTokens,
     renderView:id=>renderGraph(layout(id),{theme:options.theme})});
   const css = element.ownerDocument.createElement('style');

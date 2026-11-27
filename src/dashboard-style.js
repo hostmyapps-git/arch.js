@@ -24,6 +24,13 @@ export const dashboardStyle = `
 .ad-header .ad-primary{background:#fff;color:#1c3267;border-color:white}
 .ad-header .ad-primary:hover{background:#e9eefc}
 .ad-export-status{padding:8px 16px;background:var(--panel);color:var(--muted);border-bottom:1px solid var(--line)}
+.ad-image-status{padding:8px 16px;background:var(--panel);color:var(--muted);border-bottom:1px solid var(--line)}
+.ad-image-status>div{display:flex;align-items:center;justify-content:space-between;gap:12px;overflow-wrap:anywhere}
+.arch-image-picker{width:min(540px,calc(100% - 32px));border:1px solid #dce3f0;border-radius:12px;padding:20px;color:#15213b;background:#fff;font:14px/1.5 system-ui,sans-serif;overflow-wrap:anywhere}
+.arch-image-picker::backdrop{background:#1423498a}
+.arch-image-picker h2{font-size:20px;margin:0 0 8px}
+.arch-image-picker>div{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.arch-image-picker button{padding:6px 12px;border:1px solid #dce3f0;border-radius:6px;background:white;color:inherit;font:inherit;cursor:pointer}
 .ad-export-menu{position:relative}
 .ad-export-menu summary{cursor:pointer}
 .ad-export-formats{position:absolute;z-index:4;right:0;top:calc(100% + 6px);display:grid;min-width:165px;padding:5px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px #19264329}

@@ -84,6 +84,8 @@ export function dashboardUI(root, report, options = {}) {
   const exportStatus = create('p','ad-export-status');
   exportStatus.setAttribute('role','status');
   exportStatus.hidden = true;
+  const imageStatus = create('div','ad-image-status');
+  imageStatus.hidden = true;
   const {notes, notesDialog, openNotes, refreshNotes} = setupNotes();
 
   const body = create('div','ad-body');
@@ -177,7 +179,7 @@ export function dashboardUI(root, report, options = {}) {
   const inspector = create('aside','ad-inspector');
   inspector.setAttribute('aria-label','Architecture details');
   body.append(catalog,main,inspector);
-  root.replaceChildren(header,exportStatus,body,notesDialog);
+  root.replaceChildren(header,exportStatus,imageStatus,body,notesDialog);
   root.addEventListener('keydown', event => {
     if (helpDialog?.open || notesDialog.open) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !presenting) {
@@ -666,6 +668,8 @@ export function dashboardUI(root, report, options = {}) {
     if (showingSource && view) drawSource(view);
     if (!showingSource && (view?.id !== lastView || !diagram.hasChildNodes())) {
       lastView = view?.id;
+      imageStatus.replaceChildren();
+      imageStatus.hidden = true;
       diagramItems.clear();
       for (const glyphs of Object.values(glyphsByKind)) glyphs.clear();
       highlighted = undefined;
@@ -680,6 +684,17 @@ export function dashboardUI(root, report, options = {}) {
         // SVG comes from the arch.js renderer. User-provided values are
         // escaped by that renderer before this markup reaches the browser.
         diagram.innerHTML = panel.svg;
+        options.imageSession?.mount(diagram,(source,message) => {
+          const row = create('div');
+          const attach = button('Attach image',() => options.imageSession.choose(source,message));
+          row.append(create('span',null,message),attach);
+          imageStatus.append(row);
+          imageStatus.hidden = false;
+          return () => {
+            row.remove();
+            imageStatus.hidden = !imageStatus.childElementCount;
+          };
+        });
         const edgeIds = new Map(Array.from(diagram.querySelectorAll('[data-edge]'),
           ({dataset}) => [dataset.edge,dataset.modelId ?? dataset.edge]));
         for (const glyph of diagram.querySelectorAll(glyphSelector)) {
