@@ -14,11 +14,16 @@ const formats = {
 };
 const parse = svg => new DOMParser().parseFromString(svg,'image/svg+xml');
 
-export function svgImageEmbedder(options) {
+export function svgImageEmbedder(options, rememberSource = false) {
   const {bake} = imageBaker(options);
   return async svg => {
     if (!svg.includes('<image')) return svg;
     const doc = parse(svg);
+    if (rememberSource) for (const image of Array.from(doc.getElementsByTagName('image'))) {
+      const href = image.getAttribute('href') || image.getAttribute('xlink:href');
+      if (href && !/^data:/i.test(href) && !image.hasAttribute('data-arch-image-source'))
+        image.setAttribute('data-arch-image-source',href);
+    }
     await bake(doc.documentElement,false);
     return new XMLSerializer().serializeToString(doc);
   };

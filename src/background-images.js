@@ -30,9 +30,12 @@ export function validateBackgroundImage(source, loc) {
 
 export function backgroundImageMarkup(source, { x = 0, y = 0, width, height }, scope, clip) {
   if (!source) return '';
-  const href = (embeddedImages.get(source) ?? source).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  const attribute = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  const embedded = embeddedImages.get(source);
+  const href = attribute(embedded ?? source);
+  const original = embedded ? ` data-arch-image-source="${attribute(source)}"` : '';
   const clipMarkup = clip ? `<defs><clipPath id="${clip.id}">${clip.shape}</clipPath></defs>` : '';
-  return `${clipMarkup}<image data-background-image="${scope}" href="${href}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" overflow="hidden" opacity="${scope === 'node' ? 0.25 : 0.3}"${clip ? ` clip-path="url(#${clip.id})"` : ''} pointer-events="none" aria-hidden="true"/>`;
+  return `${clipMarkup}<image data-background-image="${scope}" href="${href}"${original} x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" overflow="hidden" opacity="${scope === 'node' ? 0.25 : 0.3}"${clip ? ` clip-path="url(#${clip.id})"` : ''} pointer-events="none" aria-hidden="true"/>`;
 }
 
 export function nodeBackgroundMarkup(node, id, width, height, shape) {

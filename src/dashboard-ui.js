@@ -683,7 +683,10 @@ export function dashboardUI(root, report, options = {}) {
       if (panel?.svg) {
         // SVG comes from the arch.js renderer. User-provided values are
         // escaped by that renderer before this markup reaches the browser.
-        if (!options.imageSession) diagram.innerHTML = panel.svg;
+        if (!options.imageSession) {
+          diagram.innerHTML = panel.svg;
+          options.preferLocalImages?.(diagram);
+        }
         else options.imageSession.mount(diagram,(source,message) => {
           const row = create('div');
           const attach = button('Attach image',() => options.imageSession.choose(source,message));

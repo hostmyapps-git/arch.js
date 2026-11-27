@@ -1,4 +1,5 @@
 import { backgroundImageURL, imageBaker, readImageFile } from './diagram-export/images.js';
+import { preferLocalImages } from './portable-images.js';
 
 function prefixedImageBase(source, url) {
   if (/^(?:[a-z][a-z\d+.-]*:|[/?#])|(?:^|\/)\.\.(?:\/|$)/i.test(source)) return;
@@ -107,6 +108,7 @@ export function createImageSession(host, {baseURL,loadImage} = {}) {
         observer.observe(image,{attributes:true,attributeFilter:['href']});
       }
     }
+    preferLocalImages(template?.content ?? container,document);
     if (template) container.replaceChildren(template.content);
   }
 

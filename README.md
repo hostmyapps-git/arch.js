@@ -463,6 +463,9 @@ Wenn der Host Bilder über `loadImage` bereitstellt, nutzen Vorschau und
 Download die von dieser Funktion gelieferte Raster-Data-URL.
 Schreibt der Host relative Bildpfade nach dem Rendern auf sein eigenes
 Verzeichnis um, übernimmt das Dashboard diese URLs für die Downloads.
+Beim Öffnen eines heruntergeladenen Dashboards oder Studios als lokale Datei
+wird ein relativer Bildpfad zuerst neben dieser HTML-Datei aufgelöst. Ist dort
+kein Bild verfügbar, zeigt die Vorschau die eingebettete Kopie.
 
 ## Eingebaute Hilfe
 

@@ -16,6 +16,7 @@ import { registerIconPack } from './icons.js';
 import { canExportStudio, downloadFile, downloadHTML, exportRevision, htmlJSON, portableStudio, restoreStudioDependencies as restoreDependencies } from './studio-export.js';
 import { diagramFile, svgImageEmbedder } from './diagram-export/index.js';
 import { createImageSession } from './image-session.js';
+import { preferLocalImages } from './portable-images.js';
 export * from './arch.js';
 export { help } from './help.js';
 export { inspectSource } from './source.js';
@@ -124,7 +125,7 @@ export function renderDashboardToHTML(sourceOrModel, options = {}) {
 export async function renderDashboardToPortableHTML(sourceOrModel, options = {}) {
   const prepared = prepareArchitecture(sourceOrModel,options);
   const report = dashboardPreviews(prepared,options,true);
-  const embedImages = svgImageEmbedder(options);
+  const embedImages = svgImageEmbedder(options,true);
   await Promise.all(Object.values(report.previews).map(async preview => {
     if (preview.svg) preview.svg = await embedImages(preview.svg);
   }));
@@ -135,7 +136,7 @@ function dashboardHTML(prepared,report,options) {
   const helpPages = exportDashboardHelp(report,prepared.profile);
   const sources = exportDashboardSources(prepared);
   const payload = htmlJSON({report,view:options.view,helpPages,sources,notes:options.notes,notesKey:options.notesKey,revision:exportRevision()});
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(report.title)}</title><style>body{margin:0}${dashboardStyle}</style><main id="architecture"></main><script type="application/json" id="model">${payload}</script><script>const data=JSON.parse(document.getElementById('model').textContent);const notesKey='archjs:snapshot-notes:v1:'+JSON.stringify([location.pathname,data.notesKey??data.report.title,data.revision]);(${dashboardUI.toString()})(document.getElementById('architecture'),data.report,{view:data.view,helpPages:data.helpPages,sources:data.sources,notes:data.notes,notesKey,sourceTokens:${sourceTokenizerScript()}});</script></html>`;
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(report.title)}</title><style>body{margin:0}${dashboardStyle}</style><main id="architecture"></main><script type="application/json" id="model">${payload}</script><script>const data=JSON.parse(document.getElementById('model').textContent);const notesKey='archjs:snapshot-notes:v1:'+JSON.stringify([location.pathname,data.notesKey??data.report.title,data.revision]);(${dashboardUI.toString()})(document.getElementById('architecture'),data.report,{view:data.view,helpPages:data.helpPages,sources:data.sources,notes:data.notes,notesKey,sourceTokens:${sourceTokenizerScript()},preferLocalImages:${preferLocalImages.toString()}});</script></html>`;
 }
 
 function exportDashboardSources({report,viewSource}) {

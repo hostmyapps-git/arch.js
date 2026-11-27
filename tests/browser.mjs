@@ -2921,7 +2921,20 @@ try {
   assert.equal(snapshotData.notes.architecture,architectureNote);
   assert.deepEqual(snapshotData.notes.views,{overview:'Review the overview.',details:'Details follow-up.'});
   assert.match(snapshotData.report.previews.details.svg,/data:image\/png;base64,/);
+  assert.match(snapshotData.report.previews.details.svg,/data-arch-image-source="portable-test.svg"/);
+  const snapshotFile = 'test-results/portable-review-local.html';
+  await snapshot.saveAs(snapshotFile);
+  const nearbyImage = 'test-results/portable-test.svg';
+  await writeFile(nearbyImage,'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10" fill="tomato"/></svg>');
+  const nearbyURL = pathToFileURL(path.resolve(nearbyImage)).href;
   await markdownPage.close();
+
+  const localSnapshot = await browser.newPage({viewport:{width:1480,height:980}});
+  await localSnapshot.goto(pathToFileURL(path.resolve(snapshotFile)).href);
+  await localSnapshot.locator('.ad-diagram image[data-background-image="node"][href^="data:image/gif;"]').waitFor();
+  assert.equal(await localSnapshot.locator('.ad-diagram image[data-background-image="view"]').getAttribute('href'),nearbyURL);
+  assert.ok(await assertPaintedImage(localSnapshot,localSnapshot.locator('.ad-diagram > svg')));
+  await localSnapshot.close();
 
   const portable = await browser.newPage({viewport:{width:1480,height:980}});
   const portableErrors = [], portableRequests = [];
@@ -2933,8 +2946,9 @@ try {
   await portable.goto(pathToFileURL(path.resolve(studioFile)).href);
   const portableDashboard = portable.getByRole('dialog',{name:'Architecture dashboard'});
   await portableDashboard.locator('.ad-viewbar').getByRole('heading',{name:'Details',exact:true}).waitFor();
-  assert.deepEqual(await portableDashboard.locator('.ad-diagram image').evaluateAll(items=>items.map(item=>item.getAttribute('href').split(';')[0])),
-    ['data:image/png','data:image/gif']);
+  await portableDashboard.locator('.ad-diagram image[data-background-image="node"][href^="data:image/gif;"]').waitFor();
+  assert.equal(await portableDashboard.locator('.ad-diagram image[data-background-image="view"]').getAttribute('href'),nearbyURL);
+  assert.ok(await assertPaintedImage(portable,portableDashboard.locator('.ad-diagram > svg')));
   assert.equal(await portableDashboard.locator('.ad-diagram [data-icon="portable.sample"]').count(),1);
   assert.equal(await portableDashboard.getByRole('button',{name:'Notes',exact:true}).getAttribute('aria-description'),'3 saved notes');
   await portableDashboard.getByRole('button',{name:'Open notes for Overview',exact:true}).click();
@@ -2949,6 +2963,7 @@ try {
   await portableNotes.getByRole('button',{name:'Close notes'}).click();
   await portableDashboard.getByRole('button',{name:'Edit source',exact:true}).click();
   assert.equal(await portable.locator('#source').inputValue(),embeddedSource);
+  assert.equal(await portable.locator('#diagram image[data-background-image="view"]').getAttribute('href'),nearbyURL);
   await portable.locator('#studio-export summary').click();
   const [offlineDiagram] = await Promise.all([portable.waitForEvent('download'),
     portable.getByRole('button',{name:'Export Excalidraw',exact:true}).click()]);
